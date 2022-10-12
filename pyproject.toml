@@ -1,0 +1,29 @@
+[build-system]
+requires = [
+    "flit_core >=3.2,<4"
+]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "structuralcodes"
+authors = [
+    {name = "fib - International Federation for Structural Concrete", email = "info@fib-international.org"}
+]
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+]
+dynamic = ["version", "description"]
+
+[project.urls]
+source = "https://github.com/fib-international/structuralcodes"
+
+[tool.black]
+line-length = 79
+skip-string-normalization = "True"
+check = "True"
+diff = "True"
