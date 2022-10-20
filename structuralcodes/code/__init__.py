@@ -19,7 +19,7 @@ def set_design_code(design_code: str) -> None:
         Call get_design_codes() to get a list of the available codes.
     """
     global _CODE  # pylint: disable=W0603
-    _CODE = code_factory.create(design_code)
+    _CODE = code_factory.create(design_code.lower())
 
 
 def get_design_codes() -> t.List[str]:
