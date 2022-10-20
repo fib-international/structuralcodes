@@ -23,3 +23,27 @@ def fctm(fck: float) -> float:
     if fck <= 50:
         return 0.3 * math.pow(fck, 2 / 3)
     return 2.12 * math.log(1 + 0.1 * fcm(fck))
+
+
+def fctkmin(fck: float) -> float:
+    """Compute the lower bound value of the characteristic tensile strength
+    from the characteristic compressive strength
+    """
+    return 0.7 * fctm(fck)
+
+
+def fctkmax(fck: float) -> float:
+    """Compute the upper bound value of the characteristic tensile strength
+    from the characteristic compressive strength
+    """
+    return 1.3 * fctm(fck)
+
+
+def Gf(fck: float) -> float:
+    """Compute fracture energy Gf in N/m from characteristic compressive strength
+    in MPa
+    """
+    return 73 * fcm(fck)**0.18
+
+
+# For Eci: for existing is fcm/10, for new is (fck+deltaf/10) -> add a flag to concrete saying if existing?

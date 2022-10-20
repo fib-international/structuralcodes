@@ -1,14 +1,14 @@
 """Main class and builder for fib Model Code 2010"""
 import typing as t
 
-from structuralcodes.core.base import DesignCode
+from structuralcodes.core.base import ConcreteDesignCode
 
-from ._concrete_material_properties import fcm, fctm
+from ._concrete_material_properties import fcm, fctm, fctkmin, fctkmax, Gf
 
-FUNCTIONS = (fcm, fctm)
+FUNCTIONS = (fcm, fctm, fctkmin, fctkmax, Gf)
 
 
-class MC2010(DesignCode):
+class MC2010(ConcreteDesignCode):
     """Main class collecting models from fib Model Code 2010."""
 
     def __init__(self) -> None:
