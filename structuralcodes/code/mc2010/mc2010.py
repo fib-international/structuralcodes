@@ -3,9 +3,9 @@ import typing as t
 
 from structuralcodes.core.base import ConcreteDesignCode
 
-from ._concrete_material_properties import fcm, fctm, fctkmin, fctkmax, Gf
+from ._concrete_material_properties import fcm, fctm, fctkmin, fctkmax, Gf, fcd
 
-FUNCTIONS = (fcm, fctm, fctkmin, fctkmax, Gf)
+FUNCTIONS = (fcm, fctm, fctkmin, fctkmax, Gf, fcd)
 
 
 class MC2010(ConcreteDesignCode):

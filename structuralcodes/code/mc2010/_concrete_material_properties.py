@@ -1,7 +1,6 @@
 """A collection of material properties for concrete"""
 import math
 
-
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Compute the mean concrete compressive strength from the characteristic
     strength.
@@ -44,6 +43,13 @@ def Gf(fck: float) -> float:
     in MPa
     """
     return 73 * fcm(fck)**0.18
+
+def fcd(fck: float, gammaC: float  = 1.5, alfaC: float = 0.85, existing: bool = False, FC: float = 1.0) -> float:
+    """Compute fcd ... to be completed"""
+    if not existing:
+        return fck * alfaC / gammaC
+    else:
+        return fcm(fck) / FC
 
 
 # For Eci: for existing is fcm/10, for new is (fck+deltaf/10) -> add a flag to concrete saying if existing?

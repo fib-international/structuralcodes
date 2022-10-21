@@ -12,6 +12,7 @@ REQUIRED_FUNCTIONS = (
     'fctkmin',
     'fctkmax',
     'Gf',
+    'fcd',
 )
 
 
@@ -24,6 +25,8 @@ class Concrete(Material):
     _fctkmin: float
     _fctkmax: float
     _Gf: float
+    _fcd: float
+    _existing: bool
 
     def __init__(self, fck: float, design_code: t.Optional[str] = None) -> None:
         super().__init__()
@@ -44,6 +47,7 @@ class Concrete(Material):
 
         self._code = code
         self._fck = fck
+        self._existing = False 
 
         # Set attributes from the design code
         for fun in REQUIRED_FUNCTIONS:
@@ -54,7 +58,7 @@ class Concrete(Material):
                     )
                 )
             setattr(self, '_'+fun, getattr(code,fun)(fck))
-            # Note: according to this approach everything is function of fck -> possible weak point
+            # Note: according to this approach everything is function of fck -> possible weak point?
 
     @property
     def fck(self):
@@ -78,8 +82,8 @@ class Concrete(Material):
                         fun.__name__
                     )
                 )
-            setattr(self, '_'+fun, self._code.fun(self._fck))
-            # Note: according to this approach everything is function of fck -> possible weak point
+            setattr(self, '_'+fun, getattr(self._code,fun)(self._fck))
+            # Note: according to this approach everything is function of fck -> possible weak point?
     
     @property
     def fcm(self):
@@ -125,3 +129,25 @@ class Concrete(Material):
         To reset, set property fck again'''
         # Here we could do some checks on value before assigning it. For instance check 
         self._fctkmax = value
+
+    @property
+    def fcd(self):
+        return(self._fcd)
+
+    @fcd.setter
+    def fcd(self,value):
+        '''Setting fctkmin: this substitutes the value computed by the current code.
+        To reset, set property fck again'''
+        # Here we could do some checks on value before assigning it. For instance check 
+        self._fcd = value
+
+    @property
+    def existing(self):
+        return(self._existing)
+    
+    @existing.setter
+    def existing(self,value:bool):
+        '''Description here'''
+        FC = 1.0 # For now it is here, but we should think if putting it in the code, or in concrete...
+        self._existing = value
+        self.fcd = getattr(self._code,'fcd')(self._fck, existing = value, FC =FC)
