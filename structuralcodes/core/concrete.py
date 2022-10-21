@@ -18,6 +18,7 @@ REQUIRED_FUNCTIONS = (
 
 class Concrete(Material):
     """The concrete material."""
+
     _code: ConcreteDesignCode
     _fck: float
     _fcm: float
@@ -28,7 +29,9 @@ class Concrete(Material):
     _fcd: float
     _existing: bool
 
-    def __init__(self, fck: float, design_code: t.Optional[str] = None) -> None:
+    def __init__(
+        self, fck: float, design_code: t.Optional[str] = None
+    ) -> None:
         super().__init__()
 
         _code = _use_design_code(design_code)
@@ -47,17 +50,17 @@ class Concrete(Material):
 
         self._code = code
         self._fck = fck
-        self._existing = False 
+        self._existing = False
 
         # Set attributes from the design code
         for fun in REQUIRED_FUNCTIONS:
-            if not hasattr(code,fun):
+            if not hasattr(code, fun):
                 raise Exception(
                     'The function {} has not be implemented in code'.format(
                         fun
                     )
                 )
-            setattr(self, '_'+fun, getattr(code,fun)(fck))
+            setattr(self, '_' + fun, getattr(code, fun)(fck))
             # Note: according to this approach everything is function of fck -> possible weak point?
 
     @property
@@ -66,9 +69,9 @@ class Concrete(Material):
 
     @fck.setter
     def fck(self, value):
-        ''' Setting fck reset all attributes to the selected code'''
+        '''Setting fck reset all attributes to the selected code'''
         # check on fck value to be a legit one -> this depends on the standard?
-        if value <0:
+        if value < 0:
             fck *= -1
             # raise ValueError("Raise exceptions on values?")
         self._fck = value
@@ -76,78 +79,78 @@ class Concrete(Material):
         # Set attributes from the design code
         for fun in REQUIRED_FUNCTIONS:
             # This check maybe is not needed anymore?
-            if not hasattr(self._code,fun):
+            if not hasattr(self._code, fun):
                 raise Exception(
                     'The function {} has not be implemented in code'.format(
                         fun.__name__
                     )
                 )
-            setattr(self, '_'+fun, getattr(self._code,fun)(self._fck))
+            setattr(self, '_' + fun, getattr(self._code, fun)(self._fck))
             # Note: according to this approach everything is function of fck -> possible weak point?
-    
+
     @property
     def fcm(self):
-        return(self._fcm)
-    
+        return self._fcm
+
     @fcm.setter
     def fcm(self, value):
         '''Setting fcm: this substitutes the value computed by the current code.
         To reset, set property fck again'''
-        # Here we could do some checks on value before assigning it. For instance check 
+        # Here we could do some checks on value before assigning it. For instance check
         self._fcm = value
-        #Probably here we could set _fck based on _fcm (useful for existing structures)
-    
-    @property 
+        # Probably here we could set _fck based on _fcm (useful for existing structures)
+
+    @property
     def fctm(self):
-        return(self._fctm)
-    
+        return self._fctm
+
     @fctm.setter
-    def fctm(self,value):
+    def fctm(self, value):
         '''Setting fctm: this substitutes the value computed by the current code.
         To reset, set property fck again'''
-        # Here we could do some checks on value before assigning it. For instance check 
+        # Here we could do some checks on value before assigning it. For instance check
         self._fctm = value
 
-    @property 
+    @property
     def fctkmin(self):
-        return(self._fctkmin)
-    
+        return self._fctkmin
+
     @fctkmin.setter
-    def fctkmin(self,value):
+    def fctkmin(self, value):
         '''Setting fctkmin: this substitutes the value computed by the current code.
         To reset, set property fck again'''
-        # Here we could do some checks on value before assigning it. For instance check 
+        # Here we could do some checks on value before assigning it. For instance check
         self._fctkmin = value
 
-    @property 
+    @property
     def fctkmax(self):
-        return(self._fctkmax)
-    
+        return self._fctkmax
+
     @fctkmax.setter
-    def fctkmax(self,value):
+    def fctkmax(self, value):
         '''Setting fctkmin: this substitutes the value computed by the current code.
         To reset, set property fck again'''
-        # Here we could do some checks on value before assigning it. For instance check 
+        # Here we could do some checks on value before assigning it. For instance check
         self._fctkmax = value
 
     @property
     def fcd(self):
-        return(self._fcd)
+        return self._fcd
 
     @fcd.setter
-    def fcd(self,value):
+    def fcd(self, value):
         '''Setting fctkmin: this substitutes the value computed by the current code.
         To reset, set property fck again'''
-        # Here we could do some checks on value before assigning it. For instance check 
+        # Here we could do some checks on value before assigning it. For instance check
         self._fcd = value
 
     @property
     def existing(self):
-        return(self._existing)
-    
+        return self._existing
+
     @existing.setter
-    def existing(self,value:bool):
+    def existing(self, value: bool):
         '''Description here'''
-        FC = 1.0 # For now it is here, but we should think if putting it in the code, or in concrete...
+        FC = 1.0  # For now it is here, but we should think if putting it in the code, or in concrete...
         self._existing = value
-        self.fcd = getattr(self._code,'fcd')(self._fck, existing = value, FC =FC)
+        self.fcd = getattr(self._code, 'fcd')(self._fck, existing=value, FC=FC)
