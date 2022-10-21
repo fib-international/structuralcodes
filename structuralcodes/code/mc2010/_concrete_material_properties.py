@@ -40,8 +40,8 @@ def fctkmax(fck: float) -> float:
 
 
 def Gf(fck: float) -> float:
-    """Compute fracture energy Gf in N/m from characteristic compressive strength
-    in MPa
+    """Compute fracture energy Gf in N/m from characteristic compressive
+    strength in MPa
     """
     return 73 * fcm(fck) ** 0.18
 
@@ -60,4 +60,5 @@ def fcd(
         return fcm(fck) / FC
 
 
-# For Eci: for existing is fcm/10, for new is (fck+deltaf/10) -> add a flag to concrete saying if existing?
+# For Eci: for existing is fcm/10, for new is (fck+deltaf/10)
+# -> add a flag to concrete saying if existing?
