@@ -56,8 +56,8 @@ def fcd(
     """Compute fcd ... to be completed"""
     if not existing:
         return fck * alfaC / gammaC
-    else:
-        return fcm(fck) / FC
+
+    return fcm(fck) / FC
 
 
 # For Eci: for existing is fcm/10, for new is (fck+deltaf/10)
