@@ -4,6 +4,8 @@ import typing as t
 from structuralcodes.core.base import DesignCode
 
 from .mc2010.mc2010 import MC2010Builder
+from .mc2020.mc2020 import MC2020Builder
+from .en1992_2004.en1992_2004 import EN1992_2004Builder
 
 
 class DesignCodeFactory:
@@ -44,3 +46,5 @@ class DesignCodeFactory:
 # Instantiate the code factory and register codes
 code_factory = DesignCodeFactory()
 code_factory.register_code('mc2010', MC2010Builder())
+code_factory.register_code('mc2020', MC2020Builder())
+code_factory.register_code('en192_2004', EN1992_2004Builder())

@@ -3,7 +3,7 @@ import typing as t
 
 # from structuralcodes.code import _CODE
 from structuralcodes.code import _use_design_code
-from structuralcodes.core.base import ConcreteDesignCode, Material
+from structuralcodes.core.base import DesignCode, Material
 
 
 REQUIRED_FUNCTIONS = (
@@ -19,7 +19,7 @@ REQUIRED_FUNCTIONS = (
 class Concrete(Material):
     """The concrete material."""
 
-    _code: ConcreteDesignCode
+    _code: DesignCode
     _fck: float
     _fcm: float
     _fctm: float
@@ -32,10 +32,10 @@ class Concrete(Material):
     def __init__(
         self, fck: float, design_code: t.Optional[str] = None
     ) -> None:
-        super().__init__()
+        super().__init__(name=f'C{fck}', density=2400)
 
         _code = _use_design_code(design_code)
-        code = _code if isinstance(_code, ConcreteDesignCode) else None
+        code = _code if 'concrete' in _code.materials else None
 
         if code is None:
             raise Exception(
@@ -44,12 +44,8 @@ class Concrete(Material):
                 'string in the material constructor.'
             )
 
-        # check on fck value to be a legit one -> this depends on the standard?
-        if fck < 0:
-            fck *= -1
-
         self._code = code
-        self._fck = fck
+        self._fck = abs(float(fck))
         self._existing = False
 
         # Set attributes from the design code
