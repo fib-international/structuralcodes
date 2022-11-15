@@ -15,22 +15,19 @@ REQUIRED_FUNCTIONS = (
     'fcd',
 )
 
-# TO BE DONE HERE: import Concrete Specific classes (MC, EN, etc.)?
-# Create a concrete facotry to manage that?
-
 
 class Concrete(Material):
-    """Base class for all concete materials."""
+    """The concrete material."""
 
     _code: DesignCode
     _fck: float
-    _existing: bool
     _fcm: float
     _fctm: float
     _fctkmin: float
     _fctkmax: float
     _Gf: float
     _fcd: float
+    _existing: bool
 
     def __init__(
         self, fck: float, design_code: t.Optional[str] = None
@@ -48,33 +45,18 @@ class Concrete(Material):
             )
 
         self._code = code
-        # fck is a positive number, take absolute value
         self._fck = abs(float(fck))
-        # By the default concrete is a new concrete
         self._existing = False
 
-        self._reset_attributes()
-
-    def _reset_attributes(self):
-        # Set all attributes to None, but anyhow check if the
-        # function is defined in the design code
+        # Set attributes from the design code
         for fun in REQUIRED_FUNCTIONS:
-            if not hasattr(self._code, fun):
+            if not hasattr(code, fun):
                 raise Exception(
                     f'The function {fun} has not be implemented in code'
                 )
-            setattr(self, '_' + fun, None)
-
-    def update_attributes(self, attrs_to_update: dict):
-        '''Function for updating the attributes specified in the
-        input dictionary.'''
-        for key, value in attrs_to_update.items():
-            if not hasattr(self, '_' + key):
-                print(
-                    f'WARNING: attribute {key} not found. Ignoring this entry'
-                )
-                continue
-            setattr(self, '_' + key, value)
+            setattr(self, '_' + fun, getattr(code, fun)(fck))
+            # Note: according to this approach everything is function of fck
+            #  -> possible weak point?
 
     @property
     def fck(self) -> float:
@@ -84,50 +66,57 @@ class Concrete(Material):
     @fck.setter
     def fck(self, value: float) -> float:
         '''Setting fck reset all attributes to the selected code'''
-        self._fck = abs(value)
+        # check on fck value to be a legit one -> this depends on the standard?
+        if value < 0:
+            value *= -1
+            # alternatively raise ValueError("Raise exceptions on values?")
+        self._fck = value
 
-        self._reset_attributes()
+        # Set attributes from the design code
+        for fun in REQUIRED_FUNCTIONS:
+            # This check maybe is not needed anymore?
+            if not hasattr(self._code, fun):
+                raise Exception(
+                    f'The function {fun} has not be implemented in code'
+                )
+            setattr(self, '_' + fun, getattr(self._code, fun)(self._fck))
+            # Note: according to this approach everything is function of fck
+            #  -> possible weak point?
 
-    # All other properties call the proper function from the code
     @property
     def fcm(self):
         '''Getter for property fcm'''
-        if self._fcm is not None:
-            return self._fcm
-        else:
-            return getattr(self._code, 'fcm')(self._fck)
+        return self._fcm
 
     @fcm.setter
     def fcm(self, value):
         '''Setting fcm: this substitutes the value computed by the current
         code.
         To reset, set property fck again'''
-        self._fcm = abs(value)
+        # Here we could do some checks on value before assigning it.
+        # For instance check
+        self._fcm = value
         # Probably here we could set _fck based on _fcm (useful for
         #  existing structures)
 
     @property
     def fctm(self):
         '''Getter for property fctm'''
-        if self._fctm is not None:
-            return self._fctm
-        else:
-            return getattr(self._code, 'fctm')(self._fck)
+        return self._fctm
 
     @fctm.setter
     def fctm(self, value):
         '''Setting fctm: this substitutes the value computed by the
         current code.
         To reset, set property fck again'''
+        # Here we could do some checks on value before assigning it.
+        # For instance check
         self._fctm = value
 
     @property
     def fctkmin(self):
         '''Getter for property fctkmin'''
-        if self._fctkmin is not None:
-            return self._fctkmin
-        else:
-            return getattr(self._code, 'fctkmin')(self._fck)
+        return self._fctkmin
 
     @fctkmin.setter
     def fctkmin(self, value):
@@ -141,10 +130,7 @@ class Concrete(Material):
     @property
     def fctkmax(self):
         '''Getter for property fctkmax'''
-        if self._fctkmax is not None:
-            return self._fctkmax
-        else:
-            return getattr(self._code, 'fctkmax')(self._fck)
+        return self._fctkmax
 
     @fctkmax.setter
     def fctkmax(self, value):
@@ -158,10 +144,7 @@ class Concrete(Material):
     @property
     def fcd(self):
         '''Getter for property fcd'''
-        if self._fcd is not None:
-            return self._fcd
-        else:
-            return getattr(self._code, 'fcd')(self._fck)
+        return self._fcd
 
     @fcd.setter
     def fcd(self, value):
@@ -183,6 +166,4 @@ class Concrete(Material):
         FC = 1.0  # For now it is here, but we should think if
         # putting it in the code, or in concrete...
         self._existing = value
-        self._fcd = getattr(self._code, 'fcd')(
-            self._fck, existing=value, FC=FC
-        )
+        self.fcd = getattr(self._code, 'fcd')(self._fck, existing=value, FC=FC)

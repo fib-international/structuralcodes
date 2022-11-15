@@ -1,3 +1,4 @@
+'''Just a test script. To be deleted after this sandbox phase'''
 import structuralcodes
 
 structuralcodes.set_design_code('mc2010')
@@ -9,6 +10,10 @@ print('fctkmin = ', c25.fctkmin)
 
 # We can override a quantity (useful for existing materials probably)
 c25.fctm = 2.0
+print('updated material\n', vars(c25))
+
+# Other update with the new update function
+c25.update_attributes({'fctm': 2.1, 'fctkmin': 1.8, 'parm': 1.2})
 print('updated material\n', vars(c25))
 
 # If we want we can reset it to default values combuted by MC2010
@@ -25,8 +30,10 @@ c_existing.existing = True
 print('fcd = ', c_existing.fcd)
 
 # Later on we will be able to do stuff like:
-# mySec = structuralcodes.sections.RectangularRCSection(b,h,As,Asprime,c25,steel)
+# mySec = structuralcodes.sections.RectangularRCSection(b,h,As,Asprime,c25
+# ,steel)
 # mySec.getMrd('positive')
 # chi, M = mySec.computeMomentCurvature('positive')
 
-# and the using sections in structural members to compute other stuff (e.g. VRd, etc.)
+# and the using sections in structural members to compute other stuff
+#  (e.g. VRd, etc.)
