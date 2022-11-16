@@ -6,7 +6,7 @@ from structuralcodes.code import _use_design_code
 from structuralcodes.core.base import ConcreteDesignCode, Material
 
 
-REQUIRED_FUNCTIONS = (
+REQUIRED_FUNCTIONS = (  # pylint: disable=R0801
     'fcm',
     'fctm',
     'fctkmin',
