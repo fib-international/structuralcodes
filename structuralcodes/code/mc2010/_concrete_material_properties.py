@@ -6,7 +6,7 @@ def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Compute the mean concrete compressive strength from the characteristic
     strength.
 
-    fib Model Code 2010, 5.1-1
+    fib Model Code 2010, Eq. (5.1-1)
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -25,7 +25,7 @@ def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
     compressive strength.
 
-    fib Model Code 2010, 5.1-3a, 5.1-3b
+    fib Model Code 2010, Eqs. (5.1-3a) and (5.1-3b)
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -42,7 +42,7 @@ def fctkmin(fck: float) -> float:
     """Compute the lower bound value of the characteristic tensile strength
     from the characteristic compressive strength.
 
-    fib Model Code 2010, 5.1-4
+    fib Model Code 2010, Eq. (5.1-4)
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -57,7 +57,7 @@ def fctkmax(fck: float) -> float:
     """Compute the upper bound value of the characteristic tensile strength
     from the characteristic compressive strength.
 
-    fib Model Code 2010, 5.1-5
+    fib Model Code 2010, Eq. (5.1-5)
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -72,7 +72,7 @@ def Gf(fck: float) -> float:
     """Compute tensile fracture energy from characteristic compressive
     strength.
 
-    fib Model Code 2010, 5.1-9
+    fib Model Code 2010, Eq. (5.1-9)
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
