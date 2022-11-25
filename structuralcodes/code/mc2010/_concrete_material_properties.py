@@ -81,21 +81,3 @@ def Gf(fck: float) -> float:
         float: The tensile fracture energy in N/m.
     """
     return 73 * fcm(fck) ** 0.18
-
-
-def fcd(
-    fck: float,
-    gammaC: float = 1.5,
-    alfaC: float = 0.85,
-    existing: bool = False,
-    FC: float = 1.0,
-) -> float:
-    """Compute fcd ... to be completed"""
-    if not existing:
-        return fck * alfaC / gammaC
-
-    return fcm(fck) / FC
-
-
-# For Eci: for existing is fcm/10, for new is (fck+deltaf/10)
-# -> add a flag to concrete saying if existing?
