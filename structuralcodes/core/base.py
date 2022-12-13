@@ -7,10 +7,13 @@ class Material(abc.ABC):
     """Abstract base class for materials."""
 
     def __init__(self, density: float, name: t.Optional[str] = None) -> None:
-        """
-        Initializes an instance of a new material
-        :param float density: density of the material in kg/m3
-        :param Optional[str] name: descriptive name of the material
+        """Initializes an instance of a new material
+
+        Args:
+            density (float): density of the material in kg/m3
+
+        Keyword Args:
+            name (Optional[str]): descriptive name of the material
         """
         self._density = abs(density)
         self._name = name if name is not None else "Material"
