@@ -3,7 +3,7 @@ import math
 
 import pytest
 
-from structuralcodes.code.mc2010 import _concrete_material_properties
+from structuralcodes.codes.mc2010 import _concrete_material_properties
 
 
 @pytest.mark.parametrize(
@@ -71,7 +71,9 @@ def test_fctm(test_input, expected):
 def test_fctkmin(test_input, expected):
     """Test the fctkmin function."""
     assert math.isclose(
-        _concrete_material_properties.fctkmin(test_input),
+        _concrete_material_properties.fctkmin(
+            _concrete_material_properties.fctm(test_input)
+        ),
         expected,
         rel_tol=0.031,
     )
@@ -102,7 +104,9 @@ def test_fctkmin(test_input, expected):
 def test_fctkmax(test_input, expected):
     """Test the fctkmax function."""
     assert math.isclose(
-        _concrete_material_properties.fctkmax(test_input),
+        _concrete_material_properties.fctkmax(
+            _concrete_material_properties.fctm(test_input)
+        ),
         expected,
         rel_tol=0.028,
     )
@@ -115,7 +119,7 @@ def test_fctkmax(test_input, expected):
         (35, 143.664),
         (55, 153.888),
         (90, 166.626),
-        (120, 174.832)
+        (120, 174.832),
     ],
 )
 def test_Gf(test_input, expected):
