@@ -22,6 +22,10 @@ class Concrete(Material):
         super().__init__(density=density, name=name)
 
         self._fck = abs(fck)
+        if existing:
+            raise NotImplementedError(
+                'Existing concrete feature not implemented yet'
+            )
         self._existing = existing
 
     @property

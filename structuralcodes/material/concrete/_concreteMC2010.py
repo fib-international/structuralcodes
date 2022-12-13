@@ -13,7 +13,6 @@ class ConcreteMC2010(Concrete):
     _fctkmin: t.Optional[float] = None
     _fctkmax: t.Optional[float] = None
     _Gf: t.Optional[float] = None
-    _fcd: t.Optional[float] = None
 
     def __init__(
         self,
@@ -27,7 +26,7 @@ class ConcreteMC2010(Concrete):
 
         Args:
             fck (float): Characteristic strength in MPa if concrete is not
-                existing. Otherwise it is interpretedas fcm
+                existing.
         Kwargs:
             name (str): A descriptive name for concrete
             density (float): Density of material in kg/m3 (default: 2400)
@@ -41,9 +40,6 @@ class ConcreteMC2010(Concrete):
         super().__init__(
             fck=fck, name=name, density=density, existing=existing
         )
-        # If it is existing concrete, shift fck in order to have the wanted fcm
-        if self._existing:
-            self._fck = mc2010.fck_from_fcm(fck)
 
     def _reset_attributes(self):
         self._fcm = None
@@ -51,7 +47,6 @@ class ConcreteMC2010(Concrete):
         self._fctkmin = None
         self._fctkmax = None
         self._Gf = None
-        self._fcd = None
 
     def update_attributes(self, updated_attributes: dict) -> None:
         """
@@ -145,10 +140,8 @@ class ConcreteMC2010(Concrete):
         """
         if self._fctkmin is not None:
             return self._fctkmin
-        if self._fctm is not None:
-            return self._fctm * 0.7
 
-        return mc2010.fctkmin(self._fck)
+        return mc2010.fctkmin(self.fctm)
 
     @fctkmin.setter
     def fctkmin(self, value: float):
@@ -170,9 +163,8 @@ class ConcreteMC2010(Concrete):
         """
         if self._fctkmax is not None:
             return self._fctkmax
-        if self._fctm is not None:
-            return self._fctm * 1.3
-        return mc2010.fctkmax(self._fck)
+
+        return mc2010.fctkmax(self.fctm)
 
     @fctkmax.setter
     def fctkmax(self, value: float):

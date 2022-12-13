@@ -6,7 +6,6 @@ from ._concrete_material_properties import (
     fctkmin,
     fctkmax,
     Gf,
-    fck_from_fcm,
 )
 
 __all__ = [
@@ -15,7 +14,6 @@ __all__ = [
     'fctkmin',
     'fctkmax',
     'Gf',
-    'fck_from_fcm',
 ]
 
 __title__: str = 'fib Model Code 2010'

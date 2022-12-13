@@ -13,7 +13,7 @@ def create_concrete(
     design_code: t.Optional[str] = None,
 ) -> t.Optional[Concrete]:
     """
-    A functory function to create the correct type of concrete based on the
+    A factory function to create the correct type of concrete based on the
     desired design code.
 
     Args:
