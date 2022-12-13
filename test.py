@@ -1,11 +1,14 @@
 '''Just a temp test file for this sand-box phase'''
 import structuralcodes
-from structuralcodes.material.concrete import concrete
+from structuralcodes.material.concrete import create_concrete
+
+# We can also create a specific class of material if needed
+from structuralcodes.material.concrete import ConcreteMC2010
 
 structuralcodes.set_design_code('mc2010')
 
 # Create a concrete material with the active design code
-c25 = concrete.create_concrete(25)
+c25 = create_concrete(25)
 
 print('fcm = ', c25.fcm)
 print('fctm = ', c25.fctm)
@@ -20,12 +23,15 @@ c25.fck = 25
 print('restored material\n', 'fctm = ', c25.fctm)
 
 # We can also create a material with a given code (not the used default one)
-c25 = concrete.create_concrete(25, design_code='mc2010')
+c25 = create_concrete(25, design_code='mc2010')
 print('fcm = ', c25.fcm)
 
-# We can also create a specific concrete class
-c30MC2010 = concrete.ConcreteMC2010(30)
-print('fcm = ', c30MC2010.fcm)
+c30mc = ConcreteMC2010(30)
+print('fcm of the new specific instance: ', c30mc.fcm)
+
+# A new existing concrete object
+c30ex = ConcreteMC2010(30, existing=True)
+print('Existing concrete - fck: ', c30ex.fck, ' - fcm: ', c30ex.fcm)
 
 # # Compute design strength for new material
 # c30 = structuralcodes.Concrete(30)

@@ -1,6 +1,13 @@
 """The fib Model Code 2010"""
 import typing as t
-from ._concrete_material_properties import fcm, fctm, fctkmin, fctkmax, Gf
+from ._concrete_material_properties import (
+    fcm,
+    fctm,
+    fctkmin,
+    fctkmax,
+    Gf,
+    fck_from_fcm,
+)
 
 __all__ = [
     'fcm',
@@ -8,6 +15,7 @@ __all__ = [
     'fctkmin',
     'fctkmax',
     'Gf',
+    'fck_from_fcm',
 ]
 
 __title__: str = 'fib Model Code 2010'

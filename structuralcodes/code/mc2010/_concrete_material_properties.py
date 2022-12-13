@@ -21,6 +21,25 @@ def fcm(fck: float, delta_f: float = 8.0) -> float:
     return abs(fck) + abs(delta_f)
 
 
+def fck_from_fcm(_fcm: float, delta_f: float = 8.0) -> float:
+    """Compute the characteristic concrete compressive strength from the mean
+    strength.
+
+    fib Model Code 2010, Eq. (5.1-1)
+
+    Args:
+        fcm (float): The mean compressive strength in MPa.
+
+    Kwargs:
+        delta_f (float): The difference between the mean and the
+        characteristic strength in MPa (default = 8.0 MPa).
+
+    Returns:
+        float: The mean compressive strength in MPa.
+    """
+    return abs(_fcm) - abs(delta_f)
+
+
 def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
     compressive strength.
