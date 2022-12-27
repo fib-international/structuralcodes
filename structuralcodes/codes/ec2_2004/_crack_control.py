@@ -95,9 +95,12 @@ def crack_min_steel_area(
         ValueError: if k value is not between 0.65 and 1 or kc is not
             larger than 0 and lower than 1.
     """
-    s_steel = abs(s_steel)
     fct_eff = abs(fct_eff)
 
+    if a_ct <= 0:
+        raise ValueError(f'a_ct={a_ct} must be larger than 0')
+    if s_steel < 0:
+        raise ValueError(f's_steel={s_steel} must be equal or larger than 0')
     if k < 0.65 or k > 1.0:
         raise ValueError(f'k={k} must be between 0.65 and 1')
     if kc > 1 or kc < 0:

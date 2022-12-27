@@ -107,7 +107,7 @@ def test_kc_crack_min_steel_area_rectangular_returns_expected_values(
     assert math.isclose(kc, expected, rel_tol=0.000001)
 
 
-def test_kc_crack_min_steel_area_rectangular_rasies_valueerror():
+def test_kc_crack_min_steel_area_rectangular_raises_valueerror():
     """Test the kc_crack_min_steel_area_rectangular raises Value
     Error for not correct input values for b and h"""
     with pytest.raises(ValueError):
@@ -148,3 +148,25 @@ def test_crack_min_steel_area_returns_expected_values(
     """Test the crack_min_steel_area returns expected values"""
     as_min = _crack_control.crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
     assert math.isclose(as_min, expected, rel_tol=0.000001)
+
+
+@pytest.mark.parametrize(
+    'a_ct, s_steel, fct_eff, k, kc',
+    [
+        (-10000, 100, 3, 0.7, 0.67),
+        (10000, -100, 3, 0.7, 0.65),
+        (10000, 100, 3, 0.5, 0.65),
+        (10000, 100, 3, 1.1, 0.65),
+        (10000, 100, 3, 0.7, -0.1),
+        (10000, 100, 3, 0.7, 1.1),
+    ],
+)
+def test_crack_min_steel_area_raises_valueerror(a_ct, s_steel, fct_eff, k, kc):
+    """Test the crack_min_steel_area raises value error"""
+    with pytest.raises(ValueError):
+        _crack_control.crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
+
+
+def test_crack_min_steel_area_with_prestressed_tendons_returns_expected_values():
+    """Test the crack_min_steel_area returns expected values"""
+    pass
