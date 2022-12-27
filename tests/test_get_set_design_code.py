@@ -19,14 +19,14 @@ def test_set_design_code(design_code_to_set):
     structuralcodes.set_design_code(design_code_to_set)
 
     # Assert
-    assert isinstance(structuralcodes.code._CODE, types.ModuleType)
-    assert structuralcodes.code._CODE.__title__ == expected_design_code_title
+    assert isinstance(structuralcodes.codes._CODE, types.ModuleType)
+    assert structuralcodes.codes._CODE.__title__ == expected_design_code_title
 
 
 def test_get_design_codes():
     """Test get a list of implemented design codes."""
     # Arrange
-    expected_list_of_codes = list(structuralcodes.code._DESIGN_CODES.keys())
+    expected_list_of_codes = list(structuralcodes.codes._DESIGN_CODES.keys())
 
     # Act
     available_codes = structuralcodes.get_design_codes()
@@ -48,7 +48,7 @@ def test_set_national_annex(na_to_set):
     structuralcodes.set_national_annex(na_to_set)
 
     # Assert
-    assert structuralcodes.code._NATIONAL_ANNEX == expected_na
+    assert structuralcodes.codes._NATIONAL_ANNEX == expected_na
 
 
 @pytest.mark.parametrize(
@@ -61,7 +61,7 @@ def test_use_design_code(design_code_to_user):
     expected_design_code_title = 'fib Model Code 2010'
 
     # Act
-    code_to_use = structuralcodes.code._use_design_code(design_code_to_user)
+    code_to_use = structuralcodes.codes._use_design_code(design_code_to_user)
 
     # Assert
     assert isinstance(code_to_use, types.ModuleType)
@@ -76,7 +76,7 @@ def test_use_design_code_none():
     structuralcodes.set_design_code(design_code_to_set)
 
     # Act
-    code_to_use = structuralcodes.code._use_design_code()
+    code_to_use = structuralcodes.codes._use_design_code()
 
     # Assert
     assert isinstance(code_to_use, types.ModuleType)

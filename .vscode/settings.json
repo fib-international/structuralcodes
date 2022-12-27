@@ -1,10 +1,17 @@
 {
-    "python.formatting.provider": "black",
     "python.testing.pytestArgs": [
         "tests"
     ],
+    "python.formatting.provider": "black",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.linting.pylintEnabled": true,
-    "python.linting.flake8Enabled": true
+    "python.linting.flake8Enabled": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.defaultFormatter": "ms-python.python",
+    },
 }

@@ -4,6 +4,13 @@ import typing as t
 
 from . import mc2010
 
+__all__ = [
+    'mc2010',
+    'set_design_code',
+    'get_design_codes',
+    'set_national_annex',
+]
+
 # Global code object used by material classes
 _CODE: t.Optional[types.ModuleType] = None
 
