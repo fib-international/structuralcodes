@@ -328,12 +328,11 @@ def crack_min_steel_without_direct_calculation(
     wk: float,
     s_steel: float,
     fct_eff: float,
-    kc: float,
     h_cr: float,
     h: float,
     d: float,
-    load_type: str,
     incr_stress: float = 0,
+    kc: t.Optional[float] = None,
 ) -> t.Tuple[float, float]:
     """Computes the minimum area of reinforcing steel within the tensile zone
     for control of cracking areas
@@ -348,20 +347,18 @@ def crack_min_steel_without_direct_calculation(
             the concrete effective at the time when the cracks may first be
             expected to occur: fct,eff=fct or lower (fct(t)), is cracking
             is expected earlier than 28 days.
-        kc (float): is a coefficient which takes account of the stress
-            distribution within the section immediately prior to cracking and
-            the change of the lever arm.
         h_cr (float): is the depth of the tensile zone immediately prior to
             cracking, considering the characteristic values of prestress and
             axial forces under the quasi-permanent combination of actions.
         h (float): the overall depth of the section in mm.
         d (float): is the effective depth to the centroid of the outer layer
             of the reinforcement.
-        load_type (str): load combination type:
-            - bending: for at least part of section in compression
-            - tension: uniform axial tension
         incr_stress (float, optional): value of prestressed stress in MPa if
             applicable
+        kc (float, optional): is a coefficient which takes account of the
+            stress distribution within the section immediately prior to
+            cracking and the change of the lever arm in a bending section.
+            'None' for pure tensile uniform axial section.
 
     Returns:
         tuple(float, float): with the value of the maximum bar diameters in mm
@@ -382,14 +379,8 @@ def crack_min_steel_without_direct_calculation(
         raise ValueError(f'h={h} is less than 0')
     if d < 0:
         raise ValueError(f'd={d} is less than 0')
-    if kc < 0 or kc > 1:
+    if kc is not None and (kc < 0 or kc > 1):
         raise ValueError(f'kc={kc} is not between 0 and 1')
-    load_type = load_type.lower()
-    if load_type != 'bending' and load_type != 'tension':
-        raise ValueError(
-            f'load_type={load_type} can only have as values "bending" or'
-            ' "tension"'
-        )
 
     s = s_steel - incr_stress
     if s <= 0:
@@ -452,7 +443,7 @@ def crack_min_steel_without_direct_calculation(
     phi_star = float(
         scipy.interpolate.griddata(points_phi, phi_s_v, xi, method='linear')
     )
-    if load_type == 'bending':
+    if kc is not None:
         phi = phi_star * (fct_eff / 2.9) * kc * h_cr / (2 * (h - d))
     else:
         phi = phi_star * (fct_eff / 2.9) * h_cr / (8 * (h - d))
