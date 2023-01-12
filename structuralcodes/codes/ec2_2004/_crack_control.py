@@ -572,3 +572,30 @@ def rho_p_eff(a_s: float, e1: float, a_p, ac_eff: float) -> float:
         raise ValueError(f'ac_eff={ac_eff} cannot be less than 0')
 
     return (a_s + e1**2 * a_p) / ac_eff
+
+
+def kt_load_duration(load_type: str):
+    """Returns the kt factor dependent on the load duration for
+    the crack width calculation
+
+    Args:
+        load_type (str): the load type:
+            - 'short' for term loading
+            - 'long' for long term loading
+
+    Returns:
+        float: with the kt factor
+
+    Raises:
+        ValueError: if load_type is not 'short' and not 'long'
+    """
+    if not isinstance(load_type, str):
+        raise TypeError
+
+    load_type = load_type.lower()
+    if load_type != 'short' and load_type != 'long':
+        raise ValueError(
+            f'load_type={load_type} can only have "short" or "long" as a value'
+        )
+
+    return 0.6 if load_type == 'short' else 0.4

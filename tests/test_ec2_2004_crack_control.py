@@ -402,3 +402,24 @@ def test_rho_p_eff_raise_value_error(a_s, e1, a_p, ac_eff):
     """Test rho_p_eff raise exceptions"""
     with pytest.raises(ValueError):
         _crack_control.rho_p_eff(a_s, e1, a_p, ac_eff)
+
+
+@pytest.mark.parametrize(
+    'load_type, expected',
+    [
+        ('short', 0.6),
+        ('long', 0.4),
+    ],
+)
+def test_kt_load_duration_returns_expected_values(load_type, expected):
+    """Test kt_load_duration returns expected values"""
+    assert _crack_control.kt_load_duration(load_type) == expected
+
+
+def test_kt_load_duration_raise_value_errors():
+    """Test kt_load_duration raise value errors"""
+    with pytest.raises(TypeError):
+        _crack_control.kt_load_duration(load_type=123)
+
+    with pytest.raises(ValueError):
+        _crack_control.kt_load_duration(load_type='asdf')
