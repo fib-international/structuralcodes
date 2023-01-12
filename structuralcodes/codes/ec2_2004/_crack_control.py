@@ -574,7 +574,7 @@ def rho_p_eff(a_s: float, e1: float, a_p, ac_eff: float) -> float:
     return (a_s + e1**2 * a_p) / ac_eff
 
 
-def kt_load_duration(load_type: str):
+def kt_load_duration(load_type: str) -> float:
     """Returns the kt factor dependent on the load duration for
     the crack width calculation
 
@@ -599,3 +599,66 @@ def kt_load_duration(load_type: str):
         )
 
     return 0.6 if load_type == 'short' else 0.4
+
+
+def steel_stress_strain(
+    s_steel: float,
+    alpha_e: float,
+    rho_p_eff: float,
+    kt: float,
+    fct_eff: float,
+    es: float,
+) -> float:
+    """Returns the strain difference (esm - ecm) needed to compute the crack
+    width. esm is the mean strain in the reinforcement under the relevant
+    combination of loads of imposed deformations and taking into account the
+    effects of tension stiffening. Only the additional tensile strain beyond
+    the state of zero strain of the concrete is considered. ecm is the mean
+    strain in the concrete between the cracks.
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.9)
+
+    Args:
+        s_steel (float): is the stress in MPa in the tension reinforcement
+            assuming a cracked section. FOr pretensioned members, s_steel may
+            be replaced by increment of s_steel stress variation in
+            prestressing tendons from the state of zero strain of the
+            concrete at the same level.
+        alpha_e (float): is the ratio Es/Ecm
+        rho_p_eff (float): effective bond ratio between areas given by the
+            Eq. (7.10)
+        kt (float): is a factor dependent on the load duration
+        fct_eff (float): is the mean value of the tensile strength in MPa
+            of the concrete effectvie at the time when the cracks may
+            first be expected to occur: fct_eff=fctm or fctm(t) if
+            crack is expected earlier than 28 days.
+        es: steel elastic mudulus in MPa
+
+    Returns:
+        float: the strain difference between concrete and steel
+
+    Raises:
+        ValueError: if any s_steel, alpha_e, rho_p_eff, fct_Eff is less
+            than 0.
+        ValueError: if kt is not 0.6 and not 0.4
+    """
+    if s_steel < 0:
+        raise ValueError(f's_steel={s_steel} cannot be less than 0')
+    if alpha_e < 0:
+        raise ValueError(f'alpha_e={alpha_e} cannot be less than 0')
+    if rho_p_eff < 0:
+        raise ValueError(f'rho_p_eff={rho_p_eff} cannot be less than 0')
+    if fct_eff < 0:
+        raise ValueError(f'fct_eff={fct_eff} cannot be less than 0')
+    if es < 0:
+        raise ValueError(f'es={es} cannot be less than 0')
+    if kt != 0.6 and kt != 0.4:
+        raise ValueError(f'kt={kt} can only take as values 0.4 and 0.6')
+
+    min_val = 0.6 * s_steel / es
+
+    a = 1 + alpha_e * rho_p_eff
+    b = kt * fct_eff / rho_p_eff * a
+    c = (s_steel - b) / es
+
+    return max(c, min_val)
