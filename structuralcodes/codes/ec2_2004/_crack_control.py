@@ -232,6 +232,8 @@ def adjusted_bond_strength(e: float, d_press: float, d_steel: float) -> float:
     """Computes the adjusted ratio of bond strength taking into account
     the different diameters of prestressing and reinforcing steel.
 
+    EUROCODE 2 1992-1-1:2004, Eq. (7.5)
+
     Args:
         e (float): ratio of bond strength of prestressing and reinforcing
             steel, according to Table 6.2 in 6.8.2
@@ -262,9 +264,11 @@ def adjusted_bond_strength(e: float, d_press: float, d_steel: float) -> float:
     return ((e * d_steel / d_press) ** 0.5) if d_steel > 0 else e**0.5
 
 
-def hc_eff_concrete_tension(h: float, d: float, x: float):
+def hc_eff_concrete_tension(h: float, d: float, x: float) -> float:
     """Returns the effective height of concrete in tension surrounding
     the reinforcement or prestressing tendons.
+
+    EUROCODE 2 1992-1-1:2004, Section (7.3.2-3)
 
     Args:
         h (float): total depth of the element in mm
@@ -513,3 +517,58 @@ def crack_min_steel_without_direct_calculation(
         raise ValueError('Combination of wk or stress values out of scope')
 
     return phi, spa
+
+
+def alpha_e(es: float, ecm: float) -> float:
+    """Compute the ratio between the steel and mean concrete
+    modules.
+
+    EUROCODE 2 1992-1-1:2004, Section 7.3.4-2
+
+    Args:
+        es (float): steel elastic modulus in MPa
+        ecm (float): ecm concrete mean elastic modulus in MPa
+
+    Returns:
+        float: ratio between modules
+    Raise:
+        ValueError: if any of es or ecm is lower than 0.
+    """
+    if es < 0:
+        raise ValueError(f'es={es} cannot be less than 0')
+    if ecm < 0:
+        raise ValueError(f'ecm={ecm} cannot be less than 0')
+
+    return es / ecm
+
+
+def rho_p_eff(a_s: float, e1: float, a_p, ac_eff: float) -> float:
+    """Effective bond ratio between areas
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.10)
+
+    Args:
+        a_s (float): steel area in mm2
+        e1 (float): the adjusted ratio of bond according
+            to expression (7.5)
+        a_p (float): the area in mm2 of post-tensioned tendons in ac_eff
+        ac_eff (float): effective area of concrete in tension surrounding
+        the reinforcement or prestressing tendons of depth hc_eff.
+
+    Returns:
+        float: with the retio between areas
+
+
+    Raise:
+        ValueError: if any of a_s, e1, a_p or ac_eff is less than 0
+    """
+    if a_s < 0:
+        raise ValueError(f'a_s={a_s} cannot be less than 0')
+    if e1 < 0:
+        raise ValueError(f'e1={e1} cannot be less than 0')
+    if a_p < 0:
+        raise ValueError(f'a_p={a_p} cannot be less than 0')
+    if ac_eff < 0:
+        raise ValueError(f'ac_eff={ac_eff} cannot be less than 0')
+
+    return (a_s + e1**2 * a_p) / ac_eff

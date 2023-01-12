@@ -338,10 +338,67 @@ def test_hc_eff_concrete_tension_returns_expected_values(h, d, x, expected):
         (50, -200, 100),
         (50, 200, -100),
         (400, 450, 100),
-        (400, 200, 450)
+        (400, 200, 450),
     ],
 )
 def test_hc_eff_concrete_tension_raise_exceptions(h, d, x):
     """Test hc_eff_concrete tension raises expected exceptions"""
     with pytest.raises(ValueError):
         _crack_control.hc_eff_concrete_tension(h, d, x)
+
+
+@pytest.mark.parametrize(
+    'es, ecm, expected',
+    [
+        (10e9, 10e5, 1e4),
+    ],
+)
+def test_alpha_e_returns_expected_values(es, ecm, expected):
+    """Test alpha_e returns expected values"""
+    assert math.isclose(
+        _crack_control.alpha_e(es, ecm),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'es, ecm',
+    [
+        (-10e9, 10e5),
+        (100e9, -10e-5),
+    ],
+)
+def test_alpha_e_raise_exceptions(es, ecm):
+    """Test alpha_e raises exceptions"""
+    with pytest.raises(ValueError):
+        _crack_control.alpha_e(es, ecm)
+
+
+@pytest.mark.parametrize(
+    'a_s, e1, a_p, ac_eff, expected',
+    [
+        (200, 0.8, 125, 600, 0.46666667),
+        (125, 1.5, 125, 1200, 0.33854),
+    ],
+)
+def test_rho_p_eff_returns_expected_values(a_s, e1, a_p, ac_eff, expected):
+    """Test rho_p_eff returns expeceted values"""
+    assert math.isclose(
+        _crack_control.rho_p_eff(a_s, e1, a_p, ac_eff), expected, rel_tol=10e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'a_s, e1, a_p, ac_eff',
+    [
+        (-200, 0.8, 125, 600),
+        (200, -0.8, 125, 600),
+        (200, 0.8, -125, 600),
+        (200, 0.8, 125, -600),
+    ],
+)
+def test_rho_p_eff_raise_value_error(a_s, e1, a_p, ac_eff):
+    """Test rho_p_eff raise exceptions"""
+    with pytest.raises(ValueError):
+        _crack_control.rho_p_eff(a_s, e1, a_p, ac_eff)
