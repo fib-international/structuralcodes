@@ -277,3 +277,38 @@ def test_crack_min_steel_without_direct_calculation_raise_valueerror(
         _crack_control.crack_min_steel_without_direct_calculation(
             wk, s_steel, fct_eff, h_cr, h, d, incr_stress, kc
         )
+
+
+@pytest.mark.parametrize(
+    'e, d_press, d_steel, expected',
+    [
+        (0.8, 20, 0, 0.894427),
+        (0.6, 25, 10, 0.489898),
+        (0.5, 10, 10, 0.707107),
+    ],
+)
+def test_adjusted_bond_length_return_expected_values(
+    e, d_press, d_steel, expected
+):
+    """Test the adjusted_bond_length_function returns expected values"""
+    assert math.isclose(
+        _crack_control.adjusted_bond_strength(e, d_press, d_steel),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'e, d_press, d_steel',
+    [
+        (0.1, 20, 0),
+        (-2, 25, 10),
+        (1.15, 10, 10),
+        (0.6, -10, 10),
+        (0.6, 10, -10),
+    ],
+)
+def test_adjusted_bond_length_raise_valuerror(e, d_press, d_steel):
+    """Test the adjusted_bond_length_function raises exceptions"""
+    with pytest.raises(ValueError):
+        _crack_control.adjusted_bond_strength(e, d_press, d_steel)

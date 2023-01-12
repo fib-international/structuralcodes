@@ -228,6 +228,40 @@ def kc_crack_min_steel_area_flanges(
     return max(0.9 * f_cr * 1000 / a_ct / fct_eff, 0.5)
 
 
+def adjusted_bond_strength(e: float, d_press: float, d_steel: float) -> float:
+    """Computes the adjusted ratio of bond strength taking into account
+    the different diameters of prestressing and reinforcing steel.
+
+    Args:
+        e (float): ratio of bond strength of prestressing and reinforcing
+            steel, according to Table 6.2 in 6.8.2
+        d_steel (float): largest bar diameter in mm of reinforcing steel.
+            Equal to 0 if only prestressing is used in control cracking
+        d_press (float): equivalent diameter in mm of tendon acoording
+            to 6.8.2
+
+    Returns:
+        float: with the value of the ratio
+
+    Raises:
+        ValueError: if diameters d_steel or d_press are lower than 0.
+            If ratio of bond strength e is less than 0.15 or larger than 0.8.
+            If area of tendons ac_eff is less than 0. Is stress variation
+            incr_stress is less than 0.
+    """
+
+    if d_press <= 0:
+        raise ValueError(f'd_press={d_press} cannot be less than 0')
+    if d_steel < 0:
+        raise ValueError(f'd_steel={d_steel} cannot be less than 0')
+    if e < 0.15:
+        raise ValueError(f'The minimum value for e={e} is 0.15')
+    if e > 0.8:
+        raise ValueError(f'The maximum value for e={e} is 0.8')
+
+    return ((e * d_steel / d_press) ** 0.5) if d_steel > 0 else e**0.5
+
+
 def crack_min_steel_area_with_prestresed_tendons(
     a_ct: float,
     s_steel: float,
@@ -290,23 +324,15 @@ def crack_min_steel_area_with_prestresed_tendons(
         ValueError: if k value is not between 0.65 and 1 or kc is not
             larger than 0 and lower than 1. If diameters d_steel or
             d_press are lower than 0. If ratio of bond strength e
-            is less than 0 or larger than 1. If area of tendons ac_eff
+            is less than 0.15 or larger than 0.8. If area of tendons ac_eff
             is less than 0. Is stress variation incr_stress is less than 0
     """
     fct_eff = abs(fct_eff)
 
-    if d_press <= 0:
-        raise ValueError(f'd_press={d_press} cannot be less than 0')
-    if d_steel < 0:
-        raise ValueError(f'd_steel={d_steel} cannot be less than 0')
     if ap < 0:
         raise ValueError(f'ap={ap} cannot be less than 0')
     if incr_stress < 0:
         raise ValueError(f'incr_stress={incr_stress} cannot be less than 0')
-    if e < 0.15:
-        raise ValueError(f'The minimum value for e={e} is 0.15')
-    if e > 0.8:
-        raise ValueError(f'The maximum value for e={e} is 0.8')
     if a_ct <= 0:
         raise ValueError(f'a_ct={a_ct} must be larger than 0')
     if s_steel < 0:
@@ -317,7 +343,7 @@ def crack_min_steel_area_with_prestresed_tendons(
         raise ValueError(f'kc={kc} must be lower than 1 and larger than 0')
 
     a1 = kc * k * fct_eff * a_ct
-    e1 = ((e * d_steel / d_press) ** 0.5) if d_steel > 0 else e**0.5
+    e1 = adjusted_bond_strength(e, d_press, d_steel)
     a2 = e1 * ap * incr_stress
     a = a1 - a2
 
