@@ -312,3 +312,36 @@ def test_adjusted_bond_length_raise_valuerror(e, d_press, d_steel):
     """Test the adjusted_bond_length_function raises exceptions"""
     with pytest.raises(ValueError):
         _crack_control.adjusted_bond_strength(e, d_press, d_steel)
+
+
+@pytest.mark.parametrize(
+    'h, d, x, expected',
+    [
+        (400, 200, 100, 100),
+        (400, 200, 150, 83.333333),
+        (550, 150, 150, 133.33333),
+    ],
+)
+def test_hc_eff_concrete_tension_returns_expected_values(h, d, x, expected):
+    """Test the hc_eff_concrete_tension returns expected results"""
+    assert math.isclose(
+        _crack_control.hc_eff_concrete_tension(h, d, x),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'h, d, x',
+    [
+        (-50, 200, 100),
+        (50, -200, 100),
+        (50, 200, -100),
+        (400, 450, 100),
+        (400, 200, 450)
+    ],
+)
+def test_hc_eff_concrete_tension_raise_exceptions(h, d, x):
+    """Test hc_eff_concrete tension raises expected exceptions"""
+    with pytest.raises(ValueError):
+        _crack_control.hc_eff_concrete_tension(h, d, x)

@@ -262,6 +262,37 @@ def adjusted_bond_strength(e: float, d_press: float, d_steel: float) -> float:
     return ((e * d_steel / d_press) ** 0.5) if d_steel > 0 else e**0.5
 
 
+def hc_eff_concrete_tension(h: float, d: float, x: float):
+    """Returns the effective height of concrete in tension surrounding
+    the reinforcement or prestressing tendons.
+
+    Args:
+        h (float): total depth of the element in mm
+        d (float): distance in mm to the level of the steel centroid
+        x (float): distance in mm to the zero tensile stress line
+
+    Returns:
+        float: the effective height in mm
+
+    Raises:
+        ValueError: if any of h, d or x is lower than zero.
+        ValueError: if d is greater than h
+        ValueError: if x is greater than h
+    """
+    if h < 0:
+        raise ValueError(f'h={h} cannot be less than 0')
+    if d < 0:
+        raise ValueError(f'd={d} cannot be less than 0')
+    if x < 0:
+        raise ValueError(f'x={x} cannot be less than zero')
+    if d > h:
+        raise ValueError(f'd={d} cannot be larger than h={h}')
+    if x > h:
+        raise ValueError(f'x={x} cannot be larger than h={h}')
+
+    return min(2.5 * (h - d), (h - x) / 3, h / 2)
+
+
 def crack_min_steel_area_with_prestresed_tendons(
     a_ct: float,
     s_steel: float,
