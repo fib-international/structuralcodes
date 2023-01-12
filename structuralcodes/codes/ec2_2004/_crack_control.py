@@ -1,5 +1,8 @@
 """Collection of functions from EUROCODE 1992-1-1:2004
 Chapter 7.3 - Crack control"""
+import math
+import typing as t
+
 import numpy as np
 import scipy.interpolate
 
@@ -329,8 +332,9 @@ def crack_min_steel_without_direct_calculation(
     h_cr: float,
     h: float,
     d: float,
+    load_type: str,
     incr_stress: float = 0,
-) -> tuple(float, float):
+) -> t.Tuple[float, float]:
     """Computes the minimum area of reinforcing steel within the tensile zone
     for control of cracking areas
 
@@ -353,6 +357,9 @@ def crack_min_steel_without_direct_calculation(
         h (float): the overall depth of the section in mm.
         d (float): is the effective depth to the centroid of the outer layer
             of the reinforcement.
+        load_type (str): load combination type:
+            - bending: for at least part of section in compression
+            - tension: uniform axial tension
         incr_stress (float, optional): value of prestressed stress in MPa if
             applicable
 
@@ -363,6 +370,7 @@ def crack_min_steel_without_direct_calculation(
     Raises:
         ValueError: if wk, fct_eff, h_cr, h or d are less than 0
         ValueError: if kc is not between 0 and 1
+        ValueError: if combination of wk and stress values are out of scope
     """
     if wk < 0:
         raise ValueError(f'wd={wk} cannot be less than 0')
@@ -376,6 +384,12 @@ def crack_min_steel_without_direct_calculation(
         raise ValueError(f'd={d} is less than 0')
     if kc < 0 or kc > 1:
         raise ValueError(f'kc={kc} is not between 0 and 1')
+    load_type = load_type.lower()
+    if load_type != 'bending' and load_type != 'tension':
+        raise ValueError(
+            f'load_type={load_type} can only have as values "bending" or'
+            ' "tension"'
+        )
 
     s = s_steel - incr_stress
     if s <= 0:
@@ -431,19 +445,23 @@ def crack_min_steel_without_direct_calculation(
         None,
     )
 
-    points_phi = np.meshgrid(x, y_phi)
-    points_spa = np.meshgrid(x, y_spa)
-    xi = (wk, s)
+    points_phi = np.array(np.meshgrid(y_phi, x)).T.reshape(-1, 2)
+    points_spa = np.array(np.meshgrid(y_spa, x)).T.reshape(-1, 2)
+    xi = (s, wk)
 
-    phi_grid = scipy.interpolate.griddata(
-        points_phi, phi_s_v, xi, method='linear'
+    phi_star = float(
+        scipy.interpolate.griddata(points_phi, phi_s_v, xi, method='linear')
     )
-    phi_star = phi_grid[0]
-    phi = phi_star * (fct_eff / 2.9) * kc * h_cr / (2 * (h - d))
+    if load_type == 'bending':
+        phi = phi_star * (fct_eff / 2.9) * kc * h_cr / (2 * (h - d))
+    else:
+        phi = phi_star * (fct_eff / 2.9) * h_cr / (8 * (h - d))
 
-    spa_grid = scipy.interpolate.griddata(
-        points_spa, spa_v, xi, method='linear'
+    spa = float(
+        scipy.interpolate.griddata(points_spa, spa_v, xi, method='linear')
     )
-    spa = spa_grid[0]
 
-    return (phi, spa)
+    if math.isnan(phi) or math.isnan(spa):
+        raise ValueError('Combination of wk or stress values out of scope')
+
+    return phi, spa

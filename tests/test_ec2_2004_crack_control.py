@@ -228,21 +228,57 @@ def test_crack_min_steel_area_with_press_tendons_raise_valueerror(
 
 
 @pytest.mark.parametrize(
-    'wk, s_steel, fct_eff, kc, h_cr, h, d, incr_stress',
+    (
+        'wk, s_steel, fct_eff, kc, h_cr, h, d, load_type, incr_stress, exp_phi,'
+        ' exp_sep'
+    ),
     [
-        (-0.1, 200, 3, 0.7, 250, 300, 280, 0),
-        (0.2, 200, -3, 0.7, 250, 300, 280, 0),
-        (0.2, 200, 3, 1.1, 250, 300, 280, 0),
-        (0.2, 200, 3, 0.7, -250, 300, 280, 0),
-        (0.2, 200, 3, 0.7, -250, -300, 280, 0),
-        (0.2, 200, 3, 0.7, -250, -300, -280, 0),
+        (0.3, 240, 2.9, 0.4, 200, 400, 360, 'bending', 40, 25, 250),
+        (0.2, 260, 2.9, 0.4, 200, 400, 360, 'axial', 40, 14, 125),
+        (0.35, 360, 2.9, 0.4, 200, 400, 360, 'bending', 40, 11, 125),
+        (0.35, 360, 2.9, 0.4, 200, 400, 360, 'axial', 40, 11, 125),
+    ],
+)
+def test_crack_min_steel_without_direct_calculation_returns_expected_values(
+    wk,
+    s_steel,
+    fct_eff,
+    kc,
+    h_cr,
+    h,
+    d,
+    load_type,
+    incr_stress,
+    exp_phi,
+    exp_sep,
+):
+    """Test the crack_min_steel_area raise ValueError for non valid values"""
+    phi, sep = _crack_control.crack_min_steel_without_direct_calculation(
+        wk, s_steel, fct_eff, kc, h_cr, h, d, load_type, incr_stress
+    )
+    assert math.isclose(phi, exp_phi, rel_tol=10e-6)
+    assert math.isclose(sep, exp_sep, rel_tol=10e-6)
+
+
+@pytest.mark.parametrize(
+    'wk, s_steel, fct_eff, kc, h_cr, h, d, load_type, incr_stress',
+    [
+        (-0.1, 200, 3, 0.7, 250, 300, 280, 'bending', 0),
+        (0.2, 200, -3, 0.7, 250, 300, 280, 'bending', 0),
+        (0.2, 200, 3, 0.7, 250, 300, 280, 'bending', 0),
+        (0.2, 200, 3, 1.1, 250, 300, 280, 'bending', 0),
+        (0.2, 200, 3, 0.7, -250, 300, 280, 'bending', 0),
+        (0.2, 200, 3, 0.7, -250, -300, 280, 'bending', 0),
+        (0.2, 200, 3, 0.7, -250, -300, -280, 'bending', 0),
+        (0.2, 360, 2.9, 0.4, 200, 400, 360, 'bending', 0),
+        (0.5, 200, 2.9, 0.4, 200, 400, 360, 'bending', 0),
     ],
 )
 def test_crack_min_steel_without_direct_calculation_raise_valueerror(
-    wk, s_steel, fct_eff, kc, h_cr, h, d, incr_stress
+    wk, s_steel, fct_eff, kc, h_cr, h, d, load_type, incr_stress
 ):
     """Test the crack_min_steel_area raise ValueError for non valid values"""
     with pytest.raises(ValueError):
         _crack_control.crack_min_steel_without_direct_calculation(
-            wk, s_steel, fct_eff, kc, h_cr, h, d, incr_stress
+            wk, s_steel, fct_eff, kc, h_cr, h, d, load_type, incr_stress
         )
