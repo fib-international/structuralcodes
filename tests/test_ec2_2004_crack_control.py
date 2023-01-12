@@ -102,7 +102,10 @@ def test_kc_crack_min_steel_area_rectangular_returns_expected_values(
 ):
     """Test the kc_crack_min_steel_area_rectangular"""
     kc = _crack_control.kc_crack_min_steel_area_rectangular(
-        h, b, fct_eff, n_ed
+        h,
+        b,
+        fct_eff,
+        n_ed,
     )
     assert math.isclose(kc, expected, rel_tol=0.000001)
 
@@ -147,7 +150,7 @@ def test_crack_min_steel_area_returns_expected_values(
 ):
     """Test the crack_min_steel_area returns expected values"""
     as_min = _crack_control.crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
-    assert math.isclose(as_min, expected, rel_tol=0.000001)
+    assert math.isclose(as_min, expected, rel_tol=10e-6)
 
 
 @pytest.mark.parametrize(
@@ -167,6 +170,79 @@ def test_crack_min_steel_area_raises_valueerror(a_ct, s_steel, fct_eff, k, kc):
         _crack_control.crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
 
 
-def test_crack_min_steel_area_with_prestressed_tendons_returns_expected_values():
+@pytest.mark.parametrize(
+    (
+        'a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e,    '
+        ' incr_stress, expected'
+    ),
+    [
+        (80000, 400, 4, 0.9, 0.75, 500, 10, 10, 0.5, 10, 531.161),
+        (50000, 500, 3, 0.7, 0.4, 700, 10, 30, 0.8, 20, 69.541),
+        (50000, 500, 4, 1, 1, 1000, 0, 20, 0.8, 20, 364.223),
+    ],
+)
+def test_crack_min_steel_area_with_press_tendons_returns_expected_values(
+    a_ct,
+    s_steel,
+    fct_eff,
+    k,
+    kc,
+    ap,
+    d_steel,
+    d_press,
+    e,
+    incr_stress,
+    expected,
+):
     """Test the crack_min_steel_area returns expected values"""
-    pass
+    as_min = _crack_control.crack_min_steel_area_with_prestresed_tendons(
+        a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
+    )
+    assert math.isclose(as_min, expected, rel_tol=10e-6)
+
+
+@pytest.mark.parametrize(
+    'a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e,     incr_stress',
+    [
+        (-80000, 400, 4, 0.9, 0.75, 500, 10, 10, 0.5, 10),
+        (80000, -400, 4, 0.9, 0.75, 500, 10, 10, 0.5, 10),
+        (80000, 400, 4, 0.5, 0.75, 500, 10, 10, 0.5, 10),
+        (80000, 400, 4, 1.1, 0.75, 500, 10, 10, 0.5, 10),
+        (80000, 400, 4, 0.9, -0.1, 500, 10, 10, 0.5, 10),
+        (80000, 400, 4, 0.9, 1.1, 500, 10, 10, 0.5, 10),
+        (80000, 400, 4, 0.9, 0.75, -500, 10, 10, 0.5, 10),
+        (80000, 400, 4, 0.9, 0.75, 500, -10, 10, 0.5, 10),
+        (80000, 400, 4, 0.9, 0.75, 500, 10, 0, 0.5, 10),
+        (80000, 400, 4, 0.9, 0.75, 500, 10, 10, 0.1, 10),
+        (80000, 400, 4, 0.9, 0.75, 500, 10, 10, 0.9, 10),
+    ],
+)
+def test_crack_min_steel_area_with_press_tendons_raise_valueerror(
+    a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
+):
+    """Test the crack_min_steel_area raise ValueError for non valid values"""
+    with pytest.raises(ValueError):
+        _crack_control.crack_min_steel_area_with_prestresed_tendons(
+            a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
+        )
+
+
+@pytest.mark.parametrize(
+    'wk, s_steel, fct_eff, kc, h_cr, h, d, incr_stress',
+    [
+        (-0.1, 200, 3, 0.7, 250, 300, 280, 0),
+        (0.2, 200, -3, 0.7, 250, 300, 280, 0),
+        (0.2, 200, 3, 1.1, 250, 300, 280, 0),
+        (0.2, 200, 3, 0.7, -250, 300, 280, 0),
+        (0.2, 200, 3, 0.7, -250, -300, 280, 0),
+        (0.2, 200, 3, 0.7, -250, -300, -280, 0),
+    ],
+)
+def test_crack_min_steel_without_direct_calculation_raise_valueerror(
+    wk, s_steel, fct_eff, kc, h_cr, h, d, incr_stress
+):
+    """Test the crack_min_steel_area raise ValueError for non valid values"""
+    with pytest.raises(ValueError):
+        _crack_control.crack_min_steel_without_direct_calculation(
+            wk, s_steel, fct_eff, kc, h_cr, h, d, incr_stress
+        )

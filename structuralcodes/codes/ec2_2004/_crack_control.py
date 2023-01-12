@@ -1,5 +1,6 @@
 """Collection of functions from EUROCODE 1992-1-1:2004
 Chapter 7.3 - Crack control"""
+import numpy as np
 import scipy.interpolate
 
 
@@ -270,7 +271,7 @@ def crack_min_steel_area_with_prestresed_tendons(
         ap (float): is the area in mm2 of pre or post-tensioned tendons
             within ac_eff
         d_steel (float): largest bar diameter in mm of reinforcing steel.
-            Equal to zero if only prestressing is used in control cracking
+            Equal to 0 if only prestressing is used in control cracking
         d_press (float): equivalent diameter in mm of tendon acoording
             to 6.8.2
         e (float): ratio of bond strength of prestressing and reinforcing
@@ -289,9 +290,9 @@ def crack_min_steel_area_with_prestresed_tendons(
             is less than 0 or larger than 1. If area of tendons ac_eff
             is less than 0. Is stress variation incr_stress is less than 0
     """
-    as_min = crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
+    fct_eff = abs(fct_eff)
 
-    if d_press < 0:
+    if d_press <= 0:
         raise ValueError(f'd_press={d_press} cannot be less than 0')
     if d_steel < 0:
         raise ValueError(f'd_steel={d_steel} cannot be less than 0')
@@ -299,7 +300,150 @@ def crack_min_steel_area_with_prestresed_tendons(
         raise ValueError(f'ap={ap} cannot be less than 0')
     if incr_stress < 0:
         raise ValueError(f'incr_stress={incr_stress} cannot be less than 0')
+    if e < 0.15:
+        raise ValueError(f'The minimum value for e={e} is 0.15')
+    if e > 0.8:
+        raise ValueError(f'The maximum value for e={e} is 0.8')
+    if a_ct <= 0:
+        raise ValueError(f'a_ct={a_ct} must be larger than 0')
+    if s_steel < 0:
+        raise ValueError(f's_steel={s_steel} must be equal or larger than 0')
+    if k < 0.65 or k > 1.0:
+        raise ValueError(f'k={k} must be between 0.65 and 1')
+    if kc > 1 or kc < 0:
+        raise ValueError(f'kc={kc} must be lower than 1 and larger than 0')
 
-    e1 = d_steel > 0 if (e * d_steel / d_press) ** 0.5 else e**0.5
-    f = e1 * ap * incr_stress
-    return as_min * f
+    a1 = kc * k * fct_eff * a_ct
+    e1 = ((e * d_steel / d_press) ** 0.5) if d_steel > 0 else e**0.5
+    a2 = e1 * ap * incr_stress
+    a = a1 - a2
+
+    return a / s_steel
+
+
+def crack_min_steel_without_direct_calculation(
+    wk: float,
+    s_steel: float,
+    fct_eff: float,
+    kc: float,
+    h_cr: float,
+    h: float,
+    d: float,
+    incr_stress: float = 0,
+) -> tuple(float, float):
+    """Computes the minimum area of reinforcing steel within the tensile zone
+    for control of cracking areas
+
+    EUROCODE 2 1992-1-1:2004, Table (7.2N), Table (7.3N)
+
+    Args:
+        wk (float): the characteristic crack width value in mm.
+        s_steel (float): the steel stress value in MPa under the relevant
+            combination of actions.
+        fct_eff (float): is the mean value of the tensile strength in MPa of
+            the concrete effective at the time when the cracks may first be
+            expected to occur: fct,eff=fct or lower (fct(t)), is cracking
+            is expected earlier than 28 days.
+        kc (float): is a coefficient which takes account of the stress
+            distribution within the section immediately prior to cracking and
+            the change of the lever arm.
+        h_cr (float): is the depth of the tensile zone immediately prior to
+            cracking, considering the characteristic values of prestress and
+            axial forces under the quasi-permanent combination of actions.
+        h (float): the overall depth of the section in mm.
+        d (float): is the effective depth to the centroid of the outer layer
+            of the reinforcement.
+        incr_stress (float, optional): value of prestressed stress in MPa if
+            applicable
+
+    Returns:
+        tuple(float, float): with the value of the maximum bar diameters in mm
+        in the first position and the maximum bar spacing in mm in the
+        second position
+    Raises:
+        ValueError: if wk, fct_eff, h_cr, h or d are less than 0
+        ValueError: if kc is not between 0 and 1
+    """
+    if wk < 0:
+        raise ValueError(f'wd={wk} cannot be less than 0')
+    if fct_eff < 0:
+        raise ValueError(f'fct_eff={fct_eff} is less than 0')
+    if h_cr < 0:
+        raise ValueError(f'h_cr={h_cr} is less than 0')
+    if h < 0:
+        raise ValueError(f'h={h} is less than 0')
+    if d < 0:
+        raise ValueError(f'd={d} is less than 0')
+    if kc < 0 or kc > 1:
+        raise ValueError(f'kc={kc} is not between 0 and 1')
+
+    s = s_steel - incr_stress
+    if s <= 0:
+        return (0, 0)
+
+    x = (0.4, 0.3, 0.2)
+    y_phi = (160, 200, 240, 280, 320, 360, 400, 450)
+    y_spa = (160, 200, 240, 280, 320, 360)
+    phi_s_v = (
+        40,
+        32,
+        25,
+        32,
+        25,
+        16,
+        20,
+        16,
+        12,
+        16,
+        12,
+        8,
+        12,
+        10,
+        6,
+        10,
+        8,
+        5,
+        8,
+        6,
+        4,
+        6,
+        5,
+        None,
+    )
+    spa_v = (
+        300,
+        300,
+        200,
+        300,
+        250,
+        150,
+        250,
+        200,
+        100,
+        200,
+        150,
+        50,
+        150,
+        100,
+        None,
+        100,
+        50,
+        None,
+    )
+
+    points_phi = np.meshgrid(x, y_phi)
+    points_spa = np.meshgrid(x, y_spa)
+    xi = (wk, s)
+
+    phi_grid = scipy.interpolate.griddata(
+        points_phi, phi_s_v, xi, method='linear'
+    )
+    phi_star = phi_grid[0]
+    phi = phi_star * (fct_eff / 2.9) * kc * h_cr / (2 * (h - d))
+
+    spa_grid = scipy.interpolate.griddata(
+        points_spa, spa_v, xi, method='linear'
+    )
+    spa = spa_grid[0]
+
+    return (phi, spa)
