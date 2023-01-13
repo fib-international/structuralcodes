@@ -25,8 +25,8 @@ def w_max(exposure_class: str, load_combination: str) -> float:
     Raises:
         ValueError: if not valid exposure_class or load_combination values.
     """
-    _load_combination = load_combination.lower()
-    _exposure_class = exposure_class.upper()
+    _load_combination = load_combination.lower().strip()
+    _exposure_class = exposure_class.upper().strip()
     if _load_combination == 'f':
         if _exposure_class in ('X0', 'XC1'):
             return 0.2
@@ -519,7 +519,7 @@ def crack_min_steel_without_direct_calculation(
     return phi, spa
 
 
-def alpha_e(es: float, ecm: float) -> float:
+def get_alpha_e(es: float, ecm: float) -> float:
     """Compute the ratio between the steel and mean concrete
     modules.
 
@@ -592,7 +592,7 @@ def kt_load_duration(load_type: str) -> float:
     if not isinstance(load_type, str):
         raise TypeError
 
-    load_type = load_type.lower()
+    load_type = load_type.lower().strip()
     if load_type != 'short' and load_type != 'long':
         raise ValueError(
             f'load_type={load_type} can only have "short" or "long" as a value'
@@ -601,7 +601,7 @@ def kt_load_duration(load_type: str) -> float:
     return 0.6 if load_type == 'short' else 0.4
 
 
-def steel_stress_strain(
+def esm_ecm(
     s_steel: float,
     alpha_e: float,
     rho_p_eff: float,
@@ -662,3 +662,281 @@ def steel_stress_strain(
     c = (s_steel - b) / es
 
     return max(c, min_val)
+
+
+def s_threshold(c: float, phi: float) -> float:
+    """Computes the distance threshold from which the
+    maximum crack spacing is constant.
+
+    EUROCODE 2 1992-1-1:2004, Sect. (7.3.4-3)
+
+    Args:
+        c (float): cover of  the longitudinal reinforcement in mm
+        phi (float): is the bar diameter in mm. Where mixed bar diameters
+            used, then it should be replaced for an equivalente bar diameter.
+
+    Returns:
+        float: threshold distance in mm
+
+    Raises:
+        ValueError: if any of c or phi is less than 0.
+    """
+    if c < 0:
+        raise ValueError(f'c={c} cannot be less than 0')
+    if phi < 0:
+        raise ValueError(f'phi={phi} cannot be less than 0')
+
+    return 5 * (c + phi / 2)
+
+
+def phi_eq(n1: int, n2: int, phi1: float, phi2: float) -> float:
+    """Computes the equivalent diameter. For a section with n1 bars of
+    diameter phi1 and n2 bars of diameter phi2
+
+    EUROCODE 2 1992-1-1:2004, Sect. (7.12)
+
+    Args:
+        n1 (int): number of bars with diameter phi1
+        n2 (int): number of bars with diameter phi2
+        phi1 (float): diameter of n1 bars in mm
+        phi2 (float): diamater of n2 bars in mm
+
+    Returns:
+        float: the equivalent diameter in mm
+
+    Raises:
+        ValueError: if any of n1 or n2 is less than 0
+        ValueError: if any of phi1 or phi2 is less than 0
+        TypeError: if any of n1 or n2 is not an integer
+    """
+    if n1 < 0:
+        raise ValueError(f'n1={n1} cannot be less than 0')
+    if not isinstance(n1, int):
+        raise TypeError(f'n1={n1} needs to be an integer value')
+    if n2 < 0:
+        raise ValueError(f'n2={n2} cannot be less than 0')
+    if not isinstance(n2, int):
+        raise TypeError(f'n2={n2} needs to be an integer value')
+    if phi1 < 0:
+        raise ValueError(f'phi1={phi1} cannot be less than 0')
+    if phi2 < 0:
+        raise ValueError(f'phi2={phi2} cannot be less than 0')
+
+    a = n1 * phi1**2 + n2 * phi2**2
+    b = n1 * phi1 + n2 * phi2
+    return a / b
+
+
+def k1(bond_type: str) -> float:
+    """Get the k1 coefficient which takes account of the bond properties
+    of the bounded reinforcement
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.11-k1)
+
+    Args:
+        bond_type (str): the bond property of the reinforcement.
+        Possible values:
+            - 'bond': for high bond bars
+            - 'plane': for bars with an effectively plain surface (e.g.
+            prestressing tendons)
+
+    Returns:
+        (float): value of the k1 coefficient
+
+    Raises:
+        ValueError: if bond_type is neither 'bond' nor 'plane'
+        TypeError: if bond_type is not an str
+    """
+    if not isinstance(bond_type, str):
+        raise TypeError(f'bond_type={bond_type} is not an str')
+
+    bond_type = bond_type.lower().strip()
+    if bond_type != 'bond' and bond_type != 'plane':
+        raise ValueError(
+            f'bond_type={bond_type} can only have "bond" or "plane" as values'
+        )
+
+    return 0.8 if bond_type == 'bond' else 1.6
+
+
+def k2(epsilon_r: float) -> float:
+    """Computes a coefficient which takes into account of the
+    distribution of strain:
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.13)
+
+    Args:
+        epsilon_r (float): ratio epsilon_2/epsilon_1 where epsilon_1 is
+            thre greater and epsilon_2 is the lesser strain at the boundaries
+            of the section considererd, assessed on the basis of a cracked
+            section. epsilon_r=0 for bending and epsilon_r=1 for pure tension.
+
+    Returns:
+        float: the k2 coefficient value.
+
+    Raises:
+        ValueError: if epsilon_r is not between 0 and 1.
+    """
+    if epsilon_r < 0 or epsilon_r > 1:
+        raise ValueError(f'epsilon_r={epsilon_r} must be between 0 and 1')
+
+    return (1 + epsilon_r) / 2
+
+
+def k3():
+    """Returns the k3 coefficient for computing sr_max
+
+    Returns:
+        float: value for the coefficient
+    """
+    return 3.4
+
+
+def k4():
+    """Returns the k4 coefficient for computing sr_max
+
+    Returns:
+        float: value for the coefficient
+    """
+    return 0.425
+
+
+def sr_max_close(
+    c: float,
+    phi: float,
+    rho_p_eff: float,
+    k1: float,
+    k2: float,
+    k3: float,
+    k4: float,
+) -> float:
+    """Computes the maximum crack spacing in cases where bonded reinforcement
+    is fixed at reasonably close centres within the tension zone
+    (spacing<=5(c+phi/2)).
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.11)
+
+    Args:
+        c (float): is the cover in mm of the longitudinal reinforcement
+        phi (float): is the bar diameter in mm. Where mixed bar diameters
+            used, then it should be replaced for an equivalente bar diameter.
+        rho_p_eff (float): effective bond ratio between areas given by the
+            Eq. (7.10)
+        k1 (float): coefficient that takes into account the bound properties
+            of the bonded reinforcement
+        k2 (float): coefficient that takes into account the distribution of
+            of the strain
+        k3 (float): coefficient from the National Annex
+        k4 (float): coefficient from the National Annex
+
+    Returns:
+        float: the maximum crack spaing in mm.
+
+    Raises:
+        ValueError: if one or more of c, phi, rho_p_eff, k3 or k4
+            is lower than zero.
+        ValueError: if k1 is not 0.8 or 1.6
+        ValueError: if k2 is not between 0.5 and 1.0
+    """
+    if c < 0:
+        raise ValueError(f'c={c} cannot be less than zero')
+    if phi < 0:
+        raise ValueError(f'phi={phi} cannot be less than zero')
+    if rho_p_eff < 0:
+        raise ValueError(f'rho_p_eff={rho_p_eff} cannot be less than zero')
+    if k3 < 0:
+        raise ValueError(f'k3={k3} cannot be less than zero')
+    if k4 < 0:
+        raise ValueError(f'k4={k4} cannot be less than zero')
+    if k1 != 0.8 and k1 != 1.6:
+        raise ValueError(f'k1={k1} can only take as values 0.8 and 1.6')
+    if k2 < 0.5 or k2 > 1:
+        raise ValueError(f'k2={k2} is not between 0.5 and 1.0')
+
+    return k3 * c + k1 * k2 * k4 * phi / rho_p_eff
+
+
+def sr_max_far(h: float, x: float) -> float:
+    """Computes the maximum crack spacing in cases where bonded reinforcement
+    is fixed at reasonably close centres within the tension zone
+    (spacing>5(c+phi/2)).
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.14)
+
+    Args:
+        h (float): total depth of the beam in mm
+        x (float): distance to non tension area of the element mm
+
+    Returns:
+        float: maximum crack spacing in mm
+
+    Raises:
+        ValueError: if one of h or x is less than zero.
+        ValueError: x is greater than h.
+    """
+    if x < 0:
+        raise ValueError(f'x={x} cannot be less than zero')
+    if h < 0:
+        raise ValueError(f'h={h} cannot be less than zero')
+    if x > h:
+        raise ValueError(f'x={x} cannot be larger than h={h}')
+
+    return 1.3 * (h - x)
+
+
+def sr_max_theta(sr_max_y: float, sr_max_z: float, theta: float) -> float:
+    """Computes the crack spacing sr_max when there is an angle
+    between the angle of  principal stress and the direction
+    of the reinforcement, for members in two orthogonal directions,
+    that is significant (> 15º).
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.15)
+
+    Args:
+        sr_max_y (float): crack spacing in mm in the y-direction.
+        sr_max_z (float): crack spacing in mm in the z-direction.
+        theta (float): angle in radians between the reinforcement in the
+            y-direction and the direction of the principal tensile stress.
+
+    Returns:
+        float: the crack spacing in mm.
+
+    Raises:
+        ValueError: if sr_max_y or sr_max_z is negative.
+        ValueError: if theta is not between 0 and pi/2
+    """
+    if sr_max_y < 0:
+        raise ValueError(f'sr_max_y={sr_max_y} cannot be less than zero')
+    if sr_max_z < 0:
+        raise ValueError(f'sr_max_z={sr_max_z} cannot be less than zero')
+
+    a = math.cos(theta) / sr_max_y
+    b = math.sin(theta) / sr_max_z
+    return 1 / (a + b)
+
+
+def wk(sr_max: float, esm_ecm: float) -> float:
+    """Computes the crack width
+
+    EUROCODE 2 1992-1-1:2004, Eq. (7.8)
+
+    Args:
+        sr_max (float): the maximum crack length spacing in mm.
+        esm_ecm (float): the difference between the mean strain in the
+            reinforcement under relevant combination of loads, including
+            the effect of imposed deformations and taking into account
+            tension stiffening and the mean strain in the concrete
+            between cracks.
+
+    Returns:
+        float: crack width in mm.
+
+    Raises:
+        ValueError: if any of sr_max or esm_ecm is less than zero.
+    """
+    if sr_max < 0:
+        raise ValueError(f'sr_max={sr_max} cannot be less than zero')
+    if esm_ecm < 0:
+        raise ValueError(f'esm_scm={esm_ecm} cannot be less than zero')
+
+    return sr_max * esm_ecm
