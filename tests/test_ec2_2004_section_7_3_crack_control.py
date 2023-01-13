@@ -2,7 +2,7 @@
 import math
 
 import pytest
-from structuralcodes.codes.ec2_2004 import _crack_control
+from structuralcodes.codes.ec2_2004 import _section_7_3_crack_control
 
 
 @pytest.mark.parametrize(
@@ -40,7 +40,9 @@ def test_w_max_returns_expected_values(
     test_exposure_class, test_load_combination, expected
 ):
     """Test that the w_max function returns expected values"""
-    w_max = _crack_control.w_max(test_exposure_class, test_load_combination)
+    w_max = _section_7_3_crack_control.w_max(
+        test_exposure_class, test_load_combination
+    )
     assert w_max == expected
 
 
@@ -53,7 +55,9 @@ def test_w_max_not_valid_input_raises_valueerror(
 ):
     """Test that not valid input returns ValueError"""
     with pytest.raises(ValueError):
-        _crack_control.w_max(test_exposure_class, test_load_combination)
+        _section_7_3_crack_control.w_max(
+            test_exposure_class, test_load_combination
+        )
 
 
 @pytest.mark.parametrize(
@@ -71,7 +75,7 @@ def test_w_max_not_valid_input_raises_valueerror(
 )
 def test_k_crack_min_steel_area_returns_expected_values(h, expected):
     """Test the k_crack_min_steel_area function"""
-    k = _crack_control.k_crack_min_steel_area(h)
+    k = _section_7_3_crack_control.k(h)
     assert math.isclose(k, expected)
 
 
@@ -79,12 +83,12 @@ def test_k_crack_min_steel_area_raises_valueerror():
     """Test that not valid input returns ValueError exeption"""
     with pytest.raises(ValueError):
         h = -100
-        _crack_control.k_crack_min_steel_area(h)
+        _section_7_3_crack_control.k(h)
 
 
 def test_kc_crack_min_steel_area_pure_tension_returns_expected_values():
     """Test the kc_crack_min_steel_area_pure_tension function"""
-    assert 1 == _crack_control.kc_crack_min_steel_area_pure_tension()
+    assert 1 == _section_7_3_crack_control.kc_tension()
 
 
 @pytest.mark.parametrize(
@@ -101,7 +105,7 @@ def test_kc_crack_min_steel_area_rectangular_returns_expected_values(
     h, b, fct_eff, n_ed, expected
 ):
     """Test the kc_crack_min_steel_area_rectangular"""
-    kc = _crack_control.kc_crack_min_steel_area_rectangular(
+    kc = _section_7_3_crack_control.kc_rect_area(
         h,
         b,
         fct_eff,
@@ -114,11 +118,11 @@ def test_kc_crack_min_steel_area_rectangular_raises_valueerror():
     """Test the kc_crack_min_steel_area_rectangular raises Value
     Error for not correct input values for b and h"""
     with pytest.raises(ValueError):
-        _crack_control.kc_crack_min_steel_area_rectangular(
-            h=-100, b=100, fct_eff=100, n_ed=10
+        _section_7_3_crack_control.kc_rect_area(
+            h=-100, b=100, fct_eff=100, N_ed=10
         )
-        _crack_control.kc_crack_min_steel_area_rectangular(
-            h=100, b=-100, fct_eff=100, n_ed=10
+        _section_7_3_crack_control.kc_rect_area(
+            h=100, b=-100, fct_eff=100, N_ed=10
         )
 
 
@@ -133,7 +137,7 @@ def test_kc_crack_min_steel_area_rectangular_raises_valueerror():
 )
 def test_kc_crack_min_steel_area_flanges(f_cr, a_ct, fct_eff, expected):
     """Test the kc_crack_min_steel_area_flanges function"""
-    kc = _crack_control.kc_crack_min_steel_area_flanges(f_cr, a_ct, fct_eff)
+    kc = _section_7_3_crack_control.kc_flanges_area(f_cr, a_ct, fct_eff)
     assert math.isclose(kc, expected, rel_tol=0.000001)
 
 
@@ -145,11 +149,11 @@ def test_kc_crack_min_steel_area_flanges(f_cr, a_ct, fct_eff, expected):
         (80000, 400, 4, 0.9, 0.75, 540),
     ],
 )
-def test_crack_min_steel_area_returns_expected_values(
+def test_As_min_returns_expected_values(
     a_ct, s_steel, fct_eff, k, kc, expected
 ):
-    """Test the crack_min_steel_area returns expected values"""
-    as_min = _crack_control.crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
+    """Test the As_min returns expected values"""
+    as_min = _section_7_3_crack_control.As_min(a_ct, s_steel, fct_eff, k, kc)
     assert math.isclose(as_min, expected, rel_tol=10e-6)
 
 
@@ -164,10 +168,10 @@ def test_crack_min_steel_area_returns_expected_values(
         (10000, 100, 3, 0.7, 1.1),
     ],
 )
-def test_crack_min_steel_area_raises_valueerror(a_ct, s_steel, fct_eff, k, kc):
-    """Test the crack_min_steel_area raises value error"""
+def test_crack_As_min_raises_valueerror(a_ct, s_steel, fct_eff, k, kc):
+    """Test the As_min raises value error"""
     with pytest.raises(ValueError):
-        _crack_control.crack_min_steel_area(a_ct, s_steel, fct_eff, k, kc)
+        _section_7_3_crack_control.As_min(a_ct, s_steel, fct_eff, k, kc)
 
 
 @pytest.mark.parametrize(
@@ -195,7 +199,7 @@ def test_crack_min_steel_area_with_press_tendons_returns_expected_values(
     expected,
 ):
     """Test the crack_min_steel_area returns expected values"""
-    as_min = _crack_control.crack_min_steel_area_with_prestresed_tendons(
+    as_min = _section_7_3_crack_control.As_min_p(
         a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
     )
     assert math.isclose(as_min, expected, rel_tol=10e-6)
@@ -222,7 +226,7 @@ def test_crack_min_steel_area_with_press_tendons_raise_valueerror(
 ):
     """Test the crack_min_steel_area raise ValueError for non valid values"""
     with pytest.raises(ValueError):
-        _crack_control.crack_min_steel_area_with_prestresed_tendons(
+        _section_7_3_crack_control.As_min_p(
             a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
         )
 
@@ -249,7 +253,7 @@ def test_crack_min_steel_without_direct_calculation_returns_expected_values(
     exp_sep,
 ):
     """Test the crack_min_steel_area raise ValueError for non valid values"""
-    phi, sep = _crack_control.crack_min_steel_without_direct_calculation(
+    phi, sep = _section_7_3_crack_control.As_min_2(
         wk, s_steel, fct_eff, h_cr, h, d, incr_stress, kc
     )
     assert math.isclose(phi, exp_phi, rel_tol=10e-6)
@@ -274,7 +278,7 @@ def test_crack_min_steel_without_direct_calculation_raise_valueerror(
 ):
     """Test the crack_min_steel_area raise ValueError for non valid values"""
     with pytest.raises(ValueError):
-        _crack_control.crack_min_steel_without_direct_calculation(
+        _section_7_3_crack_control.As_min_2(
             wk, s_steel, fct_eff, h_cr, h, d, incr_stress, kc
         )
 
@@ -292,7 +296,7 @@ def test_adjusted_bond_length_return_expected_values(
 ):
     """Test the adjusted_bond_length_function returns expected values"""
     assert math.isclose(
-        _crack_control.adjusted_bond_strength(e, d_press, d_steel),
+        _section_7_3_crack_control.xi1(e, d_press, d_steel),
         expected,
         rel_tol=10e-5,
     )
@@ -311,7 +315,7 @@ def test_adjusted_bond_length_return_expected_values(
 def test_adjusted_bond_length_raise_valuerror(e, d_press, d_steel):
     """Test the adjusted_bond_length_function raises exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.adjusted_bond_strength(e, d_press, d_steel)
+        _section_7_3_crack_control.xi1(e, d_press, d_steel)
 
 
 @pytest.mark.parametrize(
@@ -325,7 +329,7 @@ def test_adjusted_bond_length_raise_valuerror(e, d_press, d_steel):
 def test_hc_eff_concrete_tension_returns_expected_values(h, d, x, expected):
     """Test the hc_eff_concrete_tension returns expected results"""
     assert math.isclose(
-        _crack_control.hc_eff_concrete_tension(h, d, x),
+        _section_7_3_crack_control.hc_eff(h, d, x),
         expected,
         rel_tol=10e-5,
     )
@@ -344,7 +348,7 @@ def test_hc_eff_concrete_tension_returns_expected_values(h, d, x, expected):
 def test_hc_eff_concrete_tension_raise_exceptions(h, d, x):
     """Test hc_eff_concrete tension raises expected exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.hc_eff_concrete_tension(h, d, x)
+        _section_7_3_crack_control.hc_eff(h, d, x)
 
 
 @pytest.mark.parametrize(
@@ -356,7 +360,7 @@ def test_hc_eff_concrete_tension_raise_exceptions(h, d, x):
 def test_alpha_e_returns_expected_values(es, ecm, expected):
     """Test alpha_e returns expected values"""
     assert math.isclose(
-        _crack_control.get_alpha_e(es, ecm),
+        _section_7_3_crack_control.alpha_e(es, ecm),
         expected,
         rel_tol=10e-5,
     )
@@ -372,7 +376,7 @@ def test_alpha_e_returns_expected_values(es, ecm, expected):
 def test_alpha_e_raise_exceptions(es, ecm):
     """Test alpha_e raises exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.get_alpha_e(es, ecm)
+        _section_7_3_crack_control.alpha_e(es, ecm)
 
 
 @pytest.mark.parametrize(
@@ -385,7 +389,7 @@ def test_alpha_e_raise_exceptions(es, ecm):
 def test_rho_p_eff_returns_expected_values(a_s, e1, a_p, ac_eff, expected):
     """Test rho_p_eff returns expeceted values"""
     assert math.isclose(
-        _crack_control.rho_p_eff(a_s, e1, a_p, ac_eff),
+        _section_7_3_crack_control.rho_p_eff(a_s, e1, a_p, ac_eff),
         expected,
         rel_tol=10e-5,
     )
@@ -403,7 +407,7 @@ def test_rho_p_eff_returns_expected_values(a_s, e1, a_p, ac_eff, expected):
 def test_rho_p_eff_raise_value_error(a_s, e1, a_p, ac_eff):
     """Test rho_p_eff raise exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.rho_p_eff(a_s, e1, a_p, ac_eff)
+        _section_7_3_crack_control.rho_p_eff(a_s, e1, a_p, ac_eff)
 
 
 @pytest.mark.parametrize(
@@ -415,16 +419,16 @@ def test_rho_p_eff_raise_value_error(a_s, e1, a_p, ac_eff):
 )
 def test_kt_load_duration_returns_expected_values(load_type, expected):
     """Test kt_load_duration returns expected values"""
-    assert _crack_control.kt_load_duration(load_type) == expected
+    assert _section_7_3_crack_control.kt(load_type) == expected
 
 
 def test_kt_load_duration_raise_value_errors():
     """Test kt_load_duration raise value errors"""
     with pytest.raises(TypeError):
-        _crack_control.kt_load_duration(load_type=123)
+        _section_7_3_crack_control.kt(load_type=123)
 
     with pytest.raises(ValueError):
-        _crack_control.kt_load_duration(load_type='asdf')
+        _section_7_3_crack_control.kt(load_type='asdf')
 
 
 @pytest.mark.parametrize(
@@ -440,7 +444,9 @@ def test_esm_ecm_returns_expected_values(
 ):
     """Test esm_ecm returns the expected values"""
     assert math.isclose(
-        _crack_control.esm_ecm(s_steel, alpha_e, rho_p_eff, kt, fct_eff, es),
+        _section_7_3_crack_control.esm_ecm(
+            s_steel, alpha_e, rho_p_eff, kt, fct_eff, es
+        ),
         expected,
         abs_tol=10e-5,
     )
@@ -457,10 +463,19 @@ def test_esm_ecm_returns_expected_values(
         (250, 5.25, 0.34, 0.2, 2.9, 210000),
     ],
 )
-def test_esm_ecm_raises_exception(s_steel, alpha_e, rho_p_eff, kt, fct_eff, es):
+def test_esm_ecm_raises_exception(
+    s_steel,
+    alpha_e,
+    rho_p_eff,
+    kt,
+    fct_eff,
+    es,
+):
     """Test esm_ecm raise expected exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.esm_ecm(s_steel, alpha_e, rho_p_eff, kt, fct_eff, es)
+        _section_7_3_crack_control.esm_ecm(
+            s_steel, alpha_e, rho_p_eff, kt, fct_eff, es
+        )
 
 
 @pytest.mark.parametrize(
@@ -473,7 +488,7 @@ def test_esm_ecm_raises_exception(s_steel, alpha_e, rho_p_eff, kt, fct_eff, es):
 def test_s_returns_expected_returns(c, phi, expected):
     """Test s returns expected results"""
     assert math.isclose(
-        _crack_control.s_threshold(c, phi),
+        _section_7_3_crack_control.w_spacing(c, phi),
         expected,
         rel_tol=10e-5,
     )
@@ -489,7 +504,7 @@ def test_s_returns_expected_returns(c, phi, expected):
 def test_s_raise_expected_exceptions(c, phi):
     """Test s raise expected exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.s_threshold(c, phi)
+        _section_7_3_crack_control.w_spacing(c, phi)
 
 
 @pytest.mark.parametrize(
@@ -499,7 +514,7 @@ def test_s_raise_expected_exceptions(c, phi):
 def test_phi_eq_returns_expected_results(n1, n2, phi1, phi2, expected):
     """Test phi_eq returns expected results"""
     assert math.isclose(
-        _crack_control.phi_eq(n1, n2, phi1, phi2),
+        _section_7_3_crack_control.phi_eq(n1, n2, phi1, phi2),
         expected,
         rel_tol=10e-5,
     )
@@ -519,7 +534,7 @@ def test_phi_eq_returns_expected_results(n1, n2, phi1, phi2, expected):
 def test_phi_eq_raises_expected_values(n1, n2, phi1, phi2, exception_type):
     """Test phi_eq raises expected exception"""
     with pytest.raises(exception_type):
-        _crack_control.phi_eq(n1, n2, phi1, phi2)
+        _section_7_3_crack_control.phi_eq(n1, n2, phi1, phi2)
 
 
 @pytest.mark.parametrize(
@@ -528,7 +543,7 @@ def test_phi_eq_raises_expected_values(n1, n2, phi1, phi2, exception_type):
 )
 def test_k1_returns_expected_values(bond_type, expected):
     """Test k1 returns expected values"""
-    assert _crack_control.k1(bond_type) == expected
+    assert _section_7_3_crack_control.k1(bond_type) == expected
 
 
 @pytest.mark.parametrize(
@@ -538,7 +553,7 @@ def test_k1_returns_expected_values(bond_type, expected):
 def test_k1_raise_expected_exceptions(bond_type, exception_type):
     """Test k1 raises expected exceptions"""
     with pytest.raises(exception_type):
-        _crack_control.k1(bond_type)
+        _section_7_3_crack_control.k1(bond_type)
 
 
 @pytest.mark.parametrize(
@@ -548,7 +563,7 @@ def test_k1_raise_expected_exceptions(bond_type, exception_type):
 def test_k2_returns_expected_values(epsilon_r, expected):
     """Test k2 returns expected values"""
     assert math.isclose(
-        _crack_control.k2(epsilon_r),
+        _section_7_3_crack_control.k2(epsilon_r),
         expected,
         rel_tol=10e-5,
     )
@@ -558,17 +573,17 @@ def test_k2_returns_expected_values(epsilon_r, expected):
 def test_k2_raises_value_exceptions(epsilon_r):
     """Test k2 raises expected exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.k2(epsilon_r)
+        _section_7_3_crack_control.k2(epsilon_r)
 
 
 def test_k3_returns_expected_values():
     """Test k3 returns the expected values"""
-    assert _crack_control.k3() == 3.4
+    assert _section_7_3_crack_control.k3() == 3.4
 
 
 def test_k4_returns_expected_values():
     """Test k4 returns the expected values"""
-    assert _crack_control.k4() == 0.425
+    assert _section_7_3_crack_control.k4() == 0.425
 
 
 @pytest.mark.parametrize(
@@ -582,7 +597,9 @@ def test_k4_returns_expected_values():
 def test_sr_max_close(c, phi, rho_p_eff, k1, k2, k3, k4, expected):
     """Test sr_max_close returns the expected values"""
     assert math.isclose(
-        _crack_control.sr_max_close(c, phi, rho_p_eff, k1, k2, k3, k4),
+        _section_7_3_crack_control.sr_max_close(
+            c, phi, rho_p_eff, k1, k2, k3, k4
+        ),
         expected,
         rel_tol=10e-5,
     )
@@ -606,7 +623,9 @@ def test_sr_max_close(c, phi, rho_p_eff, k1, k2, k3, k4, expected):
 def test_sr_max_close_raises_exceptions(c, phi, rho_p_eff, k1, k2, k3, k4):
     """Test sr_max_close raises the expected value errors"""
     with pytest.raises(ValueError):
-        _crack_control.sr_max_close(c, phi, rho_p_eff, k1, k2, k3, k4)
+        _section_7_3_crack_control.sr_max_close(
+            c, phi, rho_p_eff, k1, k2, k3, k4
+        )
 
 
 @pytest.mark.parametrize(
@@ -620,7 +639,7 @@ def test_sr_max_close_raises_exceptions(c, phi, rho_p_eff, k1, k2, k3, k4):
 def test_sr_max_far_returns_expected_values(h, x, expected):
     """Test sr_max_far returns the expected values"""
     assert math.isclose(
-        _crack_control.sr_max_far(h, x), expected, rel_tol=10e-5
+        _section_7_3_crack_control.sr_max_far(h, x), expected, rel_tol=10e-5
     )
 
 
@@ -635,7 +654,7 @@ def test_sr_max_far_returns_expected_values(h, x, expected):
 def test_sr_max_far_raises_exceptions(h, x):
     """Test sr_max_far raises exceptions"""
     with pytest.raises(ValueError):
-        _crack_control.sr_max_far(h, x)
+        _section_7_3_crack_control.sr_max_far(h, x)
 
 
 @pytest.mark.parametrize(
@@ -651,7 +670,7 @@ def test_sr_max_theta_returns_expected_values(
 ):
     """Test sr_max_theta returns expeceted values"""
     assert math.isclose(
-        _crack_control.sr_max_theta(sr_max_y, sr_max_z, theta),
+        _section_7_3_crack_control.sr_max_theta(sr_max_y, sr_max_z, theta),
         expected,
         rel_tol=10e-5,
     )
@@ -668,7 +687,7 @@ def test_sr_max_theta_returns_expected_values(
 def test_sr_max_theta_raises_exceptions(sr_max_y, sr_max_z, theta):
     """Test sr_max_theta raises value errors"""
     with pytest.raises(ValueError):
-        _crack_control.sr_max_theta(sr_max_y, sr_max_z, theta)
+        _section_7_3_crack_control.sr_max_theta(sr_max_y, sr_max_z, theta)
 
 
 @pytest.mark.parametrize(
@@ -681,7 +700,7 @@ def test_sr_max_theta_raises_exceptions(sr_max_y, sr_max_z, theta):
 def test_wk_returns_expected_values(sr_max, esm_ecm, expected):
     """Test wk returns expected values"""
     assert math.isclose(
-        _crack_control.wk(sr_max, esm_ecm),
+        _section_7_3_crack_control.wk(sr_max, esm_ecm),
         expected,
         rel_tol=10e-5,
     )
@@ -694,4 +713,4 @@ def test_wk_returns_expected_values(sr_max, esm_ecm, expected):
 def test_wk_raises_exceptions(sr_max, esm_ecm: float):
     """Test wk raises value errors"""
     with pytest.raises(ValueError):
-        _crack_control.wk(sr_max, esm_ecm)
+        _section_7_3_crack_control.wk(sr_max, esm_ecm)
