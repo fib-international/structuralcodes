@@ -392,7 +392,7 @@ def As_min_2(
     EUROCODE 2 1992-1-1:2004, Table (7.2N), Table (7.3N)
 
     Args:
-        wk (float): the characteristic crack width value in mm.
+        _wk (float): the characteristic crack width value in mm.
         sigma_s (float): the steel stress value in MPa under the relevant
             combination of actions.
         fct_eff (float): is the mean value of the tensile strength in MPa of
@@ -417,7 +417,7 @@ def As_min_2(
         in the first position and the maximum bar spacing in mm in the
         second position
     Raises:
-        ValueError: if wk, fct_eff, h_cr, h or d are less than 0
+        ValueError: if _wk, fct_eff, h_cr, h or d are less than 0
         ValueError: if kc is not between 0 and 1
         ValueError: if combination of wk and stress values are out of scope
     """

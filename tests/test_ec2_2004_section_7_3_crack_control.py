@@ -73,21 +73,21 @@ def test_w_max_not_valid_input_raises_valueerror(
         (700, 0.72),
     ],
 )
-def test_k_crack_min_steel_area_returns_expected_values(h, expected):
-    """Test the k_crack_min_steel_area function"""
+def test_k_returns_expected_values(h, expected):
+    """Test the k function"""
     k = _section_7_3_crack_control.k(h)
     assert math.isclose(k, expected)
 
 
-def test_k_crack_min_steel_area_raises_valueerror():
+def test_k_raises_valueerror():
     """Test that not valid input returns ValueError exeption"""
     with pytest.raises(ValueError):
         h = -100
         _section_7_3_crack_control.k(h)
 
 
-def test_kc_crack_min_steel_area_pure_tension_returns_expected_values():
-    """Test the kc_crack_min_steel_area_pure_tension function"""
+def test_kc_tension_returns_expected_values():
+    """Test the kc_tension function"""
     assert 1 == _section_7_3_crack_control.kc_tension()
 
 
@@ -101,10 +101,8 @@ def test_kc_crack_min_steel_area_pure_tension_returns_expected_values():
         (200, 50, 5, 80, 0),
     ],
 )
-def test_kc_crack_min_steel_area_rectangular_returns_expected_values(
-    h, b, fct_eff, n_ed, expected
-):
-    """Test the kc_crack_min_steel_area_rectangular"""
+def test_kc_rect_area_returns_expected_values(h, b, fct_eff, n_ed, expected):
+    """Test the kc_rect_area"""
     kc = _section_7_3_crack_control.kc_rect_area(
         h,
         b,
@@ -114,8 +112,8 @@ def test_kc_crack_min_steel_area_rectangular_returns_expected_values(
     assert math.isclose(kc, expected, rel_tol=0.000001)
 
 
-def test_kc_crack_min_steel_area_rectangular_raises_valueerror():
-    """Test the kc_crack_min_steel_area_rectangular raises Value
+def test_kc_rect_area_raises_valueerror():
+    """Test the kc_rect_area raises Value
     Error for not correct input values for b and h"""
     with pytest.raises(ValueError):
         _section_7_3_crack_control.kc_rect_area(
@@ -135,8 +133,8 @@ def test_kc_crack_min_steel_area_rectangular_raises_valueerror():
         (55, 50000, 4, 0.5),
     ],
 )
-def test_kc_crack_min_steel_area_flanges(f_cr, a_ct, fct_eff, expected):
-    """Test the kc_crack_min_steel_area_flanges function"""
+def test_kc_flanges_area(f_cr, a_ct, fct_eff, expected):
+    """Test the kc_flanges function"""
     kc = _section_7_3_crack_control.kc_flanges_area(f_cr, a_ct, fct_eff)
     assert math.isclose(kc, expected, rel_tol=0.000001)
 
@@ -185,7 +183,7 @@ def test_crack_As_min_raises_valueerror(a_ct, s_steel, fct_eff, k, kc):
         (50000, 500, 4, 1, 1, 1000, 0, 20, 0.8, 20, 364.223),
     ],
 )
-def test_crack_min_steel_area_with_press_tendons_returns_expected_values(
+def test_As_min_p_returns_expected_values(
     a_ct,
     s_steel,
     fct_eff,
@@ -198,7 +196,7 @@ def test_crack_min_steel_area_with_press_tendons_returns_expected_values(
     incr_stress,
     expected,
 ):
-    """Test the crack_min_steel_area returns expected values"""
+    """Test the As_min_p returns expected values"""
     as_min = _section_7_3_crack_control.As_min_p(
         a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
     )
@@ -221,10 +219,10 @@ def test_crack_min_steel_area_with_press_tendons_returns_expected_values(
         (80000, 400, 4, 0.9, 0.75, 500, 10, 10, 0.9, 10),
     ],
 )
-def test_crack_min_steel_area_with_press_tendons_raise_valueerror(
+def test_As_min_p_raise_valueerror(
     a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
 ):
-    """Test the crack_min_steel_area raise ValueError for non valid values"""
+    """Test the As_min_p raise ValueError for non valid values"""
     with pytest.raises(ValueError):
         _section_7_3_crack_control.As_min_p(
             a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress
@@ -240,7 +238,7 @@ def test_crack_min_steel_area_with_press_tendons_raise_valueerror(
         (0.35, 360, 2.9, 200, 400, 360, 40, None, 6.875, 125),
     ],
 )
-def test_crack_min_steel_without_direct_calculation_returns_expected_values(
+def test_As_min_2_returns_expected_values(
     wk,
     s_steel,
     fct_eff,
@@ -252,7 +250,7 @@ def test_crack_min_steel_without_direct_calculation_returns_expected_values(
     exp_phi,
     exp_sep,
 ):
-    """Test the crack_min_steel_area raise ValueError for non valid values"""
+    """Test the As_min_2 raise ValueError for non valid values"""
     phi, sep = _section_7_3_crack_control.As_min_2(
         wk, s_steel, fct_eff, h_cr, h, d, incr_stress, kc
     )
@@ -273,10 +271,10 @@ def test_crack_min_steel_without_direct_calculation_returns_expected_values(
         (0.5, 200, 2.9, 200, 400, 360, 0, 0.4),
     ],
 )
-def test_crack_min_steel_without_direct_calculation_raise_valueerror(
+def test_As_min_2_raise_valueerror(
     wk, s_steel, fct_eff, h_cr, h, d, incr_stress, kc
 ):
-    """Test the crack_min_steel_area raise ValueError for non valid values"""
+    """Test the As_min_2 raise ValueError for non valid values"""
     with pytest.raises(ValueError):
         _section_7_3_crack_control.As_min_2(
             wk, s_steel, fct_eff, h_cr, h, d, incr_stress, kc
@@ -291,10 +289,8 @@ def test_crack_min_steel_without_direct_calculation_raise_valueerror(
         (0.5, 10, 10, 0.707107),
     ],
 )
-def test_adjusted_bond_length_return_expected_values(
-    e, d_press, d_steel, expected
-):
-    """Test the adjusted_bond_length_function returns expected values"""
+def test_xi1_values(e, d_press, d_steel, expected):
+    """Test xi1 returns expected values"""
     assert math.isclose(
         _section_7_3_crack_control.xi1(e, d_press, d_steel),
         expected,
@@ -312,7 +308,7 @@ def test_adjusted_bond_length_return_expected_values(
         (0.6, 10, -10),
     ],
 )
-def test_adjusted_bond_length_raise_valuerror(e, d_press, d_steel):
+def test_xi1_raise_valuerror(e, d_press, d_steel):
     """Test the adjusted_bond_length_function raises exceptions"""
     with pytest.raises(ValueError):
         _section_7_3_crack_control.xi1(e, d_press, d_steel)
@@ -326,7 +322,7 @@ def test_adjusted_bond_length_raise_valuerror(e, d_press, d_steel):
         (550, 150, 150, 133.33333),
     ],
 )
-def test_hc_eff_concrete_tension_returns_expected_values(h, d, x, expected):
+def test_hc_eff_returns_expected_values(h, d, x, expected):
     """Test the hc_eff_concrete_tension returns expected results"""
     assert math.isclose(
         _section_7_3_crack_control.hc_eff(h, d, x),
@@ -345,7 +341,7 @@ def test_hc_eff_concrete_tension_returns_expected_values(h, d, x, expected):
         (400, 200, 450),
     ],
 )
-def test_hc_eff_concrete_tension_raise_exceptions(h, d, x):
+def test_hc_eff_raise_exceptions(h, d, x):
     """Test hc_eff_concrete tension raises expected exceptions"""
     with pytest.raises(ValueError):
         _section_7_3_crack_control.hc_eff(h, d, x)
@@ -417,13 +413,13 @@ def test_rho_p_eff_raise_value_error(a_s, e1, a_p, ac_eff):
         ('long', 0.4),
     ],
 )
-def test_kt_load_duration_returns_expected_values(load_type, expected):
-    """Test kt_load_duration returns expected values"""
+def test_kt_returns_expected_values(load_type, expected):
+    """Test kt returns expected values"""
     assert _section_7_3_crack_control.kt(load_type) == expected
 
 
-def test_kt_load_duration_raise_value_errors():
-    """Test kt_load_duration raise value errors"""
+def test_kt_raise_value_errors():
+    """Test kt raise value errors"""
     with pytest.raises(TypeError):
         _section_7_3_crack_control.kt(load_type=123)
 
