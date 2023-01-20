@@ -81,4 +81,3 @@ def Gf(fck: float) -> float:
         float: The tensile fracture energy in N/m.
     """
     return 73 * fcm(fck) ** 0.18
-fff
