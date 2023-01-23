@@ -2,6 +2,7 @@
 
 z = 110
 
+
 def vrd(vrdc: float, vrds: float) -> float:
     """Compute the shear resistance of a web or slab.
 
