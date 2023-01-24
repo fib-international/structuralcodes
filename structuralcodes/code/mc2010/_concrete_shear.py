@@ -1,7 +1,9 @@
 """A collection of shear formulas for concrete"""
 
 
-def vrd(fck: float, z: float, bw: float, gamma_c: float) -> float:
+
+
+def vrd(vrdc: float, vrds: float) -> float:
     """Compute the shear resistance of a web or slab.
 
     fib Model Code 2010, Eq. (7.3-11)
@@ -18,9 +20,8 @@ def vrd(fck: float, z: float, bw: float, gamma_c: float) -> float:
     #abs(vrdc) + abs(vrds)
 
 
-def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
-    """The design shear resistance of a web or a slab without
-    shear reinforcement.
+def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
+    """The design shear resistance of a web or a slab without shear reinforcement.
 
     fib Model Code 2010, Eq. (7.3-17)
 
@@ -40,23 +41,5 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
         fsqr = fck**0.5
 
     return (kv*fsqr*z*bw)/gamma_c
-
-    def vrds(asw: float, sw: float, z: float, fywd: float, theta: float , alpha: float) -> float:
-
-    """The design shear resistance of a web or a slab without
-    shear reinforcement.
-
-    fib Model Code 2010, Eq. (7.3-17)
-
-    Args:
-        vck (float): The characteristic compressive strength in MPa.
-        z (float): the effective shear depth.
-        gamma_c: Material factor.
-        bw: 
-
-    Returns:
-        float: Design shear resistance without shear reinforcement
-    """
-
-    return (asw/sw) * z * fywd * (math.cotang(theta) + math.cotang(alpha)) * math.sin(alpha)
-
+""he""
+    
