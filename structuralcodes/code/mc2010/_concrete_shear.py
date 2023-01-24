@@ -40,3 +40,4 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
 
     return (kv*fsqr*z*bw)/gamma_c
 
+"test"
