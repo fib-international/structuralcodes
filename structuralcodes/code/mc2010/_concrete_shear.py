@@ -1,8 +1,6 @@
 """A collection of shear formulas for concrete"""
 
 
-
-
 def vrd(vrdc: float, vrds: float) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -20,7 +18,8 @@ def vrd(vrdc: float, vrds: float) -> float:
 
 
 def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
-    """The design shear resistance of a web or a slab without shear reinforcement.
+    """The design shear resistance of a web or a slab without
+    shear reinforcement.
 
     fib Model Code 2010, Eq. (7.3-17)
 
