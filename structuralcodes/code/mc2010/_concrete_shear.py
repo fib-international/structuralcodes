@@ -39,5 +39,5 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
         fsqr = fck**0.5
 
     return (kv*fsqr*z*bw)/gamma_c
-
+""he""
     
