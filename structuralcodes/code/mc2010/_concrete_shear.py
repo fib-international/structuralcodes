@@ -83,4 +83,32 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alf
             if nfc > 1:
                 nfc=1
             return 0.55*nfc*(fck/gamma_c)*bw*z*math.sin(theta)*math.cos(theta)
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def epsilonx (E: float, As: float, Med: float, Ved: float, Ned: float, z: float, deltaE) -> float:
+    """The maximum allowed shear resistance
+    
+    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+        bw (float): The width.
+        theta (float): The incline of the reinforment relative to the beam axis
+        
+    Returns:
+        float: The maximum allowed shear resisThe design shear resistance providance regarled by ss of
+        approximatirrups"""
+    return (1/2*E*As) * (Med/z) + Ved + Ned*((1/2) + (deltaE/z))
+
