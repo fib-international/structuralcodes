@@ -42,6 +42,7 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
 
     return (kv*fsqr*z*bw)/gamma_c
 
+
 def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 0.0) -> float:
     """    fib Model Code 2010, Eq. (7.3-29)
 
@@ -58,12 +59,12 @@ def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.op
     if alpha == 0.0:
         return (asw/sw)*z*fywd*math.cot(theta)
     else:
-        return (asw/sw)*z*fywd*(cot(theta) + cot(alpha)) * sin(alpha)
+        return (asw/sw)*z*fywd*(cot(theta) + cot(alpha)) * math.sin(alpha)
 
 
 
 def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alfa: float=0, gamma_c: float = 1.5) -> float:
-    """The maximum allowed shear resistance 
+    """The maximum allowed shear resistance
     
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
     
@@ -82,3 +83,4 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alf
             if nfc > 1:
                 nfc=1
             return 0.55*nfc*(fck/gamma_c)*bw*z*math.sin(theta)*math.cos(theta)
+            
