@@ -1,9 +1,9 @@
 """A collection of shear formulas for concrete"""
+import typing as t
+import math
 
 
-
-
-def vrd(vrdc: float, vrds: float) -> float:
+def vrd(fck: float, z: float, bw: float, gamma_c: float, asw: float, sw: float, fywd: float, theta: float) -> float:
     """Compute the shear resistance of a web or slab.
 
     fib Model Code 2010, Eq. (7.3-11)
@@ -16,12 +16,12 @@ def vrd(vrdc: float, vrds: float) -> float:
         float: Design shear resistance
     """
 
-    return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(fck, z, bw, gamma))
-    #abs(vrdc) + abs(vrds)
+    return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
-def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
-    """The design shear resistance of a web or a slab without shear reinforcement.
+def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
+    """The design shear resistance of a web or a slab without
+    shear reinforcement.
 
     fib Model Code 2010, Eq. (7.3-17)
 
@@ -29,7 +29,7 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
         vck (float): The characteristic compressive strength in MPa.
         z (float): the effective shear depth.
         gamma_c: Material factor.
-        bw: 
+        bw:
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -42,7 +42,8 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
 
     return (kv*fsqr*z*bw)/gamma_c
 
-
+def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 0.0) -> float:
+    ""
 def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alfa: float=0, gamma_c: float = 1.5) -> float:
     """The maximum allowed shear resistance 
     
@@ -54,9 +55,27 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alf
         theta (float): The incline of the reinforment relative to the beam axis
         
     Returns:
-        float: The maximum allowed shear resistance regarless of 
-        approximation level."""
+        float: The maximum allowed shear resisThe design shear resistance providance regarled by ss of 
+        approximatirrups
+
+    fib Model Code 2010, Eq. (7.3-29)
+
+    Args:
+        asw (float):
+        sw (float):
+        gamma_c:
+        bw:
+
+    Returns:
+        float:
+    ""ion level."""
+
+    if alpha == 0.0:
+        return (asw/sw)*z*fywd*math.cot(theta)
+    else:
+        return (asw/sw)*z*fywd*(cot(theta) + cot(alpha)) * sin(alpha)
         
+
     if Approx_lvl==1:
         if alfa ==0:
             nfc=(30/fck)**(1/3)
