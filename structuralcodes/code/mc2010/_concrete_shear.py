@@ -42,4 +42,24 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
 
     return (kv*fsqr*z*bw)/gamma_c
 
-"test"
+
+def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alfa: float=0, gamma_c: float = 1.5) -> float:
+    """The maximum allowed shear resistance 
+    
+    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+        bw (float): The width.
+        theta (float): The incline of the reinforment relative to the beam axis
+        
+    Returns:
+        float: The maximum allowed shear resistance regarless of 
+        approximation level."""
+        
+    if Approx_lvl==1:
+        if alfa ==0:
+            nfc=(30/fck)**(1/3)
+            if nfc > 1:
+                nfc=1
+            return 0.55*nfc*(fck/gamma_c)*bw*z*math.sin(theta)*math.cos(theta)
