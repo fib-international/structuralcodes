@@ -43,7 +43,25 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
     return (kv*fsqr*z*bw)/gamma_c
 
 def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 0.0) -> float:
-    ""
+    """    fib Model Code 2010, Eq. (7.3-29)
+
+    Args:
+        asw (float):
+        sw (float):
+        gamma_c:
+        bw:
+
+    Returns:
+        float:
+    ion level."""
+
+    if alpha == 0.0:
+        return (asw/sw)*z*fywd*math.cot(theta)
+    else:
+        return (asw/sw)*z*fywd*(cot(theta) + cot(alpha)) * sin(alpha)
+
+
+
 def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alfa: float=0, gamma_c: float = 1.5) -> float:
     """The maximum allowed shear resistance 
     
@@ -56,25 +74,7 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float ,theta: float, z: float, alf
         
     Returns:
         float: The maximum allowed shear resisThe design shear resistance providance regarled by ss of 
-        approximatirrups
-
-    fib Model Code 2010, Eq. (7.3-29)
-
-    Args:
-        asw (float):
-        sw (float):
-        gamma_c:
-        bw:
-
-    Returns:
-        float:
-    ""ion level."""
-
-    if alpha == 0.0:
-        return (asw/sw)*z*fywd*math.cot(theta)
-    else:
-        return (asw/sw)*z*fywd*(cot(theta) + cot(alpha)) * sin(alpha)
-        
+        approximatirrups"""
 
     if Approx_lvl==1:
         if alfa ==0:
