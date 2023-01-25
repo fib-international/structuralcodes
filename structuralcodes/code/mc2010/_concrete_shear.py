@@ -1,8 +1,6 @@
 """A collection of shear formulas for concrete"""
 
 
-
-
 def vrd(vrdc: float, vrds: float) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -17,11 +15,11 @@ def vrd(vrdc: float, vrds: float) -> float:
     """
 
     return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(fck, z, bw, gamma))
-    #abs(vrdc) + abs(vrds)
 
 
 def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
-    """The design shear resistance of a web or a slab without shear reinforcement.
+    """The design shear resistance of a web or a slab without 
+    shear reinforcement.
 
     fib Model Code 2010, Eq. (7.3-17)
 
@@ -29,7 +27,7 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
         vck (float): The characteristic compressive strength in MPa.
         z (float): the effective shear depth.
         gamma_c: Material factor.
-        bw: 
+        bw:
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -41,5 +39,3 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5,) -> float:
         fsqr = fck**0.5
 
     return (kv*fsqr*z*bw)/gamma_c
-
-"test"
