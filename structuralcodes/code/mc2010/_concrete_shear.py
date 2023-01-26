@@ -19,7 +19,7 @@ def vrd(fck: float, z: float, bw: float, gamma_c: float, asw: float, sw: float, 
     return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
-def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
+def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: float, ved: float, gamma_c: float = 1.5) -> float:
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
@@ -34,13 +34,18 @@ def vrdc(fck: float, z: float, bw: float, gamma_c: float = 1.5) -> float:
     Returns:
         float: Design shear resistance without shear reinforcement
     """
-    kv = 180/(1000+1.25*z)
-    if fck**0.5 > 8:
-        fsqr = 8
-    else:
-        fsqr = fck**0.5
+    fsqr = min(fck**0.5, 8)
 
-    return (kv*fsqr*z*bw)/gamma_c
+    if Approx_lvl == 1:
+        kv = 180/(1000+1.25*z)
+        return (kv*fsqr*z*bw)/gamma_c
+
+    elif Approx_lvl == 2:
+        kdg = max(32/(16+dg), 0.75)
+        kv = (0.4/(1+1500*epsilonx))*(1300/(1000+kdg*z))
+        return (kv*fsqr*z*bw)/gamma_c
+    elif Approx_lvl == 3:
+        kv = max((0.4/(1+1500*epsilonx))*(1-ved/(vrdmax())), 0)  # vrdmax for theta min 
 
 
 def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 0.0) -> float:
@@ -58,7 +63,7 @@ def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.op
 
 
 def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, epsilon_x: float, alfa: float = 0, gamma_c: float = 1.5) -> float:
-    """The maximum allowed shear resistance 
+    """The maximum allowed shear resistance, when there is shear reinforcment
     
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
     
@@ -68,7 +73,7 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, eps
         theta (float): The incline of the reinforment relative to the beam axis
         
     Returns:
-        float: The maximum allowed shear resistance regardless of 
+        float: The maximum allowed shear resistance regardless of
         approximation level"""
     nfc = (30/fck)**(1/3)
     if nfc > 1:
