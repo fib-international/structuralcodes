@@ -54,11 +54,7 @@ def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.op
     Returns:
         float:
     ion level."""
-
-    if alpha == 0.0:
-        return (asw/sw)*z*fywd*(1/math.tan(theta))
-    else:
-        return (asw/sw)*z*fywd*((1/math.tan(theta)) + (1/math.tan(alpha))) * math.sin(alpha)
+    return (asw/sw)*z*fywd*((1/math.tan(theta)) + (1/math.tan(alpha))) * math.sin(alpha)
 
 
 def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, alfa: float = 0, gamma_c: float = 1.5) -> float:
