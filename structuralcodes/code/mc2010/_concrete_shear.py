@@ -79,7 +79,7 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, alf
         nfc = 1
 
     if Approx_lvl == 1:
-        if alfa == 0:
+        if alfa == 90:
             return 0.55*nfc*(fck/gamma_c)*bw*z*math.sin(theta)*math.cos(theta)
         else:
             return 0.55*nfc*(fck/gamma_c)*bw*z*((math.sin(theta)+math.cos(theta))/(1+(1/math.tan(theta))**2))
@@ -90,7 +90,7 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, alf
         if k_epsilon > 0.65:
             k_epsilon=0.65
 
-        if alfa == 0:  
+        if alfa == 90:  
             return k_epsilon*nfc*(fck/gamma_c)*bw*z*math.sin(theta)*math.cos(theta)
         else:
             return k_epsilon*nfc*(fck/gamma_c)*bw*z*((math.sin(theta)+math.cos(theta))/(1+(1/math.tan(theta))**2))
@@ -101,7 +101,7 @@ def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, alf
             k_epsilon = 0.65
 
         theta_min = 20+10000*epsilonx
-        if alfa == 0:  
+        if alfa == 90:  
             return k_epsilon*nfc*(fck/gamma_c)*bw*z*math.sin(theta_min)*math.cos(theta_min)
         else:
             return k_epsilon*nfc*(fck/gamma_c)*bw*z*((math.sin(theta_min)+math.cos(theta))/(1+(1/math.tan(theta_min))**2))
