@@ -61,7 +61,7 @@ def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.op
         return (asw/sw)*z*fywd*((1/math.tan(theta)) + (1/math.tan(alpha))) * math.sin(alpha)
 
 
-def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, alfa: float = 0, gamma_c: float = 1.5) -> float:
+def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, epsilon_x: float, alfa: float = 0, gamma_c: float = 1.5) -> float:
     """The maximum allowed shear resistance 
     
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
