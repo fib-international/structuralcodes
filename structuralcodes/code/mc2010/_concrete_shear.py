@@ -19,7 +19,7 @@ def vrd(fck: float, z: float, bw: float, gamma_c: float, asw: float, sw: float, 
     return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
-def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: float, ved: float, gamma_c: float = 1.5) -> float:
+def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: int,epsilonx: float,alfa: float, ved: float, gamma_c: float = 1.5) -> float:
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
@@ -45,10 +45,11 @@ def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: float, ved: flo
         kv = (0.4/(1+1500*epsilonx))*(1300/(1000+kdg*z))
         return (kv*fsqr*z*bw)/gamma_c
     elif Approx_lvl == 3:
-        kv = max((0.4/(1+1500*epsilonx))*(1-ved/(vrdmax())), 0)  # vrdmax for theta min 
+        theta_min = 20+10000*epsilonx
+        kv = max((0.4/(1+1500*epsilonx))*(1-ved/(vrdmax(fck,bw,Approx_lvl,theta_min,z,epsilonx,alfa,gamma_c)), 0)
 
 
-def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 0.0) -> float:
+def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 90.0) -> float:
     """    fib Model Code 2010, Eq. (7.3-29)
     Args:
         asw (float):
@@ -62,7 +63,7 @@ def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.op
     return (asw/sw)*z*fywd*((1/math.tan(theta)) + (1/math.tan(alpha))) * math.sin(alpha)
 
 
-def vrdmax(fck: float, bw: float, Approx_lvl: float, theta: float, z: float, epsilon_x: float, alfa: float = 0, gamma_c: float = 1.5) -> float:
+def vrdmax(fck: float, bw: float, Approx_lvl: int, theta: float, z: float, epsilon_x: float, alfa: float = 0, gamma_c: float = 1.5) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
     
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
