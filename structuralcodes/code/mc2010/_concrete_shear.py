@@ -19,7 +19,7 @@ def vrd(fck: float, z: float, bw: float, gamma_c: float, asw: float, sw: float, 
     return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
-def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: int,epsilonx: float,alfa: float, ved: float, gamma_c: float = 1.5) -> float:
+def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: int, epsilonx: float,alfa: float, ved: float, gamma_c: float = 1.5) -> float:
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
