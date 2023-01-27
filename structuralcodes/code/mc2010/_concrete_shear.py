@@ -16,10 +16,10 @@ def vrd(fck: float, z: float, bw: float, gamma_c: float, asw: float, sw: float, 
         float: Design shear resistance
     """
 
-    return abs(vrdc(fck, z, bw, gamma_c)) + abs(vrds(asw, sw, z, bw, fywd, theta))
+    return abs(vrdc(fck, z, bw, dg, Approx_lvl, epsilonx, alfa, ved, gamma_c)) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
-def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: int, epsilonx: float,alfa: float, ved: float, gamma_c: float = 1.5) -> float:
+def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: int, epsilonx: float, alfa: float, ved: float, gamma_c: float = 1.5) -> float:
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
@@ -46,7 +46,7 @@ def vrdc(fck: float, z: float, bw: float, dg: float, Approx_lvl: int, epsilonx: 
         return (kv*fsqr*z*bw)/gamma_c
     elif Approx_lvl == 3:
         theta_min = 20+10000*epsilonx
-        kv = max((0.4/(1+1500*epsilonx))*(1-ved/(vrdmax(fck,bw,Approx_lvl,theta_min,z,epsilonx,alfa,gamma_c)), 0))
+        kv = max((0.4/(1+1500*epsilonx))*(1-ved/(vrdmax(fck, bw, Approx_lvl, theta_min, z, epsilonx, alfa, gamma_c)), 0))
 
 
 def vrds(asw: float, sw: float, z: float, fywd: float, theta: float, alpha: t.optional[float] = 90.0) -> float:
@@ -85,9 +85,9 @@ def vrdmax(fck: float, bw: float, Approx_lvl: int, theta: float, z: float, epsil
 
     elif Approx_lvl == 2:
         epsilon_1 = epsilon_x+(epsilon_x+0.002)*((1/math.tan(theta))**2)
-        k_epsilon= 1/(1.2+55*epsilon_1)
+        k_epsilon = 1/(1.2+55*epsilon_1)
         if k_epsilon > 0.65:
-            k_epsilon=0.65
+            k_epsilon = 0.65
 
         return k_epsilon*nfc*(fck/gamma_c)*bw*z*(((1/math.tan(theta))+(1/math.tan(alfa)))/(1+(1/math.tan(theta))**2))
 
