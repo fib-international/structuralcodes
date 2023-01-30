@@ -16,6 +16,12 @@ def vrd(
     Approx_lvl: float,
     alfa: float,
     ved: float,
+    E: float,
+    As: float,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    deltaE: float
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -30,7 +36,8 @@ def vrd(
     """
 
     return abs(
-        vrdc(fck, z, bw, dg, Approx_lvl, epsilonx(), alfa, ved, gamma_c)
+        vrdc(fck, z, bw, dg, Approx_lvl,
+            epsilonx(E, As, Med, Ved, Ned, z, deltaE), alfa, ved, gamma_c)
     ) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
