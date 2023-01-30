@@ -282,7 +282,6 @@ def vrdmax(
         float: The maximum allowed shear resistance regardless of
         approximation level"""
     nfc = min((30 / fck) ** (1 / 3), 1)
-
     if Approx_lvl == 1:
         return (
             0.55
