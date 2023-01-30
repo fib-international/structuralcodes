@@ -30,7 +30,7 @@ def create_concrete(
         density (float): Density of Concrete in kg/m3 (default: 2400)
         existing (bool): Boolean indicating if the concrete is of an
             existing structure (default: False)
-        deisgn_code (str): Optional string (default: None) indicating the
+        design_code (str): Optional string (default: None) indicating the
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
@@ -44,7 +44,10 @@ def create_concrete(
     _code = _use_design_code(design_code)
 
     # Check if the code is a proper concrete code
-    code = _code if 'concrete' in _code.__materials__ else None
+    code = None
+    if _code is not None:
+        if 'concrete' in _code.__materials__:
+            code = _code
     if code is None:
         raise ValueError(
             'The design code is not set, either use '
