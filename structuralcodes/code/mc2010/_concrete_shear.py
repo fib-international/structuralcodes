@@ -40,7 +40,6 @@ def vrdc(
     bw: float,
     dg: float,
     Approx_lvl: int,
-    epsilonx: float,
     alfa: float,
     ved: float,
     gamma_c: float = 1.5,
@@ -67,11 +66,11 @@ def vrdc(
 
     elif Approx_lvl == 2:
         kdg = max(32 / (16 + dg), 0.75)
-        kv = (0.4 / (1 + 1500 * epsilonx)) * (1300 / (1000 + kdg * z))
+        kv = (0.4 / (1 + 1500 * epsilonx(E, As, Med, Ved, Ned, z, deltaE))) * (1300 / (1000 + kdg * z))
         return (kv * fsqr * z * bw) / gamma_c
     elif Approx_lvl == 3:
-        theta_min = 20 + 10000 * epsilonx
-        kv = max((0.4 / (1 + 1500 * epsilonx)) * (1 - ved
+        theta_min = 20 + 10000 * epsilonx(E, As, Med, Ved, Ned, z, deltaE)
+        kv = max((0.4 / (1 + 1500 * epsilonx(E, As, Med, Ved, Ned, z, deltaE))) * (1 - ved
                 / (
                     vrdmax(
                         fck,
@@ -79,7 +78,7 @@ def vrdc(
                         Approx_lvl,
                         theta_min,
                         z,
-                        epsilonx,
+                        epsilonx(E, As, Med, Ved, Ned, z, deltaE),
                         alfa,
                         gamma_c,
                     )
