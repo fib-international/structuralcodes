@@ -22,3 +22,56 @@ def test_fcm(test_input1, test_input2, test_input3, expected):
         _concrete_shear.vrdc(test_input1, test_input2, test_input3, expected)
     )
 
+@pytest.mark.parametrize(
+    'test_input, expecTed',
+    [
+        (35, 180, 200, 1.5, 1500, 100, 434, 5, 1, 90, 20, 200, 2000, 0, 100, 0, 0, 777),
+        (16, 1.9),
+        (100, 5.2),
+        (110, 5.4),
+        (120, 5.6),
+    ],
+)
+def test_fctm(
+    fck,
+    z,
+    bw,
+    gamloat_c,
+    asw,
+    sw,
+    fywd,
+    theta,
+    dg,
+    App,
+    alfa,
+    ved,
+    E,
+    As,
+    Med,
+    Ved,
+    Ned,
+    deltaE,
+    expected):
+    """Test the v_rd function."""
+    assert math.isclose(
+        _concrete_shear.vrd(
+            fck,
+            z,
+            bw,
+            gamloat_c,
+            asw,
+            sw,
+            fywd,
+            theta,
+            dg,
+            App,
+            alfa,
+            ved,
+            E,
+            As,
+            Med,
+            Ved,
+            Ned,
+            deltaE
+            )
+        , expected, abs_tol=0.1)
