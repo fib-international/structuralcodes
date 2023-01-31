@@ -3,7 +3,7 @@ import math
 
 import pytest
 
-from structuralcodes.material.concrete import create_concrete, ConcreteMC2010
+from structuralcodes.materials.concrete import create_concrete, ConcreteMC2010
 
 # Series of tests using the factory function
 
