@@ -1,6 +1,7 @@
 """A collection of shear formulas for concrete"""
 import typing as t
 import math
+import warnings
 
 
 def epsilon_x(
@@ -28,11 +29,11 @@ def epsilon_x(
         float: The maximum allowed shear resisThe design shear resistance
         providance regarled by ss of approximatirrups"""
     return (1 / (2 * E * As)) * (
-        (Med / z) + Ved + Ned * ((1 / 2) + (delta_e / z))
+        (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z))
     )
 
 
-def vrd(
+def v_rd(
     approx_lvl: float,
     fck: float,
     z: float,
@@ -64,7 +65,7 @@ def vrd(
     """
 
     return abs(
-        vrdc(
+        v_rdc(
             approx_lvl,
             fck,
             z,
@@ -79,10 +80,10 @@ def vrd(
             alfa,
             gamma_c,
         )
-    ) + abs(vrds(asw, sw, z, bw, fywd, theta))
+    ) + abs(v_rds(asw, sw, z, bw, fywd, theta))
 
 
-def vrdc(
+def v_rdc(
     approx_lvl: int,
     fck: float,
     z: float,
@@ -114,20 +115,20 @@ def vrdc(
     """
 
     if approx_lvl == 1:
-        return vrdc_approx1(fck, z, bw, gamma_c)
+        return v_rdc_approx1(fck, z, bw, gamma_c)
 
     elif approx_lvl == 2:
-        return vrdc_approx2(
+        return v_rdc_approx2(
             fck, z, bw, dg, E, As, Med, Ved, Ned, delta_e, gamma_c
         )
 
     elif approx_lvl == 3:
-        return vrdc_approx3(
+        return v_rdc_approx3(
             fck, z, bw, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
 
-def vrdc_approx1(
+def v_rdc_approx1(
     fck: float,
     z: float,
     bw: float,
@@ -152,7 +153,7 @@ def vrdc_approx1(
     return (kv * fsqr * z * bw) / gamma_c
 
 
-def vrdc_approx2(
+def v_rdc_approx2(
     fck: float,
     z: float,
     bw: float,
@@ -188,7 +189,7 @@ def vrdc_approx2(
     return (kv * fsqr * z * bw) / gamma_c
 
 
-def vrdc_approx3(
+def v_rdc_approx3(  # tror dette egentlig er vrds3
     fck: float,
     z: float,
     bw: float,
@@ -222,7 +223,7 @@ def vrdc_approx3(
         (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e))) *
         (
             1 - Ved / (
-                vrdmax(
+                v_rd_max(
                     fck,
                     bw,
                     theta_min,
@@ -243,7 +244,7 @@ def vrdc_approx3(
     return (kv * fsqr * z * bw) / gamma_c
 
 
-def vrds(
+def v_rds(
     asw: float,
     sw: float,
     z: float,
@@ -261,6 +262,8 @@ def vrds(
     Returns:
         float:
     ion level."""
+    if 45 < theta < 20:
+        warnings.warn("Too high or too low compression field angel")
     return (
         (asw / sw)
         * z
@@ -270,7 +273,7 @@ def vrds(
     )
 
 
-def vrdmax(
+def v_rd_max(
     approx_lvl: int,
     fck: float,
     bw: float,
@@ -298,20 +301,20 @@ def vrdmax(
         float: The maximum allowed shear resistance regardless of
         approximation level"""
     if approx_lvl == 1:
-        return vrdmax_approx1(fck, bw, theta, z, alfa, gamma_c)
+        return v_rd_max_approx1(fck, bw, theta, z, alfa, gamma_c)
 
     elif approx_lvl == 2:
-        return vrdmax_approx2(
+        return v_rd_max_approx2(
             fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
     elif approx_lvl == 3:
-        return vrdmax_approx3(
+        return v_rd_max_approx3(
             fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
 
-def vrdmax_approx1(
+def v_rd_max_approx1(
     fck: float,
     bw: float,
     theta: float,
@@ -346,7 +349,7 @@ def vrdmax_approx1(
     )
 
 
-def vrdmax_approx2(
+def v_rd_max_approx2(
     fck: float,
     bw: float,
     theta: float,
@@ -394,7 +397,7 @@ def vrdmax_approx2(
         )
 
 
-def vrdmax_approx3(
+def v_rd_max_approx3(
     fck: float,
     bw: float,
     theta: float,
@@ -425,9 +428,7 @@ def vrdmax_approx3(
     epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
     ) * ((1 / math.tan(theta)) ** 2)
-    k_epsilon = 1 / (1.2 + 55 * epsilon_1)
-    if k_epsilon > 0.65:
-        k_epsilon = 0.65
+    k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     theta_min = 20 + 10000 * epsilon_x
     return (
