@@ -18,7 +18,7 @@ def epsilon_x(
     Returns:
         float: The maximum allowed shear resisThe design shear resistance providance regarled by ss of
         approximatirrups"""
-    return (1 / 2 * E * As) * (Med / z) + Ved + Ned * ((1 / 2) + (deltaE / z))
+    return (1 / (2 * E * As)) * ((Med / z) + Ved + Ned * ((1 / 2) + (deltaE / z)))
 
 
 def vrd(
@@ -31,9 +31,8 @@ def vrd(
     fywd: float,
     theta: float,
     dg: float,
-    Approx_lvl: float,
+    approx_lvl: float,
     alfa: float,
-    ved: float,
     E: float,
     As: float,
     Med: float,
@@ -55,71 +54,62 @@ def vrd(
 
     return abs(
         vrdc(
+            approx_lvl,
             fck,
             z,
             bw,
             dg,
-            Approx_lvl,
-            epsilon_x(E, As, Med, Ved, Ned, z, deltaE),
+            E,
+            As,
+            Med,
+            Ved,
+            Ned,
+            deltaE,
             alfa,
-            ved,
             gamma_c,
         )
     ) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
-# def vrdc(
-#     fck: float,
-#     z: float,
-#     bw: float,
-#     dg: float,
-#     Approx_lvl: int,
-#     alfa: float,
-#     ved: float,
-#     gamma_c: float = 1.5,
-# ) -> float:
-#     """The design shear resistance of a web or a slab without
-#     shear reinforcement.
+def vrdc(
+    approx_lvl: int,
+    fck: float,
+    z: float,
+    bw: float,
+    dg: float,
+    E: float,
+    As: float,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    deltaE: float,
+    alfa: float,
+    gamma_c: float = 1.5,
+) -> float:
 
-#     fib Model Code 2010, Eq. (7.3-17)
+    """The design shear resistance of a web or a slab without
+    shear reinforcement.
 
-#     Args:
-#         vck (float): The characteristic compressive strength in MPa.
-#         z (float): the effective shear depth.
-#         gamma_c: Material factor.
-#         bw:
+    fib Model Code 2010, Eq. (7.3-17)
 
-#     Returns:
-#         float: Design shear resistance without shear reinforcement
-#     """
-#     fsqr = min(fck**0.5, 8)
+    Args:
+        vck (float): The characteristic compressive strength in MPa.
+        z (float): the effective shear depth.
+        gamma_c: Material factor.
+        bw:
 
-#     if Approx_lvl == 1:
-#         kv = 180 / (1000 + 1.25 * z)
-#         return (kv * fsqr * z * bw) / gamma_c
+    Returns:
+        float: Design shear resistance without shear reinforcement
+    """
 
-#     elif Approx_lvl == 2:
-#         kdg = max(32 / (16 + dg), 0.75)
-#         kv = (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (1300 / (1000 + kdg * z))
-#         return (kv * fsqr * z * bw) / gamma_c
-#     elif Approx_lvl == 3:
-#         theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE)
-#         kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (1 - ved
-#                 / (
-#                     vrdmax(
-#                         fck,
-#                         bw,
-#                         Approx_lvl,
-#                         theta_min,
-#                         z,
-#                         epsilon_x(E, As, Med, Ved, Ned, z, deltaE),
-#                         alfa,
-#                         gamma_c,
-#                     )
-#                 ),
-#                 0,
-#             )
-#         )
+    if approx_lvl == 1:
+        return vrdc_approx1(fck, z, bw, gamma_c)
+
+    elif approx_lvl == 2:
+        return vrdc_approx2(fck, z, bw, dg, E, As, Med, Ved, Ned, deltaE, gamma_c)
+
+    elif approx_lvl == 3:
+        return vrdc_approx3(fck, z, bw, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c)
 
 
 def vrdc_approx1(
@@ -196,6 +186,7 @@ def vrdc_approx3(
     alfa: float,
     gamma_c: float = 1.5,
 ) -> float:
+
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
@@ -265,9 +256,9 @@ def vrds(
 
 
 def vrdmax(
+    approx_lvl: int,
     fck: float,
     bw: float,
-    Approx_lvl: int,
     theta: float,
     z: float,
     E: float,
@@ -291,60 +282,14 @@ def vrdmax(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    nfc = min((30 / fck) ** (1 / 3), 1)
-    if Approx_lvl == 1:
-        return (
-            0.55
-            * nfc
-            * (fck / gamma_c)
-            * bw
-            * z
-            * (
-                ((1 / math.tan(theta)) + (1 / math.tan(alfa)))
-                / (1 + (1 / math.tan(theta)) ** 2)
-            )
-        )
+    if approx_lvl == 1:
+        return vrdmax_approx1(fck, bw, theta, z, alfa, gamma_c)
 
-    elif Approx_lvl == 2:
-        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (
-            epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002
-        ) * ((1 / math.tan(theta)) ** 2)
-        k_epsilon = 1 / (1.2 + 55 * epsilon_1)
-        if k_epsilon > 0.65:
-            k_epsilon = 0.65
+    elif approx_lvl == 2:
+        return vrdmax_approx2(fck, bw, theta, z, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c)
 
-        return (
-            k_epsilon
-            * nfc
-            * (fck / gamma_c)
-            * bw
-            * z
-            * (
-                ((1 / math.tan(theta)) + (1 / math.tan(alfa)))
-                / (1 + (1 / math.tan(theta)) ** 2)
-            )
-        )
-
-    elif Approx_lvl == 3:
-        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (
-            epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002
-        ) * ((1 / math.tan(theta)) ** 2)
-        k_epsilon = 1 / (1.2 + 55 * epsilon_1)
-        if k_epsilon > 0.65:
-            k_epsilon = 0.65
-
-        theta_min = 20 + 10000 * epsilon_x
-        return (
-            k_epsilon
-            * nfc
-            * (fck / gamma_c)
-            * bw
-            * z
-            * (
-                ((1 / math.tan(theta_min)) + (1 / math.tan(alfa)))
-                / (1 + (1 / math.tan(theta_min)) ** 2)
-            )
-        )
+    elif approx_lvl == 3:
+        return vrdmax_approx3(fck, bw, theta, z, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c)
 
 
 def vrdmax_approx1(
