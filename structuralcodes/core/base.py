@@ -29,13 +29,12 @@ class Material(abc.ABC):
         """
         for key, value in updated_attributes.items():
             if not hasattr(self, '_' + key):
-                str_list_keys = ''
-                for k in updated_attributes.keys():
-                    str_list_keys += k + ', '
+                str_list_keys = ', '.join(updated_attributes.keys())
                 str_warn = (
-                    f'WARNING: attribute {key} not found. Ignoring the entry.'
+                    f"WARNING: attribute '{key}' not found."
+                    " Ignoring the entry.\n"
+                    f"Used keys in the call: {str_list_keys}"
                 )
-                str_warn += '\nAvailable keys: ' + str_list_keys
                 warnings.warn(str_warn)
                 continue
             setattr(self, '_' + key, value)
