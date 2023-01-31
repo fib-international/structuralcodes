@@ -18,7 +18,7 @@ def epsilon_x(
     Returns:
         float: The maximum allowed shear resisThe design shear resistance providance regarled by ss of
         approximatirrups"""
-    return (1 / (2 * E * As)) * ((Med / z) + Ved + Ned * ((1 / 2) + (deltaE / z)))
+    return (1 / (2 * E * As))*((Med / z) + Ved + Ned * ((1 / 2) + (deltaE / z)))
 
 
 def vrd(
