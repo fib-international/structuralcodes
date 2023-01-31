@@ -4,7 +4,13 @@ import math
 
 
 def epsilon_x(
-    E: float, As: float, Med: float, Ved: float, Ned: float, z: float, deltaE
+    E: float,
+    As: float,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    z: float,
+    deltaE: float,
 ) -> float:
     """The maximum allowed shear resistance
 
@@ -16,29 +22,31 @@ def epsilon_x(
         theta (float): The incline of the reinforment relative to the beam axis
 
     Returns:
-        float: The maximum allowed shear resisThe design shear resistance providance regarled by ss of
-        approximatirrups"""
-    return (1 / (2 * E * As))*((Med / z) + Ved + Ned * ((1 / 2) + (deltaE / z)))
+        float: The maximum allowed shear resisThe design shear resistance
+        providance regarled by ss of approximatirrups"""
+    return (1 / (2 * E * As)) * (
+        (Med / z) + Ved + Ned * ((1 / 2) + (deltaE / z))
+    )
 
 
 def vrd(
+    approx_lvl: float,
     fck: float,
     z: float,
     bw: float,
-    gamma_c: float,
-    asw: float,
-    sw: float,
-    fywd: float,
-    theta: float,
     dg: float,
-    approx_lvl: float,
-    alfa: float,
     E: float,
     As: float,
     Med: float,
     Ved: float,
     Ned: float,
     deltaE: float,
+    alfa: float,
+    gamma_c: float,
+    asw: float,
+    sw: float,
+    fywd: float,
+    theta: float,
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -106,10 +114,14 @@ def vrdc(
         return vrdc_approx1(fck, z, bw, gamma_c)
 
     elif approx_lvl == 2:
-        return vrdc_approx2(fck, z, bw, dg, E, As, Med, Ved, Ned, deltaE, gamma_c)
+        return vrdc_approx2(
+            fck, z, bw, dg, E, As, Med, Ved, Ned, deltaE, gamma_c
+        )
 
     elif approx_lvl == 3:
-        return vrdc_approx3(fck, z, bw, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c)
+        return vrdc_approx3(
+            fck, z, bw, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c
+        )
 
 
 def vrdc_approx1(
@@ -286,10 +298,14 @@ def vrdmax(
         return vrdmax_approx1(fck, bw, theta, z, alfa, gamma_c)
 
     elif approx_lvl == 2:
-        return vrdmax_approx2(fck, bw, theta, z, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c)
+        return vrdmax_approx2(
+            fck, bw, theta, z, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c
+        )
 
     elif approx_lvl == 3:
-        return vrdmax_approx3(fck, bw, theta, z, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c)
+        return vrdmax_approx3(
+            fck, bw, theta, z, E, As, Med, Ved, Ned, deltaE, alfa, gamma_c
+        )
 
 
 def vrdmax_approx1(
