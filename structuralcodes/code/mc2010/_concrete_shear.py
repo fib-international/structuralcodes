@@ -3,7 +3,7 @@ import typing as t
 import math
 
 
-def epsilonx(
+def epsilon_x(
     E: float, As: float, Med: float, Ved: float, Ned: float, z: float, deltaE
 ) -> float:
     """The maximum allowed shear resistance
@@ -55,7 +55,7 @@ def vrd(
 
     return abs(
         vrdc(fck, z, bw, dg, Approx_lvl,
-            epsilonx(E, As, Med, Ved, Ned, z, deltaE), alfa, ved, gamma_c)
+            epsilon_x(E, As, Med, Ved, Ned, z, deltaE), alfa, ved, gamma_c)
     ) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
@@ -91,11 +91,11 @@ def vrd(
 
 #     elif Approx_lvl == 2:
 #         kdg = max(32 / (16 + dg), 0.75)
-#         kv = (0.4 / (1 + 1500 * epsilonx(E, As, Med, Ved, Ned, z, deltaE))) * (1300 / (1000 + kdg * z))
+#         kv = (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (1300 / (1000 + kdg * z))
 #         return (kv * fsqr * z * bw) / gamma_c
 #     elif Approx_lvl == 3:
-#         theta_min = 20 + 10000 * epsilonx(E, As, Med, Ved, Ned, z, deltaE)
-#         kv = max((0.4 / (1 + 1500 * epsilonx(E, As, Med, Ved, Ned, z, deltaE))) * (1 - ved
+#         theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE)
+#         kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (1 - ved
 #                 / (
 #                     vrdmax(
 #                         fck,
@@ -103,7 +103,7 @@ def vrd(
 #                         Approx_lvl,
 #                         theta_min,
 #                         z,
-#                         epsilonx(E, As, Med, Ved, Ned, z, deltaE),
+#                         epsilon_x(E, As, Med, Ved, Ned, z, deltaE),
 #                         alfa,
 #                         gamma_c,
 #                     )
@@ -169,7 +169,7 @@ def vrdc_approx2(
     fsqr = min(fck**0.5, 8)
 
     kdg = max(32 / (16 + dg), 0.75)
-    kv = (0.4 / (1 + 1500 * epsilonx(E, As, Med, Ved, Ned, z, deltaE))) * (
+    kv = (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (
         1300 / (1000 + kdg * z))
     return (kv * fsqr * z * bw) / gamma_c
 
@@ -203,8 +203,8 @@ def vrdc_approx3(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = 20 + 10000 * epsilonx(E, As, Med, Ved, Ned, z, deltaE)
-    kv = max((0.4 / (1 + 1500 * epsilonx(E, As, Med, Ved, Ned, z, deltaE))) * (1 - Ved
+    theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE)
+    kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (1 - Ved
                 / (
                     vrdmax(
                         fck,
@@ -296,7 +296,7 @@ def vrdmax(
         )
 
     elif Approx_lvl == 2:
-        epsilon_1 = epsilonx(E, As, Med, Ved, Ned, z, deltaE) + (epsilonx(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
+        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
             (1 / math.tan(theta)) ** 2
         )
         k_epsilon = 1 / (1.2 + 55 * epsilon_1)
@@ -316,14 +316,14 @@ def vrdmax(
         )
 
     elif Approx_lvl == 3:
-        epsilon_1 = epsilonx(E, As, Med, Ved, Ned, z, deltaE) + (epsilonx(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
+        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
             (1 / math.tan(theta)) ** 2
         )
         k_epsilon = 1 / (1.2 + 55 * epsilon_1)
         if k_epsilon > 0.65:
             k_epsilon = 0.65
 
-        theta_min = 20 + 10000 * epsilonx
+        theta_min = 20 + 10000 * epsilon_x
         return (
             k_epsilon
             * nfc
@@ -400,7 +400,7 @@ def vrdmax_approx2(
         approximation level"""
     nfc = min((30 / fck) ** (1 / 3), 1)
 
-    epsilon_1 = epsilonx(E, As, Med, Ved, Ned, z, deltaE) + (epsilonx(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
+    epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
             (1 / math.tan(theta)) ** 2)
     k_epsilon = 1 / (1.2 + 55 * epsilon_1)
     if k_epsilon > 0.65:
