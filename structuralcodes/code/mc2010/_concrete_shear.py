@@ -39,7 +39,7 @@ def vrd(
     Med: float,
     Ved: float,
     Ned: float,
-    deltaE: float
+    deltaE: float,
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -54,8 +54,17 @@ def vrd(
     """
 
     return abs(
-        vrdc(fck, z, bw, dg, Approx_lvl,
-            epsilon_x(E, As, Med, Ved, Ned, z, deltaE), alfa, ved, gamma_c)
+        vrdc(
+            fck,
+            z,
+            bw,
+            dg,
+            Approx_lvl,
+            epsilon_x(E, As, Med, Ved, Ned, z, deltaE),
+            alfa,
+            ved,
+            gamma_c,
+        )
     ) + abs(vrds(asw, sw, z, bw, fywd, theta))
 
 
@@ -149,8 +158,7 @@ def vrdc_approx2(
     Ved: float,
     Ned: float,
     deltaE: float,
-    gamma_c: float = 1.5
-
+    gamma_c: float = 1.5,
 ) -> float:
     """The design shear resistance of a web or a slab without
     shear reinforcement.
@@ -170,7 +178,8 @@ def vrdc_approx2(
 
     kdg = max(32 / (16 + dg), 0.75)
     kv = (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (
-        1300 / (1000 + kdg * z))
+        1300 / (1000 + kdg * z)
+    )
     return (kv * fsqr * z * bw) / gamma_c
 
 
@@ -185,8 +194,7 @@ def vrdc_approx3(
     Ned: float,
     deltaE: float,
     alfa: float,
-    gamma_c: float = 1.5
-
+    gamma_c: float = 1.5,
 ) -> float:
     """The design shear resistance of a web or a slab without
     shear reinforcement.
@@ -204,26 +212,28 @@ def vrdc_approx3(
     """
     fsqr = min(fck**0.5, 8)
     theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE)
-    kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) * (1 - Ved
-                / (
-                    vrdmax(
-                        fck,
-                        bw,
-                        theta_min,
-                        z,
-                        E,
-                        As,
-                        Med,
-                        Ved,
-                        Ned,
-                        deltaE,
-                        alfa,
-                        gamma_c,
-                    )
-                ),
-                0,
-            )
+    kv = max(
+        (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, deltaE))) *
+        (
+            1 - Ved / (
+                vrdmax(
+                    fck,
+                    bw,
+                    theta_min,
+                    z,
+                    E,
+                    As,
+                    Med,
+                    Ved,
+                    Ned,
+                    deltaE,
+                    alfa,
+                    gamma_c,
+                )
+            ),
+            0,
         )
+    )
     return (kv * fsqr * z * bw) / gamma_c
 
 
@@ -233,7 +243,7 @@ def vrds(
     z: float,
     fywd: float,
     theta: float,
-    alpha: t.optional[float] = math.pi/2,
+    alpha: t.Optional[float] = math.pi / 2,
 ) -> float:
     """fib Model Code 2010, Eq. (7.3-29)
     Args:
@@ -296,9 +306,9 @@ def vrdmax(
         )
 
     elif Approx_lvl == 2:
-        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
-            (1 / math.tan(theta)) ** 2
-        )
+        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (
+            epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002
+        ) * ((1 / math.tan(theta)) ** 2)
         k_epsilon = 1 / (1.2 + 55 * epsilon_1)
         if k_epsilon > 0.65:
             k_epsilon = 0.65
@@ -316,9 +326,9 @@ def vrdmax(
         )
 
     elif Approx_lvl == 3:
-        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
-            (1 / math.tan(theta)) ** 2
-        )
+        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (
+            epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002
+        ) * ((1 / math.tan(theta)) ** 2)
         k_epsilon = 1 / (1.2 + 55 * epsilon_1)
         if k_epsilon > 0.65:
             k_epsilon = 0.65
@@ -360,21 +370,21 @@ def vrdmax_approx1(
     nfc = min((30 / fck) ** (1 / 3), 1)
 
     return (
-            0.55
-            * nfc
-            * (fck / gamma_c)
-            * bw
-            * z
-            * (
-                ((1 / math.tan(theta)) + (1 / math.tan(alfa)))
-                / (1 + (1 / math.tan(theta)) ** 2)
-            ))
+        0.55
+        * nfc
+        * (fck / gamma_c)
+        * bw
+        * z
+        * (
+            ((1 / math.tan(theta)) + (1 / math.tan(alfa)))
+            / (1 + (1 / math.tan(theta)) ** 2)
+        )
+    )
 
 
 def vrdmax_approx2(
     fck: float,
     bw: float,
-    Approx_lvl: int,
     theta: float,
     z: float,
     E: float,
@@ -400,8 +410,9 @@ def vrdmax_approx2(
         approximation level"""
     nfc = min((30 / fck) ** (1 / 3), 1)
 
-    epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002) * (
-            (1 / math.tan(theta)) ** 2)
+    epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (
+        epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002
+    ) * ((1 / math.tan(theta)) ** 2)
     k_epsilon = 1 / (1.2 + 55 * epsilon_1)
     if k_epsilon > 0.65:
         k_epsilon = min(0.65)
@@ -419,3 +430,50 @@ def vrdmax_approx2(
         )
 
 
+def vrdmax_approx3(
+    fck: float,
+    bw: float,
+    theta: float,
+    z: float,
+    E: float,
+    As: float,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    deltaE: float,
+    alfa: float = 0,
+    gamma_c: float = 1.5,
+) -> float:
+    """The maximum allowed shear resistance, when there is shear reinforcment
+
+    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+        bw (float): The width.
+        theta (float): The incline of the reinforment relative to the beam axis
+
+    Returns:
+        float: The maximum allowed shear resistance regardless of
+        approximation level"""
+    nfc = min((30 / fck) ** (1 / 3), 1)
+
+    epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + (
+        epsilon_x(E, As, Med, Ved, Ned, z, deltaE) + 0.002
+    ) * ((1 / math.tan(theta)) ** 2)
+    k_epsilon = 1 / (1.2 + 55 * epsilon_1)
+    if k_epsilon > 0.65:
+        k_epsilon = 0.65
+
+    theta_min = 20 + 10000 * epsilon_x
+    return (
+        k_epsilon
+        * nfc
+        * (fck / gamma_c)
+        * bw
+        * z
+        * (
+            ((1 / math.tan(theta_min)) + (1 / math.tan(alfa)))
+            / (1 + (1 / math.tan(theta_min)) ** 2)
+        )
+    )
