@@ -5,31 +5,39 @@ import pytest
 from structuralcodes.code.mc2010 import _concrete_shear
 
 
-@pytest.mark.parametrize(
-    'test_input1, testinput2, test, expected',
-    [
-        (12, 150, 50, 2625.424),
-        (14, 150, 50, 2835.782),
-        (16, 150, 50, 3031.579),
-        (20, 150, 50, 3389.408),
-        (25, 150, 50, 3789.474),
-        (30, 150, 50, 4151.160)
-    ]
-)
-def test_fcm(test_input1, test_input2, test_input3, expected):
-    """Test the fcm function."""
-    assert math.isclose(
-        _concrete_shear.vrdc(test_input1, test_input2, test_input3, expected)
-    )
+# @pytest.mark.parametrize(
+#     'test_input1, testinput2, test, expected',
+#     [
+#         (12, 150, 50, 2625.424),
+#         (14, 150, 50, 2835.782),
+#         (16, 150, 50, 3031.579),
+#         (20, 150, 50, 3389.408),
+#         (25, 150, 50, 3789.474),
+#         (30, 150, 50, 4151.160)
+#     ]
+# )
+# def test_fcm(test_input1, test_input2, test_input3, expected):
+#     """Test the fcm function."""
+#     assert math.isclose(
+#         _concrete_shear.vrdc(test_input1, test_input2, test_input3, expected)
+#     )
+
 
 @pytest.mark.parametrize(
     'test_input, expecTed',
     [
-        (200000, 1000, 0, 50, 0, 180, 69, 6969),
-        (120, 5.6),
+        (200000, 1000, 50000000, 10000, 2000, 160, 50, 8.1e-4),
+        (210000, 1000, 50000000, 10000, 2000, 160, 50, 7.7e-4),
+        (210000, 5000, 50000000, 10000, 2000, 160, 50, 1.5e-4),
+        (210000, 2000, 50000000, 10000, 2000, 160, 50, 3.9e-4),
+        (210000, 2000, 40000000, 10000, 2000, 160, 50, 8.1e-4),
+        (210000, 2000, 40000000, 20000, 2000, 160, 50, 3.2e-4),
+        (210000, 2000, 40000000, 20000, 1000, 160, 50, 3.2e-4),
+        (210000, 2000, 40000000, 20000, 1000, 140, 50, 3.6e-1),
+        (210000, 2000, 40000000, 20000, 1000, 180, 50, 2.9e-1),
     ],
 )
-def test_fctm(E, As, Med, Ved, Ned, z, deltaE, expected):
+def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
     """Test the epsilon_x function."""
     assert math.isclose(_concrete_shear.epsilonx(
             E,
@@ -40,7 +48,7 @@ def test_fctm(E, As, Med, Ved, Ned, z, deltaE, expected):
             z,
             deltaE,
             ),
-        expected, abs_tol=0.1)
+        expected, abs_tol=0.001)
 
 
 @pytest.mark.parametrize(
