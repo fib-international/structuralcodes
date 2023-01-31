@@ -50,6 +50,25 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
             ),
         expected, abs_tol=0.001)
 
+@pytest.mark.parametrize(
+    'E, As, Med, Ved, Ned, z, deltaE, expected',
+    [
+        (35, 180, 300, 1.5, 8.1e-4),
+        (210000, 1000, 50000000, 10000, 2000, 160, 50, 7.7e-4),
+        (210000, 5000, 50000000, 10000, 2000, 160, 50, 1.5e-4),
+        (210000, 2000, 50000000, 10000, 2000, 160, 50, 3.9e-4),
+        (210000, 2000, 40000000, 10000, 2000, 160, 50, 8.1e-4),
+    ],
+)
+def test_vrdc_approx1(fck, z, bw, gamma_c):
+    """Test the epsilon_x function."""
+    assert math.isclose(_concrete_shear.vrdc_approx1(
+            fck,
+            z,
+            bw,
+            gamma_c,
+            ),
+        expected, abs_tol=0.001)
 
 # @pytest.mark.parametrize(
 #     'test_input, expecTed',
