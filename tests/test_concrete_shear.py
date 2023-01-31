@@ -60,7 +60,7 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
         (210000, 2000, 40000000, 10000, 2000, 160, 50, 8.1e-4),
     ],
 )
-def test_vrdc_approx1(fck, z, bw, gamma_c):
+def test_vrdc_approx1(fck, z, bw, gamma_c,expected):
     """Test the epsilon_x function."""
     assert math.isclose(_concrete_shear.vrdc_approx1(
             fck,
