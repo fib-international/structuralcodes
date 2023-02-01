@@ -34,7 +34,8 @@ def epsilon_x(
 
 
 def v_rd(
-    approx_lvl: float,
+    approx_lvl: int,
+    reinforcment: bool,
     fck: float,
     z: float,
     bw: float,
@@ -63,10 +64,13 @@ def v_rd(
     Returns:
         float: Design shear resistance
     """
+    if not (approx_lvl == 1 or 2 or 3):
+        warnings.warn("Not a valid approximation level")
 
-    return abs(
-        v_rdc(
-            approx_lvl,
+    if not reinforcment and approx_lvl == 1:
+        return v_rdc_approx1(fck, z, bw, gamma_c)
+    if not reinforcment and approx_lvl == 2:
+        return v_rdc_approx2(
             fck,
             z,
             bw,
@@ -77,10 +81,36 @@ def v_rd(
             Ved,
             Ned,
             delta_e,
+            gamma_c)
+    if reinforcment and approx_lvl == 1:
+        return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max_approx1(
+            fck,
+            bw,
+            theta,
+            z,
+            alfa,
+            gamma_c
+            )
+            )
+    if reinforcment and approx_lvl == 2:
+        return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max_approx2(
+            fck,
+            bw,
+            theta,
+            z,
+            E,
+            As,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
             alfa,
             gamma_c,
-        )
-    ) + abs(v_rds(asw, sw, z, bw, fywd, theta))
+            )
+            )
+
+    #if reinforcment and approx_lvl == 3:
+    #
 
 
 def v_rdc(
@@ -123,7 +153,7 @@ def v_rdc(
         )
 
     elif approx_lvl == 3:
-        return v_rdc_approx3(
+        return v_rds_approx3(
             fck, z, bw, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
@@ -189,7 +219,7 @@ def v_rdc_approx2(
     return (kv * fsqr * z * bw) / gamma_c
 
 
-def v_rdc_approx3(  # tror dette egentlig er vrds3
+def v_rds_approx3(  # tror dette egentlig er vrds3
     fck: float,
     z: float,
     bw: float,
