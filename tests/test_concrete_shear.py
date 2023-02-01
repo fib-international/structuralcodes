@@ -48,7 +48,8 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
             z,
             deltaE,
             ),
-        expected, abs_tol=0.001)
+        expected, rel_tol=0.001)
+
 
 @pytest.mark.parametrize(
     'E, As, Med, Ved, Ned, z, deltaE, expected',
@@ -68,7 +69,8 @@ def test_vrdc_approx1(fck, z, bw, gamma_c,expected):
             bw,
             gamma_c,
             ),
-        expected, abs_tol=0.001)
+        expected, rel_tol=0.001)
+
 
 # @pytest.mark.parametrize(
 #     'test_input, expecTed',
