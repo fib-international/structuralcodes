@@ -34,7 +34,8 @@ def epsilon_x(
 
 
 def v_rd(
-    approx_lvl: int,
+    approx_lvl_c: int,
+    approx_lvl_s: int,
     reinforcment: bool,
     fck: float,
     z: float,
@@ -64,13 +65,12 @@ def v_rd(
     Returns:
         float: Design shear resistance
     """
-    if not (approx_lvl == 1 or 2 or 3):
+    if not (approx_lvl_c == 1 or 2):
         warnings.warn("Not a valid approximation level")
 
-    if not reinforcment and approx_lvl == 1:
-        return v_rdc_approx1(fck, z, bw, gamma_c)
-    if not reinforcment and approx_lvl == 2:
-        return v_rdc_approx2(
+    if not reinforcment:
+        return v_rdc(
+            approx_lvl_c,
             fck,
             z,
             bw,
@@ -81,19 +81,27 @@ def v_rd(
             Ved,
             Ned,
             delta_e,
-            gamma_c)
-    if reinforcment and approx_lvl == 1:
-        return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max_approx1(
-            fck,
-            bw,
-            theta,
-            z,
             alfa,
-            gamma_c
+            gamma_c,
             )
-            )
-    if reinforcment and approx_lvl == 2:
-        return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max_approx2(
+    if reinforcment and approx_lvl_s == 3:
+        return min(v_rdc(
+            approx_lvl_c,
+            fck,
+            z,
+            bw,
+            dg,
+            E,
+            As,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
+            alfa,
+            gamma_c) +
+            v_rds(asw, sw, z, fywd, theta, alfa),
+            v_rd_max(
+            approx_lvl_s,
             fck,
             bw,
             theta,
@@ -108,8 +116,23 @@ def v_rd(
             gamma_c,
             )
             )
-
-    # if reinforcment and approx_lvl == 3:
+    elif reinforcment and approx_lvl_s == 1 or 2:
+        return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max(
+            approx_lvl_s,
+            fck,
+            bw,
+            theta,
+            z,
+            E,
+            As,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
+            alfa,
+            gamma_c,
+            )
+            )
 
 
 def v_rdc(
@@ -303,7 +326,7 @@ def v_rds(
 
 
 def v_rd_max(
-    approx_lvl: int,
+    approx_lvl_s: int,
     fck: float,
     bw: float,
     theta: float,
@@ -329,15 +352,15 @@ def v_rd_max(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    if approx_lvl == 1:
+    if approx_lvl_s == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alfa, gamma_c)
 
-    elif approx_lvl == 2:
+    elif approx_lvl_s == 2:
         return v_rd_max_approx2(
             fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
-    elif approx_lvl == 3:
+    elif approx_lvl_s == 3:
         return v_rd_max_approx3(
             fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
