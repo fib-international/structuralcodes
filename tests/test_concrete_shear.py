@@ -57,7 +57,8 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
         (1, 0, 35, 180, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 31294),
         (1, 0, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
         (1, 1, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
-        (2, 1, 35, 200, 300, 16, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5, 66267),
+        (2, 1, 35, 140, 300, 16, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5, 48828),
+        (2, 1, 35, 140, 300, 32, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5, 50375),
     ],
 )
 def test_v_rdc(approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
@@ -79,7 +80,7 @@ Ved, Ned, delta_e, alfa, gamma_c, expected):
                 alfa,
                 gamma_c,
             ),
-        expected, rel_tol=0.08)
+        expected, rel_tol=0.001)
 
 
 # @pytest.mark.parametrize(
