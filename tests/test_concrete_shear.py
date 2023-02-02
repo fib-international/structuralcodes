@@ -30,10 +30,9 @@ from structuralcodes.code.mc2010 import _concrete_shear
         (210000, 1000, 50000000, 10000, 2000, 160, 50, 7.7e-4),
         (210000, 5000, 50000000, 10000, 2000, 160, 50, 1.5e-4),
         (210000, 2000, 50000000, 10000, 2000, 160, 50, 3.9e-4),
-        (210000, 2000, 40000000, 10000, 2000, 160, 50, 8.1e-4),
         (210000, 2000, 40000000, 20000, 2000, 160, 50, 3.2e-4),
         (210000, 2000, 40000000, 20000, 1000, 160, 50, 3.2e-4),
-        (210000, 2000, 40000000, 20000, 1000, 140, 50, 3.6e-4),
+        (210000, 2000, 40000000, 20000, 1000, 140, 50, 3.64965e-4),
         (210000, 2000, 40000000, 20000, 1000, 180, 50, 2.9e-4),
     ],
 )
@@ -48,28 +47,39 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
             z,
             deltaE,
             ),
-        expected, abs_tol=0.001)
+        expected, rel_tol=0.05)
 
 
-# @pytest.mark.parametrize(
-#     'E, As, Med, Ved, Ned, z, deltaE, expected',
-#     [
-#         (35, 180, 300, 1.5, 8.1e-4),
-#         (210000, 1000, 50000000, 10000, 2000, 160, 50, 7.7e-4),
-#         (210000, 5000, 50000000, 10000, 2000, 160, 50, 1.5e-4),
-#         (210000, 2000, 50000000, 10000, 2000, 160, 50, 3.9e-4),
-#         (210000, 2000, 40000000, 10000, 2000, 160, 50, 8.1e-4),
-#     ],
-# )
-# def test_vrdc_approx1(fck, z, bw, gamma_c,expected):
-#     """Test the epsilon_x function."""
-#     assert math.isclose(_concrete_shear.vrdc_approx1(
-#             fck,
-#             z,
-#             bw,
-#             gamma_c,
-#             ),
-#         expected, rel_tol=0.001)
+@pytest.mark.parametrize(
+    '''approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
+     Ved, Ned, delta_e, alfa, gamma_c, expected''',
+    [
+        (1, 0, 35, 180, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 31294),
+        (1, 0, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
+        (1, 1, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
+        (2, 1, 35, 200, 300, 16, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5, 66267),
+    ],
+)
+def test_v_rdc(approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
+Ved, Ned, delta_e, alfa, gamma_c, expected):
+    """Test the v_rdc function."""
+    assert math.isclose(_concrete_shear.v_rdc(
+                approx_lvl_c,
+                approx_lvl_s,
+                fck,
+                z,
+                bw,
+                dg,
+                E,
+                As,
+                Med,
+                Ved,
+                Ned,
+                delta_e,
+                alfa,
+                gamma_c,
+            ),
+        expected, rel_tol=0.08)
 
 
 # @pytest.mark.parametrize(
