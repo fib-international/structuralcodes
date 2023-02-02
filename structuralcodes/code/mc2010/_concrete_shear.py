@@ -1,7 +1,7 @@
 """A collection of shear formulas for concrete"""
 import typing as t
-import math
 import warnings
+from math import pi, tan, sin
 
 
 def epsilon_x(
@@ -136,7 +136,8 @@ def v_rd(
 
 
 def v_rdc(
-    approx_lvl: int,
+    approx_lvl_c: int,
+    approx_lvl_s: int,
     fck: float,
     z: float,
     bw: float,
@@ -166,15 +167,15 @@ def v_rdc(
         float: Design shear resistance without shear reinforcement
     """
 
-    if approx_lvl == 1:
+    if approx_lvl_c == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
-    elif approx_lvl == 2:
+    elif approx_lvl_c == 2:
         return v_rdc_approx2(
             fck, z, bw, dg, E, As, Med, Ved, Ned, delta_e, gamma_c
         )
 
-    elif approx_lvl == 3:
+    elif approx_lvl_s == 3:
         return v_rds_approx3(
             fck, z, bw, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
@@ -302,7 +303,7 @@ def v_rds(
     z: float,
     fywd: float,
     theta: float,
-    alpha: t.Optional[float] = math.pi / 2,
+    alpha: t.Optional[float] = pi / 2,
 ) -> float:
     """fib Model Code 2010, Eq. (7.3-29)
     Args:
@@ -320,8 +321,8 @@ def v_rds(
         (asw / sw)
         * z
         * fywd
-        * ((1 / math.tan(theta)) + (1 / math.tan(alpha)))
-        * math.sin(alpha)
+        * ((1 / tan(theta*pi/180)) + (1 / tan(alpha*pi/180)))
+        * sin(alpha*pi/180)
     )
 
 
@@ -395,8 +396,8 @@ def v_rd_max_approx1(
         * bw
         * z
         * (
-            ((1 / math.tan(theta)) + (1 / math.tan(alfa)))
-            / (1 + (1 / math.tan(theta)) ** 2)
+            ((1 / tan(theta*pi/180)) + (1 / tan(alfa*pi/180)))
+            / (1 + (1 / tan(theta*pi/180)) ** 2)
         )
     )
 
@@ -431,7 +432,7 @@ def v_rd_max_approx2(
 
     epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
-    ) * ((1 / math.tan(theta)) ** 2)
+    ) * ((1 / tan(theta*pi/180)) ** 2)
     k_epsilon = 1 / (1.2 + 55 * epsilon_1)
     if k_epsilon > 0.65:
         k_epsilon = min(0.65)
@@ -443,8 +444,8 @@ def v_rd_max_approx2(
             * bw
             * z
             * (
-                ((1 / math.tan(theta)) + (1 / math.tan(alfa)))
-                / (1 + (1 / math.tan(theta)) ** 2)
+                ((1 / tan(theta*pi/180)) + (1 / tan(alfa*pi/180)))
+                / (1 + (1 / tan(theta*pi/180)) ** 2)
             )
         )
 
@@ -479,7 +480,7 @@ def v_rd_max_approx3(
 
     epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
-    ) * ((1 / math.tan(theta)) ** 2)
+    ) * ((1 / tan(theta*pi/180)) ** 2)
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     theta_min = 20 + 10000 * epsilon_x
@@ -490,7 +491,7 @@ def v_rd_max_approx3(
         * bw
         * z
         * (
-            ((1 / math.tan(theta_min)) + (1 / math.tan(alfa)))
-            / (1 + (1 / math.tan(theta_min)) ** 2)
+            ((1 / tan(theta_min*pi/180)) + (1 / tan(alfa*pi/180)))
+            / (1 + (1 / tan(theta_min*pi/180)) ** 2)
         )
     )
