@@ -18,18 +18,19 @@ def epsilon_x(
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
 
     Args:
-        E (float): The E-modulus to the material. in n/mm^2
-        AS (Float): The cross-section area. in mm^2
-        Med (Float): The moment working on the material in nmm^2
+        E (float): The E-modulus to the materialb in MPa
+        AS (Float): The cross-section area in mm^2
+        Med (Float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         z: (float): The length to the areasenter of cross-section in mm
-        delta_E (float):
+        delta_E (float): The exentricity of the load in mm
     Returns:
-        float: The maximum allowed shear resisThe design shear resistance
-        providance regarled by ss of approximatirrups"""
-    return (1 / (2 * E * As)) * (
-        (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z))
+        float: The longitudinal strain"""
+    return max(
+        (1 / (2 * E * As)) * (
+            (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z)),
+            0)
     )
 
 
@@ -59,8 +60,26 @@ def v_rd(
     fib Model Code 2010, Eq. (7.3-11)
 
     Args:
-        vrdc (float): Design shear resistance of concrete.
-        vrds (float): Design shear resistance of shear reinforcement.
+        approx_lvl_c (int): Approximation level for concrete
+        approx_lvl_s (int): Approximation level for steel
+        reinforcment (bool): Shear reinforced concrete or no shear
+        reinforcement
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Concrete safety factor
+        asw (float): Area of shear reinforcement
+        sw (float): Senter distance between the shear reinforcement
+        fywd (float): The design yield strength of the shear reinforcement
+        theta (float): Inclitaniton of the compression stressfield
 
     Returns:
         float: Design shear resistance
@@ -158,13 +177,25 @@ def v_rdc(
     fib Model Code 2010, Eq. (7.3-17)
 
     Args:
-        vck (float): The characteristic compressive strength in MPa.
-        z (float): the effective shear depth.
-        gamma_c: Material factor.
-        bw:
+        approx_lvl_c (int): Approximation level for concrete
+        approx_lvl_s (int): Approximation level for steel
+        reinforcment (bool): Shear reinforced concrete or no shear
+        reinforcement
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Safety factor
 
     Returns:
-        float: Design shear resistance without shear reinforcement
+        float: The design shear resistance attributed to the concrete
     """
 
     if approx_lvl_c == 1:
@@ -193,10 +224,10 @@ def v_rdc_approx1(
     fib Model Code 2010, Eq. (7.3-17)
 
     Args:
-        vck (float): The characteristic compressive strength in MPa.
-        z (float): the effective shear depth.
-        gamma_c: Material factor.
-        bw:
+        fck (float): The characteristic compressive strength in MPa.
+        z (float): The length to the areasenter of cross-section in mm
+        gamma_c: Safety factor
+        bw: Thickness of web in cross section
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -225,10 +256,17 @@ def v_rdc_approx2(
     fib Model Code 2010, Eq. (7.3-17)
 
     Args:
-        vck (float): The characteristic compressive strength in MPa.
-        z (float): the effective shear depth.
-        gamma_c: Material factor.
-        bw:
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        gamma_c (float): Safety factor
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -262,10 +300,18 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
     fib Model Code 2010, Eq. (7.3-17)
 
     Args:
-        vck (float): The characteristic compressive strength in MPa.
-        z (float): the effective shear depth.
-        gamma_c: Material factor.
-        bw:
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Safety factor
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -307,14 +353,16 @@ def v_rds(
 ) -> float:
     """fib Model Code 2010, Eq. (7.3-29)
     Args:
-        asw (float):
-        sw (float):
-        gamma_c:
-        bw:
+        asw (float): Area of shear reinforcement
+        sw (float): Senter distance between the shear reinforcement
+        z: (float): The length to the areasenter of cross-section in mm
+        fywd (float): The design yield strength of the shear reinforcement
+        theta (float): Inclitaniton of the compression stressfield
+        alfa (float): Inclination of the stirrups
 
     Returns:
-        float:
-    ion level."""
+        The design shear resistance provided by shear reinforcement
+        """
     if 45 < theta < 20:
         warnings.warn("Too high or too low compression field angel")
     return (
@@ -346,10 +394,19 @@ def v_rd_max(
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
 
     Args:
-        fck (float): The characteristic compressive strength in MPa.
-        bw (float): The width.
-        theta (float): The incline of the reinforment relative to the beam axis
-
+        approx_lvl_s (int): Approximation level for steel
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Safety factor
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
@@ -380,9 +437,12 @@ def v_rd_max_approx1(
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
 
     Args:
-        fck (float): The characteristic compressive strength in MPa.
-        bw (float): The width.
-        theta (float): The incline of the reinforment relative to the beam axis
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -421,9 +481,18 @@ def v_rd_max_approx2(
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
 
     Args:
-        fck (float): The characteristic compressive strength in MPa.
-        bw (float): The width.
-        theta (float): The incline of the reinforment relative to the beam axis
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Concrete safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -469,9 +538,18 @@ def v_rd_max_approx3(
     fib Model Code 2010, eq. (7.3-26) and (7.3-24)
 
     Args:
-        fck (float): The characteristic compressive strength in MPa.
-        bw (float): The width.
-        theta (float): The incline of the reinforment relative to the beam axis
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        gamma_c (float): Concrete safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
