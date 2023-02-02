@@ -136,7 +136,8 @@ def v_rd(
 
 
 def v_rdc(
-    approx_lvl: int,
+    approx_lvl_c: int,
+    approx_lvl_s: int,
     fck: float,
     z: float,
     bw: float,
@@ -166,15 +167,15 @@ def v_rdc(
         float: Design shear resistance without shear reinforcement
     """
 
-    if approx_lvl == 1:
+    if approx_lvl_c == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
-    elif approx_lvl == 2:
+    elif approx_lvl_c == 2:
         return v_rdc_approx2(
             fck, z, bw, dg, E, As, Med, Ved, Ned, delta_e, gamma_c
         )
 
-    elif approx_lvl == 3:
+    elif approx_lvl_s == 3:
         return v_rds_approx3(
             fck, z, bw, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
