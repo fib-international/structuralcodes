@@ -29,8 +29,8 @@ def epsilon_x(
         float: The longitudinal strain"""
     return max(
         (1 / (2 * E * As)) * (
-            (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z)),
-            0)
+            (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z))),
+        0
     )
 
 
@@ -281,6 +281,7 @@ def v_rdc_approx2(
 
 
 def v_rds_approx3(  # tror dette egentlig er vrds3
+    approx_lvl_s: float,
     fck: float,
     z: float,
     bw: float,
@@ -323,6 +324,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
         (
             1 - Ved / (
                 v_rd_max(
+                    approx_lvl_s,
                     fck,
                     bw,
                     theta_min,
@@ -366,11 +368,9 @@ def v_rds(
     if 45 < theta < 20:
         warnings.warn("Too high or too low compression field angel")
     return (
-        (asw / sw)
-        * z
-        * fywd
-        * ((1 / tan(theta*pi/180)) + (1 / tan(alpha*pi/180)))
-        * sin(alpha*pi/180)
+        (asw / sw) *
+        z * fywd * ((1 / tan(theta*pi/180)) + (1 / tan(alpha*pi/180))) *
+        sin(alpha*pi/180)
     )
 
 
@@ -575,13 +575,66 @@ def v_rd_max_approx3(
     )
 
 
-def v_rd_ct (
+def v_rd_ct(
+    approx_lvl_h: int,
+    f_ctd: float,
     i_c: float,
     s_c: float,
     b_w: float,
     sigma_cp: float,
     alfa_cp: float,
     l_x: float,
-    l_db0: float
+    l_bd0: float,
+    S_cy: float,
+    b_wy: float,
+    sigma_cpy: float,
+    tau_cpy: float,
+    y: float,
+    y_c: float,
+    A_c: float,
+    A_cy: float,
+    y_pt: float,
+    f_p_lx: float,
 ) -> float:
-    
+
+    """The shear resistance for a hollow core slab.
+
+    fib Model Code 2010, eq. (7.3-44) and (7.3-45)
+
+    Args:
+        approx_lvl_h: What approximation level we want for hollow core
+        f_ctd: The design value of concrete axial tensile strength
+        i_c: The second moment of area
+        s_c: The first moment of area, abouve and about the centriodal axis
+        b_w: The width of the cross-section at the centroidal axis
+        sigma_cp: The compressive stress at centroidal axis due to prestress
+        alfa_cp: l_x/(1.2*l_bd0)
+        l_x: distance between edge and point of failure (Figure: 7.3-12)
+        l_bd0: follows 7.13-5
+        S_cy: The first moment of area above y
+        b_wy: The width at hight y
+        sigma_cpy: The compressiv stress in the concrete at hight y and l_x
+        tau_cpy: The shear stress due to prestress at hight y and l_x
+        y: The hight at of the critical point at the line of failure
+        y_c: The hight of the concrete centroidal axis
+        A_c: The area of concrete cross-section
+        A_cy: The area of concrete cross-section above y
+        y_pt: The hight of centroidal axis of prestressed steel
+        f_p_lx: The prestressing force at the distance l_x
+
+    Return:
+        The maximum allowed shear force in a hollow core. Regardless of the 
+        approximation level"""
+    if approx_lvl_h == 1:
+        return v_rd_ct_approx1()
+
+def v_rd_ct_approx1(
+    i_c: float,
+    s_c: float,
+    b_w: float,
+    sigma_cp: float,
+    alfa_cp: float,
+    l_x: float,
+    l_bd0: float
+)-> float:
+    return 0.8*((i_c*b_w)/s_c)*(f)
