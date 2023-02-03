@@ -208,7 +208,8 @@ def v_rdc(
 
     elif approx_lvl_s == 3:
         return v_rds_approx3(
-            approx_lvl_s, fck, z, bw, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
+            approx_lvl_s, fck, z, bw, E, As, Med, Ved,
+            Ned, delta_e, alfa, gamma_c
         )
 
 
@@ -561,7 +562,7 @@ def v_rd_max_approx3(
     ) * ((1 / tan(theta*pi/180)) ** 2)
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
-    theta_min = 20 + 10000 * epsilon_x
+    theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)
     return (
         k_epsilon
         * nfc
@@ -637,6 +638,22 @@ def v_rd_ct_approx1(
     l_x: float,
     l_bd0: float
 ) -> float:
-    """Using """
+    """Calculating level 1 approximation.
+    
+    Args:
+        f_ctd: The design value of concrete axial tensile strength
+        i_c: The second moment of area
+        s_c: The first moment of area, abouve and about the centriodal axis
+        b_w: The width of the cross-section at the centroidal axis
+        sigma_cp: The compressive stress at centroidal axis due to prestress
+        l_x: distance between edge and point of failure (Figure: 7.3-12)
+        l_bd0: follows 7.13-5
+    return:
+        App
+        """
     alfa_l = l_x/(1.2*l_bd0)
     return 0.8*((i_c*b_w)/s_c)*((f_ctd**2)*+alfa_l*sigma_cp*f_ctd)**0.5
+
+def v_rd_ct_approx2(
+
+)
