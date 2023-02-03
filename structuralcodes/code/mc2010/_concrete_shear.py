@@ -84,7 +84,7 @@ def v_rd(
     Returns:
         float: Design shear resistance
     """
-    if not (approx_lvl_c == 1 or 2):
+    if not (approx_lvl_c == 1 or 2) and not approx_lvl_s == 3:
         warnings.warn("Not a valid approximation level")
 
     if not reinforcment:
@@ -573,3 +573,15 @@ def v_rd_max_approx3(
             / (1 + (1 / tan(theta_min*pi/180)) ** 2)
         )
     )
+
+
+def v_rd_ct (
+    i_c: float,
+    s_c: float,
+    b_w: float,
+    sigma_cp: float,
+    alfa_cp: float,
+    l_x: float,
+    l_db0: float
+) -> float:
+    
