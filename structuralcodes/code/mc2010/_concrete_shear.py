@@ -320,29 +320,12 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
     """
     fsqr = min(fck**0.5, 8)
     theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)
-    kv = max(
-        (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e))) *
-        (
-            1 - Ved / (
-                v_rd_max(
-                    approx_lvl_s,
-                    fck,
-                    bw,
-                    theta_min,
-                    z,
-                    E,
-                    As,
-                    Med,
-                    Ved,
-                    Ned,
-                    delta_e,
-                    alfa,
-                    gamma_c,
-                )
-            ),
-            0,
-        )
-    )
+    kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)))*(
+        1 - Ved / v_rd_max(
+            approx_lvl_s, fck, bw, theta_min, z, E, As, Med, Ved,
+            Ned, delta_e, alfa, gamma_c)),
+            0)
+
     return (kv * fsqr * z * bw) / gamma_c
 
 
@@ -587,14 +570,13 @@ def v_rd_ct(
     l_bd0: float,
     S_cy: float,
     b_wy: float,
-    sigma_cpy: float,
-    tau_cpy: float,
     y: float,
     y_c: float,
     A_c: float,
     A_cy: float,
     y_pt: float,
     f_p_lx: float,
+    f_p_lx_dx: float,
 ) -> float:
 
     """The shear resistance for a hollow core slab.
@@ -613,20 +595,24 @@ def v_rd_ct(
         l_bd0: follows 7.13-5
         S_cy: The first moment of area above y
         b_wy: The width at hight y
-        sigma_cpy: The compressiv stress in the concrete at hight y and l_x
-        tau_cpy: The shear stress due to prestress at hight y and l_x
         y: The hight at of the critical point at the line of failure
         y_c: The hight of the concrete centroidal axis
         A_c: The area of concrete cross-section
         A_cy: The area of concrete cross-section above y
         y_pt: The hight of centroidal axis of prestressed steel
         f_p_lx: The prestressing force at the distance l_x
+        f_p_lx_dx: The derivative of prestressing force at the distance l_x
 
     Return:
-        The maximum allowed shear force in a hollow core. Regardless of the 
+        The maximum allowed shear force in a hollow core. Regardless of the
         approximation level"""
     if approx_lvl_h == 1:
-        return v_rd_ct_approx1()
+        return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
+    elif approx_lvl_h == 2:
+        return v_rd_ct_approx2(
+            f_ctd, i_c, l_x, l_bd0, S_cy, b_wy, y, y_c,
+            A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx
+        )
 
 
 def v_rd_ct_approx1(
@@ -639,7 +625,7 @@ def v_rd_ct_approx1(
     l_bd0: float
 ) -> float:
     """Calculating level 1 approximation.
-    
+
     Args:
         f_ctd: The design value of concrete axial tensile strength
         i_c: The second moment of area
@@ -649,11 +635,51 @@ def v_rd_ct_approx1(
         l_x: distance between edge and point of failure (Figure: 7.3-12)
         l_bd0: follows 7.13-5
     return:
-        App
-        """
+        Vrd Appoximation 1 for hollow slabs"""
     alfa_l = l_x/(1.2*l_bd0)
     return 0.8*((i_c*b_w)/s_c)*((f_ctd**2)*+alfa_l*sigma_cp*f_ctd)**0.5
 
-def v_rd_ct_approx2(
 
-)
+def v_rd_ct_approx2(
+    f_ctd: float,
+    i_c: float,
+    l_x: float,
+    l_bd0: float,
+    S_cy: float,
+    b_wy: float,
+    y: float,
+    y_c: float,
+    A_c: float,
+    A_cy: float,
+    y_pt: float,
+    f_p_lx: float,
+    f_p_lx_dx: float,
+) -> float:
+
+    """Calculates the maximum shear force for level 2 approximation
+    in hollow core slabs.
+    Args:
+        f_ctd: The design value of concrete axial tensile strength
+        i_c: The second moment of area
+        l_x: distance between edge and point of failure (Figure: 7.3-12)
+        l_bd0: follows 7.13-5
+        S_cy: The first moment of area above y
+        b_wy: The width at hight y
+        y: The hight at of the critical point at the line of failure
+        y_c: The hight of the concrete centroidal axis
+        A_c: The area of concrete cross-section
+        A_cy: The area of concrete cross-section above y
+        y_pt: The hight of centroidal axis of prestressed steel
+        f_p_lx: The prestressing force at the distance l_x
+        f_p_lx: The derivative of prestressing force at the distance l_x
+
+    sigma_cpy: The compressiv stress in the concrete at hight y and l_x
+    tau_cpy: The shear stress due to prestress at hight y and l_x
+
+    return:
+        The maximum shear force for level 2 approximation"""
+
+    alfa_l = l_x/(1.2*l_bd0)
+    sigma_cpy = ((1/A_c)*((y_c-y)/i_c))*f_p_lx
+    tau_cpy = (1/b_wy)*((A_cy/A_c)-(S_cy*(y_c-y_pt))/i_c)*f_p_lx_dx
+    return (i_c*b_wy/S_cy)*(((f_ctd**2)+alfa_l*sigma_cpy*f_ctd)**0.5-tau_cpy)
