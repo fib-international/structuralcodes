@@ -319,7 +319,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)
+    theta_min = (20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)) *pi/180
     kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)))*(
         1 - Ved / v_rd_max(
             approx_lvl_s, fck, bw, theta_min, z, E, As, Med, Ved,
@@ -683,3 +683,37 @@ def v_rd_ct_approx2(
     sigma_cpy = ((1/A_c)*((y_c-y)/i_c))*f_p_lx
     tau_cpy = (1/b_wy)*((A_cy/A_c)-(S_cy*(y_c-y_pt))/i_c)*f_p_lx_dx
     return (i_c*b_wy/S_cy)*(((f_ctd**2)+alfa_l*sigma_cpy*f_ctd)**0.5-tau_cpy)
+
+def tau_edi(beta, v_ed, z, b_i):
+    """Shear at the interface between cocrete cast at different times
+    fib Model Code 2010, eq. (7.3-49)
+    Args: 
+        beta: The ratio of longitudinal force in the new concrete and 
+        the longitudinal force in either compression or tension zone
+        z: The inner lever arm of composed section
+        b_i: The width of the inerface
+        v_ed: The shear force at the interface
+    
+    return:
+        The shear force that should be used at the intersection"""
+    return (beta*v_ed)/(z*b_i)
+
+
+def tau_rdi_without_reinforceent(c_a, f_ctd, mu, sigma_n, f_ck, f_cd):
+    """Shear resistance without reinforcement at the intesection with
+    different casting time
+
+    fib Model Code 2010, eq. (7.3-50)
+
+    Args:
+        c_a: The coefficient for adhesive bond (tabel 7.3-1)
+        mu: The friction coefficient
+        sigma_n: The loweat expected compressiv stress from normal forces
+        f_ck: Characteristic strength in MPa
+        f_cd: The design value of cylinder compressive strength concrete
+
+    return:
+        Shear resistance without reinforcement at the intesection with
+    different casting time"""
+
+    v = min(0.55*(30/f_ck)**(1/3),0.55)
