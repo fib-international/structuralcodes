@@ -780,7 +780,7 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
     return t_ed*z_i/(2*a_k)
 
 
-def t_rd_max(k_c, f_ck, gamma_c, d_k, a_k, theta):
+def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e):
     """The maximum allowed torsion allowed
     fib Model Code 2010, eq. (7.3-56)
     
@@ -793,10 +793,11 @@ def t_rd_max(k_c, f_ck, gamma_c, d_k, a_k, theta):
 
     return:
     """
-    nfc = min((30 / fck) ** (1 / 3), 1)
+    t_ef = d_k/8
+    nfc = min((30 / f_ck) ** (1 / 3), 1)
 
     if approx_lvl_s == 1:
-        0.55
+        k_epsilon = 0.55
     elif approx_lvl_s == 2:
         epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
@@ -805,15 +806,18 @@ def t_rd_max(k_c, f_ck, gamma_c, d_k, a_k, theta):
     elif approx_lvl_s == 3:
         epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
-            ) * ((1 / tan(theta_min*pi/180)) ** 2)
+            ) * ((1 / tan(theta*pi/180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
+    
+    k_c = nfc*k_epsilon
+
+    return k_c*f_ck*t_ef*2*a_k*sin(theta*pi/180)*cos(theta*pi/180)/gamma_c
 
 
 def t_rd(
     t_ed: float,
     v_ed: float,
-    t_rd_max: float,
-    )
+):
 
     """hei
     
@@ -822,4 +826,11 @@ def t_rd(
         
     return:
         e"""
-    v_rd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med,Ved, Ned, delta_e, alfa),
+    if ((t_ed/
+    t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e))**2+
+    (v_ed/
+    v_rd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
+        ok = True
+    else:
+        ok = False
+    return ok
