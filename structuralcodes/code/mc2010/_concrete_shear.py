@@ -1,7 +1,7 @@
 """A collection of shear formulas for concrete"""
 import typing as t
 import warnings
-from math import pi, tan, sin
+from math import pi, tan, sin, cos
 
 
 def epsilon_x(
@@ -486,19 +486,12 @@ def v_rd_max_approx2(
     epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
     ) * ((1 / tan(theta*pi/180)) ** 2)
-    k_epsilon = 1 / (1.2 + 55 * epsilon_1)
-    if k_epsilon > 0.65:
-        k_epsilon = min(0.65)
+    k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
-        return (
-            k_epsilon
-            * nfc
-            * (fck / gamma_c)
-            * bw
-            * z
-            * (
-                ((1 / tan(theta*pi/180)) + (1 / tan(alfa*pi/180)))
-                / (1 + (1 / tan(theta*pi/180)) ** 2)
+    return (
+        k_epsilon * nfc * (fck / gamma_c) * bw * z *(
+            ((1 / tan(theta*pi/180)) + (1 / tan(alfa*pi/180)))
+            / (1 + (1 / tan(theta*pi/180)) ** 2)
             )
         )
 
@@ -684,22 +677,29 @@ def v_rd_ct_approx2(
     return (i_c*b_wy/S_cy)*(((f_ctd**2)+alfa_l*sigma_cpy*f_ctd)**0.5-tau_cpy)
 
 
-def tau_edi(beta, v_ed, z, b_i):
+def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
     """Shear at the interface between cocrete cast at different times
     fib Model Code 2010, eq. (7.3-49)
-    Args: 
-        beta: The ratio of longitudinal force in the new concrete and 
+    Args:
+        beta: The ratio of longitudinal force in the new concrete and
         the longitudinal force in either compression or tension zone
         z: The inner lever arm of composed section
         b_i: The width of the inerface
         v_ed: The shear force at the interface
-    
+
     return:
         The shear force that should be used at the intersection"""
     return (beta*v_ed)/(z*b_i)
 
 
-def tau_rdi_without_reinforceent(c_a, f_ctd, mu, sigma_n, f_ck, f_cd):
+def tau_rdi_without_reinforceent(
+    c_a: float,
+    f_ctd: float,
+    mu: float,
+    sigma_n: float,
+    f_ck: float,
+    f_cd: float
+):
     """Shear resistance without reinforcement at the intesection with
     different casting time
 
@@ -716,31 +716,110 @@ def tau_rdi_without_reinforceent(c_a, f_ctd, mu, sigma_n, f_ck, f_cd):
         Shear resistance without reinforcement at the intesection with
     different casting time"""
 
-    v = min(0.55*(30/f_ck)**(1/3),0.55)
+    v = min(0.55*(30/f_ck)**(1/3), 0.55)
     return min((c_a*f_ctd) + (mu * sigma_n), 0.5*v*f_cd)
 
 
 def tau_rdi_with_reinforceent(
-    c_r, k1, k2, mu, ro, sigma_n, alfa, beta_c, f_ck,f_yd, f_cd
+    c_r: float,
+    k1: float,
+    k2: float,
+    mu: float,
+    ro: float,
+    sigma_n: float,
+    alfa: float,
+    beta_c: float,
+    f_ck: float,
+    f_yd: float,
+    f_cd: float
 ):
     """Shear resistance with reinforcement or dowels at the intesection with
     different casting time
 
-    fib Model Code 2010, eq. (7.3-50)
+    fib Model Code 2010, eq. (7.3-51)
 
     Args:
         c_r: The coefficient for aggregate interlock effects (tabel 7.3-2)
-        mu: The friction coefficient (tabel 7.3-2)
         k1: The interction coefficient for tensile
         force activated in reinforcment (tabel 7.3-2)
         k2: The interction coeffiction for flexural resistance (tabel 7.3-2)
+        mu: The friction coefficient (tabel 7.3-2)
+        ro: reinforcement ratio of reinforcment crossing the interface
+        sigma_n: The loweat expected compressiv stress from normal forces
+        alfa: The inclination of reinforcement crossing the
+        interface (tabel 7.3-14)
         beta_c: The coefficient for strength of
         compresstion strut (tabel 7.3-2)
-        sigma_n: The loweat expected compressiv stress from normal forces
         f_ck: Characteristic strength in MPa
+        f_yd: design strength of reinforment steel
         f_cd: The design value of cylinder compressive strength concrete
-        ro: 
 
     return:
-        Shear resistance without reinforcement at the intesection with
+        Shear resistance with reinforcement at intesection with
         different casting time"""
+    v = min(0.55*(30/f_ck)**(1/3), 0.55)
+    return min(
+        (c_r*f_ck**(1/3))+(mu*sigma_n)+k1*ro * f_yd *
+        (ro*sin(alfa)+cos(alfa)+k2*ro*(f_yd*f_cd)**0.5),
+        beta_c*v*f_cd
+        )
+
+
+def v_ed_ti(t_ed: float, a_k: float, z_i: float):
+    """Shear force from an torsion
+    fib Model Code 2010, eq. (7.3-53)
+
+    Args:
+        t_ed: The acting torsyion force in the cross section
+        z_i: Can be found in figure 7.3-18
+        a_k: Can be found in figure 7.3-18
+    
+    Returns:
+        The shear force that will ocurre due to torsion force."""
+    
+    return t_ed*z_i/(2*a_k)
+
+
+def t_rd_max(k_c, f_ck, gamma_c, d_k, a_k, theta):
+    """The maximum allowed torsion allowed
+    fib Model Code 2010, eq. (7.3-56)
+    
+    args:
+        f_ck: Characteristic strength in MPa
+        gamma_c: Concrete safety factor
+        d_k: Is the diameter in the smalest circel in the cross section
+        a_k: Can be found in figure 7.3-18
+        theta: Inclitaniton of the compression stressfield
+
+    return:
+    """
+    nfc = min((30 / fck) ** (1 / 3), 1)
+
+    if approx_lvl_s == 1:
+        0.55
+    elif approx_lvl_s == 2:
+        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
+        epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+        ) * ((1 / tan(theta*pi/180)) ** 2)
+        k_epsilon = 1 / (1.2 + 55 * epsilon_1)
+    elif approx_lvl_s == 3:
+        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
+            epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+            ) * ((1 / tan(theta_min*pi/180)) ** 2)
+        k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
+
+
+def t_rd(
+    t_ed: float,
+    v_ed: float,
+    t_rd_max: float,
+    )
+
+    """hei
+    
+    Args:
+        t
+        
+    return:
+        e"""
+    v_rd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med,Ved, Ned, delta_e, alfa),
