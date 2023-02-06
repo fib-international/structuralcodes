@@ -684,6 +684,7 @@ def v_rd_ct_approx2(
     tau_cpy = (1/b_wy)*((A_cy/A_c)-(S_cy*(y_c-y_pt))/i_c)*f_p_lx_dx
     return (i_c*b_wy/S_cy)*(((f_ctd**2)+alfa_l*sigma_cpy*f_ctd)**0.5-tau_cpy)
 
+
 def tau_edi(beta, v_ed, z, b_i):
     """Shear at the interface between cocrete cast at different times
     fib Model Code 2010, eq. (7.3-49)
@@ -717,3 +718,4 @@ def tau_rdi_without_reinforceent(c_a, f_ctd, mu, sigma_n, f_ck, f_cd):
     different casting time"""
 
     v = min(0.55*(30/f_ck)**(1/3),0.55)
+    return (c_a*f_ctd) 
