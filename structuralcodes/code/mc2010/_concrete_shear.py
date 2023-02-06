@@ -319,7 +319,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = (20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)) *pi/180
+    theta_min = (20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e))
     kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)))*(
         1 - Ved / v_rd_max(
             approx_lvl_s, fck, bw, theta_min, z, E, As, Med, Ved,
@@ -506,7 +506,7 @@ def v_rd_max_approx2(
 def v_rd_max_approx3(
     fck: float,
     bw: float,
-    theta: float,
+    theta_min: float,
     z: float,
     E: float,
     As: float,
@@ -542,10 +542,9 @@ def v_rd_max_approx3(
 
     epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
-    ) * ((1 / tan(theta*pi/180)) ** 2)
+    ) * ((1 / tan(theta_min*pi/180)) ** 2)
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
-    theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)
     return (
         k_epsilon
         * nfc
@@ -718,4 +717,30 @@ def tau_rdi_without_reinforceent(c_a, f_ctd, mu, sigma_n, f_ck, f_cd):
     different casting time"""
 
     v = min(0.55*(30/f_ck)**(1/3),0.55)
-    return (c_a*f_ctd) 
+    return min((c_a*f_ctd) + (mu * sigma_n), 0.5*v*f_cd)
+
+
+def tau_rdi_with_reinforceent(
+    c_r, k1, k2, mu, ro, sigma_n, alfa, beta_c, f_ck,f_yd, f_cd
+):
+    """Shear resistance with reinforcement or dowels at the intesection with
+    different casting time
+
+    fib Model Code 2010, eq. (7.3-50)
+
+    Args:
+        c_r: The coefficient for aggregate interlock effects (tabel 7.3-2)
+        mu: The friction coefficient (tabel 7.3-2)
+        k1: The interction coefficient for tensile
+        force activated in reinforcment (tabel 7.3-2)
+        k2: The interction coeffiction for flexural resistance (tabel 7.3-2)
+        beta_c: The coefficient for strength of
+        compresstion strut (tabel 7.3-2)
+        sigma_n: The loweat expected compressiv stress from normal forces
+        f_ck: Characteristic strength in MPa
+        f_cd: The design value of cylinder compressive strength concrete
+        ro: 
+
+    return:
+        Shear resistance without reinforcement at the intesection with
+        different casting time"""
