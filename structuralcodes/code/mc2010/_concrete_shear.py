@@ -15,7 +15,7 @@ def epsilon_x(
 ) -> float:
     """The maximum allowed shear resistance
 
-    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    fib Model Code 2010, eq. (7.3-16)
 
     Args:
         E (float): The E-modulus to the materialb in MPa
@@ -29,8 +29,8 @@ def epsilon_x(
         float: The longitudinal strain"""
     return max(
         (1 / (2 * E * As)) * (
-            (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z))),
-        0
+            (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z))
+        ), 0
     )
 
 
@@ -89,69 +89,25 @@ def v_rd(
 
     if not reinforcment:
         return v_rdc(
-            approx_lvl_c,
-            fck,
-            z,
-            bw,
-            dg,
-            E,
-            As,
-            Med,
-            Ved,
-            Ned,
-            delta_e,
-            alfa,
-            gamma_c,
+            approx_lvl_c, fck, z, bw, dg, E, As,
+            Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
     if reinforcment and approx_lvl_s == 3:
         return min(v_rdc(
-            approx_lvl_c,
-            fck,
-            z,
-            bw,
-            dg,
-            E,
-            As,
-            Med,
-            Ved,
-            Ned,
-            delta_e,
-            alfa,
-            gamma_c) +
+            approx_lvl_c, fck, z, bw, dg, E, As, Med,
+            Ved, Ned, delta_e, alfa, gamma_c) +
             v_rds(asw, sw, z, fywd, theta, alfa),
             v_rd_max(
-            approx_lvl_s,
-            fck,
-            bw,
-            theta,
-            z,
-            E,
-            As,
-            Med,
-            Ved,
-            Ned,
-            delta_e,
-            alfa,
-            gamma_c,
+            approx_lvl_s, fck, bw, theta, z, E, As, Med,
+            Ved, Ned, delta_e, alfa, gamma_c,
             )
-            )
+        )
     elif reinforcment and approx_lvl_s == 1 or 2:
         return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max(
-            approx_lvl_s,
-            fck,
-            bw,
-            theta,
-            z,
-            E,
-            As,
-            Med,
-            Ved,
-            Ned,
-            delta_e,
-            alfa,
-            gamma_c,
+            approx_lvl_s, fck, bw, theta, z, E, As,
+            Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
-            )
+        )
 
 
 def v_rdc(
@@ -219,15 +175,15 @@ def v_rdc_approx1(
     bw: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """The design shear resistance of a web or a slab without
-    shear reinforcement.
+    """For members with no segnificant axal load, with fyk <= 600 Mpa,
+    fck <= 70 Mpa and with maximum aggrigate size of not less then 10mm.
 
-    fib Model Code 2010, Eq. (7.3-17)
+    fib Model Code 2010, Eq. (7.3-17) and (7.3-19)
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
         z (float): The length to the areasenter of cross-section in mm
-        gamma_c: Safety factor
+        gamma_c: Safety factor for concrete
         bw: Thickness of web in cross section
 
     Returns:
@@ -251,10 +207,11 @@ def v_rdc_approx2(
     delta_e: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """The design shear resistance of a web or a slab without
-    shear reinforcement.
+    """In higher strength concrete and light-weight aggregate concretes,
+    the fracture surface may go through the aggregate particles,
+    rather then around, reducing the crack roughness
 
-    fib Model Code 2010, Eq. (7.3-17)
+    fib Model Code 2010, Eq. (7.3-17), (7.3-20) and (7.3-21)
 
     Args:
         fck (float): Characteristic strength in MPa
@@ -299,7 +256,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
-    fib Model Code 2010, Eq. (7.3-17)
+    fib Model Code 2010, Eq. (7.3-17) and (7.3-43)
 
     Args:
         fck (float): Characteristic strength in MPa
@@ -337,7 +294,7 @@ def v_rds(
     theta: float,
     alpha: t.Optional[float] = pi / 2,
 ) -> float:
-    """fib Model Code 2010, Eq. (7.3-29)
+    """fib Model Code 2010, Eq. (7.3-25) and (7.3-29)
     Args:
         asw (float): Area of shear reinforcement
         sw (float): Senter distance between the shear reinforcement
@@ -375,7 +332,7 @@ def v_rd_max(
 ) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
 
-    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    fib Model Code 2010, eq. (7.3-24) and (7.3-26)
 
     Args:
         approx_lvl_s (int): Approximation level for steel
@@ -418,7 +375,7 @@ def v_rd_max_approx1(
 ) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
 
-    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    fib Model Code 2010, eq. (7.3-37)
 
     Args:
         fck (float): Characteristic strength in MPa
@@ -434,12 +391,7 @@ def v_rd_max_approx1(
     nfc = min((30 / fck) ** (1 / 3), 1)
 
     return (
-        0.55
-        * nfc
-        * (fck / gamma_c)
-        * bw
-        * z
-        * (
+        0.55 * nfc * (fck / gamma_c) * bw * z * (
             ((1 / tan(theta*pi/180)) + (1 / tan(alfa*pi/180)))
             / (1 + (1 / tan(theta*pi/180)) ** 2)
         )
@@ -462,7 +414,7 @@ def v_rd_max_approx2(
 ) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
 
-    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41)
 
     Args:
         fck (float): Characteristic strength in MPa
@@ -489,7 +441,7 @@ def v_rd_max_approx2(
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     return (
-        k_epsilon * nfc * (fck / gamma_c) * bw * z *(
+        k_epsilon * nfc * (fck / gamma_c) * bw * z * (
             ((1 / tan(theta*pi/180)) + (1 / tan(alfa*pi/180)))
             / (1 + (1 / tan(theta*pi/180)) ** 2)
             )
@@ -512,7 +464,7 @@ def v_rd_max_approx3(
 ) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
 
-    fib Model Code 2010, eq. (7.3-26) and (7.3-24)
+    fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41)
 
     Args:
         fck (float): Characteristic strength in MPa
@@ -773,17 +725,14 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
         t_ed: The acting torsyion force in the cross section
         z_i: Can be found in figure 7.3-18
         a_k: Can be found in figure 7.3-18
-    
     Returns:
         The shear force that will ocurre due to torsion force."""
-    
     return t_ed*z_i/(2*a_k)
 
 
 def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e):
     """The maximum allowed torsion allowed
     fib Model Code 2010, eq. (7.3-56)
-    
     args:
         f_ck: Characteristic strength in MPa
         gamma_c: Concrete safety factor
@@ -800,7 +749,7 @@ def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned,
         k_epsilon = 0.55
     elif approx_lvl_s == 2:
         epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
-        epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+            epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta*pi/180)) ** 2)
         k_epsilon = 1 / (1.2 + 55 * epsilon_1)
     elif approx_lvl_s == 3:
@@ -808,7 +757,6 @@ def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned,
             epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
             ) * ((1 / tan(theta*pi/180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    
     k_c = nfc*k_epsilon
 
     return k_c*f_ck*t_ef*2*a_k*sin(theta*pi/180)*cos(theta*pi/180)/gamma_c
@@ -820,10 +768,8 @@ def t_rd(
 ):
 
     """hei
-    
     Args:
         t
-        
     return:
         e"""
     if ((t_ed/
