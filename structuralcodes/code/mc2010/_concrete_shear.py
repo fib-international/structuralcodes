@@ -65,7 +65,8 @@ def v_rd(
         reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
-        z: (float): The length to the areasenter of cross-section in mm
+        z: (float): distances between the centerline of the
+        compressive chord and the reinforcement
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
         E: (float): The E-modulus to the materialb in MPa
@@ -730,7 +731,11 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
     return t_ed*z_i/(2*a_k)
 
 
-def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e):
+def t_rd_max(
+        f_ck: float, gamma_c: float, d_k: float, a_k: float,
+        theta: float, approx_lvl_s: int, E: float, As: float,
+        Med: float, Ved: float, Ned: float, z: float, delta_e: float
+) -> float:
     """The maximum allowed torsion allowed
     fib Model Code 2010, eq. (7.3-56)
     args:
@@ -739,8 +744,18 @@ def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned,
         d_k: Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
         theta: Inclitaniton of the compression stressfield
+        approx_lvl_s: Approximation method for cocrete with reinforcement
+        E: The E-modulus to the materialb in MPa
+        As: The cross-section reinforcement in mm^2
+        Med: The moment working on the material in Nmm
+        Ved: The shear working on the material in N
+        Ned: The normal force working on the material in N
+        z: distances between the centerline of the
+        compressive chord and the reinforcement
+        delta_e: the exentrisity of the load
 
     return:
+        The maximum allowed torsion allowed
     """
     t_ef = d_k/8
     nfc = min((30 / f_ck) ** (1 / 3), 1)
@@ -765,15 +780,46 @@ def t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned,
 def t_rd(
     t_ed: float,
     v_ed: float,
+    approx_lvl_s: int,
+    fck: float,
+    bw: float,
+    theta: float,
+    z: float,
+    E: float,
+    As: float,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
+    alfa: float = 0,
+    f_ck: float,
+    d_k: float,
+    a_k: float,
+    gamma_c: float = 1.5,
 ):
-
     """hei
     Args:
-        t
+        approx_lvl_s (int): Approximation level for steel
+        fck (float): Characteristic strength in MPa
+        z: (float): The length to the areasenter of cross-section in mm
+        bw: (float): Thickness of web in cross section
+        dg: (float): Maximum size of aggregate
+        E: (float): The E-modulus to the materialb in MPa
+        As: (float): The cross-section area in mm^2
+        Med: (float): The moment working on the material in Nmm
+        Ved: (float): The shear working on the material in N
+        Ned: (float): The normal force working on the material in N
+        delta_e (float): The exentricity of the load in mm
+        alfa (float): Inclination of the stirrups
+        f_ck: Characteristic strength in MPa
+        d_k: Is the diameter in the smalest circel in the cross section
+        a_k: Can be found in figure 7.3-18
+        gamma_c (float): Safety factor
     return:
-        e"""
+        Returns a bool that is true if the criteria for torsion and
+        shear is fulfilled"""
     if ((t_ed/
-    t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e))**2+
+    t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e))**2 +
     (v_ed/
     v_rd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
         ok = True
