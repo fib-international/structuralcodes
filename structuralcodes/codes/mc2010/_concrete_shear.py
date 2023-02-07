@@ -791,7 +791,7 @@ def t_rd(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float = 0,
+    alfa: float,
     f_ck: float,
     d_k: float,
     a_k: float,
