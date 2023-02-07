@@ -11,7 +11,7 @@ def fcm(fck: float, delta_f: float = 8.0) -> float:
     Args:
         fck (float): The characteristic compressive strength in MPa.
 
-    Kwargs:
+    Keyword Args:
         delta_f (float): The difference between the mean and the
         characteristic strength.
 
@@ -38,34 +38,34 @@ def fctm(fck: float) -> float:
     return 2.12 * math.log(1 + 0.1 * fcm(fck))
 
 
-def fctkmin(fck: float) -> float:
+def fctkmin(_fctm: float) -> float:
     """Compute the lower bound value of the characteristic tensile strength
-    from the characteristic compressive strength.
+    from the mean tensile strength.
 
     fib Model Code 2010, Eq. (5.1-4)
 
     Args:
-        fck (float): The characteristic compressive strength in MPa.
+        _fctm (float): The mean tensile strength in MPa.
 
     Returns:
         float: Lower bound of the characteristic tensile strength in MPa.
     """
-    return 0.7 * fctm(fck)
+    return 0.7 * _fctm
 
 
-def fctkmax(fck: float) -> float:
+def fctkmax(_fctm: float) -> float:
     """Compute the upper bound value of the characteristic tensile strength
-    from the characteristic compressive strength.
+    from the mean tensile strength.
 
     fib Model Code 2010, Eq. (5.1-5)
 
     Args:
-        fck (float): The characteristic compressive strength in MPa.
+        _fctm (float): The mean tensile strength in MPa.
 
     Returns:
         float: Upper bound of the characteristic tensile strength in MPa.
     """
-    return 1.3 * fctm(fck)
+    return 1.3 * _fctm
 
 
 def Gf(fck: float) -> float:
