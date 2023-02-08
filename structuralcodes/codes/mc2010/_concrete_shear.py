@@ -826,3 +826,11 @@ def t_rd(
     else:
         ok = False
     return ok
+
+
+def v_rdc_pnching_approx_1():
+    """Punching resistance from the concrete"""
+    r_s= 0.22*lx
+    psi = 1.5*r_s*f_yd/(d*e_s)
+    k_dg = max(32/(16+d_g),0.75)
+    k_psi = min(1/(1.5+0.9*k_dg*psi*d))
