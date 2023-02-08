@@ -826,5 +826,3 @@ def t_rd(
     else:
         ok = False
     return ok
-
-#draft
