@@ -18,12 +18,12 @@ def epsilon_x(
     fib Model Code 2010, eq. (7.3-16)
 
     Args:
-        E (float): The E-modulus to the materialb in MPa
-        AS (Float): The cross-section area in mm^2
+        E (float): The E-modulus to the material in MPa
+        As (Float): The cross-section area of reinforcement in mm^2
         Med (Float): The moment working on the material in Nmm
-        Ved (float): The shear working on the material in N
+        Ved (float): The shear force working on the material in N
         Ned: (float): The normal force working on the material in N
-        z: (float): The length to the areasenter of cross-section in mm
+        z: (float): The effective shear depth in mm
         delta_E (float): The exentricity of the load in mm
     Returns:
         float: The longitudinal strain"""
@@ -61,26 +61,26 @@ def v_rd(
 
     Args:
         approx_lvl_c (int): Approximation level for concrete
-        approx_lvl_s (int): Approximation level for steel
+        approx_lvl_s (int): Approximation level for reinforcment
         reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
         z: (float): distances between the centerline of the
-        compressive chord and the reinforcement
-        bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
+        compressive chord and the reinforcement in mm
+        bw: (float): Thickness of web in cross section in mm
+        dg: (float): Maximum size of aggregate in mm
         E: (float): The E-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
+        As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
         alfa (float): Inclination of the stirrups
         gamma_c (float): Concrete safety factor
-        asw (float): Area of shear reinforcement
-        sw (float): Senter distance between the shear reinforcement
+        asw (float): Area of shear reinforcement in mm^2
+        sw (float): Senter distance between the shear reinforcement in mm
         fywd (float): The design yield strength of the shear reinforcement
-        theta (float): Inclitaniton of the compression stressfield
+        theta (float): Inclitantion of the compression stressfield
 
     Returns:
         float: Design shear resistance
@@ -135,12 +135,12 @@ def v_rdc(
 
     Args:
         approx_lvl_c (int): Approximation level for concrete
-        approx_lvl_s (int): Approximation level for steel
+        approx_lvl_s (int): Approximation level for reinforcement
         reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
         z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
+        bw: (float): Thickness of web in cross section in mm
         dg: (float): Maximum size of aggregate
         E: (float): The E-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
@@ -257,7 +257,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
     """The design shear resistance of a web or a slab without
     shear reinforcement.
 
-    fib Model Code 2010, Eq. (7.3-17) and (7.3-43)
+    fib Model Code 2010, Eq. (7.3-17), (7.3-39) and (7.3-43)
 
     Args:
         fck (float): Characteristic strength in MPa
@@ -293,14 +293,14 @@ def v_rds(
     z: float,
     fywd: float,
     theta: float,
-    alpha: t.Optional[float] = pi / 2,
+    alpha: float,
 ) -> float:
     """fib Model Code 2010, Eq. (7.3-25) and (7.3-29)
     Args:
-        asw (float): Area of shear reinforcement
-        sw (float): Senter distance between the shear reinforcement
+        asw (float): Area of shear reinforcement in mm
+        sw (float): Senter distance between the shear reinforcement in mm
         z: (float): The length to the areasenter of cross-section in mm
-        fywd (float): The design yield strength of the shear reinforcement
+        fywd (float): Design yield strength of the shear reinforcement in Mpa
         theta (float): Inclitaniton of the compression stressfield
         alfa (float): Inclination of the stirrups
 
@@ -423,7 +423,7 @@ def v_rd_max_approx2(
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
         E: (float): The E-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
+        As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
@@ -472,7 +472,7 @@ def v_rd_max_approx3(
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
         E: (float): The E-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
+        As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
@@ -525,15 +525,17 @@ def v_rd_ct(
     fib Model Code 2010, eq. (7.3-44) and (7.3-45)
 
     Args:
-        approx_lvl_h: What approximation level we want for hollow core
-        f_ctd: The design value of concrete axial tensile strength
-        i_c: The second moment of area
-        s_c: The first moment of area, abouve and about the centriodal axis
-        b_w: The width of the cross-section at the centroidal axis
-        sigma_cp: The compressive stress at centroidal axis due to prestress
-        alfa_l: l_x/(1.2*l_bd0)
-        l_x: distance between edge and point of failure (Figure: 7.3-12)
-        l_bd0: follows 7.13-5
+        approx_lvl_h (int): What approximation level we want for hollow core
+        f_ctd (float): The design value of concrete axial tensile strength
+        i_c (float): Second moment of area in mm^4
+        s_c (float): First moment of area, abouve and about the
+        centriodal axis in mm^3
+        b_w (float): The width of the cross-section at the centroidal axis
+        sigma_cp (float): The compressive stress at centroidal axis
+        due to prestress
+        l_x (float): The distance between edge and point of
+        failure (Figure: 7.3-12) in mm
+        l_bd0 (float): follows 7.13-5 in mm
         S_cy: The first moment of area above y
         b_wy: The width at hight y
         y: The hight at of the critical point at the line of failure
@@ -824,9 +826,14 @@ def t_rd(
     return ok
 
 
-def v_rdc_pnching_approx_1():
-    """Punching resistance from the concrete"""
-    r_s= 0.22*lx
-    psi = 1.5*r_s*f_yd/(d*e_s)
-    k_dg = max(32/(16+d_g),0.75)
-    k_psi = min(1/(1.5+0.9*k_dg*psi*d))
+# def v_rdc_pnching_approx_1():
+#     """Punching resistance from the concrete
+    
+#     args:
+#         dv: Shear resisting effectiv depth, figure 7.3-20
+#         e_u"""
+#     r_s= 0.22*lx
+#     psi = 1.5*r_s*f_yd/(d*e_s)
+#     k_dg = max(32/(16+d_g),0.75)
+#     k_psi = min(1/(1.5+0.9*k_dg*psi*d))
+#     return k_psi*b_0*d_v
