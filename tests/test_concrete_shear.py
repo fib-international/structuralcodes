@@ -5,24 +5,6 @@ import pytest
 from structuralcodes.code.mc2010 import _concrete_shear
 
 
-# @pytest.mark.parametrize(
-#     'test_input1, testinput2, test, expected',
-#     [
-#         (12, 150, 50, 2625.424),
-#         (14, 150, 50, 2835.782),
-#         (16, 150, 50, 3031.579),
-#         (20, 150, 50, 3389.408),
-#         (25, 150, 50, 3789.474),
-#         (30, 150, 50, 4151.160)
-#     ]
-# )
-# def test_fcm(test_input1, test_input2, test_input3, expected):
-#     """Test the fcm function."""
-#     assert math.isclose(
-#         _concrete_shear.vrdc(test_input1, test_input2, test_input3, expected)
-#     )
-
-
 @pytest.mark.parametrize(
     'E, As, Med, Ved, Ned, z, deltaE, expected',
     [
@@ -48,7 +30,10 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
     [
         (1, 30, 50, 20, 200, 210000, 1000, 200e6, 50e3, 10e3, 50, 20, 1.5, 70707),
         (2, 30, 50, 20, 200, 210000, 1000, 200e6, 50e3, 10e3, 50, 20, 1.5, 39997),
-        (2, 30, 50, 20, 200, 210000, 1000, 50e6, 10e3, 10e3, 50, 20, 1.5, 39997),
+        (2, 30, 50, 20, 200, 210000, 1000, 50e6, 10e3, 10e3, 50, 20, 1.5, 55179.55),
+        (2, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 20, 1.5, 243586),
+        (3, 30, 50, 20, 200, 210000, 1000, 50e6, 10e3, 10e3, 50, 20, 1.5, 102996),
+
     ],
 )
 def test_vrd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned,
