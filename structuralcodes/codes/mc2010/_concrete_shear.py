@@ -362,7 +362,7 @@ def v_rd_max(
 
     elif approx_lvl_s == 3:
         return v_rd_max_approx3(
-            fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
+            fck, bw, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
 
@@ -452,7 +452,6 @@ def v_rd_max_approx2(
 def v_rd_max_approx3(
     fck: float,
     bw: float,
-    theta_min: float,
     z: float,
     E: float,
     As: float,
@@ -485,6 +484,7 @@ def v_rd_max_approx3(
         float: The maximum allowed shear resistance regardless of
         approximation level"""
     nfc = min((30 / fck) ** (1 / 3), 1)
+    theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)
 
     epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
@@ -492,11 +492,7 @@ def v_rd_max_approx3(
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     return (
-        k_epsilon
-        * nfc
-        * (fck / gamma_c)
-        * bw
-        * z
+        k_epsilon * nfc * (fck / gamma_c) * bw * z
         * (
             ((1 / tan(theta_min*pi/180)) + (1 / tan(alfa*pi/180)))
             / (1 + (1 / tan(theta_min*pi/180)) ** 2)
