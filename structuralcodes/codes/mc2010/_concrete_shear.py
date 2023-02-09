@@ -1,5 +1,4 @@
 """A collection of shear formulas for concrete"""
-import typing as t
 import warnings
 from math import pi, tan, sin, cos
 
@@ -569,6 +568,8 @@ def v_rd_ct_approx1(
 ) -> float:
     """Calculating level 1 approximation.
 
+    fib Model Code 2010, eq. (7.3-44)
+
     Args:
         f_ctd: The design value of concrete axial tensile strength
         i_c: The second moment of area
@@ -601,6 +602,9 @@ def v_rd_ct_approx2(
 
     """Calculates the maximum shear force for level 2 approximation
     in hollow core slabs.
+
+ fib Model Code 2010, eq. (7.3-45), (7.3-46) and (7.3-47)
+
     Args:
         f_ctd: The design value of concrete axial tensile strength
         i_c: The second moment of area
@@ -711,7 +715,7 @@ def tau_rdi_with_reinforceent(
     v = min(0.55*(30/f_ck)**(1/3), 0.55)
     return min(
         (c_r*f_ck**(1/3))+(mu*sigma_n)+k1*ro * f_yd *
-        (ro*sin(alfa)+cos(alfa)+k2*ro*(f_yd*f_cd)**0.5),
+        (ro*sin(alfa*pi/180)+cos(alfa*pi/180)+k2*ro*(f_yd*f_cd)**0.5),
         beta_c*v*f_cd
         )
 
@@ -794,8 +798,10 @@ def t_rd(
     d_k: float,
     a_k: float,
     gamma_c: float = 1.5,
-):
+) -> bool:
     """hei
+    fib Model Code 2010, eq. (7.3-56)
+
     Args:
         approx_lvl_s (int): Approximation level for steel
         fck (float): Characteristic strength in MPa
@@ -816,19 +822,25 @@ def t_rd(
     return:
         Returns a bool that is true if the criteria for torsion and
         shear is fulfilled"""
-    if ((t_ed/
-    t_rd_max(f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E, As, Med, Ved, Ned, z, delta_e))**2 +
-    (v_ed/
-    v_rd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
-        ok = True
+    if (
+        (t_ed
+         / t_rd_max(
+            f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s,
+            E, As, Med, Ved, Ned, z, delta_e))**2 +
+        (v_ed
+         / v_rd_max(
+            approx_lvl_s, fck, bw, theta, z, E, As, Med,
+            Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
+        check = True
+
     else:
-        ok = False
-    return ok
+        check = False
+    return check
 
 
 # def v_rdc_pnching_approx_1():
 #     """Punching resistance from the concrete
-    
+
 #     args:
 #         dv: Shear resisting effectiv depth, figure 7.3-20
 #         e_u"""
