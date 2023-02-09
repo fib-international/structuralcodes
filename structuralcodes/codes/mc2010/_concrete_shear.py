@@ -536,7 +536,7 @@ def v_rd_ct(
         l_x (float): The distance between edge and point of
         failure (Figure: 7.3-12) in mm
         l_bd0 (float): follows 7.13-5 in mm
-        S_cy: The first moment of area above y
+        S_cy : The first moment of area above y in mm^3
         b_wy: The width at hight y
         y: The hight at of the critical point at the line of failure
         y_c: The hight of the concrete centroidal axis
