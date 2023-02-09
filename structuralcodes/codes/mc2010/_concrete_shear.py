@@ -837,3 +837,6 @@ def t_rd(
 #     k_dg = max(32/(16+d_g),0.75)
 #     k_psi = min(1/(1.5+0.9*k_dg*psi*d))
 #     return k_psi*b_0*d_v
+
+print(v_rd_max(3, 30, 50, 20, 200, 210000, 1000, 50e6, 10e3, 10e3, 50, 20, 1.5))
+
