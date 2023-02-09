@@ -74,12 +74,12 @@ def v_rd(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Concrete safety factor
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
         fywd (float): The design yield strength of the shear reinforcement
-        theta (float): Inclitantion of the compression stressfield
+        theta (float): Inclitantion of the compression stressfield in degrees
 
     Returns:
         float: Design shear resistance
@@ -147,7 +147,7 @@ def v_rdc(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Safety factor
 
     Returns:
@@ -269,7 +269,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Safety factor
 
     Returns:
@@ -300,7 +300,7 @@ def v_rds(
         sw (float): Senter distance between the shear reinforcement in mm
         z: (float): The length to the areasenter of cross-section in mm
         fywd (float): Design yield strength of the shear reinforcement in Mpa
-        theta (float): Inclitaniton of the compression stressfield
+        theta (float): Inclitaniton of the compression stressfield in degrees
         alfa (float): Inclination of the stirrups
 
     Returns:
@@ -346,7 +346,7 @@ def v_rd_max(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Safety factor
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -382,7 +382,7 @@ def v_rd_max_approx1(
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Safety factor
 
     Returns:
@@ -427,7 +427,7 @@ def v_rd_max_approx2(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Concrete safety factor
 
     Returns:
@@ -476,7 +476,7 @@ def v_rd_max_approx3(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         gamma_c (float): Concrete safety factor
 
     Returns:
@@ -814,7 +814,7 @@ def t_rd(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
-        alfa (float): Inclination of the stirrups
+        alfa (float): Inclination of the stirrups in degrees
         f_ck: Characteristic strength in MPa
         d_k: Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
