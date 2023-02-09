@@ -535,15 +535,15 @@ def v_rd_ct(
         l_x (float): The distance between edge and point of
         failure (Figure: 7.3-12) in mm
         l_bd0 (float): follows 7.13-5 in mm
-        S_cy : The first moment of area above y in mm^3
-        b_wy: The width at hight y
-        y: The hight at of the critical point at the line of failure
-        y_c: The hight of the concrete centroidal axis
-        A_c: The area of concrete cross-section
-        A_cy: The area of concrete cross-section above y
-        y_pt: The hight of centroidal axis of prestressed steel
-        f_p_lx: The prestressing force at the distance l_x
-        f_p_lx_dx: The derivative of prestressing force at the distance l_x
+        S_cy (float): The first moment of area above y in mm^3
+        b_wy (float): The width at hight y in mm
+        y (float): Hight at of the critical point at the line of failure in mm
+        y_c (float): The hight of the concrete centroidal axis in mm
+        A_c (float): The area of concrete cross-section in mm^2
+        A_cy (float): The area of concrete cross-section above y in mm^2
+        y_pt (float): The hight of centroidal axis of prestressed steel in mm
+        f_p_lx (float): The prestressing force at the distance l_x in N
+        f_p_lx_dx (float): The change of prestressing force at the distance l_x
 
     Return:
         The maximum allowed shear force in a hollow core. Regardless of the
@@ -566,18 +566,22 @@ def v_rd_ct_approx1(
     l_x: float,
     l_bd0: float
 ) -> float:
-    """Calculating level 1 approximation.
+    """Calculating level 1 approximation for shear
+    resistance in hollow core slabs.
 
     fib Model Code 2010, eq. (7.3-44)
 
     Args:
-        f_ctd: The design value of concrete axial tensile strength
-        i_c: The second moment of area
-        s_c: The first moment of area, abouve and about the centriodal axis
-        b_w: The width of the cross-section at the centroidal axis
-        sigma_cp: The compressive stress at centroidal axis due to prestress
-        l_x: distance between edge and point of failure (Figure: 7.3-12)
-        l_bd0: follows 7.13-5
+        f_ctd (float): The design value of concrete axial tensile strength
+        i_c (float): The second moment of area
+        s_c (float): The first moment of area, above and about the
+        centriodal axis in mm^3
+        b_w (float): The width of the cross-section at the centroidal axis
+        sigma_cp (float): The compressive stress at centroidal
+        axis due to prestress in Mpa
+        l_x (float): Distance from the edge to point of
+        failure (Figure: 7.3-12)
+        l_bd0 (float): follows 7.13-5
     return:
         Vrd Appoximation 1 for hollow slabs"""
     alfa_l = l_x/(1.2*l_bd0)
@@ -606,19 +610,21 @@ def v_rd_ct_approx2(
  fib Model Code 2010, eq. (7.3-45), (7.3-46) and (7.3-47)
 
     Args:
-        f_ctd: The design value of concrete axial tensile strength
-        i_c: The second moment of area
-        l_x: distance between edge and point of failure (Figure: 7.3-12)
-        l_bd0: follows 7.13-5
-        S_cy: The first moment of area above y
-        b_wy: The width at hight y
-        y: The hight at of the critical point at the line of failure
-        y_c: The hight of the concrete centroidal axis
-        A_c: The area of concrete cross-section
-        A_cy: The area of concrete cross-section above y
-        y_pt: The hight of centroidal axis of prestressed steel
-        f_p_lx: The prestressing force at the distance l_x
-        f_p_lx: The derivative of prestressing force at the distance l_x
+        f_ctd (float): Design value of concrete axial tensile strength in MPa
+        i_c (float): The second moment of area in mm^4
+        l_x (float): Distance from the edge to point of
+        failure (Figure: 7.3-12)
+        l_bd0 (float): follows 7.13-5
+        S_cy (float): The first moment of area above y in mm^3
+        b_wy (float): The width at hight y in mm
+        y (float): The highh of the critical point at the line of failure in mm
+        y_c (float): The hight of the concrete centroidal axis in mm
+        A_c (float): The area of concrete cross-section in mm^2
+        A_cy (float): The area of concrete cross-section above y in mm^2
+        y_pt (float): The hight of centroidal axis of prestressed steel in mm
+        f_p_lx (float): The prestressing force at the distance l_x in N
+        f_p_lx (float): The derivative of prestressing force at the
+        distance l_x with respect to dx
 
     sigma_cpy: The compressiv stress in the concrete at hight y and l_x
     tau_cpy: The shear stress due to prestress at hight y and l_x
@@ -636,11 +642,11 @@ def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
     """Shear at the interface between cocrete cast at different times
     fib Model Code 2010, eq. (7.3-49)
     Args:
-        beta: The ratio of longitudinal force in the new concrete and
+        beta (float): The ratio of longitudinal force in the new concrete and
         the longitudinal force in either compression or tension zone
-        z: The inner lever arm of composed section
-        b_i: The width of the inerface
-        v_ed: The shear force at the interface
+        z (float): The inner lever arm of the composed section in mm
+        b_i (float): The width of the inerface in mm
+        v_ed (float): The shear force at the interface in N
 
     return:
         The shear force that should be used at the intersection"""
@@ -661,14 +667,16 @@ def tau_rdi_without_reinforceent(
     fib Model Code 2010, eq. (7.3-50)
 
     Args:
-        c_a: The coefficient for adhesive bond (tabel 7.3-1)
-        mu: The friction coefficient
-        sigma_n: The loweat expected compressiv stress from normal forces
-        f_ck: Characteristic strength in MPa
-        f_cd: The design value of cylinder compressive strength concrete
+        c_a (float): The coefficient for adhesive bond (tabel 7.3-1)
+        mu (float): The friction coefficient
+        sigma_n (float): The loweat expected compressiv stress from
+        normal forces in MPa
+        f_ck (float): Characteristic strength in MPa
+        f_cd (float): The design value of cylinder compressive
+        strength concrete in MPa
 
     return:
-        Shear resistance without reinforcement at the intesection with
+        The shear resistance without reinforcement at the intesection with
     different casting time"""
 
     v = min(0.55*(30/f_ck)**(1/3), 0.55)
@@ -694,20 +702,24 @@ def tau_rdi_with_reinforceent(
     fib Model Code 2010, eq. (7.3-51)
 
     Args:
-        c_r: The coefficient for aggregate interlock effects (tabel 7.3-2)
-        k1: The interction coefficient for tensile
+        c_r (float): Coefficient for aggregate interlock effects (tabel 7.3-2)
+        k1 (float): The interction coefficient for tensile
         force activated in reinforcment (tabel 7.3-2)
-        k2: The interction coeffiction for flexural resistance (tabel 7.3-2)
-        mu: The friction coefficient (tabel 7.3-2)
-        ro: reinforcement ratio of reinforcment crossing the interface
-        sigma_n: The loweat expected compressiv stress from normal forces
-        alfa: The inclination of reinforcement crossing the
+        k2 (float): The interction coeffiction for flexural
+        resistance (tabel 7.3-2)
+        mu (float): The friction coefficient (tabel 7.3-2)
+        ro (float): The reinforcement ratio of reinforing steel
+        crossing the interface
+        sigma_n (float): The loweat expected compressiv stress resulting
+        from normal forces acting on the interface in MPa
+        alfa (float): The inclination of reinforcement crossing the
         interface (tabel 7.3-14)
-        beta_c: The coefficient for strength of
+        beta_c (float): The coefficient for strength of
         compresstion strut (tabel 7.3-2)
-        f_ck: Characteristic strength in MPa
-        f_yd: design strength of reinforment steel
-        f_cd: The design value of cylinder compressive strength concrete
+        f_ck (float): Characteristic strength in MPa
+        f_yd (float): design strength of reinforment steel in MPa
+        f_cd (float): The design value of cylinder compressive
+        strength concrete
 
     return:
         Shear resistance with reinforcement at intesection with
@@ -721,13 +733,15 @@ def tau_rdi_with_reinforceent(
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
-    """Shear force from an torsion
+    """Shear force due to torsion
+
     fib Model Code 2010, eq. (7.3-53)
 
     Args:
-        t_ed: The acting torsyion force in the cross section
+        t_ed: The acting torsion force in the cross section in Nmm
         z_i: Can be found in figure 7.3-18
         a_k: Can be found in figure 7.3-18
+
     Returns:
         The shear force that will ocurre due to torsion force."""
     return t_ed*z_i/(2*a_k)
@@ -741,20 +755,20 @@ def t_rd_max(
     """The maximum allowed torsion allowed
     fib Model Code 2010, eq. (7.3-56)
     args:
-        f_ck: Characteristic strength in MPa
-        gamma_c: Concrete safety factor
-        d_k: Is the diameter in the smalest circel in the cross section
+        f_ck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
+        d_k (float): Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
-        theta: Inclitaniton of the compression stressfield
-        approx_lvl_s: Approximation method for cocrete with reinforcement
-        E: The E-modulus to the materialb in MPa
-        As: The cross-section reinforcement in mm^2
-        Med: The moment working on the material in Nmm
-        Ved: The shear working on the material in N
-        Ned: The normal force working on the material in N
-        z: distances between the centerline of the
-        compressive chord and the reinforcement
-        delta_e: the exentrisity of the load
+        theta (float): Inclitaniton of the compression stressfield in degrees
+        approx_lvl_s (int): Approximation method for cocrete with reinforcement
+        E (float): The E-modulus to the materialb in MPa
+        As (float): The cross-section reinforcement in mm^2
+        Med (float): The moment working on the material in Nmm
+        Ved (float): The shear working on the material in N
+        Ned (float): The normal force working on the material in N
+        z (float): distances between the centerline of the
+        compressive chord and the reinforcement in mm
+        delta_e (float): the exentrisity of the load in mm
 
     return:
         The maximum allowed torsion allowed
@@ -799,7 +813,8 @@ def t_rd(
     a_k: float,
     gamma_c: float = 1.5,
 ) -> bool:
-    """hei
+    """Checks if the combination of torstion ans shear is ok
+   
     fib Model Code 2010, eq. (7.3-56)
 
     Args:
