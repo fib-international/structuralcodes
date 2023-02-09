@@ -818,6 +818,7 @@ def t_rd(
     return:
         Returns a bool that is true if the criteria for torsion and
         shear is fulfilled"""
+        
     if ((t_ed /
     t_rd_max(
         f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s,
