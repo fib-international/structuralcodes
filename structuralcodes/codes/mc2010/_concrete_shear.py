@@ -851,16 +851,33 @@ def t_rd(
     else:
         check = False
     return check
+    # Punching starter her
 
+def b_0(
+    v_ed: float,
+    v_prep_d_max: float
+):
+    """Gives the general output for b_0, shear-resisting control perimeter.
 
-# def v_rdc_pnching_approx_1():
-#     """Punching resistance from the concrete
+    Args:
+        V_ed (float):
+        v_prep_d_max (float): The maximum shear force per unit length
+        perpendiculerer to the basic control parameter (Figure 7.3-24)
+    
+    Return:
+        The shear-resisting control perimeter, b_0"""
 
-#     args:
-#         dv: Shear resisting effectiv depth, figure 7.3-20
-#         e_u"""
-#     r_s= 0.22*lx
-#     psi = 1.5*r_s*f_yd/(d*e_s)
-#     k_dg = max(32/(16+d_g),0.75)
-#     k_psi = min(1/(1.5+0.9*k_dg*psi*d))
-#     return k_psi*b_0*d_v
+    return: v_ed/v_prep_d_max
+
+def v_rdc_pnching_approx_1():
+    """Punching resistance from the concrete
+
+    args:
+        dv: Shear resisting effectiv depth, figure 7.3-20
+        e_u"""
+
+    r_s= 0.22*lx
+    psi = 1.5*r_s*f_yd/(d*e_s)
+    k_dg = max(32/(16+d_g),0.75)
+    k_psi = min(1/(1.5+0.9*k_dg*psi*d))
+    return k_psi*b_0*d_v
