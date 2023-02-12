@@ -814,7 +814,7 @@ def t_rd(
     gamma_c: float = 1.5,
 ) -> bool:
     """Checks if the combination of torstion ans shear is ok
-   
+
     fib Model Code 2010, eq. (7.3-56)
 
     Args:
@@ -851,33 +851,97 @@ def t_rd(
     else:
         check = False
     return check
-    # Punching starter her
 
-def b_0(
-    v_ed: float,
-    v_prep_d_max: float
-):
+# Punching starter her
+
+
+def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
 
     Args:
         V_ed (float):
         v_prep_d_max (float): The maximum shear force per unit length
         perpendiculerer to the basic control parameter (Figure 7.3-24)
-    
+
     Return:
         The shear-resisting control perimeter, b_0"""
 
-    return: v_ed/v_prep_d_max
+    return v_ed/v_prep_d_max
 
-def v_rdc_pnching_approx_1():
-    """Punching resistance from the concrete
+
+def v_rdc_punching_approx_1(         # mangler bare args forklaring
+    r_s: float, psi: float, k_dg: float, k_psi: float, l_x: float, l_y: float,
+    f_yd: float, d: float, e_s: float, d_g: float, f_ck: float, d_v: float
+) -> float:
+    """Punching resistance from the concrete, approx 1
 
     args:
-        dv: Shear resisting effectiv depth, figure 7.3-20
-        e_u"""
+        dv Shear resisting effectiv depth, figure 7.3-20
+        r_s floa:
+        psi float:
+        k_dg float:
+        k_psi float:
+        l_x float:
+        l_y float:
+        f_yd float:
+        d float:
+        e_s float:
+        d_g float:
+        f_ck float:
+        d_v float:
+    return v_rdc for punching with approx 1"""
 
-    r_s= 0.22*lx
-    psi = 1.5*r_s*f_yd/(d*e_s)
-    k_dg = max(32/(16+d_g),0.75)
+    if 0.5 < l_x/l_y < 2:
+        warnings.warn("Reconsider maximum r_s value")
+
+    r_s = 0.22 * l_x
+    psi = 1.5 * r_s * f_yd / (d*e_s)
+    k_dg = max(32/(16+d_g), 0.75)
     k_psi = min(1/(1.5+0.9*k_dg*psi*d))
-    return k_psi*b_0*d_v
+
+    return k_psi*b_0*d_v * (f_ck**0.5)/d_v
+
+
+def m_ed(v_ed, e_u, r_sx, r_sy):
+    """hei"""
+    return m_ed
+
+
+def v_rdc_punching_approx_2(         # mangler args forklaring
+    r_s: float, psi: float, k_dg: float, k_psi: float, l_x: float, l_y: float,
+    f_yd: float, d: float, e_s: float, d_g: float, f_ck: float, d_v: float,
+    v_ed: float, e_u: float, r_sx: float, r_sy: float, m_rd: float
+) -> float:
+    """Punching resistance from the concrete, approx 1
+
+    args:
+        dv Shear resisting effectiv depth, figure 7.3-20
+        r_s floa:
+        psi float:
+        k_dg float:
+        k_psi float:
+        l_x float:
+        l_y float:
+        f_yd float:
+        d float:
+        e_s float:
+        d_g float:
+        f_ck float:
+        d_v float:
+        v_ed float:
+        e_u float:
+        r_sx float:
+        r_sy float:
+        m_rd float:
+
+    return v_rdc for punching with approx 1"""
+
+    if 0.5 < l_x/l_y < 2:
+        warnings.warn("Reconsider maximum r_s value")
+
+    r_s = 0.22 * l_x
+    psi = (1.5 * r_s * f_yd / (d*e_s))*(m_ed(v_ed, e_u, r_sx, r_sy)/m_rd)**1.5
+    k_dg = max(32/(16+d_g), 0.75)
+    k_psi = min(1/(1.5+0.9*k_dg*psi*d))
+
+    return k_psi*b_0*d_v * (f_ck**0.5)/d_v
