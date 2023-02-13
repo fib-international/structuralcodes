@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from structuralcodes.code.mc2010 import _concrete_shear
+from structuralcodes.codes.mc2010 import _concrete_shear
 
 
 @pytest.mark.parametrize(
@@ -67,4 +67,58 @@ def test_v_rdc(approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
                 Ned, delta_e, alfa, gamma_c
                 ),
         expected, rel_tol=0.001)
+
+@pytest.mark.parametrize(
+    '''asw, sw, z, fywd, theta, alpha, expected''',
+    [
+        (1600, 50, 200, 355, 25, 30, 4403769),
+        (2000, 50, 200, 355, 25, 30, 5504711),
+        (1600, 50, 200, 355, 25, 30, 4403769),
+        (1600, 100, 200, 355, 25, 30, 2201884),
+        (1600, 50, 200, 275, 25, 30, 3411370),
+        (1600, 50, 200, 355, 22, 30, 4779308),
+        (1600, 50, 200, 355, 25, 25, 4872319),
+    ],
+)
+def test_v_rds(asw, sw, z, fywd, theta, alpha, expected):
+
+    """Test the v_rds function."""
+    assert math.isclose(_concrete_shear.v_rds(
+                asw, sw, z, fywd, theta, alpha
+                ),
+        expected, rel_tol=0.001)
+
+
+@pytest.mark.parametrize(
+    '''approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
+    b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected''',
+    [
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 839136),
+        (1, 3.5, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 976183),
+        (1, 2.6, 5e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 699280),
+        (1, 2.6, 6e8, 5e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 1006963),
+        (1, 2.6, 6e8, 6e5, 40, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 671309),
+        (1, 2.6, 6e8, 6e5, 50, 180, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 918050),
+        (1, 2.6, 6e8, 6e5, 50, 150, 35, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 785800),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 25, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 918050),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 2e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 2e5, 200, 100, 2000, 1000, 80, 1000e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 180, 100, 2000, 1000, 80, 1000e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 80, 2000, 1000, 80, 1000e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 1800, 1000, 80, 1000e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1200, 80, 1000e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 60, 800e3, 200e3, 839136),
+        (1, 2.6, 6e8, 6e5, 50, 150, 40, 30, 3e6, 3e5, 200, 100, 2000, 1000, 80, 1000e3, 250e3, 839136),
+
         
+    ],
+)
+def test_rd_ct(approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
+b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected):
+
+    """Test the v_rd_ct function."""
+    assert math.isclose(_concrete_shear.v_rd_ct(
+        approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
+        b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx
+    ),
+        expected, rel_tol=0.001)
