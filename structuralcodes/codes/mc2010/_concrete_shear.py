@@ -215,14 +215,14 @@ def v_rdc_approx2(
 
     Args:
         fck (float): Characteristic strength in MPa
-        z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
+        z (float): The length to the areasenter of cross-section in mm
+        bw (float): Thickness of web in cross section
+        dg (float): Maximum size of aggregate
+        E (float): The E-modulus to the materialb in MPa
+        As (float): The cross-section area in mm^2
+        Med (float): The moment working on the material in Nmm
+        Ved (float): The shear working on the material in N
+        Ned (float): The normal force working on the material in N
         delta_e (float): The exentricity of the load in mm
         gamma_c (float): Safety factor
 
@@ -231,9 +231,9 @@ def v_rdc_approx2(
     """
     fsqr = min(fck**0.5, 8)
 
-    kdg = max(32 / (16 + dg), 0.75)
+    k_dg = max(32 / (16 + dg), 0.75)
     kv = (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e))) * (
-        1300 / (1000 + kdg * z)
+        1300 / (1000 + k_dg * z)
     )
     return (kv * fsqr * z * bw) / gamma_c
 
@@ -585,7 +585,7 @@ def v_rd_ct_approx1(
     return:
         Vrd Appoximation 1 for hollow slabs"""
     alfa_l = l_x/(1.2*l_bd0)
-    return 0.8*((i_c*b_w)/s_c)*((f_ctd**2)*+alfa_l*sigma_cp*f_ctd)**0.5
+    return 0.8*((i_c*b_w)/s_c)*((f_ctd**2)+alfa_l*sigma_cp*f_ctd)**0.5
 
 
 def v_rd_ct_approx2(
@@ -852,14 +852,13 @@ def t_rd(
         check = False
     return check
 
-# Punching starter her
-
 
 def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
 
+    fib Model Code 2010, eq. (7.3-57)
     Args:
-        V_ed (float):
+        V_ed (float): The acting shear force from the columns
         v_prep_d_max (float): The maximum shear force per unit length
         perpendiculerer to the basic control parameter (Figure 7.3-24)
 
@@ -869,79 +868,129 @@ def b_0(v_ed: float, v_prep_d_max: float) -> float:
     return v_ed/v_prep_d_max
 
 
-def v_rdc_punching_approx_1(         # mangler bare args forklaring
-    r_s: float, psi: float, k_dg: float, k_psi: float, l_x: float, l_y: float,
-    f_yd: float, d: float, e_s: float, d_g: float, f_ck: float, d_v: float
+def v_rdc_punching_approx_1(
+    r_s: float, l_x: float, l_y: float, f_yd: float, d: float,
+    e_s: float, dg: float, f_ck: float, d_v: float, gamma_c: float = 1.5,
 ) -> float:
     """Punching resistance from the concrete, approx 1
 
+    fib Model Code 2010, eq. (7.3-60), (7.3-61), (7.3-63),
+    (7.3-62) and (7.3-70)
     args:
         dv Shear resisting effectiv depth, figure 7.3-20
-        r_s floa:
-        psi float:
-        k_dg float:
-        k_psi float:
-        l_x float:
-        l_y float:
-        f_yd float:
-        d float:
-        e_s float:
-        d_g float:
-        f_ck float:
-        d_v float:
-    return v_rdc for punching with approx 1"""
+        r_s (float): Denotes the position where the radial bending moment is
+        zero with respect to support axis
+        l_x (float): Length for x direction for regular flat slab
+        l_y (float): Length for y direction for regular flat slab
+        f_yd (float): Design strength of reinforment steel in MPa
+        d (float): The mean value of the effective depth in mm
+        e_s (float): The E-modulus for steel in Mpa
+        dg (float): Maximum size of aggregate
+        f_ck (float): Characteristic strength in MPa
+        d_v (float): The effective depth considering support in mm
+
+    return:
+        v_rdc for punching with approx 1"""
 
     if 0.5 < l_x/l_y < 2:
         warnings.warn("Reconsider maximum r_s value")
 
     r_s = 0.22 * l_x
     psi = 1.5 * r_s * f_yd / (d*e_s)
-    k_dg = max(32/(16+d_g), 0.75)
+    k_dg = max(32/(16+dg), 0.75)
     k_psi = min(1/(1.5+0.9*k_dg*psi*d))
 
-    return k_psi*b_0*d_v * (f_ck**0.5)/d_v
+    return k_psi*b_0*d_v * (f_ck**0.5)/gamma_c
 
 
-def m_ed(v_ed, e_u, r_sx, r_sy):
-    """hei"""
-    return m_ed
-
-
-def v_rdc_punching_approx_2(         # mangler args forklaring
-    r_s: float, psi: float, k_dg: float, k_psi: float, l_x: float, l_y: float,
-    f_yd: float, d: float, e_s: float, d_g: float, f_ck: float, d_v: float,
-    v_ed: float, e_u: float, r_sx: float, r_sy: float, m_rd: float
+def m_ed(
+    v_ed: float, e_u: float, r_sx: float, r_sy: float, l_min: float,
+    inner: bool, edge_par: bool, edge_per: bool, corner: bool
 ) -> float:
-    """Punching resistance from the concrete, approx 1
+    """The average bending moment acting in the support strip.
 
+    fib Model Code 2010, eq. (7.3-71), (7.3-72), (7.3-73) and (7.3-74)
+
+    Args:
+        v_ed (float): The acting shear force from the columns
+        e_u (float): Refers to the eccentricity of the resultant of shear
+        forces with respect to the centroid
+        r_sx (float): Denotes the position where the radial bending moment is
+        zero with respect to support axis in x direction
+        r_sy (float): Denotes the position where the radial bending moment is
+        zero with respect to support axis in x direction
+        l_min (float): The shorter side of the the L_x and L_y
+        inner (bool): Is true only if the column is a inner column
+        edge_par (bool): Is true only if the column is a edge column with
+        tention reinforcement paralell to the edge
+        edge_per (bool): Is true only if the column is a edge column with
+        tention reinforcement perpendicular to the edge
+        corner (bool): Is true only if the column is a corner column
+
+    return:
+        The bending moment acting in the support strip regardless of the
+        position of the column
+    """
+    b_s = min(1.5 * (r_sx*r_sy)**0.5, l_min)
+    if inner:
+        return v_ed*((1/8)+e_u/(2*b_s))
+    if edge_par:
+        return max(v_ed*((1/8)+e_u/(2*b_s)), v_ed/4)
+    if edge_per:
+        return v_ed*((1/8)+e_u/(b_s))
+    if corner:
+        return max(v_ed*((1/8)+e_u/(b_s)), v_ed/2)
+
+
+def v_rdc_punching_approx_2(
+    r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
+    dg: float, f_ck: float, d_v: float, v_ed: float, e_u: float,
+    r_sx: float, r_sy: float, l_min: float, inner: bool, edge_par: bool,
+    edge_per: bool, corner: bool, m_rd: float, gamma_c: float = 1.5
+) -> float:
+    """Punching resistance from the concrete, approx 2
+    fib Model Code 2010, eq. (7.3-71), (7.3-72), (7.3-73) and (7.3-74)
     args:
         dv Shear resisting effectiv depth, figure 7.3-20
-        r_s floa:
-        psi float:
-        k_dg float:
-        k_psi float:
-        l_x float:
-        l_y float:
-        f_yd float:
-        d float:
-        e_s float:
-        d_g float:
-        f_ck float:
-        d_v float:
-        v_ed float:
-        e_u float:
-        r_sx float:
-        r_sy float:
-        m_rd float:
+        r_s (float): Denotes the position where the radial bending moment is
+        zero with respect to support axis
+        l_x (float): The distance between two columns in x direction
+        l_y (float): The distance between two columns in y direction
+        f_yd (float): Design strength of reinforment steel in MPa
+        d (float): The mean value of the effective depth in mm
+        e_s (float): The E-modulus for steel in Mpa
+        dg (float): Maximum size of aggregate
+        f_ck (float): Characteristic strength in MPa
+        d_v (float): The effective depth considering support in mm
+        v_ed (float): The acting shear force from the columns
+        e_u (float): Refers to the eccentricity of the resultant of shear
+        forces with respect to the centroid
+        r_sx (float): Denotes the position where the radial bending moment is
+        zero with respect to support axis in x direction
+        r_sy (float): Denotes the position where the radial bending moment is
+        zero with respect to support axis in x direction
+        l_min (float): The shorter side of the the L_x and L_y
+        inner (bool): Is true only if the column is a inner column
+        edge_par (bool): Is true only if the column is a edge column with
+        tention reinforcement paralell to the edge
+        edge_per (bool): Is true only if the column is a edge column with
+        tention reinforcement perpendicular to the edge
+        corner (bool): Is true only if the column is a corner column
 
-    return v_rdc for punching with approx 1"""
+    return:
+        v_rdc for punching with approx 2"""
 
     if 0.5 < l_x/l_y < 2:
         warnings.warn("Reconsider maximum r_s value")
 
     r_s = 0.22 * l_x
-    psi = (1.5 * r_s * f_yd / (d*e_s))*(m_ed(v_ed, e_u, r_sx, r_sy)/m_rd)**1.5
-    k_dg = max(32/(16+d_g), 0.75)
+    psi = (1.5 * r_s * f_yd / (d*e_s))*(m_ed(
+        v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par, edge_per, corner
+    )/m_rd)**1.5
+    k_dg = max(32/(16+dg), 0.75)
     k_psi = min(1/(1.5+0.9*k_dg*psi*d))
 
-    return k_psi*b_0*d_v * (f_ck**0.5)/d_v
+    return k_psi*b_0*d_v * (f_ck**0.5)/gamma_c
+
+# total funsjon 7,3-60
+# 7,3-66 få med armering
