@@ -37,8 +37,10 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
 
     ],
 )
-def test_vrd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned,
-    delta_e, alfa, gamma_c, expected):
+def test_vrd_max(
+    approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned,
+    delta_e, alfa, gamma_c, expected
+):
     """Test the v_rd_max function."""
     assert math.isclose(_concrete_shear.v_rd_max(
         approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c), expected, rel_tol=0.5
@@ -58,8 +60,10 @@ def test_vrd_max(approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned,
         (0, 3, 35, 200, 300, 32, 21e4, 2000, 40e6, 2000e4, 1000, 50, 1.5, 1.5, 0),
     ],
 )
-def test_v_rdc(approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
-    Ved, Ned, delta_e, alfa, gamma_c, expected):
+def test_v_rdc(
+    approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
+    Ved, Ned, delta_e, alfa, gamma_c, expected
+):
 
     """Test the v_rdc function."""
     assert math.isclose(_concrete_shear.v_rdc(
@@ -131,12 +135,34 @@ def test_v_rds(asw, sw, z, fywd, theta, alpha, expected):
         
     ],
 )
-def test_rd_ct(approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
-b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected):
+def test_v_rd_ct(
+    approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
+    b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected
+):
 
     """Test the v_rd_ct function."""
     assert math.isclose(_concrete_shear.v_rd_ct(
         approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
         b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx
+    ),
+        expected, rel_tol=0.001)
+
+
+@pytest.mark.parametrize(
+    '''beta, v_ed, z, b_i, expected''',
+    [
+        (0.7, 50e3, 200, 50, 3.5),
+        (0.75, 50e3, 200, 50, 3.75),
+        (0.7, 40e3, 200, 50, 3),
+        (0.7, 50e3, 180, 50, 3.111),
+        (0.7, 50e3, 200, 60, 2.333),
+
+    ],
+)
+def test_tau_edi(beta, v_ed, z, b_i, expected):
+
+    """Test the tau_edi function."""
+    assert math.isclose(_concrete_shear.tau_edi(
+        beta, v_ed, z, b_i
     ),
         expected, rel_tol=0.001)
