@@ -81,7 +81,7 @@ def test_v_rdc(
         (1600, 100, 200, 355, 25, 30, 2201884),
         (1600, 50, 200, 275, 25, 30, 3411370),
         (1600, 50, 200, 355, 22, 30, 4779308),
-        (1600, 50, 200, 355, 25, 25, 4872319),
+        (1600, 50, 200, 355, 25, 25, 4118262),
     ],
 )
 def test_v_rds(asw, sw, z, fywd, theta, alpha, expected):
@@ -136,13 +136,13 @@ def test_v_rds(asw, sw, z, fywd, theta, alpha, expected):
     ],
 )
 def test_v_rd_ct(
-    approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
+    approx_lvl_h, f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
     b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected
 ):
 
     """Test the v_rd_ct function."""
     assert math.isclose(_concrete_shear.v_rd_ct(
-        approx_lvl_h, f_ctm, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
+        approx_lvl_h, f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
         b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx
     ),
         expected, rel_tol=0.001)
@@ -153,10 +153,9 @@ def test_v_rd_ct(
     [
         (0.7, 50e3, 200, 50, 3.5),
         (0.75, 50e3, 200, 50, 3.75),
-        (0.7, 40e3, 200, 50, 3),
-        (0.7, 50e3, 180, 50, 3.111),
-        (0.7, 50e3, 200, 60, 2.333),
-
+        (0.7, 40e3, 200, 50, 2.8),
+        (0.7, 50e3, 180, 50, 3.888),
+        (0.7, 50e3, 200, 60, 2.916),
     ],
 )
 def test_tau_edi(beta, v_ed, z, b_i, expected):
