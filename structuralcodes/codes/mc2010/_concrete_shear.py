@@ -954,7 +954,7 @@ def psi_punching(
             warnings.warn("Reconsider maximum r_s value")
         psi = 1.5 * r_s * f_yd / (d*e_s)
 
-    elif approx_lvl_p == 2:
+    elif approx_lvl_p == 2 or 3:
         if 0.5 < l_x/l_y < 2:
             warnings.warn("Reconsider maximum r_s value")
         psi = (1.5 * r_s * f_yd / (d*e_s))*((m_ed(
@@ -1005,9 +1005,6 @@ def v_rdc_punching(
         in MPa
     return:
         v_rdc for punching with the right approx level"""
-
-    if 0.5 < l_x/l_y < 2:
-        warnings.warn("Reconsider maximum r_s value")
 
     r_s = 0.22 * l_x
     k_dg = max(32/(16+dg), 0.75)
