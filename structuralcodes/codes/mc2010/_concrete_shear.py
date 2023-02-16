@@ -51,7 +51,7 @@ def v_rd(
     gamma_c: float,
     asw: float,
     sw: float,
-    fywd: float,
+    f_ywd: float,
     theta: float,
 ) -> float:
     """Compute the shear resistance of a web or slab.
@@ -78,7 +78,7 @@ def v_rd(
         gamma_c (float): Concrete safety factor
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
-        fywd (float): The design yield strength of the shear reinforcement
+        f_ywd (float): The design yield strength of the shear reinforcement
         theta (float): Inclitantion of the compression stressfield in degrees
 
     Returns:
@@ -96,14 +96,14 @@ def v_rd(
         return min(v_rdc(
             approx_lvl_c, fck, z, bw, dg, E, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c) +
-            v_rds(asw, sw, z, fywd, theta, alfa),
+            v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c,
             )
         )
     elif reinforcment and approx_lvl_s == 1 or 2:
-        return min(v_rds(asw, sw, z, fywd, theta, alfa), v_rd_max(
+        return min(v_rds(asw, sw, z, f_ywd, theta, alfa), v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E, As,
             Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
@@ -290,7 +290,7 @@ def v_rds(
     asw: float,
     sw: float,
     z: float,
-    fywd: float,
+    f_ywd: float,
     theta: float,
     alpha: float,
 ) -> float:
@@ -299,7 +299,7 @@ def v_rds(
         asw (float): Area of shear reinforcement in mm
         sw (float): Senter distance between the shear reinforcement in mm
         z: (float): The length to the areasenter of cross-section in mm
-        fywd (float): Design yield strength of the shear reinforcement in Mpa
+        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
         theta (float): Inclitaniton of the compression stressfield in degrees
         alfa (float): Inclination of the stirrups
 
@@ -310,7 +310,7 @@ def v_rds(
         warnings.warn("Too high or too low compression field angel")
     return (
         (asw / sw) *
-        z * fywd * ((1 / tan(theta*pi/180)) + (1 / tan(alpha*pi/180))) *
+        z * f_ywd * ((1 / tan(theta*pi/180)) + (1 / tan(alpha*pi/180))) *
         sin(alpha*pi/180)
     )
 
@@ -874,7 +874,8 @@ def m_ed(
 ) -> float:
     """The average bending moment acting in the support strip.
 
-    fib Model Code 2010, eq. (7.3-71), (7.3-72), (7.3-73) and (7.3-74)
+    fib Model Code 2010, eq. (7.3-76), (7.3-71), (7.3-72), (7.3-73)
+    and (7.3-74)
 
     Args:
         v_ed (float): The acting shear force from the columns
@@ -911,11 +912,11 @@ def psi_punching(
     r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
     approx_lvl_p: float, v_ed: float, e_u: float, r_sx: float, r_sy: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool,
-    corner: bool, m_rd: float
+    corner: bool, m_rd: float, m_pd: float
 ) -> float:
     """The rotation of the slab around the supported area
 
-    fib Model Code 2010, eq. (7.3-70), (7.3-72), (7.3-73) and (7.3-74)
+    fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77)
     args:
         r_s (float): Denotes the position where the radial bending moment is
         zero with respect to support axis
@@ -939,21 +940,26 @@ def psi_punching(
         edge_per (bool): Is true only if the column is a edge column with
         tention reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
+        m_rd (float): The design average strength per unit length in MPa
+        m_pd: (float): The average decompresstion moment due to prestressing
+        in MPa
 
     return:
         psi for the choosen approx level in punching"""
 
-    if 0.5 < l_x/l_y < 2:
-        warnings.warn("Reconsider maximum r_s value")
-
     r_s = 0.22 * l_x
 
     if approx_lvl_p == 1:
+        if not (0.5 < l_x/l_y < 2):
+            warnings.warn("Reconsider maximum r_s value")
         psi = 1.5 * r_s * f_yd / (d*e_s)
+
     elif approx_lvl_p == 2:
-        psi = (1.5 * r_s * f_yd / (d*e_s))*(m_ed(
+        if 0.5 < l_x/l_y < 2:
+            warnings.warn("Reconsider maximum r_s value")
+        psi = (1.5 * r_s * f_yd / (d*e_s))*((m_ed(
             v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par, edge_per, corner
-        )/m_rd)**1.5
+        )-m_pd)/(m_rd-m_pd))**1.5
 
     return psi
 
@@ -962,12 +968,12 @@ def v_rdc_punching(
     r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
     approx_lvl_p: float, dg: float, f_ck: float, d_v: float, v_ed: float,
     e_u: float, r_sx: float, r_sy: float, l_min: float, inner: bool,
-    edge_par: bool, edge_per: bool, corner: bool, m_rd: float,
+    edge_par: bool, edge_per: bool, corner: bool, m_rd: float, m_pd: float,
     gamma_c: float = 1.5
 ) -> float:
 
     """Punching resistance from the concrete
-    fib Model Code 2010, eq. (7.3-71), (7.3-72), (7.3-73) and (7.3-74)
+    fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63)
     args:
         r_s (float): Denotes the position where the radial bending moment is
         zero with respect to support axis
@@ -994,7 +1000,9 @@ def v_rdc_punching(
         edge_per (bool): Is true only if the column is a edge column with
         tention reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
-
+        m_rd (float): The design average strength per unit length in MPa
+        m_pd: (float): The average decompresstion moment due to prestressing
+        in MPa
     return:
         v_rdc for punching with the right approx level"""
 
@@ -1007,21 +1015,22 @@ def v_rdc_punching(
         1/(1.5+0.9*k_dg*d*psi_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
             approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
-            edge_per, corner, m_rd
+            edge_per, corner, m_rd, m_pd
         )), 0.6)
 
     return k_psi*b_0*d_v * (f_ck**0.5)/gamma_c
 
 
 def v_rds_punching(
-    e_u: float, b_u: float, r_s: float, l_x: float, l_y: float, f_yd: float, 
+    e_u: float, b_u: float, r_s: float, l_x: float, l_y: float, f_yd: float,
     d: float, e_s: float, approx_lvl_p: float, v_ed: float, r_sx: float,
     r_sy: float, l_min: float, inner: bool, edge_par: bool, edge_per: bool,
-    corner: bool, m_rd: float, E_s, alfa, f_bd, f_ywd, kam_w, A_sw
+    corner: bool, m_rd: float, m_pd: float, alfa: float,
+    f_bd: float, f_ywd: float, kam_w: float, a_sw: float
 ):
 
     """The punching resistance from shear reinforcement
-
+     fib Model Code 2010, eq. (7.3-64) and (7.3-65)
     Args:
         e_u (float): The ecentrisity of the result of shear forces
         with respect to the centroid (Figure 7.3-27b)
@@ -1047,31 +1056,41 @@ def v_rds_punching(
         edge_per (bool): Is true only if the column is a edge column with
         tention reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
+        m_rd (float): The design average strength per unit length in MPa
+        m_pd: (float): The average decompresstion moment due to prestressing
+        in MPa
+        alfa (float): Inclination of the stirrups in degrees
+        f_bd (float): The design bond strength in MPa
+        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
+        kam_w (float): The diameter of the shear reinforcement
+        a_sw (float): The area of the shear reinforcement in mm^2
 
-    return: Punching resistance that comes from reinforcement 
+
+    return: Punching resistance that comes from reinforcement
     """
     k_e = 1 / (1+e_u/b_u)
     sigma_swd = min(
-        (E_s*psi_punching(
+        (e_s*psi_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
             approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
-            edge_per, corner, m_rd
+            edge_per, corner, m_rd, m_pd
         )/6)*(sin(alfa*pi/180)+cos(alfa*pi/180)) *
         (sin(alfa*pi/180)+f_bd*d/(f_ywd*kam_w)), f_ywd)
 
-    return A_sw*k_e*sigma_swd*sin(alfa*pi/180)
+    return a_sw*k_e*sigma_swd*sin(alfa*pi/180)
 
 
 def v_rd_punching(
     e_u, b_u, r_s: float, l_x: float, l_y: float, f_yd: float, d: float,
     e_s: float, approx_lvl_p: float, v_ed: float, r_sx: float, r_sy: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool, corner: bool,
-    m_rd: float, E_s, alfa, f_bd, f_ywd, kam_w, A_sw,
-    dg: float, f_ck: float, d_v: float, gamma_c: float = 1.5
+    m_rd: float, m_pd: float, alfa: float, f_bd: float, f_ywd: float,
+    kam_w: float, a_sw: float, dg: float, f_ck: float, d_v: float,
+    gamma_c: float = 1.5
 ):
 
     """The total resistance for punching, both Vrd,c and Vrd,s
-
+     fib Model Code 2010, eq. (7.3-60)
         Args:
         e_u (float): The ecentrisity of the result of shear forces
         with respect to the centroid (Figure 7.3-27b)
@@ -1097,14 +1116,21 @@ def v_rd_punching(
         edge_per (bool): Is true only if the column is a edge column with
         tention reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
+        m_rd (float): The design average strength per unit length in MPa
+        m_pd: (float): The average decompresstion moment due to prestressing
+        in MPa
+        alfa (float): Inclination of the stirrups in degrees
+        f_bd (float): The design bond strength in MPa
+        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
+        kam_w (float): The diameter of the shear reinforcement
+        a_sw (float): The area of the shear reinforcement in mm^2
 
     return: The punching resistance for punching"""
- # ikke alle inputsene har fått en arg
+
     return v_rdc_punching(
         r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, dg, f_ck, d_v, v_ed, e_u,
         r_sx, r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, gamma_c
         ) + v_rds_punching(
-        e_u, b_u, r_s, l_x, l_y, f_yd,
-        d, e_s, approx_lvl_p, v_ed, r_sx,
-        r_sy, l_min, inner, edge_par, edge_per,
-        corner, m_rd, E_s, alfa, f_bd, f_ywd, kam_w, A_sw)
+        e_u, b_u, r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, v_ed, r_sx,
+        r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, m_pd, alfa,
+        f_bd, f_ywd, kam_w, a_sw)
