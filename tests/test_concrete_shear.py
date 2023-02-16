@@ -165,3 +165,25 @@ def test_tau_edi(beta, v_ed, z, b_i, expected):
         beta, v_ed, z, b_i
     ),
         expected, rel_tol=0.001)
+
+
+@pytest.mark.parametrize(
+    '''c_a, f_ctd, mu, sigma_n, f_ck, f_cd, expected''',
+    [
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+    ],
+)
+def test_tau_rdi_without_reinforceent(
+    c_a, f_ctd, mu, sigma_n, f_ck, f_cd, expected
+):
+
+    """Test the tau_edi function."""
+    assert math.isclose(_concrete_shear.tau_rdi_without_reinforceent(
+        c_a, f_ctd, mu, sigma_n, f_ck, f_cd
+    ),
+        expected, rel_tol=0.001)
