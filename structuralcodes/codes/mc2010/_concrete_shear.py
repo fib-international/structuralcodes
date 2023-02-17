@@ -3,7 +3,7 @@ import warnings
 from math import pi, tan, sin, cos
 
 
-def epsilon_x(
+def epsilon_x(  # this should be in the cross-section part
     E: float,
     As: float,
     Med: float,
@@ -17,7 +17,7 @@ def epsilon_x(
     fib Model Code 2010, eq. (7.3-16)
 
     Args:
-        E (float): The E-modulus to the material in MPa
+        E_s(float): The E-modulus to the material in MPa
         As (Float): The cross-section area of reinforcement in mm^2
         Med (Float): The moment working on the material in Nmm
         Ved (float): The shear force working on the material in N
@@ -26,7 +26,7 @@ def epsilon_x(
         delta_E (float): The exentricity of the load in mm
     Returns:
         float: The longitudinal strain"""
-    return max((1 / (2 * E * As)) * (
+    return max((1 / (2 *E* As)) * (
         (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z)))
     ), 0
 
@@ -66,7 +66,7 @@ def v_rd(
         compressive chord and the reinforcement in mm
         bw: (float): Thickness of web in cross section in mm
         dg: (float): Maximum size of aggregate in mm
-        E: (float): The E-modulus to the materialb in MPa
+        E: (float): The E-modulus to the material in MPa
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -161,11 +161,11 @@ def v_rdc(
             fck, z, bw, dg, E, As, Med, Ved, Ned, delta_e, gamma_c
         )
 
-    elif approx_lvl_s == 3:
-        return v_rds_approx3(
-            approx_lvl_s, fck, z, bw, E, As, Med, Ved,
-            Ned, delta_e, alfa, gamma_c
-        )
+    # elif approx_lvl_s == 3:
+    #     return v_rds_approx3(
+    #         approx_lvl_s, fck, z, bw, E, As, Med, Ved,
+    #         Ned, delta_e, alfa, gamma_c
+    #     )
 
 
 def v_rdc_approx1(
@@ -217,7 +217,7 @@ def v_rdc_approx2(
         z (float): The length to the areasenter of cross-section in mm
         bw (float): Thickness of web in cross section
         dg (float): Maximum size of aggregate
-        E (float): The E-modulus to the materialb in MPa
+       E_s(float): The E-modulus to the materialb in MPa
         As (float): The cross-section area in mm^2
         Med (float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
@@ -760,7 +760,7 @@ def t_rd_max(
         a_k: Can be found in figure 7.3-18
         theta (float): Inclitaniton of the compression stressfield in degrees
         approx_lvl_s (int): Approximation method for cocrete with reinforcement
-        E (float): The E-modulus to the materialb in MPa
+       E_s(float): The E-modulus to the materialb in MPa
         As (float): The cross-section reinforcement in mm^2
         Med (float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
