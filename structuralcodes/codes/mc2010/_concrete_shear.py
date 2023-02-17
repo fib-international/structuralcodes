@@ -152,19 +152,17 @@ def v_rdc(
     Returns:
         float: The design shear resistance attributed to the concrete
     """
-
-    if approx_lvl_c == 1:
+    if approx_lvl_s == 3:
+        return v_rdc_approx3(
+            approx_lvl_s, fck, z, bw, E_s, As, Med, Ved,
+            Ned, delta_e, alfa, gamma_c
+        )
+    elif approx_lvl_c == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
     elif approx_lvl_c == 2:
         return v_rdc_approx2(
             fck, z, bw, dg, E_s, As, Med, Ved, Ned, delta_e, gamma_c
-        )
-
-    elif approx_lvl_s == 3:
-        return v_rds_approx3(
-            approx_lvl_s, fck, z, bw, E_s, As, Med, Ved,
-            Ned, delta_e, alfa, gamma_c
         )
 
 
@@ -237,7 +235,7 @@ def v_rdc_approx2(
     return (kv * fsqr * z * bw) / gamma_c
 
 
-def v_rds_approx3(  # tror dette egentlig er vrds3
+def v_rdc_approx3(  # tror dette egentlig er vrds3
     approx_lvl_s: float,
     fck: float,
     z: float,
