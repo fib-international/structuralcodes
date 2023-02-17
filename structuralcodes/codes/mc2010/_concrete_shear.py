@@ -4,7 +4,7 @@ from math import pi, tan, sin, cos
 
 
 def epsilon_x(
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -17,7 +17,7 @@ def epsilon_x(
     fib Model Code 2010, eq. (7.3-16)
 
     Args:
-        E (float): The E-modulus to the material in MPa
+        E_s (float): The E_s-modulus to the material in MPa
         As (Float): The cross-section area of reinforcement in mm^2
         Med (Float): The moment working on the material in Nmm
         Ved (float): The shear force working on the material in N
@@ -26,7 +26,7 @@ def epsilon_x(
         delta_E (float): The exentricity of the load in mm
     Returns:
         float: The longitudinal strain"""
-    return max((1 / (2 * E * As)) * (
+    return max((1 / (2 * E_s * As)) * (
         (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z)))
     ), 0
 
@@ -39,7 +39,7 @@ def v_rd(
     z: float,
     bw: float,
     dg: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -66,7 +66,7 @@ def v_rd(
         compressive chord and the reinforcement in mm
         bw: (float): Thickness of web in cross section in mm
         dg: (float): Maximum size of aggregate in mm
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -88,22 +88,22 @@ def v_rd(
 
     if not reinforcment:
         return v_rdc(
-            approx_lvl_c, fck, z, bw, dg, E, As,
+            approx_lvl_c, fck, z, bw, dg, E_s, As,
             Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
     if reinforcment and approx_lvl_s == 3:
         return min(v_rdc(
-            approx_lvl_c, fck, z, bw, dg, E, As, Med,
+            approx_lvl_c, fck, z, bw, dg, E_s, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c) +
             v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
-            approx_lvl_s, fck, bw, theta, z, E, As, Med,
+            approx_lvl_s, fck, bw, theta, z, E_s, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c,
             )
         )
     elif reinforcment and approx_lvl_s == 1 or 2:
         return min(v_rds(asw, sw, z, f_ywd, theta, alfa), v_rd_max(
-            approx_lvl_s, fck, bw, theta, z, E, As,
+            approx_lvl_s, fck, bw, theta, z, E_s, As,
             Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
         )
@@ -116,7 +116,7 @@ def v_rdc(
     z: float,
     bw: float,
     dg: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -140,7 +140,7 @@ def v_rdc(
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section in mm
         dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -158,12 +158,12 @@ def v_rdc(
 
     elif approx_lvl_c == 2:
         return v_rdc_approx2(
-            fck, z, bw, dg, E, As, Med, Ved, Ned, delta_e, gamma_c
+            fck, z, bw, dg, E_s, As, Med, Ved, Ned, delta_e, gamma_c
         )
 
     elif approx_lvl_s == 3:
         return v_rds_approx3(
-            approx_lvl_s, fck, z, bw, E, As, Med, Ved,
+            approx_lvl_s, fck, z, bw, E_s, As, Med, Ved,
             Ned, delta_e, alfa, gamma_c
         )
 
@@ -198,7 +198,7 @@ def v_rdc_approx2(
     z: float,
     bw: float,
     dg: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -217,7 +217,7 @@ def v_rdc_approx2(
         z (float): The length to the areasenter of cross-section in mm
         bw (float): Thickness of web in cross section
         dg (float): Maximum size of aggregate
-        E (float): The E-modulus to the materialb in MPa
+        E_s (float): The E_s-modulus to the materialb in MPa
         As (float): The cross-section area in mm^2
         Med (float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
@@ -231,7 +231,7 @@ def v_rdc_approx2(
     fsqr = min(fck**0.5, 8)
 
     k_dg = max(32 / (16 + dg), 0.75)
-    kv = (0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e))) * (
+    kv = (0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))) * (
         1300 / (1000 + k_dg * z)
     )
     return (kv * fsqr * z * bw) / gamma_c
@@ -242,7 +242,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
     fck: float,
     z: float,
     bw: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -262,7 +262,7 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -275,10 +275,10 @@ def v_rds_approx3(  # tror dette egentlig er vrds3
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = (20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e))
-    kv = max((0.4 / (1 + 1500 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)))*(
+    theta_min = (20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
+    kv = max((0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)))*(
         1 - Ved / v_rd_max(
-            approx_lvl_s, fck, bw, theta_min, z, E, As, Med, Ved,
+            approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med, Ved,
             Ned, delta_e, alfa, gamma_c)),
             0)
 
@@ -320,7 +320,7 @@ def v_rd_max(
     bw: float,
     theta: float,
     z: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -339,7 +339,7 @@ def v_rd_max(
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -355,12 +355,12 @@ def v_rd_max(
 
     elif approx_lvl_s == 2:
         return v_rd_max_approx2(
-            fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
+            fck, bw, theta, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
     elif approx_lvl_s == 3:
         return v_rd_max_approx3(
-            fck, bw, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c
+            fck, bw, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
 
@@ -402,7 +402,7 @@ def v_rd_max_approx2(
     bw: float,
     theta: float,
     z: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -420,7 +420,7 @@ def v_rd_max_approx2(
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -434,8 +434,8 @@ def v_rd_max_approx2(
         approximation level"""
     nfc = min((30 / fck) ** (1 / 3), 1)
 
-    epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
-        epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+    epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+        epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
     ) * ((1 / tan(theta*pi/180)) ** 2)
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
@@ -451,7 +451,7 @@ def v_rd_max_approx3(
     fck: float,
     bw: float,
     z: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -469,7 +469,7 @@ def v_rd_max_approx3(
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -482,10 +482,10 @@ def v_rd_max_approx3(
         float: The maximum allowed shear resistance regardless of
         approximation level"""
     nfc = min((30 / fck) ** (1 / 3), 1)
-    theta_min = 20 + 10000 * epsilon_x(E, As, Med, Ved, Ned, z, delta_e)
+    theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
 
-    epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
-        epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+    epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+        epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
     ) * ((1 / tan(theta_min*pi/180)) ** 2)
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
@@ -748,7 +748,7 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
 
 def t_rd_max(
         f_ck: float, gamma_c: float, d_k: float, a_k: float,
-        theta: float, approx_lvl_s: int, E: float, As: float,
+        theta: float, approx_lvl_s: int, E_s: float, As: float,
         Med: float, Ved: float, Ned: float, z: float, delta_e: float
 ) -> float:
     """The maximum allowed torsion allowed
@@ -760,7 +760,7 @@ def t_rd_max(
         a_k: Can be found in figure 7.3-18
         theta (float): Inclitaniton of the compression stressfield in degrees
         approx_lvl_s (int): Approximation method for cocrete with reinforcement
-        E (float): The E-modulus to the materialb in MPa
+        E_s (float): The E_s-modulus to the materialb in MPa
         As (float): The cross-section reinforcement in mm^2
         Med (float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
@@ -778,13 +778,13 @@ def t_rd_max(
     if approx_lvl_s == 1:
         k_epsilon = 0.55
     elif approx_lvl_s == 2:
-        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
-            epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta*pi/180)) ** 2)
         k_epsilon = 1 / (1.2 + 55 * epsilon_1)
     elif approx_lvl_s == 3:
-        epsilon_1 = epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + (
-            epsilon_x(E, As, Med, Ved, Ned, z, delta_e) + 0.002
+        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
             ) * ((1 / tan(theta*pi/180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     k_c = nfc*k_epsilon
@@ -800,7 +800,7 @@ def t_rd(
     bw: float,
     theta: float,
     z: float,
-    E: float,
+    E_s: float,
     As: float,
     Med: float,
     Ved: float,
@@ -822,7 +822,7 @@ def t_rd(
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
-        E: (float): The E-modulus to the materialb in MPa
+        E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
@@ -840,10 +840,10 @@ def t_rd(
         (t_ed
          / t_rd_max(
             f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s,
-            E, As, Med, Ved, Ned, z, delta_e))**2 +
+            E_s, As, Med, Ved, Ned, z, delta_e))**2 +
         (v_ed
          / v_rd_max(
-            approx_lvl_s, fck, bw, theta, z, E, As, Med,
+            approx_lvl_s, fck, bw, theta, z, E_s, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
         check = True
 
@@ -923,7 +923,7 @@ def psi_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E-modulus for steel in Mpa
+        e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
@@ -980,7 +980,7 @@ def v_rdc_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E-modulus for steel in Mpa
+        e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
         dg (float): Maximum size of aggregate
         f_ck (float): Characteristic strength in MPa
@@ -1038,7 +1038,7 @@ def v_rds_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E-modulus for steel in Mpa
+        e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
         r_sx (float): Denotes the position where the radial bending moment is
@@ -1098,7 +1098,7 @@ def v_rd_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E-modulus for steel in Mpa
+        e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
         r_sx (float): Denotes the position where the radial bending moment is
