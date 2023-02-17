@@ -26,11 +26,9 @@ def epsilon_x(
         delta_E (float): The exentricity of the load in mm
     Returns:
         float: The longitudinal strain"""
-    return max(
-        (1 / (2 * E * As)) * (
-            (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z))
-        ), 0
-    )
+    return max((1 / (2 * E * As)) * (
+        (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z)))
+    ), 0
 
 
 def v_rd(
@@ -84,6 +82,7 @@ def v_rd(
     Returns:
         float: Design shear resistance
     """
+
     if not (approx_lvl_c == 1 or 2) and not approx_lvl_s == 3:
         warnings.warn("Not a valid approximation level")
 
@@ -299,7 +298,7 @@ def v_rds(
         asw (float): Area of shear reinforcement in mm
         sw (float): Senter distance between the shear reinforcement in mm
         z: (float): The length to the areasenter of cross-section in mm
-        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
+        f_ywd (float): Design yield strength of the shear reinforcement in MPa
         theta (float): Inclitaniton of the compression stressfield in degrees
         alfa (float): Inclination of the stirrups
 
