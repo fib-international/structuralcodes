@@ -17,7 +17,7 @@ def epsilon_x(
     fib Model Code 2010, eq. (7.3-16)
 
     Args:
-        E_s (float): The E_s-modulus to the material in MPa
+        E (float): The E-modulus to the material in MPa
         As (Float): The cross-section area of reinforcement in mm^2
         Med (Float): The moment working on the material in Nmm
         Ved (float): The shear force working on the material in N
