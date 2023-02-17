@@ -968,7 +968,7 @@ def v_rdc_punching(
     approx_lvl_p: float, dg: float, f_ck: float, d_v: float, v_ed: float,
     e_u: float, r_sx: float, r_sy: float, l_min: float, inner: bool,
     edge_par: bool, edge_per: bool, corner: bool, m_rd: float, m_pd: float,
-    gamma_c: float = 1.5
+    v_prep_d_max: float, gamma_c: float = 1.5
 ) -> float:
 
     """Punching resistance from the concrete
@@ -1014,7 +1014,7 @@ def v_rdc_punching(
             edge_per, corner, m_rd, m_pd
         )), 0.6)
 
-    return k_psi*b_0*d_v * (f_ck**0.5)/gamma_c
+    return k_psi*b_0(v_ed, v_prep_d_max)*d_v * (f_ck**0.5)/gamma_c
 
 
 def v_rds_punching(
@@ -1073,7 +1073,46 @@ def v_rds_punching(
         )/6)*(sin(alfa*pi/180)+cos(alfa*pi/180)) *
         (sin(alfa*pi/180)+f_bd*d/(f_ywd*kam_w)), f_ywd)
 
+    if (a_sw*k_e*sigma_swd*sin(alfa*pi/180)) < 0.5 * v_ed:
+        warnings.warn("""In order to ensure sufficent deformation capacity,
+                      the shear resistance in punching most increase""")
+
     return a_sw*k_e*sigma_swd*sin(alfa*pi/180)
+
+
+def v_rd_max_punching(
+    r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
+    approx_lvl_p: float, v_ed: float, e_u: float, r_sx: float, r_sy: float,
+    l_min: float, inner: bool, edge_par: bool, edge_per: bool, dg: float,
+    corner: bool, m_rd: float, m_pd: float, v_prep_d_max: float,
+    d_v: float, f_ck: float, d_head: bool, stirrups_compression: bool,
+    gamma_c: float = 1.5
+):
+    """Finds the maximum value you can have for what the shear
+    reinforcement can take.
+     
+    Args:
+    
+    Return
+    """
+
+    if d_head:
+        k_sys = 2.8
+    elif stirrups_compression:
+        k_sys = 2.4
+    else:
+        k_sys = 2
+
+    k_dg = max(32/(16+dg), 0.75)
+    k_psi = min(
+        1/(1.5+0.9*k_dg*d*psi_punching(
+            r_s, l_x, l_y, f_yd, d, e_s,
+            approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
+            edge_per, corner, m_rd, m_pd
+        )), 0.6)
+    
+    return min((k_sys*k_psi*b_0(v_ed, v_prep_d_max)*d_v*f_ck**0.5) /
+               gamma_c, (b_0(v_ed, v_prep_d_max)*d_v*f_ck**0.5)/gamma_c)
 
 
 def v_rd_punching(
@@ -1082,6 +1121,7 @@ def v_rd_punching(
     l_min: float, inner: bool, edge_par: bool, edge_per: bool, corner: bool,
     m_rd: float, m_pd: float, alfa: float, f_bd: float, f_ywd: float,
     kam_w: float, a_sw: float, dg: float, f_ck: float, d_v: float,
+    v_prep_d_max: float, d_head: bool, stirrups_compression: bool,
     gamma_c: float = 1.5
 ):
 
@@ -1125,8 +1165,15 @@ def v_rd_punching(
 
     return v_rdc_punching(
         r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, dg, f_ck, d_v, v_ed, e_u,
-        r_sx, r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, gamma_c
-        ) + v_rds_punching(
-        e_u, b_u, r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, v_ed, r_sx,
-        r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, m_pd, alfa,
-        f_bd, f_ywd, kam_w, a_sw)
+        r_sx, r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
+        v_prep_d_max, gamma_c
+        ) + min(v_rds_punching(
+            e_u, b_u, r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, v_ed, r_sx,
+            r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, m_pd, alfa,
+            f_bd, f_ywd, kam_w, a_sw
+        ), v_rd_max_punching(
+            r_s, l_x, l_y, f_yd, d, e_s,
+            approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
+            edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
+            d_v, f_ck, d_head, stirrups_compression, gamma_c)
+)
