@@ -187,3 +187,32 @@ def test_tau_rdi_without_reinforceent(
         c_a, f_ctd, mu, sigma_n, f_ck, f_cd
     ),
         expected, rel_tol=0.001)
+
+
+@pytest.mark.parametrize(
+    '''approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
+    bw, dg, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
+    asw, sw, f_ywd, theta, expected''',
+    [
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (0.2, 3.5, 0.6, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.7, 100, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 80, 30, 17, 4.675),
+        (0.2, 2.6, 0.6, 100, 20, 11.3, 4.675),
+        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+    ],
+)
+def test_v_rd(
+    approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
+    bw, dg, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
+    asw, sw, f_ywd, theta, expected
+):
+
+    """Test the tau_edi function."""
+    assert math.isclose(_concrete_shear.v_rd(
+        approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
+        bw, dg, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
+        asw, sw, f_ywd, theta
+    ),
+        expected, rel_tol=0.001)
+    
