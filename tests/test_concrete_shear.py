@@ -6,7 +6,7 @@ from structuralcodes.codes.mc2010 import _concrete_shear
 
 
 @pytest.mark.parametrize(
-    'E, As, Med, Ved, Ned, z, deltaE, expected',
+    'E_s, As, Med, Ved, Ned, z, deltaE, expected',
     [
         (200000, 1000, 50000000, 10000, 2000, 160, 50, 8.1e-4),
         (210000, 1000, 50000000, 10000, 2000, 160, 50, 7.7e-4),
@@ -18,15 +18,15 @@ from structuralcodes.codes.mc2010 import _concrete_shear
         (210000, 2000, 40000000, 20000, 1000, 180, 50, 2.9e-4),
     ],
 )
-def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
+def test_epsilon_x(E_s, As, Med, Ved, Ned, z, deltaE, expected):
     """Test the epsilon_x function."""
     assert math.isclose(_concrete_shear.epsilon_x(
-        E, As, Med, Ved, Ned, z, deltaE), expected, rel_tol=0.05
+        E_s, As, Med, Ved, Ned, z, deltaE), expected, rel_tol=0.05
     )
 
 
 @pytest.mark.parametrize(
-    'approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c, expected',
+    'approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c, expected',
     [
         (1, 30, 50, 20, 200, 210000, 1000, 200e6, 50e3, 10e3, 50, 20, 1.5, 70707),
         (2, 30, 50, 20, 200, 210000, 1000, 200e6, 50e3, 10e3, 50, 20, 1.5, 39997),
@@ -38,17 +38,17 @@ def test_epsilon_x(E, As, Med, Ved, Ned, z, deltaE, expected):
     ],
 )
 def test_vrd_max(
-    approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned,
+    approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
     delta_e, alfa, gamma_c, expected
 ):
     """Test the v_rd_max function."""
     assert math.isclose(_concrete_shear.v_rd_max(
-        approx_lvl_s, fck, bw, theta, z, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c), expected, rel_tol=0.5
+        approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c), expected, rel_tol=0.5
     )
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
+    '''approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E_s, As, Med,
      Ved, Ned, delta_e, alfa, gamma_c, expected''',
     [
         (1, 0, 35, 180, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 31294),
@@ -61,13 +61,13 @@ def test_vrd_max(
     ],
 )
 def test_v_rdc(
-    approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med,
+    approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E_s, As, Med,
     Ved, Ned, delta_e, alfa, gamma_c, expected
 ):
 
     """Test the v_rdc function."""
     assert math.isclose(_concrete_shear.v_rdc(
-                approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E, As, Med, Ved,
+                approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E_s, As, Med, Ved,
                 Ned, delta_e, alfa, gamma_c
                 ),
         expected, rel_tol=0.001)
@@ -191,27 +191,24 @@ def test_tau_rdi_without_reinforceent(
 
 @pytest.mark.parametrize(
     '''approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
-    bw, dg, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
+    bw, dg, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
     asw, sw, f_ywd, theta, expected''',
     [
-        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
-        (0.2, 3.5, 0.6, 100, 30, 17, 4.675),
-        (0.2, 2.6, 0.7, 100, 30, 17, 4.675),
-        (0.2, 2.6, 0.6, 80, 30, 17, 4.675),
-        (0.2, 2.6, 0.6, 100, 20, 11.3, 4.675),
-        (0.2, 2.6, 0.6, 100, 30, 17, 4.675),
+        (1, 0, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 0, 0, 434, 40, 20863),
+        (2, 0, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 0, 0, 434, 40, 62336),
+        (2, 0, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 0, 0, 434, 40, 62336),
     ],
 )
 def test_v_rd(
     approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
-    bw, dg, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
+    bw, dg, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
     asw, sw, f_ywd, theta, expected
 ):
 
     """Test the tau_edi function."""
     assert math.isclose(_concrete_shear.v_rd(
         approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
-        bw, dg, E, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
+        bw, dg, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
         asw, sw, f_ywd, theta
     ),
         expected, rel_tol=0.001)

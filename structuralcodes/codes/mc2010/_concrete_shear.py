@@ -26,9 +26,9 @@ def epsilon_x(
         delta_E (float): The exentricity of the load in mm
     Returns:
         float: The longitudinal strain"""
-    return max((1 / (2 * E_s * As)) * (
+    return max(((1 / (2 * E_s * As)) * (
         (abs(Med) / z) + abs(Ved) + abs(Ned) * ((1 / 2) + (delta_e / z)))
-    ), 0
+    ), 0)
 
 
 def v_rd(
@@ -88,13 +88,13 @@ def v_rd(
 
     if not reinforcment:
         return v_rdc(
-            approx_lvl_c, fck, z, bw, dg, E_s, As,
-            Med, Ved, Ned, delta_e, alfa, gamma_c,
+            approx_lvl_c, approx_lvl_s, fck, z, bw, dg, 
+            E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
     if reinforcment and approx_lvl_s == 3:
         return min(v_rdc(
-            approx_lvl_c, fck, z, bw, dg, E_s, As, Med,
-            Ved, Ned, delta_e, alfa, gamma_c) +
+            approx_lvl_c, approx_lvl_s, fck, z, bw, dg, 
+            E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,) +
             v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E_s, As, Med,
@@ -1175,3 +1175,6 @@ def v_rd_punching(
             edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
             d_v, f_ck, d_head, stirrups_compression, gamma_c)
 )
+
+
+print(v_rd(2, 0, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 0, 0, 434, 40))
