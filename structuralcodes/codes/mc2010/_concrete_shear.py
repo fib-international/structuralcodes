@@ -86,14 +86,14 @@ def v_rd(
     if not (approx_lvl_c == 1 or 2) and not approx_lvl_s == 3:
         warnings.warn("Not a valid approximation level")
 
-    if not reinforcment:
+    if not reinforcment:  # we divide for shear with shear reinforcement or not
         return v_rdc(
-            approx_lvl_c, approx_lvl_s, fck, z, bw, dg, 
+            approx_lvl_c, approx_lvl_s, fck, z, bw, dg,
             E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
     if reinforcment and approx_lvl_s == 3:
-        return min(v_rdc(
-            approx_lvl_c, approx_lvl_s, fck, z, bw, dg, 
+        return min(v_rdc(  # this includes resistance from concrete
+            approx_lvl_c, approx_lvl_s, fck, z, bw, dg,
             E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,) +
             v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
@@ -101,6 +101,7 @@ def v_rd(
             Ved, Ned, delta_e, alfa, gamma_c,
             )
         )
+    # Here only the shear resistance is included
     elif reinforcment and approx_lvl_s == 1 or 2:
         return min(v_rds(asw, sw, z, f_ywd, theta, alfa), v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E_s, As,
@@ -274,7 +275,8 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
     """
     fsqr = min(fck**0.5, 8)
     theta_min = (20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
-    kv = max((0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)))*(
+    kv = max((0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
+              )*(
         1 - Ved / v_rd_max(
             approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med, Ved,
             Ned, delta_e, alfa, gamma_c)),
