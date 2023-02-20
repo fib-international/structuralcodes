@@ -214,4 +214,17 @@ def test_v_rd(
         asw, sw, f_ywd, theta
     ),
         expected, rel_tol=0.001)
-    
+
+
+@pytest.mark.parametrize(
+    '''t_ed, a_k, z_i, expected''',
+    [
+        (2000000, 2000, 300, 150000),
+    ],
+)
+def test_v_ed_ti(t_ed, a_k, z_i, expected):
+
+    """Test the tau_edi function."""
+    assert math.isclose(_concrete_shear.v_ed_ti(t_ed, a_k, z_i),
+                        expected, rel_tol=0.001)
+
