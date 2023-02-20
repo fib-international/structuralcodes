@@ -305,7 +305,7 @@ def v_rds(
     Returns:
         The design shear resistance provided by shear reinforcement
         """
-    if 45 < theta < 20:
+    if 20 < theta < 45:
         warnings.warn("Too high or too low compression field angel")
     return (
         (asw / sw) *
