@@ -651,7 +651,7 @@ def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
     return (beta*v_ed)/(z*b_i)
 
 
-def tau_rdi_without_reinforceent(
+def tau_rdi_without_reinforcement(
     c_a: float,
     f_ctd: float,
     mu: float,
@@ -681,7 +681,7 @@ def tau_rdi_without_reinforceent(
     return min((c_a*f_ctd) + (mu * sigma_n), 0.5*v*f_cd)
 
 
-def tau_rdi_with_reinforceent(
+def tau_rdi_with_reinforcement(
     c_r: float,
     k1: float,
     k2: float,
@@ -724,8 +724,8 @@ def tau_rdi_with_reinforceent(
         different casting time"""
     v = min(0.55*(30/f_ck)**(1/3), 0.55)
     return min(
-        (c_r*f_ck**(1/3))+(mu*sigma_n)+k1*ro * f_yd *
-        (ro*sin(alfa*pi/180)+cos(alfa*pi/180)+k2*ro*(f_yd*f_cd)**0.5),
+        (c_r*f_ck**(1/3))+(mu*sigma_n)+(k1*ro * f_yd *
+        (ro*sin(alfa*pi/180)+cos(alfa*pi/180))+k2*ro*(f_yd*f_cd)**0.5),
         beta_c*v*f_cd
         )
 
@@ -1178,4 +1178,4 @@ def v_rd_punching(
 )
 
 
-print(v_rd(2, 1, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 500, 200, 434, 40))
+print(tau_rdi_with_reinforcement(0.1, 0.5, 0.9, 0.7, 0.05, 100, 15, 0.5, 30, 434, 17))
