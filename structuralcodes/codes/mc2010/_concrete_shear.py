@@ -83,15 +83,12 @@ def v_rd(
         float: Design shear resistance
     """
 
-    if not (approx_lvl_c == 1 or 2) and not approx_lvl_s == 3:
-        warnings.warn("Not a valid approximation level")
-
     if not reinforcment:  # we divide for shear with shear reinforcement or not
         return v_rdc(
             approx_lvl_c, approx_lvl_s, fck, z, bw, dg,
             E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
-    if reinforcment and approx_lvl_s == 3:
+    elif reinforcment and approx_lvl_s == 3:
         return min(v_rdc(  # this includes resistance from concrete
             approx_lvl_c, approx_lvl_s, fck, z, bw, dg,
             E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,) +
@@ -108,6 +105,8 @@ def v_rd(
             Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
         )
+    else:
+        warnings.warn("Not a valid approximation level")
 
 
 def v_rdc(
@@ -362,7 +361,7 @@ def v_rd_max(
         return v_rd_max_approx3(
             fck, bw, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
-print(v_rd( 2, 3, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 500, 200, 434, 40))
+
 
 def v_rd_max_approx1(
     fck: float,
@@ -1179,4 +1178,4 @@ def v_rd_punching(
 )
 
 
-print(v_rd(2, 0, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 0, 0, 434, 40))
+print(v_rd(2, 1, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 500, 200, 434, 40))
