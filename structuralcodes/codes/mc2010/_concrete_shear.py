@@ -779,12 +779,13 @@ def t_rd_max(
     elif approx_lvl_s == 2:
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-        ) * ((1 / tan(theta*pi/180)) ** 2)
-        k_epsilon = 1 / (1.2 + 55 * epsilon_1)
+            ) * ((1 / tan(theta*pi/180)) ** 2)
+        k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     elif approx_lvl_s == 3:
+        theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-            ) * ((1 / tan(theta*pi/180)) ** 2)
+            ) * ((1 / tan(theta_min*pi/180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     k_c = nfc*k_epsilon
 
@@ -1089,9 +1090,9 @@ def v_rd_max_punching(
 ):
     """Finds the maximum value you can have for what the shear
     reinforcement can take.
-     
+
     Args:
-    
+
     Return
     """
 
@@ -1174,8 +1175,4 @@ def v_rd_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
             approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
             edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
-            d_v, f_ck, d_head, stirrups_compression, gamma_c)
-)
-
-
-print(tau_rdi_with_reinforcement(0.1, 0.5, 0.9, 0.7, 0.05, 100, 15, 0.5, 30, 434, 17))
+            d_v, f_ck, d_head, stirrups_compression, gamma_c))
