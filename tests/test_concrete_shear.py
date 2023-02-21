@@ -270,7 +270,10 @@ def test_t_rd_max(
     '''t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
         Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected''',
     [
-        (100*10e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5),
+        (100e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20, 90, 150, 50000, 1.5, True),
+        (100e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 1000e3, 10e3, 20, 90, 150, 50000, 1.5, False),
+        (10000e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20, 90, 150, 50000, 1.5, True),
+        (100000e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20, 90, 150, 50000, 1.5, False),
     ],
 )
 def test_t_rd(
@@ -283,3 +286,46 @@ def test_t_rd(
             fck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
             Med, Ved, Ned, z, delta_e), expected, rel_tol=0.001)
 
+
+@pytest.mark.parametrize(
+    '''Ved, e_u, r_sx, r_sy, l_min, inner,
+    edge_par, edge_per, corner, expected''',
+    [
+        (10e3, 20, 30, 30, 2000, True, False, False, False, 3472),
+        (10e3, 20, 30, 30, 2000, False, True, False, False, 3472),
+        (10e3, 20, 30, 30, 2000, False, False, True, False, 5694),
+        (10e3, 20, 30, 30, 2000, False, False, False, True, 5694),
+    ],
+)
+def test_m_ed(
+    Ved, e_u, r_sx, r_sy, l_min, inner,
+    edge_par, edge_per, corner, expected
+    ):
+
+    """Test the m_ed function."""
+    assert math.isclose(_concrete_shear.m_ed(
+        Ved, e_u, r_sx, r_sy, l_min, inner,
+        edge_par, edge_per, corner), expected, rel_tol=0.001)
+
+
+@pytest.mark.parametrize(
+    '''r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx, 
+    r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
+    m_pd, expected''',
+    [
+        (10e3, 20, 30, 30, 2000, True, False, False, False, 3472),
+        (10e3, 20, 30, 30, 2000, False, True, False, False, 3472),
+        (10e3, 20, 30, 30, 2000, False, False, True, False, 5694),
+        (10e3, 20, 30, 30, 2000, False, False, False, True, 5694),
+    ],
+)
+def test_psi_punching(
+    r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
+    r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
+    m_pd, expected
+):
+
+    """Test the psi_punching function."""
+    assert math.isclose(_concrete_shear.psi_punching(
+        Ved, e_u, r_sx, r_sy, l_min, inner,
+        edge_par, edge_per, corner), expected, rel_tol=0.001)

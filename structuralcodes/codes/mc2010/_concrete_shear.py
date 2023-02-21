@@ -869,7 +869,7 @@ def m_ed(
         r_sx (float): Denotes the position where the radial bending moment is
         zero with respect to support axis in x direction
         r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
+        zero with respect to support axis in y direction
         l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
@@ -1164,4 +1164,4 @@ def v_rd_punching(
             d_v, f_ck, d_head, stirrups_compression, gamma_c))
 
 
-print(t_rd(100*10e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5))
+print(m_ed(10e3, 200, 30, 30, 2000, False, False, False, True))
