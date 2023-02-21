@@ -264,3 +264,22 @@ def test_t_rd_max(
     assert math.isclose(_concrete_shear.t_rd_max(
             f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
             Med, Ved, Ned, z, delta_e), expected, rel_tol=0.001)
+
+
+@pytest.mark.parametrize(
+    '''t_ed, v_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
+        Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected''',
+    [
+        (100*10e3, 50e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5),
+    ],
+)
+def test_t_rd(
+        t_ed, v_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
+        Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected
+        ):
+
+    """Test the t_rd function."""
+    assert math.isclose(_concrete_shear.t_rd(
+            fck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
+            Med, Ved, Ned, z, delta_e), expected, rel_tol=0.001)
+

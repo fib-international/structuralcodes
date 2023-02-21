@@ -793,24 +793,10 @@ def t_rd_max(
 
 
 def t_rd(
-    t_ed: float,
-    v_ed: float,
-    approx_lvl_s: int,
-    fck: float,
-    bw: float,
-    theta: float,
-    z: float,
-    E_s: float,
-    As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
-    delta_e: float,
-    alfa: float,
-    f_ck: float,
-    d_k: float,
-    a_k: float,
-    gamma_c: float = 1.5,
+    t_ed: float, v_ed: float, approx_lvl_s: int, fck: float,
+    bw: float, theta: float, z: float, E_s: float, As: float,
+    Med: float, Ved: float, Ned: float, delta_e: float,
+    alfa: float, d_k: float, a_k: float, gamma_c: float = 1.5,
 ) -> bool:
     """Checks if the combination of torstion ans shear is ok
 
@@ -839,7 +825,7 @@ def t_rd(
     if (
         (t_ed
          / t_rd_max(
-            f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s,
+            fck, gamma_c, d_k, a_k, theta, approx_lvl_s,
             E_s, As, Med, Ved, Ned, z, delta_e))**2 +
         (v_ed
          / v_rd_max(
