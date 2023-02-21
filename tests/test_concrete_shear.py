@@ -309,23 +309,24 @@ def test_m_ed(
 
 
 @pytest.mark.parametrize(
-    '''r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx, 
+    '''l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
     r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
     m_pd, expected''',
     [
-        (10e3, 20, 30, 30, 2000, True, False, False, False, 3472),
+        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 400, 600, ),
         (10e3, 20, 30, 30, 2000, False, True, False, False, 3472),
         (10e3, 20, 30, 30, 2000, False, False, True, False, 5694),
         (10e3, 20, 30, 30, 2000, False, False, False, True, 5694),
     ],
 )
 def test_psi_punching(
-    r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
+    l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
     r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
     m_pd, expected
 ):
 
     """Test the psi_punching function."""
     assert math.isclose(_concrete_shear.psi_punching(
-        Ved, e_u, r_sx, r_sy, l_min, inner,
-        edge_par, edge_per, corner), expected, rel_tol=0.001)
+        l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
+    r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
+    m_pd), expected, rel_tol=0.001)

@@ -894,7 +894,7 @@ def m_ed(
 
 
 def psi_punching(
-    r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
+    l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
     approx_lvl_p: float, Ved: float, e_u: float, r_sx: float, r_sy: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool,
     corner: bool, m_rd: float, m_pd: float
