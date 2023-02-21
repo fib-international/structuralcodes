@@ -636,7 +636,7 @@ def v_rd_ct_approx2(
     return (i_c*b_wy/S_cy)*(((f_ctd**2)+alfa_l*sigma_cpy*f_ctd)**0.5-tau_cpy)
 
 
-def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
+def tau_edi(beta: float, Ved: float, z: float, b_i: float):
     """Shear at the interface between cocrete cast at different times
     fib Model Code 2010, eq. (7.3-49)
     Args:
@@ -644,11 +644,11 @@ def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
         the longitudinal force in either compression or tension zone
         z (float): The inner lever arm of the composed section in mm
         b_i (float): The width of the inerface in mm
-        v_ed (float): The shear force at the interface in N
+        Ved (float): The shear force at the interface in N
 
     return:
         The shear force that should be used at the intersection"""
-    return (beta*v_ed)/(z*b_i)
+    return (beta*Ved)/(z*b_i)
 
 
 def tau_rdi_without_reinforcement(
@@ -730,7 +730,7 @@ def tau_rdi_with_reinforcement(
         )
 
 
-def v_ed_ti(t_ed: float, a_k: float, z_i: float):
+def Ved_ti(t_ed: float, a_k: float, z_i: float):
     """Shear force due to torsion
 
     fib Model Code 2010, eq. (7.3-53)
@@ -793,7 +793,7 @@ def t_rd_max(
 
 
 def t_rd(
-    t_ed: float, v_ed: float, approx_lvl_s: int, fck: float,
+    t_ed: float, approx_lvl_s: int, fck: float,
     bw: float, theta: float, z: float, E_s: float, As: float,
     Med: float, Ved: float, Ned: float, delta_e: float,
     alfa: float, d_k: float, a_k: float, gamma_c: float = 1.5,
@@ -827,7 +827,7 @@ def t_rd(
          / t_rd_max(
             fck, gamma_c, d_k, a_k, theta, approx_lvl_s,
             E_s, As, Med, Ved, Ned, z, delta_e))**2 +
-        (v_ed
+        (Ved
          / v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E_s, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
@@ -838,23 +838,23 @@ def t_rd(
     return check
 
 
-def b_0(v_ed: float, v_prep_d_max: float) -> float:
+def b_0(Ved: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
 
     fib Model Code 2010, eq. (7.3-57)
     Args:
-        V_ed (float): The acting shear force from the columns
+        Ved (float): The acting shear force from the columns
         v_prep_d_max (float): The maximum shear force per unit length
         perpendiculerer to the basic control parameter (Figure 7.3-24)
 
     Return:
         The shear-resisting control perimeter, b_0"""
 
-    return v_ed/v_prep_d_max
+    return Ved/v_prep_d_max
 
 
 def m_ed(
-    v_ed: float, e_u: float, r_sx: float, r_sy: float, l_min: float,
+    Ved: float, e_u: float, r_sx: float, r_sy: float, l_min: float,
     inner: bool, edge_par: bool, edge_per: bool, corner: bool
 ) -> float:
     """The average bending moment acting in the support strip.
@@ -863,7 +863,7 @@ def m_ed(
     and (7.3-74)
 
     Args:
-        v_ed (float): The acting shear force from the columns
+        Ved (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
         r_sx (float): Denotes the position where the radial bending moment is
@@ -884,18 +884,18 @@ def m_ed(
     """
     b_s = min(1.5 * (r_sx*r_sy)**0.5, l_min)
     if inner:
-        return v_ed*((1/8)+e_u/(2*b_s))
+        return Ved*((1/8)+e_u/(2*b_s))
     elif edge_par:
-        return max(v_ed*((1/8)+e_u/(2*b_s)), v_ed/4)
+        return max(Ved*((1/8)+e_u/(2*b_s)), Ved/4)
     elif edge_per:
-        return v_ed*((1/8)+e_u/(b_s))
+        return Ved*((1/8)+e_u/(b_s))
     elif corner:
-        return max(v_ed*((1/8)+e_u/(b_s)), v_ed/2)
+        return max(Ved*((1/8)+e_u/(b_s)), Ved/2)
 
 
 def psi_punching(
     r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
-    approx_lvl_p: float, v_ed: float, e_u: float, r_sx: float, r_sy: float,
+    approx_lvl_p: float, Ved: float, e_u: float, r_sx: float, r_sy: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool,
     corner: bool, m_rd: float, m_pd: float
 ) -> float:
@@ -911,7 +911,7 @@ def psi_punching(
         d (float): The mean value of the effective depth in mm
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
+        Ved (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
         r_sx (float): Denotes the position where the radial bending moment is
@@ -943,7 +943,7 @@ def psi_punching(
         if 0.5 < l_x/l_y < 2:
             warnings.warn("Reconsider maximum r_s value")
         psi = (1.5 * r_s * f_yd / (d*e_s))*((m_ed(
-            v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par, edge_per, corner
+            Ved, e_u, r_sx, r_sy, l_min, inner, edge_par, edge_per, corner
         )-m_pd)/(m_rd-m_pd))**1.5
 
     return psi
@@ -951,7 +951,7 @@ def psi_punching(
 
 def v_rdc_punching(
     r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
-    approx_lvl_p: float, dg: float, f_ck: float, d_v: float, v_ed: float,
+    approx_lvl_p: float, dg: float, f_ck: float, d_v: float, Ved: float,
     e_u: float, r_sx: float, r_sy: float, l_min: float, inner: bool,
     edge_par: bool, edge_per: bool, corner: bool, m_rd: float, m_pd: float,
     v_prep_d_max: float, gamma_c: float = 1.5
@@ -971,7 +971,7 @@ def v_rdc_punching(
         dg (float): Maximum size of aggregate
         f_ck (float): Characteristic strength in MPa
         d_v (float): The effective depth considering support in mm
-        v_ed (float): The acting shear force from the columns
+        Ved (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
         r_sx (float): Denotes the position where the radial bending moment is
@@ -996,16 +996,16 @@ def v_rdc_punching(
     k_psi = min(
         1/(1.5+0.9*k_dg*d*psi_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
-            approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
+            approx_lvl_p, Ved, e_u, r_sx, r_sy, l_min, inner, edge_par,
             edge_per, corner, m_rd, m_pd
         )), 0.6)
 
-    return k_psi*b_0(v_ed, v_prep_d_max)*d_v * (f_ck**0.5)/gamma_c
+    return k_psi*b_0(Ved, v_prep_d_max)*d_v * (f_ck**0.5)/gamma_c
 
 
 def v_rds_punching(
     e_u: float, b_u: float, r_s: float, l_x: float, l_y: float, f_yd: float,
-    d: float, e_s: float, approx_lvl_p: float, v_ed: float, r_sx: float,
+    d: float, e_s: float, approx_lvl_p: float, Ved: float, r_sx: float,
     r_sy: float, l_min: float, inner: bool, edge_par: bool, edge_per: bool,
     corner: bool, m_rd: float, m_pd: float, alfa: float,
     f_bd: float, f_ywd: float, kam_w: float, a_sw: float
@@ -1026,7 +1026,7 @@ def v_rds_punching(
         d (float): The mean value of the effective depth in mm
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
+        Ved (float): The acting shear force from the columns
         r_sx (float): Denotes the position where the radial bending moment is
         zero with respect to support axis in x direction
         r_sy (float): Denotes the position where the radial bending moment is
@@ -1054,12 +1054,12 @@ def v_rds_punching(
     sigma_swd = min(
         (e_s*psi_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
-            approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
+            approx_lvl_p, Ved, e_u, r_sx, r_sy, l_min, inner, edge_par,
             edge_per, corner, m_rd, m_pd
         )/6)*(sin(alfa*pi/180)+cos(alfa*pi/180)) *
         (sin(alfa*pi/180)+f_bd*d/(f_ywd*kam_w)), f_ywd)
 
-    if (a_sw*k_e*sigma_swd*sin(alfa*pi/180)) < 0.5 * v_ed:
+    if (a_sw*k_e*sigma_swd*sin(alfa*pi/180)) < 0.5 * Ved:
         warnings.warn("""In order to ensure sufficent deformation capacity,
                       the shear resistance in punching most increase""")
 
@@ -1068,7 +1068,7 @@ def v_rds_punching(
 
 def v_rd_max_punching(
     r_s: float, l_x: float, l_y: float, f_yd: float, d: float, e_s: float,
-    approx_lvl_p: float, v_ed: float, e_u: float, r_sx: float, r_sy: float,
+    approx_lvl_p: float, Ved: float, e_u: float, r_sx: float, r_sy: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool, dg: float,
     corner: bool, m_rd: float, m_pd: float, v_prep_d_max: float,
     d_v: float, f_ck: float, d_head: bool, stirrups_compression: bool,
@@ -1093,17 +1093,17 @@ def v_rd_max_punching(
     k_psi = min(
         1/(1.5+0.9*k_dg*d*psi_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
-            approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
+            approx_lvl_p, Ved, e_u, r_sx, r_sy, l_min, inner, edge_par,
             edge_per, corner, m_rd, m_pd
         )), 0.6)
     
-    return min((k_sys*k_psi*b_0(v_ed, v_prep_d_max)*d_v*f_ck**0.5) /
-               gamma_c, (b_0(v_ed, v_prep_d_max)*d_v*f_ck**0.5)/gamma_c)
+    return min((k_sys*k_psi*b_0(Ved, v_prep_d_max)*d_v*f_ck**0.5) /
+               gamma_c, (b_0(Ved, v_prep_d_max)*d_v*f_ck**0.5)/gamma_c)
 
 
 def v_rd_punching(
     e_u, b_u, r_s: float, l_x: float, l_y: float, f_yd: float, d: float,
-    e_s: float, approx_lvl_p: float, v_ed: float, r_sx: float, r_sy: float,
+    e_s: float, approx_lvl_p: float, Ved: float, r_sx: float, r_sy: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool, corner: bool,
     m_rd: float, m_pd: float, alfa: float, f_bd: float, f_ywd: float,
     kam_w: float, a_sw: float, dg: float, f_ck: float, d_v: float,
@@ -1126,7 +1126,7 @@ def v_rd_punching(
         d (float): The mean value of the effective depth in mm
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
+        Ved (float): The acting shear force from the columns
         r_sx (float): Denotes the position where the radial bending moment is
         zero with respect to support axis in x direction
         r_sy (float): Denotes the position where the radial bending moment is
@@ -1150,18 +1150,18 @@ def v_rd_punching(
     return: The punching resistance for punching"""
 
     return v_rdc_punching(
-        r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, dg, f_ck, d_v, v_ed, e_u,
+        r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, dg, f_ck, d_v, Ved, e_u,
         r_sx, r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
         v_prep_d_max, gamma_c
         ) + min(v_rds_punching(
-            e_u, b_u, r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, v_ed, r_sx,
+            e_u, b_u, r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, r_sx,
             r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, m_pd, alfa,
             f_bd, f_ywd, kam_w, a_sw
         ), v_rd_max_punching(
             r_s, l_x, l_y, f_yd, d, e_s,
-            approx_lvl_p, v_ed, e_u, r_sx, r_sy, l_min, inner, edge_par,
+            approx_lvl_p, Ved, e_u, r_sx, r_sy, l_min, inner, edge_par,
             edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
             d_v, f_ck, d_head, stirrups_compression, gamma_c))
 
 
-print(t_rd(100*10e3, 50e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5))
+print(t_rd(100*10e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5))

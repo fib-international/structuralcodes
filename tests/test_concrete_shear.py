@@ -240,10 +240,10 @@ def test_v_rd(
         (2000000, 2000, 300, 150000),
     ],
 )
-def test_v_ed_ti(t_ed, a_k, z_i, expected):
+def test_Ved_ti(t_ed, a_k, z_i, expected):
 
     """Test the tau_edi function."""
-    assert math.isclose(_concrete_shear.v_ed_ti(t_ed, a_k, z_i),
+    assert math.isclose(_concrete_shear.Ved_ti(t_ed, a_k, z_i),
                         expected, rel_tol=0.001)
 
 @pytest.mark.parametrize(
@@ -267,14 +267,14 @@ def test_t_rd_max(
 
 
 @pytest.mark.parametrize(
-    '''t_ed, v_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
+    '''t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
         Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected''',
     [
-        (100*10e3, 50e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5),
+        (100*10e3, 1, 35, 20, 25, 180, 200000, 2000, 0, 0, 10e3, 180, 20, 150, 50000, 1.5),
     ],
 )
 def test_t_rd(
-        t_ed, v_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
+        t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
         Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected
         ):
 
