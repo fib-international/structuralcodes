@@ -1149,11 +1149,11 @@ def v_rd_punching(
 
     return: The punching resistance for punching"""
 
-    return v_rdc_punching(
+    return min(v_rdc_punching(
         r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, dg, f_ck, d_v, Ved, e_u,
         r_sx, r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
         v_prep_d_max, gamma_c
-        ) + min(v_rds_punching(
+        ) + v_rds_punching(
             e_u, b_u, r_s, l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, r_sx,
             r_sy, l_min, inner, edge_par, edge_per, corner, m_rd, m_pd, alfa,
             f_bd, f_ywd, kam_w, a_sw
