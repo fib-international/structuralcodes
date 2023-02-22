@@ -183,8 +183,8 @@ def test_tau_rdi_without_reinforcement(
     c_a, f_ctd, mu, sigma_n, f_ck, f_cd, expected
 ):
 
-    """Test the tau_edi function."""
-    assert math.isclose(_concrete_shear.tau_rdi_without_reinforcement(
+    """Test the tau_rdi_without_reinforcement function."""
+    assert math.isclose(_concrete_shear.tau_rdi_without_reinforceent(
         c_a, f_ctd, mu, sigma_n, f_ck, f_cd
     ),
         expected, rel_tol=0.001)
@@ -201,7 +201,7 @@ def test_tau_rdi_with_reinforcement(
     c_r, k1, k2, mu, ro, sigma_n, alfa, beta_c, f_ck, f_yd, f_cd, expected
 ):
 
-    """Test the tau_edi function."""
+    """Test the tau_rdi_with_reinforcement function."""
     assert math.isclose(_concrete_shear.tau_rdi_with_reinforcement(
         c_r, k1, k2, mu, ro, sigma_n, alfa, beta_c, f_ck, f_yd, f_cd
     ),
@@ -241,11 +241,12 @@ def test_v_rd(
         (2000000, 2000, 300, 150000),
     ],
 )
-def test_Ved_ti(t_ed, a_k, z_i, expected):
+def test_ved_ti(t_ed, a_k, z_i, expected):
 
-    """Test the tau_edi function."""
-    assert math.isclose(_concrete_shear.Ved_ti(t_ed, a_k, z_i),
+    """Test the ved_ti function."""
+    assert math.isclose(_concrete_shear.v_ed_ti(t_ed, a_k, z_i),
                         expected, rel_tol=0.001)
+
 
 @pytest.mark.parametrize(
     '''f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
@@ -292,10 +293,10 @@ def test_t_rd(
     '''Ved, e_u, l_x, l_y, l_min, inner,
     edge_par, edge_per, corner, expected''',
     [
-        (10e3, 20, 136, 136, 2000, True, False, False, False, 3472),
-        (10e3, 20, 136, 136, 2000, False, True, False, False, 3472),
-        (10e3, 20, 136, 136, 2000, False, False, True, False, 5694),
-        (10e3, 20, 136, 136, 2000, False, False, False, True, 5694),
+        (10e3, 20, 2e3, 2e3, 2000, True, False, False, False, 1401),
+        (10e3, 20, 2e3, 3e3, 2000, False, True, False, False, 2500),
+        (10e3, 20, 2e3, 3e3, 2000, False, False, True, False, 1497),
+        (10e3, 20, 2e3, 3e3, 2000, False, False, False, True, 5000),
     ],
 )
 def test_m_ed(
@@ -314,8 +315,8 @@ def test_m_ed(
     l_min, inner, edge_par, edge_per, corner, m_rd,
     m_pd, expected''',
     [
-        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 2e3, True, False, False, False, 40e6, 0, 0.013426875),
-        (2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0.41269218238),
+        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 2e3, True, False, False, False, 140, 0, 0.013426875),
+        (2e3, 3e3, 434, 160, 200e3, 2, 10e3, 20, 2e3, True, False, False, False, 140, 0, 0.41269218238),
     ],
 )
 def test_psi_punching(
@@ -329,3 +330,4 @@ def test_psi_punching(
         l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
         l_min, inner, edge_par, edge_per, corner, m_rd,
         m_pd), expected, rel_tol=0.001)
+

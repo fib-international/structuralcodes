@@ -680,7 +680,7 @@ def tau_rdi_without_reinforceent(
     return min((c_a*f_ctd) + (mu * sigma_n), 0.5*v*f_cd)
 
 
-def tau_rdi_with_reinforceent(
+def tau_rdi_with_reinforcement(
     c_r: float,
     k1: float,
     k2: float,
@@ -779,11 +779,12 @@ def t_rd_max(
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta*pi/180)) ** 2)
-        k_epsilon = 1 / (1.2 + 55 * epsilon_1)
+        k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     elif approx_lvl_s == 3:
+        theta_min = (20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-            ) * ((1 / tan(theta*pi/180)) ** 2)
+            ) * ((1 / tan(theta_min*pi/180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     k_c = nfc*k_epsilon
 
@@ -792,7 +793,6 @@ def t_rd_max(
 
 def t_rd(
     t_ed: float,
-    v_ed: float,
     approx_lvl_s: int,
     fck: float,
     bw: float,
@@ -1178,4 +1178,4 @@ def v_rd_punching(
 )
 
 
-print(psi_punching(2e3, 3e3, 434, 160, 200e3, 2, 10e3, 20, 2e3, True, False, False, False, 140, 0))
+print(t_rd_max(35, 1.5, 150, 50000, 40, 2, 200000, 2000, 0, 2000, 0, 180, 20))
