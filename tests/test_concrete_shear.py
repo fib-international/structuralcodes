@@ -309,11 +309,12 @@ def test_m_ed(
 
 
 @pytest.mark.parametrize(
-    '''l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
-    r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
+    '''l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
+    l_min, inner, edge_par, edge_per, corner, m_rd,
     m_pd, expected''',
     [
-        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 400, 600, ),
+        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 2e3, True, False, False, False, 40e6, 0, 0.013426875),
+        (2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0, 0.013426875),
         (10e3, 20, 30, 30, 2000, False, True, False, False, 3472),
         (10e3, 20, 30, 30, 2000, False, False, True, False, 5694),
         (10e3, 20, 30, 30, 2000, False, False, False, True, 5694),

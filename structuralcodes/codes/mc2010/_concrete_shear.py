@@ -1176,3 +1176,6 @@ def v_rd_punching(
             edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
             d_v, f_ck, d_head, stirrups_compression, gamma_c)
 )
+
+
+print(psi_punching(2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0))
