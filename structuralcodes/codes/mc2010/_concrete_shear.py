@@ -1176,6 +1176,3 @@ def v_rd_punching(
             edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
             d_v, f_ck, d_head, stirrups_compression, gamma_c)
 )
-
-
-print(v_rd(2, 0, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5, 0, 0, 434, 40))
