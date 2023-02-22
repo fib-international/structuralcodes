@@ -974,8 +974,6 @@ def v_rdc_punching(
     """Punching resistance from the concrete
     fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63)
     args:
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
@@ -1087,12 +1085,35 @@ def v_rd_max_punching(
     d_v: float, f_ck: float, d_head: bool, stirrups_compression: bool,
     gamma_c: float = 1.5
 ):
-    """Finds the maximum value you can have for what the shear
-    reinforcement can take.
+    """Finds the maximum value you can have for v_rd
      
     Args:
-    
+        l_x (float): The distance between two columns in x direction
+        l_y (float): The distance between two columns in y direction
+        f_yd (float): Design strength of reinforment steel in MPa
+        d (float): The mean value of the effective depth in mm
+        e_s (float): The E_s-modulus for steel in Mpa
+        approx_lvl_p (float): The approx level for punching
+        dg (float): Maximum size of aggregate
+        d_v (float): The effective depth considering support in mm
+        v_ed (float): The acting shear force from the columns
+        e_u (float): Refers to the eccentricity of the resultant of shear
+        forces with respect to the centroid
+        l_min (float): The shorter side of the the L_x and L_y
+        inner (bool): Is true only if the column is a inner column
+        edge_par (bool): Is true only if the column is a edge column with
+        tention reinforcement paralell to the edge
+        edge_per (bool): Is true only if the column is a edge column with
+        tention reinforcement perpendicular to the edge
+        corner (bool): Is true only if the column is a corner column
+        m_rd (float): The design average strength per unit length in MPa
+        m_pd: (float): The average decompresstion moment due to prestressing
+        in MPa
+        stirrups_compression: (bool): Stirrups with sufficient length at
+        compression face, and bent on tension face
+
     Return
+        The maximum allowed 
     """
 
     if d_head:
@@ -1115,7 +1136,7 @@ def v_rd_max_punching(
 
 
 def v_rd_punching(
-    e_u, b_u, r_s: float, l_x: float, l_y: float, f_yd: float, d: float,
+    e_u, b_u, l_x: float, l_y: float, f_yd: float, d: float,
     e_s: float, approx_lvl_p: float, v_ed: float,
     l_min: float, inner: bool, edge_par: bool, edge_per: bool, corner: bool,
     m_rd: float, m_pd: float, alfa: float, f_bd: float, f_ywd: float,
@@ -1160,13 +1181,14 @@ def v_rd_punching(
         kam_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
 
-    return: The punching resistance for punching"""
+    return: The maximum allowed punching resistance, regardless of
+    values from v_rdc and v_rds"""
 
-    return v_rdc_punching(
+    return min(v_rdc_punching(
         l_x, l_y, f_yd, d, e_s, approx_lvl_p, dg, f_ck, d_v, v_ed, e_u,
         l_min, inner, edge_par, edge_per, corner, m_rd,
         v_prep_d_max, gamma_c
-        ) + min(v_rds_punching(
+        ) + v_rds_punching(
             e_u, b_u, l_x, l_y, f_yd, d, e_s, approx_lvl_p, v_ed,
             l_min, inner, edge_par, edge_per, corner, m_rd, m_pd, alfa,
             f_bd, f_ywd, kam_w, a_sw
