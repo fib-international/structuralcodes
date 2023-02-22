@@ -315,19 +315,16 @@ def test_m_ed(
     [
         (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 2e3, True, False, False, False, 40e6, 0, 0.013426875),
         (2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0.41269218238),
-        (10e3, 20, 30, 30, 2000, False, True, False, False, 3472),
-        (10e3, 20, 30, 30, 2000, False, False, True, False, 5694),
-        (10e3, 20, 30, 30, 2000, False, False, False, True, 5694),
     ],
 )
 def test_psi_punching(
-    l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
-    r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
+    l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
+    l_min, inner, edge_par, edge_per, corner, m_rd,
     m_pd, expected
 ):
 
     """Test the psi_punching function."""
     assert math.isclose(_concrete_shear.psi_punching(
-        l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, r_sx,
-    r_sy, l_min, inner, edge_par, edge_per, corner, m_rd,
-    m_pd), expected, rel_tol=0.001)
+        l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
+        l_min, inner, edge_par, edge_per, corner, m_rd,
+        m_pd), expected, rel_tol=0.001)
