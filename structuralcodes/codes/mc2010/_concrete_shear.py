@@ -1106,7 +1106,7 @@ def v_rd_max_punching(
     k_psi = min(
         1/(1.5+0.9*k_dg*d*psi_punching(
             l_x, l_y, f_yd, d, e_s,
-            approx_lvl_p, v_ed, e_u, r_sy, l_min, inner, edge_par,
+            approx_lvl_p, v_ed, e_u, l_min, inner, edge_par,
             edge_per, corner, m_rd, m_pd
         )), 0.6)
     
