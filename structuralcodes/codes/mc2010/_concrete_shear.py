@@ -957,7 +957,7 @@ def psi_punching(
         if 0.5 < l_x/l_y < 2:
             warnings.warn("Reconsider maximum r_s value")
         psi = (1.5 * r_s * f_yd / (d*e_s))*((m_ed(
-            v_ed, e_u, l_min, inner, edge_par, edge_per, corner
+            v_ed, e_u, l_x, l_y, l_min, inner, edge_par, edge_per, corner
         )-m_pd)/(m_rd-m_pd))**1.5
 
     return psi
