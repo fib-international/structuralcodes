@@ -88,12 +88,12 @@ def v_rd(
 
     if not reinforcment:
         return v_rdc(
-            approx_lvl_c, approx_lvl_s, fck, z, bw, dg, 
+            approx_lvl_c, approx_lvl_s, fck, z, bw, dg,
             E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
             )
     if reinforcment and approx_lvl_s == 3:
         return min(v_rdc(
-            approx_lvl_c, approx_lvl_s, fck, z, bw, dg, 
+            approx_lvl_c, approx_lvl_s, fck, z, bw, dg,
             E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,) +
             v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
@@ -274,11 +274,10 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
     """
     fsqr = min(fck**0.5, 8)
     theta_min = (20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
-    kv = max((0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)))*(
-        1 - Ved / v_rd_max(
-            approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med, Ved,
-            Ned, delta_e, alfa, gamma_c)),
-            0)
+    kv = max((0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
+              )*(1 - Ved / v_rd_max(
+                approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med, Ved,
+                Ned, delta_e, alfa, gamma_c)), 0)
 
     return (kv * fsqr * z * bw) / gamma_c
 
@@ -1086,7 +1085,7 @@ def v_rd_max_punching(
     gamma_c: float = 1.5
 ):
     """Finds the maximum value you can have for v_rd
-
+    fib Model Code 2010, eq. (7.3-68) and (7.3-69)
     Args:
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
@@ -1113,7 +1112,7 @@ def v_rd_max_punching(
         compression face, and bent on tension face
 
     Return
-        The maximum allowed 
+        The maximum allowed
     """
 
     if d_head:
@@ -1130,7 +1129,7 @@ def v_rd_max_punching(
             approx_lvl_p, v_ed, e_u, l_min, inner, edge_par,
             edge_per, corner, m_rd, m_pd
         )), 0.6)
-    
+
     return min((k_sys*k_psi*b_0(v_ed, v_prep_d_max)*d_v*f_ck**0.5) /
                gamma_c, (b_0(v_ed, v_prep_d_max)*d_v*f_ck**0.5)/gamma_c)
 
@@ -1197,7 +1196,7 @@ def v_rd_punching(
             approx_lvl_p, v_ed, e_u, l_min, inner, edge_par,
             edge_per, dg, corner, m_rd, m_pd, v_prep_d_max,
             d_v, f_ck, d_head, stirrups_compression, gamma_c)
-)
+    )
 
 
 print(psi_punching(2e3, 3e3, 434, 160, 200e3, 2, 10e3, 20, 2e3, True, False, False, False, 140, 0))
