@@ -838,7 +838,7 @@ def t_rd(
          / t_rd_max(
             f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s,
             E_s, As, Med, Ved, Ned, z, delta_e))**2 +
-        (v_ed
+        (Ved
          / v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E_s, As, Med,
             Ved, Ned, delta_e, alfa, gamma_c))**2 <= 1):
@@ -1199,4 +1199,4 @@ def v_rd_punching(
     )
 
 
-print(t_rd_max(35, 1.5, 150, 50000, 40, 2, 200000, 2000, 0, 2000, 0, 180, 20))
+print(t_rd(10000e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20, 90, 150, 50000, 1.5))
