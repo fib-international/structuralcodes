@@ -1178,4 +1178,4 @@ def v_rd_punching(
 )
 
 
-print(psi_punching(2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0))
+print(psi_punching(2e3, 3e3, 434, 160, 200e3, 2, 10e3, 20, 2e3, True, False, False, False, 140, 0))

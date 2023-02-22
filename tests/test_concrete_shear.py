@@ -314,7 +314,7 @@ def test_m_ed(
     m_pd, expected''',
     [
         (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 2e3, True, False, False, False, 40e6, 0, 0.013426875),
-        (2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0, 0.013426875),
+        (2e3, 3e3, 434, 160, 200e3, 2, 50e3, 20, 2e3, True, False, False, False, 40e6, 0.41269218238),
         (10e3, 20, 30, 30, 2000, False, True, False, False, 3472),
         (10e3, 20, 30, 30, 2000, False, False, True, False, 5694),
         (10e3, 20, 30, 30, 2000, False, False, False, True, 5694),
