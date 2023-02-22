@@ -1086,7 +1086,7 @@ def v_rd_max_punching(
     gamma_c: float = 1.5
 ):
     """Finds the maximum value you can have for v_rd
-     
+
     Args:
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
