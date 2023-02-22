@@ -26,7 +26,8 @@ def test_epsilon_x(E_s, As, Med, Ved, Ned, z, deltaE, expected):
 
 
 @pytest.mark.parametrize(
-    'approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c, expected',
+    '''approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, 
+    Ned, delta_e, alfa, gamma_c, expected''',
     [
         (1, 30, 50, 20, 200, 210000, 1000, 200e6, 50e3, 10e3, 50, 20, 1.5, 70707),
         (2, 30, 50, 20, 200, 210000, 1000, 200e6, 50e3, 10e3, 50, 20, 1.5, 39997),
