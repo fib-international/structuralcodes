@@ -283,8 +283,8 @@ def test_t_rd(
 
     """Test the t_rd function."""
     assert math.isclose(_concrete_shear.t_rd(
-            fck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-            Med, Ved, Ned, z, delta_e), expected, rel_tol=0.001)
+        t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
+        Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c), expected)
 
 
 @pytest.mark.parametrize(
