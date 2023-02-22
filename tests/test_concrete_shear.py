@@ -288,23 +288,23 @@ def test_t_rd(
 
 
 @pytest.mark.parametrize(
-    '''Ved, e_u, l_min, inner,
+    '''Ved, e_u, l_x, l_y, l_min, inner,
     edge_par, edge_per, corner, expected''',
     [
-        (10e3, 20, 2000, True, False, False, False, 3472),
-        (10e3, 20, 2000, False, True, False, False, 3472),
-        (10e3, 20, 2000, False, False, True, False, 5694),
-        (10e3, 20, 2000, False, False, False, True, 5694),
+        (10e3, 20, 136, 136, 2000, True, False, False, False, 3472),
+        (10e3, 20, 136, 136, 2000, False, True, False, False, 3472),
+        (10e3, 20, 136, 136, 2000, False, False, True, False, 5694),
+        (10e3, 20, 136, 136, 2000, False, False, False, True, 5694),
     ],
 )
 def test_m_ed(
-    Ved, e_u, l_min, inner,
+    Ved, e_u, l_x, l_y, l_min, inner,
     edge_par, edge_per, corner, expected
     ):
 
     """Test the m_ed function."""
     assert math.isclose(_concrete_shear.m_ed(
-        Ved, e_u, l_min, inner,
+        Ved, e_u, l_x, l_y, l_min, inner,
         edge_par, edge_per, corner), expected, rel_tol=0.001)
 
 
