@@ -91,9 +91,6 @@ def v_rd(
         float: Design shear resistance
     """
 
-    if not (approx_lvl_c == 1 or 2) and not approx_lvl_s == 3:
-        warnings.warn("Not a valid approximation level")
-
     if not reinforcment:
         return v_rdc(
             approx_lvl_c,
@@ -111,60 +108,63 @@ def v_rd(
             alfa,
             gamma_c,
         )
-    if reinforcment and approx_lvl_s == 3:
-        return min(
-            v_rdc(
-                approx_lvl_c,
-                approx_lvl_s,
-                fck,
-                z,
-                bw,
-                dg,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
+    if reinforcment:
+        if approx_lvl_s == 3:
+            return min(
+                v_rdc(
+                    approx_lvl_c,
+                    approx_lvl_s,
+                    fck,
+                    z,
+                    bw,
+                    dg,
+                    E_s,
+                    As,
+                    Med,
+                    Ved,
+                    Ned,
+                    delta_e,
+                    alfa,
+                    gamma_c,
+                )
+                + v_rds(asw, sw, z, f_ywd, theta, alfa),
+                v_rd_max(
+                    approx_lvl_s,
+                    fck,
+                    bw,
+                    theta,
+                    z,
+                    E_s,
+                    As,
+                    Med,
+                    Ved,
+                    Ned,
+                    delta_e,
+                    alfa,
+                    gamma_c,
+                ),
             )
-            + v_rds(asw, sw, z, f_ywd, theta, alfa),
-            v_rd_max(
-                approx_lvl_s,
-                fck,
-                bw,
-                theta,
-                z,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-            ),
-        )
-    if reinforcment and approx_lvl_s == 1 or approx_lvl_s == 2:
-        return min(
-            v_rds(asw, sw, z, f_ywd, theta, alfa),
-            v_rd_max(
-                approx_lvl_s,
-                fck,
-                bw,
-                theta,
-                z,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-            ),
-        )
+
+        if approx_lvl_s in (1, 2):
+            return min(
+                v_rds(asw, sw, z, f_ywd, theta, alfa),
+                v_rd_max(
+                    approx_lvl_s,
+                    fck,
+                    bw,
+                    theta,
+                    z,
+                    E_s,
+                    As,
+                    Med,
+                    Ved,
+                    Ned,
+                    delta_e,
+                    alfa,
+                    gamma_c,
+                ),
+            )
+    raise ValueError("Invalid approx level")
 
 
 def v_rdc(
@@ -231,7 +231,7 @@ def v_rdc(
         return v_rdc_approx2(
             fck, z, bw, dg, E_s, As, Med, Ved, Ned, delta_e, gamma_c
         )
-    warnings.warn("approx lvl need to be between 1 and 3")
+    raise ValueError("Invalid approx level")
 
 
 def v_rdc_approx1(
@@ -447,6 +447,7 @@ def v_rd_max(
         return v_rd_max_approx3(
             fck, bw, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
+    raise ValueError("invalid approx level")
 
 
 def v_rd_max_approx1(
@@ -663,6 +664,7 @@ def v_rd_ct(
             f_p_lx,
             f_p_lx_dx,
         )
+    raise ValueError("Invalid approx level")
 
 
 def v_rd_ct_approx1(
@@ -982,7 +984,7 @@ def t_rd(
     return:
         Returns a bool that is true if the criteria for torsion and
         shear is fulfilled"""
-    if (
+    check = bool((
         t_ed
         / t_rd_max(
             f_ck,
@@ -1016,11 +1018,7 @@ def t_rd(
             alfa,
             gamma_c,
         )
-    ) ** 2 <= 1:
-        check = True
-
-    else:
-        check = False
+    ) ** 2 <= 1)
     return check
 
 
@@ -1046,8 +1044,8 @@ def m_ed(
     l_y: float,
     l_min: float,
     inner: bool,
-    edge_par: bool,
-    edge_per: bool,
+    edge_par1: bool,
+    edge_per2: bool,
     corner: bool,
 ) -> float:
     """The average bending moment acting in the support strip.
@@ -1080,12 +1078,13 @@ def m_ed(
     b_s = min(1.5 * (r_sx * r_sy) ** 0.5, l_min)
     if inner:
         return v_ed * ((1 / 8) + e_u / (2 * b_s))
-    if edge_par:
+    if edge_par1:
         return max(v_ed * ((1 / 8) + e_u / (2 * b_s)), v_ed / 4)
-    if edge_per:
+    if edge_per2:
         return v_ed * ((1 / 8) + e_u / (b_s))
     if corner:
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
+    raise ValueError("the placement is not defined, one needs to be True")
 
 
 def psi_punching(
