@@ -390,11 +390,11 @@ def v_rds(
     if 45 < theta < 20:
         warnings.warn("Too high or too low compression field angel")
     return (
-        (asw / sw) *
-        z *
-        f_ywd *
-        ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180))) *
-        sin(alpha * pi / 180)
+        (asw / sw)
+        * z
+        * f_ywd
+        * ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
+        * sin(alpha * pi / 180)
     )
 
 
@@ -720,18 +720,21 @@ def v_rd_ct_approx2(
     fib Model Code 2010, eq. (7.3-45), (7.3-46) and (7.3-47)
 
        Args:
-           f_ctd (float): Design value of concrete axial tensile strength in MPa
+           f_ctd (float): Design value of concrete axial tensile strength in
+           MPa
            i_c (float): The second moment of area in mm^4
            l_x (float): Distance from the edge to point of
            failure (Figure: 7.3-12)
            l_bd0 (float): follows 7.13-5
            S_cy (float): The first moment of area above y in mm^3
            b_wy (float): The width at hight y in mm
-           y (float): The highh of the critical point at the line of failure in mm
+           y (float): The highh of the critical point at the line of failure
+           in mm
            y_c (float): The hight of the concrete centroidal axis in mm
            A_c (float): The area of concrete cross-section in mm^2
            A_cy (float): The area of concrete cross-section above y in mm^2
-           y_pt (float): The hight of centroidal axis of prestressed steel in mm
+           y_pt (float): The hight of centroidal axis of prestressed steel in
+           mm
            f_p_lx (float): The prestressing force at the distance l_x in N
            f_p_lx (float): The derivative of prestressing force at the
            distance l_x with respect to dx
@@ -924,13 +927,13 @@ def t_rd_max(
     k_c = nfc * k_epsilon
 
     return (
-        k_c *
-        f_ck *
-        t_ef *
-        2 *
-        a_k *
-        sin(theta * pi / 180) *
-        cos(theta * pi / 180)
+        k_c
+        * f_ck
+        * t_ef
+        * 2
+        * a_k
+        * sin(theta * pi / 180)
+        * cos(theta * pi / 180)
         / gamma_c
     )
 
@@ -1316,8 +1319,8 @@ def v_rds_punching(
     k_e = 1 / (1 + e_u / b_u)
     sigma_swd = min(
         (
-            e_s *
-            psi_punching(
+            e_s
+            * psi_punching(
                 l_x,
                 l_y,
                 f_yd,
@@ -1335,9 +1338,9 @@ def v_rds_punching(
                 m_pd,
             )
             / 6
-        ) *
-        (sin(alfa * pi / 180) + cos(alfa * pi / 180)) *
-        (sin(alfa * pi / 180) + f_bd * d / (f_ywd * kam_w)),
+        )
+        * (sin(alfa * pi / 180) + cos(alfa * pi / 180))
+        * (sin(alfa * pi / 180) + f_bd * d / (f_ywd * kam_w)),
         f_ywd,
     )
 
