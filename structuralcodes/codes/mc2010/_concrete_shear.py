@@ -231,6 +231,7 @@ def v_rdc(
         return v_rdc_approx2(
             fck, z, bw, dg, E_s, As, Med, Ved, Ned, delta_e, gamma_c
         )
+    warnings.warn("approx lvl need to be between 1 and 3")
 
 
 def v_rdc_approx1(
@@ -1144,7 +1145,7 @@ def psi_punching(
             warnings.warn("Reconsider maximum r_s value")
         psi = 1.5 * r_s * f_yd / (d * e_s)
 
-    elif approx_lvl_p == 2 or approx_lvl_p == 3:
+    elif approx_lvl_p in (2, 3):
         if 0.5 < l_x / l_y < 2:
             warnings.warn("Reconsider maximum r_s value")
         psi = (1.5 * r_s * f_yd / (d * e_s)) * (
