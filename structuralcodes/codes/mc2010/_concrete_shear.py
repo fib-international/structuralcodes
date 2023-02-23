@@ -86,7 +86,7 @@ def v_rd(
             Ved, Ned, delta_e, alfa, gamma_c,
             )
         )
-    elif reinforcment and approx_lvl_s == 1 or 2:
+    if reinforcment and approx_lvl_s == 1 or approx_lvl_s == 2:
         return min(v_rds(asw, sw, z, f_ywd, theta, alfa), v_rd_max(
             approx_lvl_s, fck, bw, theta, z, E_s, As,
             Med, Ved, Ned, delta_e, alfa, gamma_c,
@@ -142,10 +142,10 @@ def v_rdc(
             approx_lvl_s, fck, z, bw, E_s, As, Med, Ved,
             Ned, delta_e, alfa, gamma_c
         )
-    elif approx_lvl_c == 1:
+    if approx_lvl_c == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
-    elif approx_lvl_c == 2:
+    if approx_lvl_c == 2:
         return v_rdc_approx2(
             fck, z, bw, dg, E_s, As, Med, Ved, Ned, delta_e, gamma_c
         )
@@ -258,7 +258,7 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = (20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
+    theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     kv = max((0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
               )*(1 - Ved / v_rd_max(
                 approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med, Ved,
@@ -335,12 +335,12 @@ def v_rd_max(
     if approx_lvl_s == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alfa, gamma_c)
 
-    elif approx_lvl_s == 2:
+    if approx_lvl_s == 2:
         return v_rd_max_approx2(
             fck, bw, theta, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
-    elif approx_lvl_s == 3:
+    if approx_lvl_s == 3:
         return v_rd_max_approx3(
             fck, bw, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
@@ -531,7 +531,7 @@ def v_rd_ct(
         approximation level"""
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
-    elif approx_lvl_h == 2:
+    if approx_lvl_h == 2:
         return v_rd_ct_approx2(
             f_ctd, i_c, l_x, l_bd0, S_cy, b_wy, y, y_c,
             A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx
@@ -885,11 +885,11 @@ def m_ed(
     b_s = min(1.5 * (r_sx*r_sy)**0.5, l_min)
     if inner:
         return v_ed*((1/8)+e_u/(2*b_s))
-    elif edge_par:
+    if edge_par:
         return max(v_ed*((1/8)+e_u/(2*b_s)), v_ed/4)
-    elif edge_per:
+    if edge_per:
         return v_ed*((1/8)+e_u/(b_s))
-    elif corner:
+    if corner:
         return max(v_ed*((1/8)+e_u/(b_s)), v_ed/2)
 
 
@@ -935,11 +935,11 @@ def psi_punching(
     r_s = max(0.22 * l_x, 0.22*l_y)
 
     if approx_lvl_p == 1:
-        if not (0.5 < l_x/l_y < 2):
+        if not 0.5 < l_x/l_y < 2:
             warnings.warn("Reconsider maximum r_s value")
         psi = 1.5 * r_s * f_yd / (d*e_s)
 
-    elif approx_lvl_p == 2 or 3:
+    elif approx_lvl_p == 2 or approx_lvl_p == 3:
         if 0.5 < l_x/l_y < 2:
             warnings.warn("Reconsider maximum r_s value")
         psi = (1.5 * r_s * f_yd / (d*e_s))*((m_ed(
