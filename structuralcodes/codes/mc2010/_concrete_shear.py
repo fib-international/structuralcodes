@@ -32,25 +32,10 @@ def epsilon_x(
 
 
 def v_rd(
-    approx_lvl_c: int,
-    approx_lvl_s: int,
-    reinforcment: bool,
-    fck: float,
-    z: float,
-    bw: float,
-    dg: float,
-    E_s: float,
-    As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
-    delta_e: float,
-    alfa: float,
-    gamma_c: float,
-    asw: float,
-    sw: float,
-    f_ywd: float,
-    theta: float,
+    approx_lvl_c: int, approx_lvl_s: int, reinforcment: bool, fck: float,
+    z: float, bw: float, dg: float, E_s: float, As: float, Med: float,
+    Ved: float, Ned: float, delta_e: float, alfa: float,
+    gamma_c: float, asw: float, sw: float, f_ywd: float, theta: float,
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -780,7 +765,9 @@ def t_rd_max(
         ) * ((1 / tan(theta*pi/180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     elif approx_lvl_s == 3:
-        theta_min = (20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))
+        theta_min = (
+            20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
+        )
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
             ) * ((1 / tan(theta_min*pi/180)) ** 2)
