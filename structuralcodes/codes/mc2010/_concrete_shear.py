@@ -19,20 +19,45 @@ def epsilon_x(
     Args:
         E (float): The E-modulus to the material in MPa
         As (Float): The cross-section area of reinforcement in mm^2
-        Med (Float): The moment working on the material in Nmm
-        Ved (float): The shear force working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
         z: (float): The effective shear depth in mm
-        delta_E (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
     Returns:
         float: The longitudinal strain"""
+    if Ned >= 0:
+        max(
+        (
+            (1 / (2 * E_s * As))
+            * (
+                (abs(Med) / z)
+                + abs(Ved)
+                + Ned * ((1 / 2) + (delta_e / z))
+            )
+        ),
+        0,
+    )
+    else:
+        max(
+        (
+            (1 / (2 * E_s * As))
+            * (
+                (abs(Med) / z)
+                + abs(Ved)
+                + Ned * ((1 / 2) - (delta_e / z))
+            )
+        ),
+        0,
+    )
+        
     return max(
         (
             (1 / (2 * E_s * As))
             * (
                 (abs(Med) / z)
                 + abs(Ved)
-                + abs(Ned) * ((1 / 2) + (delta_e / z))
+                + Ned * ((1 / 2) + (delta_e / z))
             )
         ),
         0,
@@ -77,10 +102,10 @@ def v_rd(
         dg: (float): Maximum size of aggregate in mm
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area of reinforcement in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
@@ -200,10 +225,10 @@ def v_rdc(
         dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -286,10 +311,10 @@ def v_rdc_approx2(
         dg (float): Maximum size of aggregate
         E_s (float): The E_s-modulus to the materialb in MPa
         As (float): The cross-section area in mm^2
-        Med (float): The moment working on the material in Nmm
-        Ved (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned (float): The normal force working on the material in N
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -330,10 +355,10 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
         dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -427,10 +452,10 @@ def v_rd_max(
         dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -467,7 +492,7 @@ def v_rd_max_approx1(
         gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -514,10 +539,10 @@ def v_rd_max_approx2(
         dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area of reinforcement in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -568,10 +593,10 @@ def v_rd_max_approx3(
         dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area of reinforcement in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -901,12 +926,12 @@ def t_rd_max(
         approx_lvl_s (int): Approximation method for cocrete with reinforcement
         E_s (float): The E_s-modulus to the materialb in MPa
         As (float): The cross-section reinforcement in mm^2
-        Med (float): The moment working on the material in Nmm
-        Ved (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned (float): The normal force working on the material in N
         z (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
 
     return:
         The maximum allowed torsion allowed
@@ -973,10 +998,10 @@ def t_rd(
         dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
+        Med (Float): The positive moment working on the material in Nmm
+        Ved (float): The positive shear force working on the material in N
         Ned: (float): The normal force working on the material in N
-        delta_e (float): The eccentricity of the axial load in mm
+        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
         alfa (float): Inclination of the stirrups in degrees
         f_ck: Characteristic strength in MPa
         d_k: Is the diameter in the smalest circel in the cross section
