@@ -28,16 +28,15 @@ def epsilon_x(
         float: The longitudinal strain"""
     if Ned >= 0:
         max(
-        (
-            (1 / (2 * E_s * As))
-            * (
-                (abs(Med) / z)
-                + abs(Ved)
-                + Ned * ((1 / 2) + (delta_e / z))
-            )
-        ),
-        0,
-    )
+            (
+                (1 / (2 * E_s * As))
+                * (
+                    (abs(Med) / z)
+                    + abs(Ved)
+                    + Ned * ((1 / 2) + (delta_e / z))
+                )
+            ), 0
+        )
     else:
         max(
         (
