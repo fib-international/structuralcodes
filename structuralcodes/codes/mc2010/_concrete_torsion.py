@@ -1,5 +1,8 @@
-import warnings
+"Covers torsion in Model code 2010, 7.3.4"
+
 from math import pi, tan, sin, cos
+from structuralcodes.codes.mc2010._concrete_shear import epsilon_x
+from structuralcodes.codes.mc2010._concrete_shear import v_rd_max
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
@@ -45,7 +48,8 @@ def t_rd_max(
         As (float): The cross-section reinforcement in mm^2
         Med (float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
-        Ned (float): The normal force working on the material in N
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
         z (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
         delta_e (float): the exentrisity of the load in mm
@@ -116,7 +120,8 @@ def t_rd(
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
         delta_e (float): The exentricity of the load in mm
         alfa (float): Inclination of the stirrups in degrees
         f_ck: Characteristic strength in MPa

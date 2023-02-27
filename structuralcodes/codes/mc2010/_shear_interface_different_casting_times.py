@@ -1,7 +1,5 @@
 "Shear at the interface between concrete with different casting times"
-
-import warnings
-from math import pi, tan, sin, cos
+from math import pi, sin, cos
 
 
 def tau_edi(beta: float, v_ed: float, z: float, b_i: float):

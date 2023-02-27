@@ -1,5 +1,6 @@
+"Covers punching in Model code 2010, 7.3.5.1 to 7.3.5.4"
 import warnings
-from math import pi, tan, sin, cos
+from math import pi, sin, cos
 
 
 def b_0(v_ed: float, v_prep_d_max: float) -> float:
