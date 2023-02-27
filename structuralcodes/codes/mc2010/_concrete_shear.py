@@ -1,7 +1,7 @@
 """A collection of shear formulas for concrete"""
 import warnings
 from typing import Optional
-from math import pi, tan, sin, cos
+from math import pi, tan, sin
 
 
 def epsilon_x(
@@ -22,34 +22,26 @@ def epsilon_x(
         As (Float): The cross-section area of reinforcement in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
         z: (float): The effective shear depth in mm
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
     Returns:
         float: The longitudinal strain"""
     if Ned >= 0:
         return max(
             (
                 (1 / (2 * E_s * As))
-                * (
-                    (abs(Med) / z)
-                    + abs(Ved)
-                    + Ned * ((1 / 2) + (delta_e / z))
-                )
-            ), 0
-        )
+                * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) + (delta_e / z)))
+            ), 0)
     else:
         return max(
-        (
-            (1 / (2 * E_s * As))
-            * (
-                (abs(Med) / z)
-                + abs(Ved)
-                + Ned * ((1 / 2) - (delta_e / z))
-            )
-        ),
-        0,
-    )
+            (
+                (1 / (2 * E_s * As))
+                * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) - (delta_e / z)))
+            ), 0)
 
 
 def eta_fc(fck: float):
@@ -97,8 +89,11 @@ def v_rd(
         As: (float): The cross-section area of reinforcement in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
@@ -220,8 +215,11 @@ def v_rdc(
         As: (float): The cross-section area in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -311,7 +309,9 @@ def v_rdc_approx2(
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
         Ned (float): The normal force working on the material in N
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -319,9 +319,7 @@ def v_rdc_approx2(
     fsqr = min(fck**0.5, 8)
     epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     k_dg = max(32 / (16 + dg), 0.75)
-    kv = (0.4 / (1 + 1500 * epsilonx)) * (
-        1300 / (1000 + k_dg * z)
-    )
+    kv = (0.4 / (1 + 1500 * epsilonx)) * (1300 / (1000 + k_dg * z))
     return (kv * fsqr * z * bw) / gamma_c
 
 
@@ -356,8 +354,11 @@ def v_rdc_approx3(
         As: (float): The cross-section area in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -365,16 +366,24 @@ def v_rdc_approx3(
     """
     fsqr = min(fck**0.5, 8)
     theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
-    V_rd_max = v_rd_max(approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med,
-        Ved, Ned, delta_e, alfa, gamma_c,)
+    V_rd_max = v_rd_max(
+        approx_lvl_s,
+        fck,
+        bw,
+        theta_min,
+        z,
+        E_s,
+        As,
+        Med,
+        Ved,
+        Ned,
+        delta_e,
+        alfa,
+        gamma_c,
+    )
     epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     kv = max(
-        (0.4 / (1 + 1500 * epsilonx))
-        * (
-            1
-            - Ved
-            / V_rd_max
-        ),
+        (0.4 / (1 + 1500 * epsilonx)) * (1 - Ved / V_rd_max),
         0,
     )
 
@@ -444,8 +453,11 @@ def v_rd_max(
         As: (float): The cross-section area in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -482,7 +494,9 @@ def v_rd_max_approx1(
         gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -530,8 +544,11 @@ def v_rd_max_approx2(
         As: (float): The cross-section area of reinforcement in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -539,7 +556,8 @@ def v_rd_max_approx2(
         approximation level"""
     epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
-        (1 / tan(theta * pi / 180)) ** 2)
+        (1 / tan(theta * pi / 180)) ** 2
+    )
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     return (
@@ -582,8 +600,11 @@ def v_rd_max_approx3(
         As: (float): The cross-section area of reinforcement in mm^2
         Med (Float): The positive moment working on the material in Nmm
         Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
+        Ned: (float): The normal force working on the material in N with
+        positive sign for tension and negative sign for compression
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
 
     Returns:
@@ -592,8 +613,9 @@ def v_rd_max_approx3(
     epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     theta_min = 20 + 10000 * epsilonx
 
-    return (v_rd_max_approx2(fck, bw, theta_min, z, E_s, As, Med,
-        Ved, Ned, delta_e, alfa, gamma_c))
+    return v_rd_max_approx2(
+        fck, bw, theta_min, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
+    )
 
 
 def v_rd_ct(
