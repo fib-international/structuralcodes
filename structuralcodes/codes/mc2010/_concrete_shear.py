@@ -64,6 +64,11 @@ def epsilon_x(
     )
 
 
+def eta_fc(fck: float):
+    """returns N_fc that is used to determin the strength reduction factor"""
+    return min((30 / fck) ** (1 / 3), 1)
+
+
 def v_rd(
     approx_lvl_c: int,
     approx_lvl_s: int,
@@ -483,7 +488,7 @@ def v_rd_max_approx1(
     alfa: float = 0,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, when there is shear reinforcment
+    """The maximum allowed shear resistance, with level 1 approximation.
 
     fib Model Code 2010, eq. (7.3-37)
 
@@ -498,11 +503,10 @@ def v_rd_max_approx1(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    nfc = min((30 / fck) ** (1 / 3), 1)
 
     return (
         0.55
-        * nfc
+        * eta_fc(fck)
         * (fck / gamma_c)
         * bw
         * z
@@ -548,7 +552,6 @@ def v_rd_max_approx2(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    nfc = min((30 / fck) ** (1 / 3), 1)
 
     epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
         epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
@@ -557,7 +560,7 @@ def v_rd_max_approx2(
 
     return (
         k_epsilon
-        * nfc
+        * eta_fc(fck)
         * (fck / gamma_c)
         * bw
         * z
@@ -602,7 +605,7 @@ def v_rd_max_approx3(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    nfc = min((30 / fck) ** (1 / 3), 1)
+
     theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
 
     epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
@@ -612,7 +615,7 @@ def v_rd_max_approx3(
 
     return (
         k_epsilon
-        * nfc
+        * eta_fc(fck)
         * (fck / gamma_c)
         * bw
         * z
