@@ -21,9 +21,9 @@ def epsilon_x(
         As (Float): The cross-section area of reinforcement in mm^2
         Med (Float): The moment working on the material in Nmm
         Ved (float): The shear force working on the material in N
-        Ned: (float): The normal force working on the material in N
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
         z: (float): The effective shear depth in mm
-        delta_E (float): The exentricity of the load in mm
+        delta_E (float): The eccentricity of the axial load in mm
     Returns:
         float: The longitudinal strain"""
     return max(
@@ -42,7 +42,7 @@ def epsilon_x(
 def v_rd(
     approx_lvl_c: int,
     approx_lvl_s: int,
-    reinforcment: bool,
+    with_shear_reinforcment: bool,
     fck: float,
     z: float,
     bw: float,
@@ -70,6 +70,7 @@ def v_rd(
         reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
         bw: (float): Thickness of web in cross section in mm
@@ -78,10 +79,9 @@ def v_rd(
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Concrete safety factor
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
         f_ywd (float): The design yield strength of the shear reinforcement
@@ -91,7 +91,7 @@ def v_rd(
         float: Design shear resistance
     """
 
-    if not reinforcment:
+    if not with_shear_reinforcment:
         return v_rdc(
             approx_lvl_c,
             approx_lvl_s,
@@ -108,7 +108,7 @@ def v_rd(
             alfa,
             gamma_c,
         )
-    if reinforcment:
+    if with_shear_reinforcment:
         if approx_lvl_s == 3:
             return min(
                 v_rdc(
@@ -191,9 +191,10 @@ def v_rdc(
     Args:
         approx_lvl_c (int): Approximation level for concrete
         approx_lvl_s (int): Approximation level for reinforcement
-        reinforcment (bool): Shear reinforced concrete or no shear
+        with_shear_reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section in mm
         dg: (float): Maximum size of aggregate
@@ -201,10 +202,9 @@ def v_rdc(
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Safety factor
 
     Returns:
         float: The design shear resistance attributed to the concrete
@@ -280,6 +280,7 @@ def v_rdc_approx2(
 
     Args:
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z (float): The length to the areasenter of cross-section in mm
         bw (float): Thickness of web in cross section
         dg (float): Maximum size of aggregate
@@ -288,8 +289,7 @@ def v_rdc_approx2(
         Med (float): The moment working on the material in Nmm
         Ved (float): The shear working on the material in N
         Ned (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
-        gamma_c (float): Safety factor
+        delta_e (float): The eccentricity of the axial load in mm
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -324,6 +324,7 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
 
     Args:
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
@@ -331,10 +332,9 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Safety factor
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -421,6 +421,7 @@ def v_rd_max(
     Args:
         approx_lvl_s (int): Approximation level for steel
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
@@ -428,10 +429,9 @@ def v_rd_max(
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Safety factor
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
@@ -464,11 +464,11 @@ def v_rd_max_approx1(
 
     Args:
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
-        delta_e (float): The exentricity of the load in mm
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -508,6 +508,7 @@ def v_rd_max_approx2(
 
     Args:
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
@@ -515,10 +516,9 @@ def v_rd_max_approx2(
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Concrete safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -562,6 +562,7 @@ def v_rd_max_approx3(
 
     Args:
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
@@ -569,10 +570,9 @@ def v_rd_max_approx3(
         As: (float): The cross-section area of reinforcement in mm^2
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        Ned: (float): The normal force working on the material in N with positive sign for tension and negative sign for compression
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
-        gamma_c (float): Concrete safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -906,7 +906,7 @@ def t_rd_max(
         Ned (float): The normal force working on the material in N
         z (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
-        delta_e (float): the exentrisity of the load in mm
+        delta_e (float): The eccentricity of the axial load in mm
 
     return:
         The maximum allowed torsion allowed
@@ -967,6 +967,7 @@ def t_rd(
     Args:
         approx_lvl_s (int): Approximation level for steel
         fck (float): Characteristic strength in MPa
+        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
         dg: (float): Maximum size of aggregate
@@ -975,12 +976,11 @@ def t_rd(
         Med: (float): The moment working on the material in Nmm
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N
-        delta_e (float): The exentricity of the load in mm
+        delta_e (float): The eccentricity of the axial load in mm
         alfa (float): Inclination of the stirrups in degrees
         f_ck: Characteristic strength in MPa
         d_k: Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
-        gamma_c (float): Safety factor
     return:
         Returns a bool that is true if the criteria for torsion and
         shear is fulfilled"""
