@@ -74,8 +74,7 @@ def t_rd_max(
         ) * ((1 / tan(theta_min * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     k_c = nfc * k_epsilon
-
-    return (
+    result = (
         k_c
         * f_ck
         * t_ef
@@ -85,6 +84,8 @@ def t_rd_max(
         * cos(theta * pi / 180)
         / gamma_c
     )
+
+    return result
 
 
 def t_rd(

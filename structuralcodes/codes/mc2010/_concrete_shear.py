@@ -35,13 +35,17 @@ def epsilon_x(
             (
                 (1 / (2 * E_s * As))
                 * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) + (delta_e / z)))
-            ), 0)
+            ),
+            0,
+        )
     else:
         return max(
             (
                 (1 / (2 * E_s * As))
                 * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) - (delta_e / z)))
-            ), 0)
+            ),
+            0,
+        )
 
 
 def eta_fc(fck: float):
@@ -414,13 +418,15 @@ def v_rds(
     """
     if 45 < theta or theta < 20:
         warnings.warn("Too high or too low compression field angel")
-    return (
+
+    result = (
         (asw / sw)
         * z
         * f_ywd
         * ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
         * sin(alpha * pi / 180)
     )
+    return result
 
 
 def v_rd_max(
