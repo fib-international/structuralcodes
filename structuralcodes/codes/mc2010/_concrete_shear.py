@@ -1,5 +1,6 @@
 """A collection of shear formulas for concrete"""
 import warnings
+from typing import Optional
 from math import pi, tan, sin, cos
 
 
@@ -27,7 +28,7 @@ def epsilon_x(
     Returns:
         float: The longitudinal strain"""
     if Ned >= 0:
-        max(
+        return max(
             (
                 (1 / (2 * E_s * As))
                 * (
@@ -38,25 +39,13 @@ def epsilon_x(
             ), 0
         )
     else:
-        max(
+        return max(
         (
             (1 / (2 * E_s * As))
             * (
                 (abs(Med) / z)
                 + abs(Ved)
                 + Ned * ((1 / 2) - (delta_e / z))
-            )
-        ),
-        0,
-    )
-        
-    return max(
-        (
-            (1 / (2 * E_s * As))
-            * (
-                (abs(Med) / z)
-                + abs(Ved)
-                + Ned * ((1 / 2) + (delta_e / z))
             )
         ),
         0,
@@ -72,7 +61,7 @@ def v_rd(
     approx_lvl_c: int,
     approx_lvl_s: int,
     with_shear_reinforcment: bool,
-    fck: float,
+    fck: Optional[float],
     z: float,
     bw: float,
     dg: float,
@@ -82,7 +71,7 @@ def v_rd(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float,
+    alfa: Optional[float],
     gamma_c: float,
     asw: float,
     sw: float,
@@ -269,7 +258,9 @@ def v_rdc_approx1(
     bw: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """For members with no segnificant axal load, with fyk <= 600 Mpa,
+    """Gives the shear resistance for concrete with approx level 1
+
+    For members with no segnificant axal load, with fyk <= 600 Mpa,
     fck <= 70 Mpa and with maximum aggrigate size of not less then 10mm.
 
     fib Model Code 2010, Eq. (7.3-17) and (7.3-19)
@@ -301,7 +292,9 @@ def v_rdc_approx2(
     delta_e: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """In higher strength concrete and light-weight aggregate concretes,
+    """Gives the shear resistance for concrete with approx level 2
+
+    In higher strength concrete and light-weight aggregate concretes,
     the fracture surface may go through the aggregate particles,
     rather then around, reducing the crack roughness
 
@@ -324,15 +317,15 @@ def v_rdc_approx2(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     k_dg = max(32 / (16 + dg), 0.75)
-    kv = (0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e))) * (
+    kv = (0.4 / (1 + 1500 * epsilonx)) * (
         1300 / (1000 + k_dg * z)
     )
     return (kv * fsqr * z * bw) / gamma_c
 
 
-def v_rdc_approx3(  # tror dette egentlig er vrds3
+def v_rdc_approx3(
     approx_lvl_s: float,
     fck: float,
     z: float,
@@ -346,7 +339,9 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
     alfa: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """The design shear resistance of a web or a slab without
+    """Gives the shear resistance for concrete with approx level 3
+
+    The design shear resistance of a web or a slab without
     shear reinforcement.
 
     fib Model Code 2010, Eq. (7.3-17), (7.3-39) and (7.3-43)
@@ -370,26 +365,15 @@ def v_rdc_approx3(  # tror dette egentlig er vrds3
     """
     fsqr = min(fck**0.5, 8)
     theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
+    V_rd_max = v_rd_max(approx_lvl_s, fck, bw, theta_min, z, E_s, As, Med,
+        Ved, Ned, delta_e, alfa, gamma_c,)
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     kv = max(
-        (0.4 / (1 + 1500 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)))
+        (0.4 / (1 + 1500 * epsilonx))
         * (
             1
             - Ved
-            / v_rd_max(
-                approx_lvl_s,
-                fck,
-                bw,
-                theta_min,
-                z,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-            )
+            / V_rd_max
         ),
         0,
     )
@@ -405,7 +389,9 @@ def v_rds(
     theta: float,
     alpha: float,
 ) -> float:
-    """fib Model Code 2010, Eq. (7.3-25) and (7.3-29)
+    """The shear resistans that shear reinforcement gives
+
+    fib Model Code 2010, Eq. (7.3-25) and (7.3-29)
     Args:
         asw (float): Area of shear reinforcement in mm
         sw (float): Senter distance between the shear reinforcement in mm
@@ -417,7 +403,7 @@ def v_rds(
     Returns:
         The design shear resistance provided by shear reinforcement
     """
-    if 45 < theta < 20:
+    if 45 < theta or theta < 20:
         warnings.warn("Too high or too low compression field angel")
     return (
         (asw / sw)
@@ -530,7 +516,7 @@ def v_rd_max_approx2(
     alfa: float = 0,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, when there is shear reinforcment
+    """The maximum allowed shear resistance, with level 2 approximation
 
     fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41)
 
@@ -551,10 +537,9 @@ def v_rd_max_approx2(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-
-    epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-        epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-    ) * ((1 / tan(theta * pi / 180)) ** 2)
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
+    epsilon_1 = epsilonx + (epsilonx + 0.002) * (
+        (1 / tan(theta * pi / 180)) ** 2)
     k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     return (
@@ -583,7 +568,7 @@ def v_rd_max_approx3(
     alfa: float = 0,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, when there is shear reinforcment
+    """The maximum allowed shear resistance, with level 3 approximation
 
     fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41)
 
@@ -604,25 +589,11 @@ def v_rd_max_approx3(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
+    theta_min = 20 + 10000 * epsilonx
 
-    theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
-
-    epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-        epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-    ) * ((1 / tan(theta_min * pi / 180)) ** 2)
-    k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-
-    return (
-        k_epsilon
-        * eta_fc(fck)
-        * (fck / gamma_c)
-        * bw
-        * z
-        * (
-            ((1 / tan(theta_min * pi / 180)) + (1 / tan(alfa * pi / 180)))
-            / (1 + (1 / tan(theta_min * pi / 180)) ** 2)
-        )
-    )
+    return (v_rd_max_approx2(fck, bw, theta_min, z, E_s, As, Med,
+        Ved, Ned, delta_e, alfa, gamma_c))
 
 
 def v_rd_ct(
@@ -782,844 +753,4 @@ def v_rd_ct_approx2(
     )
     return (i_c * b_wy / S_cy) * (
         ((f_ctd**2) + alfa_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
-    )
-
-
-def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
-    """Shear at the interface between cocrete cast at different times
-    fib Model Code 2010, eq. (7.3-49)
-    Args:
-        beta (float): The ratio of longitudinal force in the new concrete and
-        the longitudinal force in either compression or tension zone
-        z (float): The inner lever arm of the composed section in mm
-        b_i (float): The width of the inerface in mm
-        v_ed (float): The shear force at the interface in N
-
-    return:
-        The shear force that should be used at the intersection"""
-    return (beta * v_ed) / (z * b_i)
-
-
-def tau_rdi_without_reinforceent(
-    c_a: float,
-    f_ctd: float,
-    mu: float,
-    sigma_n: float,
-    f_ck: float,
-    f_cd: float,
-):
-    """Shear resistance without reinforcement at the intesection with
-    different casting time
-
-    fib Model Code 2010, eq. (7.3-50)
-
-    Args:
-        c_a (float): The coefficient for adhesive bond (tabel 7.3-1)
-        mu (float): The friction coefficient
-        sigma_n (float): The loweat expected compressiv stress from
-        normal forces in MPa
-        f_ck (float): Characteristic strength in MPa
-        f_cd (float): The design value of cylinder compressive
-        strength concrete in MPa
-
-    return:
-        The shear resistance without reinforcement at the intesection with
-    different casting time"""
-
-    v = min(0.55 * (30 / f_ck) ** (1 / 3), 0.55)
-    return min((c_a * f_ctd) + (mu * sigma_n), 0.5 * v * f_cd)
-
-
-def tau_rdi_with_reinforcement(
-    c_r: float,
-    k1: float,
-    k2: float,
-    mu: float,
-    ro: float,
-    sigma_n: float,
-    alfa: float,
-    beta_c: float,
-    f_ck: float,
-    f_yd: float,
-    f_cd: float,
-):
-    """Shear resistance with reinforcement or dowels at the intesection with
-    different casting time
-
-    fib Model Code 2010, eq. (7.3-51)
-
-    Args:
-        c_r (float): Coefficient for aggregate interlock effects (tabel 7.3-2)
-        k1 (float): The interction coefficient for tensile
-        force activated in reinforcment (tabel 7.3-2)
-        k2 (float): The interction coeffiction for flexural
-        resistance (tabel 7.3-2)
-        mu (float): The friction coefficient (tabel 7.3-2)
-        ro (float): The reinforcement ratio of reinforing steel
-        crossing the interface
-        sigma_n (float): The loweat expected compressiv stress resulting
-        from normal forces acting on the interface in MPa
-        alfa (float): The inclination of reinforcement crossing the
-        interface (tabel 7.3-14)
-        beta_c (float): The coefficient for strength of
-        compresstion strut (tabel 7.3-2)
-        f_ck (float): Characteristic strength in MPa
-        f_yd (float): design strength of reinforment steel in MPa
-        f_cd (float): The design value of cylinder compressive
-        strength concrete
-
-    return:
-        Shear resistance with reinforcement at intesection with
-        different casting time"""
-    v = min(0.55 * (30 / f_ck) ** (1 / 3), 0.55)
-    return min(
-        (c_r * f_ck ** (1 / 3))
-        + (mu * sigma_n)
-        + k1
-        * ro
-        * f_yd
-        * (
-            ro * sin(alfa * pi / 180)
-            + cos(alfa * pi / 180)
-            + k2 * ro * (f_yd * f_cd) ** 0.5
-        ),
-        beta_c * v * f_cd,
-    )
-
-
-def v_ed_ti(t_ed: float, a_k: float, z_i: float):
-    """Shear force due to torsion
-
-    fib Model Code 2010, eq. (7.3-53)
-
-    Args:
-        t_ed: The acting torsion force in the cross section in Nmm
-        z_i: Can be found in figure 7.3-18
-        a_k: Can be found in figure 7.3-18
-
-    Returns:
-        The shear force that will ocurre due to torsion force."""
-    return t_ed * z_i / (2 * a_k)
-
-
-def t_rd_max(
-    f_ck: float,
-    gamma_c: float,
-    d_k: float,
-    a_k: float,
-    theta: float,
-    approx_lvl_s: int,
-    E_s: float,
-    As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
-    z: float,
-    delta_e: float,
-) -> float:
-    """The maximum allowed torsion allowed
-    fib Model Code 2010, eq. (7.3-56)
-    args:
-        f_ck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        d_k (float): Is the diameter in the smalest circel in the cross section
-        a_k: Can be found in figure 7.3-18
-        theta (float): Inclitaniton of the compression stressfield in degrees
-        approx_lvl_s (int): Approximation method for cocrete with reinforcement
-        E_s (float): The E_s-modulus to the materialb in MPa
-        As (float): The cross-section reinforcement in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned (float): The normal force working on the material in N
-        z (float): distances between the centerline of the
-        compressive chord and the reinforcement in mm
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
-
-    return:
-        The maximum allowed torsion allowed
-    """
-    t_ef = d_k / 8
-    nfc = min((30 / f_ck) ** (1 / 3), 1)
-
-    if approx_lvl_s == 1:
-        k_epsilon = 0.55
-    elif approx_lvl_s == 2:
-        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-        ) * ((1 / tan(theta * pi / 180)) ** 2)
-        k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    elif approx_lvl_s == 3:
-        theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
-        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
-        ) * ((1 / tan(theta_min * pi / 180)) ** 2)
-        k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    k_c = nfc * k_epsilon
-
-    return (
-        k_c
-        * f_ck
-        * t_ef
-        * 2
-        * a_k
-        * sin(theta * pi / 180)
-        * cos(theta * pi / 180)
-        / gamma_c
-    )
-
-
-def t_rd(
-    t_ed: float,
-    approx_lvl_s: int,
-    fck: float,
-    bw: float,
-    theta: float,
-    z: float,
-    E_s: float,
-    As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
-    delta_e: float,
-    alfa: float,
-    f_ck: float,
-    d_k: float,
-    a_k: float,
-    gamma_c: float = 1.5,
-) -> bool:
-    """Checks if the combination of torstion ans shear is ok
-
-    fib Model Code 2010, eq. (7.3-56)
-
-    Args:
-        approx_lvl_s (int): Approximation level for steel
-        fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
-        E_s: (float): The E_s-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N
-        delta_E (float): The eccentricity of the axial load due to imperfection in the construction with distance in mm as a positive value
-        alfa (float): Inclination of the stirrups in degrees
-        f_ck: Characteristic strength in MPa
-        d_k: Is the diameter in the smalest circel in the cross section
-        a_k: Can be found in figure 7.3-18
-    return:
-        Returns a bool that is true if the criteria for torsion and
-        shear is fulfilled"""
-    check = bool(
-        (
-            t_ed
-            / t_rd_max(
-                f_ck,
-                gamma_c,
-                d_k,
-                a_k,
-                theta,
-                approx_lvl_s,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                z,
-                delta_e,
-            )
-        )
-        ** 2
-        + (
-            Ved
-            / v_rd_max(
-                approx_lvl_s,
-                fck,
-                bw,
-                theta,
-                z,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-            )
-        )
-        ** 2
-        <= 1
-    )
-    return check
-
-
-def b_0(v_ed: float, v_prep_d_max: float) -> float:
-    """Gives the general output for b_0, shear-resisting control perimeter.
-
-    fib Model Code 2010, eq. (7.3-57)
-    Args:
-        V_ed (float): The acting shear force from the columns
-        v_prep_d_max (float): The maximum shear force per unit length
-        perpendiculerer to the basic control parameter (Figure 7.3-24)
-
-    Return:
-        The shear-resisting control perimeter, b_0"""
-
-    return v_ed / v_prep_d_max
-
-
-def m_ed(
-    v_ed: float,
-    e_u: float,
-    l_x: float,
-    l_y: float,
-    l_min: float,
-    inner: bool,
-    edge_par1: bool,
-    edge_per2: bool,
-    corner: bool,
-) -> float:
-    """The average bending moment acting in the support strip.
-
-    fib Model Code 2010, eq. (7.3-76), (7.3-71), (7.3-72), (7.3-73)
-    and (7.3-74)
-
-    Args:
-        v_ed (float): The acting shear force from the columns
-        e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        l_min (float): The shorter side of the the L_x and L_y
-        inner (bool): Is true only if the column is a inner column
-        edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
-        edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-
-    return:
-        The bending moment acting in the support strip regardless of the
-        position of the column
-    """
-    r_sx = 0.22 * l_x
-    r_sy = 0.22 * l_y
-    b_s = min(1.5 * (r_sx * r_sy) ** 0.5, l_min)
-    if inner:
-        return v_ed * ((1 / 8) + e_u / (2 * b_s))
-    if edge_par1:
-        return max(v_ed * ((1 / 8) + e_u / (2 * b_s)), v_ed / 4)
-    if edge_per2:
-        return v_ed * ((1 / 8) + e_u / (b_s))
-    if corner:
-        return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
-    raise ValueError("the placement is not defined, one needs to be True")
-
-
-def psi_punching(
-    l_x: float,
-    l_y: float,
-    f_yd: float,
-    d: float,
-    e_s: float,
-    approx_lvl_p: float,
-    v_ed: float,
-    e_u: float,
-    l_min: float,
-    inner: bool,
-    edge_par: bool,
-    edge_per: bool,
-    corner: bool,
-    m_rd: float,
-    m_pd: float,
-) -> float:
-    """The rotation of the slab around the supported area
-
-    fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77)
-    args:
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
-        e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        l_min (float): The shorter side of the the L_x and L_y
-        inner (bool): Is true only if the column is a inner column
-        edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
-        edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-
-    return:
-        psi for the choosen approx level in punching"""
-
-    r_s = max(0.22 * l_x, 0.22 * l_y)
-
-    if approx_lvl_p == 1:
-        if not 0.5 < l_x / l_y < 2:
-            warnings.warn("Reconsider maximum r_s value")
-        psi = 1.5 * r_s * f_yd / (d * e_s)
-
-    elif approx_lvl_p in (2, 3):
-        if 0.5 < l_x / l_y < 2:
-            warnings.warn("Reconsider maximum r_s value")
-        psi = (1.5 * r_s * f_yd / (d * e_s)) * (
-            (
-                m_ed(
-                    v_ed,
-                    e_u,
-                    l_x,
-                    l_y,
-                    l_min,
-                    inner,
-                    edge_par,
-                    edge_per,
-                    corner,
-                )
-                - m_pd
-            )
-            / (m_rd - m_pd)
-        ) ** 1.5
-
-    return psi
-
-
-def v_rdc_punching(
-    l_x: float,
-    l_y: float,
-    f_yd: float,
-    d: float,
-    e_s: float,
-    approx_lvl_p: float,
-    dg: float,
-    f_ck: float,
-    d_v: float,
-    v_ed: float,
-    e_u: float,
-    l_min: float,
-    inner: bool,
-    edge_par: bool,
-    edge_per: bool,
-    corner: bool,
-    m_rd: float,
-    m_pd: float,
-    v_prep_d_max: float,
-    gamma_c: float = 1.5,
-) -> float:
-    """Punching resistance from the concrete
-    fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63)
-    args:
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
-        approx_lvl_p (float): The approx level for punching
-        dg (float): Maximum size of aggregate
-        f_ck (float): Characteristic strength in MPa
-        d_v (float): The effective depth considering support in mm
-        v_ed (float): The acting shear force from the columns
-        e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        l_min (float): The shorter side of the the L_x and L_y
-        inner (bool): Is true only if the column is a inner column
-        edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
-        edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-    return:
-        v_rdc for punching with the right approx level"""
-
-    k_dg = max(32 / (16 + dg), 0.75)
-    k_psi = min(
-        1
-        / (
-            1.5
-            + 0.9
-            * k_dg
-            * d
-            * psi_punching(
-                l_x,
-                l_y,
-                f_yd,
-                d,
-                e_s,
-                approx_lvl_p,
-                v_ed,
-                e_u,
-                l_min,
-                inner,
-                edge_par,
-                edge_per,
-                corner,
-                m_rd,
-                m_pd,
-            )
-        ),
-        0.6,
-    )
-
-    return k_psi * b_0(v_ed, v_prep_d_max) * d_v * (f_ck**0.5) / gamma_c
-
-
-def v_rds_punching(
-    e_u: float,
-    b_u: float,
-    l_x: float,
-    l_y: float,
-    f_yd: float,
-    d: float,
-    e_s: float,
-    approx_lvl_p: float,
-    v_ed: float,
-    l_min: float,
-    inner: bool,
-    edge_par: bool,
-    edge_per: bool,
-    corner: bool,
-    m_rd: float,
-    m_pd: float,
-    alfa: float,
-    f_bd: float,
-    f_ywd: float,
-    kam_w: float,
-    a_sw: float,
-):
-    """The punching resistance from shear reinforcement
-     fib Model Code 2010, eq. (7.3-64) and (7.3-65)
-    Args:
-        e_u (float): The ecentrisity of the result of shear forces
-        with respect to the centroid (Figure 7.3-27b)
-        b_u (float): The diamter of a circle with same surface as the
-        region inside the basic control perimeter (Figure 7.3-27b)
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        l_min (float): The shorter side of the the L_x and L_y
-        inner (bool): Is true only if the column is a inner column
-        edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
-        edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-        alfa (float): Inclination of the stirrups in degrees
-        f_bd (float): The design bond strength in MPa
-        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
-        kam_w (float): The diameter of the shear reinforcement
-        a_sw (float): The area of the shear reinforcement in mm^2
-
-
-    return: Punching resistance that comes from reinforcement
-    """
-    k_e = 1 / (1 + e_u / b_u)
-    sigma_swd = min(
-        (
-            e_s
-            * psi_punching(
-                l_x,
-                l_y,
-                f_yd,
-                d,
-                e_s,
-                approx_lvl_p,
-                v_ed,
-                e_u,
-                l_min,
-                inner,
-                edge_par,
-                edge_per,
-                corner,
-                m_rd,
-                m_pd,
-            )
-            / 6
-        )
-        * (sin(alfa * pi / 180) + cos(alfa * pi / 180))
-        * (sin(alfa * pi / 180) + f_bd * d / (f_ywd * kam_w)),
-        f_ywd,
-    )
-
-    if (a_sw * k_e * sigma_swd * sin(alfa * pi / 180)) < 0.5 * v_ed:
-        warnings.warn(
-            """In order to ensure sufficent deformation capacity,
-                      the shear resistance in punching most increase"""
-        )
-
-    return a_sw * k_e * sigma_swd * sin(alfa * pi / 180)
-
-
-def v_rd_max_punching(
-    l_x: float,
-    l_y: float,
-    f_yd: float,
-    d: float,
-    e_s: float,
-    approx_lvl_p: float,
-    v_ed: float,
-    e_u: float,
-    l_min: float,
-    inner: bool,
-    edge_par: bool,
-    edge_per: bool,
-    dg: float,
-    corner: bool,
-    m_rd: float,
-    m_pd: float,
-    v_prep_d_max: float,
-    d_v: float,
-    f_ck: float,
-    d_head: bool,
-    stirrups_compression: bool,
-    gamma_c: float = 1.5,
-):
-    """Finds the maximum value you can have for v_rd
-    fib Model Code 2010, eq. (7.3-68) and (7.3-69)
-    Args:
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
-        approx_lvl_p (float): The approx level for punching
-        dg (float): Maximum size of aggregate
-        d_v (float): The effective depth considering support in mm
-        v_ed (float): The acting shear force from the columns
-        e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        l_min (float): The shorter side of the the L_x and L_y
-        inner (bool): Is true only if the column is a inner column
-        edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
-        edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-        stirrups_compression: (bool): Stirrups with sufficient length at
-        compression face, and bent on tension face
-
-    Return
-        The maximum allowed
-    """
-
-    if d_head:
-        k_sys = 2.8
-    elif stirrups_compression:
-        k_sys = 2.4
-    else:
-        k_sys = 2
-
-    k_dg = max(32 / (16 + dg), 0.75)
-    k_psi = min(
-        1
-        / (
-            1.5
-            + 0.9
-            * k_dg
-            * d
-            * psi_punching(
-                l_x,
-                l_y,
-                f_yd,
-                d,
-                e_s,
-                approx_lvl_p,
-                v_ed,
-                e_u,
-                l_min,
-                inner,
-                edge_par,
-                edge_per,
-                corner,
-                m_rd,
-                m_pd,
-            )
-        ),
-        0.6,
-    )
-
-    return min(
-        (k_sys * k_psi * b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5)
-        / gamma_c,
-        (b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5) / gamma_c,
-    )
-
-
-def v_rd_punching(
-    e_u,
-    b_u,
-    l_x: float,
-    l_y: float,
-    f_yd: float,
-    d: float,
-    e_s: float,
-    approx_lvl_p: float,
-    v_ed: float,
-    l_min: float,
-    inner: bool,
-    edge_par: bool,
-    edge_per: bool,
-    corner: bool,
-    m_rd: float,
-    m_pd: float,
-    alfa: float,
-    f_bd: float,
-    f_ywd: float,
-    kam_w: float,
-    a_sw: float,
-    dg: float,
-    f_ck: float,
-    d_v: float,
-    v_prep_d_max: float,
-    d_head: bool,
-    stirrups_compression: bool,
-    gamma_c: float = 1.5,
-):
-    """The total resistance for punching, both Vrd,c and Vrd,s
-     fib Model Code 2010, eq. (7.3-60)
-        Args:
-        e_u (float): The ecentrisity of the result of shear forces
-        with respect to the centroid (Figure 7.3-27b)
-        b_u (float): The diamter of a circle with same surface as the
-        region inside the basic control perimeter (Figure 7.3-27b)
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        l_min (float): The shorter side of the the L_x and L_y
-        inner (bool): Is true only if the column is a inner column
-        edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
-        edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-        alfa (float): Inclination of the stirrups in degrees
-        f_bd (float): The design bond strength in MPa
-        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
-        kam_w (float): The diameter of the shear reinforcement
-        a_sw (float): The area of the shear reinforcement in mm^2
-
-    return: The maximum allowed punching resistance, regardless of
-    values from v_rdc and v_rds"""
-
-    return min(
-        v_rdc_punching(
-            l_x,
-            l_y,
-            f_yd,
-            d,
-            e_s,
-            approx_lvl_p,
-            dg,
-            f_ck,
-            d_v,
-            v_ed,
-            e_u,
-            l_min,
-            inner,
-            edge_par,
-            edge_per,
-            corner,
-            m_rd,
-            v_prep_d_max,
-            gamma_c,
-        )
-        + v_rds_punching(
-            e_u,
-            b_u,
-            l_x,
-            l_y,
-            f_yd,
-            d,
-            e_s,
-            approx_lvl_p,
-            v_ed,
-            l_min,
-            inner,
-            edge_par,
-            edge_per,
-            corner,
-            m_rd,
-            m_pd,
-            alfa,
-            f_bd,
-            f_ywd,
-            kam_w,
-            a_sw,
-        ),
-        v_rd_max_punching(
-            l_x,
-            l_y,
-            f_yd,
-            d,
-            e_s,
-            approx_lvl_p,
-            v_ed,
-            e_u,
-            l_min,
-            inner,
-            edge_par,
-            edge_per,
-            dg,
-            corner,
-            m_rd,
-            m_pd,
-            v_prep_d_max,
-            d_v,
-            f_ck,
-            d_head,
-            stirrups_compression,
-            gamma_c,
-        ),
     )
