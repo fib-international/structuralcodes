@@ -26,7 +26,7 @@ def t_rd_max(
     d_k: float,
     a_k: float,
     theta: float,
-    approx_lvl_s: int,
+    approx_lvl: int,
     E_s: float,
     As: float,
     Med: float,
@@ -60,14 +60,14 @@ def t_rd_max(
     t_ef = d_k / 8
     nfc = min((30 / f_ck) ** (1 / 3), 1)
 
-    if approx_lvl_s == 1:
+    if approx_lvl == 3:
         k_epsilon = 0.55
-    elif approx_lvl_s == 2:
+    elif approx_lvl == 4:
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    elif approx_lvl_s == 3:
+    elif approx_lvl == 5:
         theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
         epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
@@ -90,7 +90,7 @@ def t_rd_max(
 
 def t_rd(
     t_ed: float,
-    approx_lvl_s: int,
+    approx_lvl: int,
     fck: float,
     bw: float,
     theta: float,
@@ -141,7 +141,7 @@ def t_rd(
                 d_k,
                 a_k,
                 theta,
-                approx_lvl_s,
+                approx_lvl,
                 E_s,
                 As,
                 Med,
@@ -155,7 +155,7 @@ def t_rd(
         + (
             Ved
             / v_rd_max(
-                approx_lvl_s,
+                approx_lvl,
                 fck,
                 bw,
                 theta,
