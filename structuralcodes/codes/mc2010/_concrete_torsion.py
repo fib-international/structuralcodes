@@ -22,7 +22,6 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
 
 def t_rd_max(
     f_ck: float,
-    gamma_c: float,
     d_k: float,
     a_k: float,
     theta: float,
@@ -34,6 +33,7 @@ def t_rd_max(
     Ned: float,
     z: float,
     delta_e: float,
+    gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed torsion allowed
     fib Model Code 2010, eq. (7.3-56)
@@ -137,7 +137,6 @@ def t_rd(
             t_ed
             / t_rd_max(
                 f_ck,
-                gamma_c,
                 d_k,
                 a_k,
                 theta,
@@ -149,6 +148,7 @@ def t_rd(
                 Ned,
                 z,
                 delta_e,
+                gamma_c,
             )
         )
         ** 2
