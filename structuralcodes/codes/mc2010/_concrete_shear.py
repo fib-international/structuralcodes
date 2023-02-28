@@ -66,12 +66,12 @@ def v_rd(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float,
-    gamma_c: float,
     asw: float,
     sw: float,
     f_ywd: float,
-    theta: Optional[float],
+    theta: float,
+    alfa: float = 90.0,
+    gamma_c: float = 1.5,
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -194,12 +194,12 @@ def v_rd(
             Ved,
             Ned,
             delta_e,
-            alfa,
-            gamma_c,
             asw,
             sw,
             f_ywd,
             theta,
+            alfa,
+            gamma_c,
         )
     raise ValueError("invalid approx level")
 
