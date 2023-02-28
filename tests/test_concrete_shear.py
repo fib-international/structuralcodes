@@ -27,35 +27,37 @@ def test_epsilon_x(E_s, As, Med, Ved, Ned, z, deltaE, expected):
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, fck, bw, theta, z, E_s, As, Med, Ved,
-    Ned, delta_e, alfa, gamma_c, expected''',
+    '''approx_lvl, fck, bw, theta, z, E_s, As, loads,
+    alfa, gamma_c, expected''',
     [
-        (3, 30, 50, 20, 200, 210000, 1000, 200e6,
-         50e3, 10e3, 50, 20, 1.5, 70707),
-        (4, 30, 50, 20, 200, 210000, 1000, 200e6,
-         50e3, 10e3, 50, 20, 1.5, 39997),
-        (4, 30, 50, 20, 200, 210000, 1000, 50e6,
-         10e3, 10e3, 50, 20, 1.5, 55179.55),
-        (4, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 20, 1.5, 243586),
-        (4, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 45, 1.5, 130000),
-        (5, 30, 50, 20, 200, 210000, 1000, 50e6,
-         10e3, 10e3, 50, 20, 1.5, 102995),
+        (3, 30, 50, 20, 200, 210000, 1000, _concrete_shear.create_load_dict(
+            200e6, 50e3, 10e3, 50), 20, 1.5, 70707),
+        (4, 30, 50, 20, 200, 210000, 1000, _concrete_shear.create_load_dict(
+            200e6, 50e3, 10e3, 50), 20, 1.5, 39997),
+        (4, 30, 50, 20, 200, 210000, 1000, _concrete_shear.create_load_dict(
+            50e6, 10e3, 10e3, 50), 20, 1.5, 55179.55),
+        (4, 30, 50, 45, 200, 210000, 1000, _concrete_shear.create_load_dict(
+            0, 0, 0, 50), 20, 1.5, 243586),
+        (4, 30, 50, 45, 200, 210000, 1000, _concrete_shear.create_load_dict(
+            0, 0, 0, 50), 45, 1.5, 130000),
+        (5, 30, 50, 20, 200, 210000, 1000, _concrete_shear.create_load_dict(
+            50e6, 10e3, 10e3, 50), 20, 1.5, 102995),
     ],
 )
 def test_vrd_max(
-    approx_lvl, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
-    delta_e, alfa, gamma_c, expected
+    approx_lvl, fck, bw, theta, z, E_s, As, loads,
+    alfa, gamma_c, expected
 ):
     """Test the v_rd_max function."""
     assert math.isclose(_concrete_shear.v_rd_max(
-        approx_lvl, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
-        delta_e, alfa, gamma_c), expected, rel_tol=0.5
+        approx_lvl, fck, bw, theta, z, E_s, As, loads,
+        alfa, gamma_c), expected, rel_tol=0.5
     )
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, fck, z, bw, dg, E_s, As, Med,
-     Ved, Ned, delta_e, alfa, gamma_c, expected''',
+    '''approx_lvl, fck, z, bw, dg, E_s, As, loads,
+    alfa, gamma_c, expected''',
     [
         (1, 35, 180, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 31294),
         (1, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
@@ -70,14 +72,14 @@ def test_vrd_max(
     ],
 )
 def test_v_rdc(
-    approx_lvl, fck, z, bw, dg, E_s, As, Med,
-    Ved, Ned, delta_e, alfa, gamma_c, expected
+    approx_lvl, fck, z, bw, dg, E_s, As, loads,
+    alfa, gamma_c, expected
 ):
 
     """Test the v_rdc function."""
     assert math.isclose(_concrete_shear.v_rdc(
-                approx_lvl, fck, z, bw, dg, E_s, As, Med, Ved,
-                Ned, delta_e, alfa, gamma_c
+                approx_lvl, fck, z, bw, dg, E_s, As,
+                loads, alfa, gamma_c
                 ),
         expected, rel_tol=0.001)
 
@@ -194,7 +196,7 @@ def test_v_rd_ct(
 
 @pytest.mark.parametrize(
     '''approx_lvl, reinforcment, fck, z,
-    bw, dg, E_s, As, Med, Ved, Ned, delta_e,
+    bw, dg, E_s, As, loads,
     asw, sw, f_ywd, theta, alfa, gamma_c, expected''',
     [
         (1, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20,
@@ -207,14 +209,14 @@ def test_v_rd_ct(
 )
 def test_v_rd(
     approx_lvl, reinforcment, fck, z,
-    bw, dg, E_s, As, Med, Ved, Ned, delta_e,
+    bw, dg, E_s, As, loads,
     asw, sw, f_ywd, theta, alfa, gamma_c, expected
 ):
 
     """Test the tau_edi function."""
     assert math.isclose(_concrete_shear.v_rd(
         approx_lvl, reinforcment, fck, z,
-        bw, dg, E_s, As, Med, Ved, Ned, delta_e,
+        bw, dg, E_s, As, loads,
         asw, sw, f_ywd, theta, alfa, gamma_c,
     ),
         expected, rel_tol=0.001)
