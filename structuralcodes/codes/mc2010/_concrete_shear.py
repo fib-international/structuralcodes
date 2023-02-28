@@ -38,14 +38,14 @@ def epsilon_x(
             ),
             0,
         )
-    else:
-        return max(
-            (
-                (1 / (2 * E_s * As))
-                * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) - (delta_e / z)))
-            ),
-            0,
-        )
+
+    return max(
+        (
+            (1 / (2 * E_s * As))
+            * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) - (delta_e / z)))
+        ),
+        0,
+    )
 
 
 def eta_fc(fck: float):
@@ -109,7 +109,9 @@ def v_rd(
 
     if not with_shear_reinforcment:
         if not approx_lvl == (1 or 2):
-            warnings.warn("Choosen approximation is not suited without reinforcment")
+            warnings.warn(
+                "Choosen approximation is not suited without reinforcment"
+            )
         return v_rdc(
             approx_lvl,
             fck,
@@ -129,77 +131,77 @@ def v_rd(
     if approx_lvl == (3 or 4):
         return min(
             v_rds(asw, sw, z, f_ywd, theta, alfa),
-                v_rd_max(
-                    approx_lvl,
-                    fck,
-                    bw,
-                    theta,
-                    z,
-                    E_s,
-                    As,
-                    Med,
-                    Ved,
-                    Ned,
-                    delta_e,
-                    alfa,
-                    gamma_c
-                )
-            )
+            v_rd_max(
+                approx_lvl,
+                fck,
+                bw,
+                theta,
+                z,
+                E_s,
+                As,
+                Med,
+                Ved,
+                Ned,
+                delta_e,
+                alfa,
+                gamma_c,
+            ),
+        )
 
     if approx_lvl == 5:
         V_rdc = v_rdc(
-                approx_lvl,
-                fck,
-                z,
-                bw,
-                dg,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-            )
+            approx_lvl,
+            fck,
+            z,
+            bw,
+            dg,
+            E_s,
+            As,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
+            alfa,
+            gamma_c,
+        )
         V_rd_max = v_rd_max(
-                approx_lvl,
-                fck,
-                bw,
-                theta,
-                z,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-            )
+            approx_lvl,
+            fck,
+            bw,
+            theta,
+            z,
+            E_s,
+            As,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
+            alfa,
+            gamma_c,
+        )
         if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)) < V_rd_max:
             return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)
-        else:
-            v_rd(
-                4,
-                with_shear_reinforcment,
-                fck,
-                z,
-                bw,
-                dg,
-                E_s,
-                As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
-                alfa,
-                gamma_c,
-                asw,
-                sw,
-                f_ywd,
-                theta,
-            )
+        v_rd(
+            4,
+            with_shear_reinforcment,
+            fck,
+            z,
+            bw,
+            dg,
+            E_s,
+            As,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
+            alfa,
+            gamma_c,
+            asw,
+            sw,
+            f_ywd,
+            theta,
+        )
+    raise ValueError("invalid approx level")
 
 
 def v_rdc(
