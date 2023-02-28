@@ -20,26 +20,26 @@ def test_ved_ti(t_ed, a_k, z_i, expected):
 
 
 @pytest.mark.parametrize(
-    '''f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-        Med, Ved, Ned, z, delta_e, expected''',
+    '''f_ck, d_k, a_k, theta, approx_lvl_s, E_s, As,
+        Med, Ved, Ned, z, delta_e, gamma_c, expected''',
     [
-        (35, 1.5, 150, 50000, 40, 1, 200000, 2000, 0, 2000, 0, 180, 20,
+        (35, 150, 50000, 40, 1, 200000, 2000, 0, 2000, 0, 180, 20, 1.5,
          11256044),
-        (35, 1.5, 150, 50000, 40, 2, 200000, 2000, 0, 2000, 0, 180, 20,
+        (35, 150, 50000, 40, 2, 200000, 2000, 0, 2000, 0, 180, 1.5,
          13301400),
-        (35, 1.5, 150, 50000, 40, 3, 200000, 2000, 0, 2000, 0, 180, 20,
+        (35, 150, 50000, 40, 3, 200000, 2000, 0, 2000, 0, 180, 20, 1.5,
          10084000),
 
     ],
 )
 def test_t_rd_max(
-        f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-        Med, Ved, Ned, z, delta_e, expected):
+        f_ck, d_k, a_k, theta, approx_lvl_s, E_s, As,
+        Med, Ved, Ned, z, delta_e, gamma_c, expected):
 
     """Test the t_rd_max function."""
     assert math.isclose(_concrete_torsion.t_rd_max(
-            f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-            Med, Ved, Ned, z, delta_e), expected, rel_tol=0.001)
+            f_ck, d_k, a_k, theta, approx_lvl_s, E_s, As,
+            Med, Ved, Ned, z, delta_e, gamma_c), expected, rel_tol=0.001)
 
 
 @pytest.mark.parametrize(
