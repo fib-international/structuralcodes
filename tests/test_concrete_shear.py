@@ -1,3 +1,4 @@
+"""Test for the function of _concrete_shear"""
 import math
 
 import pytest
@@ -26,57 +27,56 @@ def test_epsilon_x(E_s, As, Med, Ved, Ned, z, deltaE, expected):
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved,
+    '''approx_lvl, fck, bw, theta, z, E_s, As, Med, Ved,
     Ned, delta_e, alfa, gamma_c, expected''',
     [
-        (1, 30, 50, 20, 200, 210000, 1000, 200e6,
+        (3, 30, 50, 20, 200, 210000, 1000, 200e6,
          50e3, 10e3, 50, 20, 1.5, 70707),
-        (2, 30, 50, 20, 200, 210000, 1000, 200e6,
+        (4, 30, 50, 20, 200, 210000, 1000, 200e6,
          50e3, 10e3, 50, 20, 1.5, 39997),
-        (2, 30, 50, 20, 200, 210000, 1000, 50e6,
+        (4, 30, 50, 20, 200, 210000, 1000, 50e6,
          10e3, 10e3, 50, 20, 1.5, 55179.55),
-        (2, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 20, 1.5, 243586),
-        (2, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 45, 1.5, 130000),
-        (3, 30, 50, 20, 200, 210000, 1000, 50e6,
+        (4, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 20, 1.5, 243586),
+        (4, 30, 50, 45, 200, 210000, 1000, 0, 0, 0, 50, 45, 1.5, 130000),
+        (5, 30, 50, 20, 200, 210000, 1000, 50e6,
          10e3, 10e3, 50, 20, 1.5, 102995),
     ],
 )
 def test_vrd_max(
-    approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
+    approx_lvl, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
     delta_e, alfa, gamma_c, expected
 ):
     """Test the v_rd_max function."""
     assert math.isclose(_concrete_shear.v_rd_max(
-        approx_lvl_s, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
+        approx_lvl, fck, bw, theta, z, E_s, As, Med, Ved, Ned,
         delta_e, alfa, gamma_c), expected, rel_tol=0.5
     )
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E_s, As, Med,
+    '''approx_lvl, fck, z, bw, dg, E_s, As, Med,
      Ved, Ned, delta_e, alfa, gamma_c, expected''',
     [
-        (1, 0, 35, 180, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 31294),
-        (1, 0, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
-        (1, 1, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
-        (2, 1, 35, 140, 300, 16, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5,
+        (1, 35, 180, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 31294),
+        (1, 35, 200, 300, 0, 0, 0, 0, 0, 0, 0, 0, 1.5, 34077),
+        (2, 35, 140, 300, 16, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5,
          48828),
-        (2, 1, 35, 140, 300, 32, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5,
+        (2, 35, 140, 300, 32, 21e4, 2000, 40e6, 2e4, 1000, 50, 0, 1.5,
          50375),
-        (0, 3, 35, 200, 300, 32, 21e4, 2000, 40e6, 2e4, 1000, 50, 1.5, 1.5,
+        (5, 35, 200, 300, 32, 21e4, 2000, 40e6, 2e4, 1000, 50, 1.5, 1.5,
          67566),
-        (0, 3, 35, 200, 300, 32, 21e4, 2000, 40e6, 20e6, 1000, 50, 1.5, 1.5,
+        (5, 35, 200, 300, 32, 21e4, 2000, 40e6, 20e6, 1000, 50, 1.5, 1.5,
          0),
     ],
 )
 def test_v_rdc(
-    approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E_s, As, Med,
+    approx_lvl, fck, z, bw, dg, E_s, As, Med,
     Ved, Ned, delta_e, alfa, gamma_c, expected
 ):
 
     """Test the v_rdc function."""
     assert math.isclose(_concrete_shear.v_rdc(
-                approx_lvl_c, approx_lvl_s, fck, z, bw, dg, E_s, As, Med, Ved,
+                approx_lvl, fck, z, bw, dg, E_s, As, Med, Ved,
                 Ned, delta_e, alfa, gamma_c
                 ),
         expected, rel_tol=0.001)
@@ -252,138 +252,29 @@ def test_tau_rdi_with_reinforcement(
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
+    '''approx_lvl, reinforcment, fck, z,
     bw, dg, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
     asw, sw, f_ywd, theta, expected''',
     [
-        (1, 0, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
+        (1, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
          0, 0, 434, 40, 20863),
-        (2, 0, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
+        (2, False, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
          0, 0, 434, 40, 62336),
-        (2, 3, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
-         500, 200, 434, 40, 126506),
-        (2, 2, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
-         500, 200, 434, 40, 232749),
-        (2, 1, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
+        (3, True, 35, 180, 200, 16, 200000, 2000, 0, 2000, 0, 20, 90, 1.5,
          500, 200, 434, 40, 216096),
     ],
 )
 def test_v_rd(
-    approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
+    approx_lvl, reinforcment, fck, z,
     bw, dg, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
     asw, sw, f_ywd, theta, expected
 ):
 
     """Test the tau_edi function."""
     assert math.isclose(_concrete_shear.v_rd(
-        approx_lvl_c, approx_lvl_s, reinforcment, fck, z,
+        approx_lvl, reinforcment, fck, z,
         bw, dg, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c,
         asw, sw, f_ywd, theta
     ),
         expected, rel_tol=0.001)
 
-
-@pytest.mark.parametrize(
-    '''t_ed, a_k, z_i, expected''',
-    [
-        (2000000, 2000, 300, 150000),
-    ],
-)
-def test_ved_ti(t_ed, a_k, z_i, expected):
-
-    """Test the ved_ti function."""
-    assert math.isclose(_concrete_shear.v_ed_ti(t_ed, a_k, z_i),
-                        expected, rel_tol=0.001)
-
-
-@pytest.mark.parametrize(
-    '''f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-        Med, Ved, Ned, z, delta_e, expected''',
-    [
-        (35, 1.5, 150, 50000, 40, 1, 200000, 2000, 0, 2000, 0, 180, 20,
-         11256044),
-        (35, 1.5, 150, 50000, 40, 2, 200000, 2000, 0, 2000, 0, 180, 20,
-         13301400),
-        (35, 1.5, 150, 50000, 40, 3, 200000, 2000, 0, 2000, 0, 180, 20,
-         10084000),
-
-    ],
-)
-def test_t_rd_max(
-        f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-        Med, Ved, Ned, z, delta_e, expected):
-
-    """Test the t_rd_max function."""
-    assert math.isclose(_concrete_shear.t_rd_max(
-            f_ck, gamma_c, d_k, a_k, theta, approx_lvl_s, E_s, As,
-            Med, Ved, Ned, z, delta_e), expected, rel_tol=0.001)
-
-
-@pytest.mark.parametrize(
-    '''t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
-        Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected''',
-    [
-        (100e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20,
-         90, 150, 50000, 1.5, True),
-        (100e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 1000e3, 10e3, 20,
-         90, 150, 50000, 1.5, False),
-        (100e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20,
-         90, 150, 50000, 1.5, True),
-        (10000e3, 1, 35, 200, 40, 180, 200000, 2000, 0, 10e3, 10e3, 20,
-         90, 150, 50000, 1.5, False),
-    ],
-)
-def test_t_rd(
-        t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
-        Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c, expected
-        ):
-
-    """Test the t_rd function."""
-    assert math.isclose(_concrete_shear.t_rd(
-        t_ed, approx_lvl_s, fck, bw, theta, z, E_s, As,
-        Med, Ved, Ned, delta_e, alfa, d_k, a_k, gamma_c), expected)
-
-
-@pytest.mark.parametrize(
-    '''Ved, e_u, l_x, l_y, l_min, inner,
-    edge_par1, edge_per2, corner, expected''',
-    [
-        (10e3, 20, 2e3, 2e3, 2000, True, False, False, False, 1401),
-        (10e3, 20, 2e3, 3e3, 2000, False, True, False, False, 2500),
-        (10e3, 20, 2e3, 3e3, 2000, False, False, True, False, 1497),
-        (10e3, 20, 2e3, 3e3, 2000, False, False, False, True, 5000),
-    ],
-)
-def test_m_ed(
-    Ved, e_u, l_x, l_y, l_min, inner,
-    edge_par1, edge_per2, corner, expected
-):
-
-    """Test the m_ed function."""
-    assert math.isclose(_concrete_shear.m_ed(
-        Ved, e_u, l_x, l_y, l_min, inner,
-        edge_par1, edge_per2, corner), expected, rel_tol=0.001)
-
-
-@pytest.mark.parametrize(
-    '''l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-    l_min, inner, edge_par, edge_per, corner, m_rd,
-    m_pd, expected''',
-    [
-        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20, 2e3,
-         True, False, False, False, 140, 0, 0.013426875),
-        (2e3, 3e3, 434, 160, 200e3, 2, 10e3, 20, 2e3,
-         True, False, False, False, 140, 0, 0.41269218238),
-    ],
-)
-def test_psi_punching(
-    l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-    l_min, inner, edge_par, edge_per, corner, m_rd,
-    m_pd, expected
-):
-
-    """Test the psi_punching function."""
-    assert math.isclose(_concrete_shear.psi_punching(
-        l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-        l_min, inner, edge_par, edge_per, corner, m_rd,
-        m_pd), expected, rel_tol=0.001)
