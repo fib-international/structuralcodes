@@ -56,7 +56,7 @@ def eta_fc(fck: float):
 def v_rd(
     approx_lvl: int,
     with_shear_reinforcment: bool,
-    fck: Optional[float],
+    fck: float,
     z: float,
     bw: float,
     dg: float,
@@ -66,12 +66,12 @@ def v_rd(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: Optional[float],
+    alfa: float,
     gamma_c: float,
     asw: float,
     sw: float,
     f_ywd: float,
-    theta: float,
+    theta: Optional[float],
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -216,7 +216,7 @@ def v_rdc(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float,
+    alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The design shear resistance of a web or a slab without
@@ -358,7 +358,7 @@ def v_rdc_approx3(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float,
+    alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """Gives the shear resistance for concrete with approx level 3
@@ -461,7 +461,7 @@ def v_rd_max(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float = 0,
+    alfa: float = 90,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
@@ -508,7 +508,7 @@ def v_rd_max_approx1(
     bw: float,
     theta: float,
     z: float,
-    alfa: float = 0,
+    alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, with level 1 approximation.
@@ -553,7 +553,7 @@ def v_rd_max_approx2(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float = 0,
+    alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, with level 2 approximation
@@ -609,7 +609,7 @@ def v_rd_max_approx3(
     Ved: float,
     Ned: float,
     delta_e: float,
-    alfa: float = 0,
+    alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, with level 3 approximation
