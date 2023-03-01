@@ -2,9 +2,7 @@
 
 from math import pi, tan, sin, cos
 
-# import _concrete_shear as cs
-from _concrete_shear import epsilon_x
-from _concrete_shear import v_rd_max
+from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
@@ -64,17 +62,17 @@ def t_rd_max(
     if approx_lvl == 3:
         k_epsilon = 0.55
     elif approx_lvl == 4:
-        epsilon_1 = cs.epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-            cs.epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
+        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     elif approx_lvl == 5:
-        theta_min = 20 + 10000 * cs.epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
-        epsilon_1 = cs.epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-            cs.epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
+        theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
+        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta_min * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    k_c = cs.eta_fc(f_ck) * k_epsilon
+    k_c = eta_fc(f_ck) * k_epsilon
     result = (
         k_c
         * f_ck
@@ -155,7 +153,7 @@ def t_rd(
         ** 2
         + (
             Ved
-            / cs.v_rd_max(
+            / v_rd_max(
                 approx_lvl,
                 fck,
                 bw,
