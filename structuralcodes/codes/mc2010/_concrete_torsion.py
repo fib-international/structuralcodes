@@ -1,7 +1,7 @@
 "Covers torsion in Model code 2010, 7.3.4"
 
 from math import pi, tan, sin, cos
-from structuralcodes.codes.mc2010 import _concrete_shear
+from structuralcodes.codes.mc2010._concrete_shear import epsilon_x
 from structuralcodes.codes.mc2010._concrete_shear import v_rd_max
 
 
@@ -63,7 +63,7 @@ def t_rd_max(
     if approx_lvl == 3:
         k_epsilon = 0.55
     elif approx_lvl == 4:
-        epsilon_1 = _concrete_shear.epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
+        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
