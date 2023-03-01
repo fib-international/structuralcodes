@@ -25,13 +25,10 @@ def t_rd_max(
     a_k: float,
     theta: float,
     approx_lvl: int,
+    z: float,
     E_s: float,
     As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
-    z: float,
-    delta_e: float,
+    loads: dict,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed torsion allowed
@@ -61,14 +58,14 @@ def t_rd_max(
     if approx_lvl == 3:
         k_epsilon = 0.55
     elif approx_lvl == 4:
-        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
+        epsilon_1 = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e')) + (
+            epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e')) + 0.002
         ) * ((1 / tan(theta * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     elif approx_lvl == 5:
-        theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
-        epsilon_1 = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + (
-            epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
+        theta_min = 20 + 10000 * epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+        epsilon_1 = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e')) + (
+            epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e')) + 0.002
         ) * ((1 / tan(theta_min * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
     k_c = eta_fc(f_ck) * k_epsilon
@@ -95,10 +92,7 @@ def t_rd(
     z: float,
     E_s: float,
     As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
-    delta_e: float,
+    loads: float,
     alfa: float,
     f_ck: float,
     d_k: float,
@@ -139,19 +133,16 @@ def t_rd(
                 a_k,
                 theta,
                 approx_lvl,
+                z,
                 E_s,
                 As,
-                Med,
-                Ved,
-                Ned,
-                z,
-                delta_e,
+                loads,
                 gamma_c,
             )
         )
         ** 2
         + (
-            Ved
+            loads.get('Ved')
             / v_rd_max(
                 approx_lvl,
                 fck,
@@ -160,10 +151,7 @@ def t_rd(
                 z,
                 E_s,
                 As,
-                Med,
-                Ved,
-                Ned,
-                delta_e,
+                loads,
                 alfa,
                 gamma_c,
             )
