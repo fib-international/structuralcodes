@@ -1,9 +1,7 @@
 "Covers torsion in Model code 2010, 7.3.4"
 
 from math import pi, tan, sin, cos
-from structuralcodes.codes.mc2010._concrete_shear import epsilon_x
-from structuralcodes.codes.mc2010._concrete_shear import v_rd_max
-from structuralcodes.codes.mc2010._concrete_shear import eta_fc
+from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
@@ -174,4 +172,3 @@ def t_rd(
         <= 1
     )
     return check
-print(t_rd(35, 150, 50000, 40, 3, 200000, 2000, 0, 2000, 0, 180, 20, 1.5))
