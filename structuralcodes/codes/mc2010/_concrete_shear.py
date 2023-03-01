@@ -53,12 +53,6 @@ def eta_fc(fck: float):
     return min((30 / fck) ** (1 / 3), 1)
 
 
-def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float) -> dict:
-    """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-    return dictionary
-
-
 def v_rd(
     approx_lvl: int,
     with_shear_reinforcment: bool,
@@ -68,7 +62,10 @@ def v_rd(
     dg: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     asw: Optional[float],
     sw: Optional[float],
     f_ywd: Optional[float],
@@ -123,7 +120,10 @@ def v_rd(
             dg,
             E_s,
             As,
-            loads,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
             alfa,
             gamma_c,
         )
@@ -139,7 +139,10 @@ def v_rd(
                 z,
                 E_s,
                 As,
-                loads,
+                Med,
+                Ved,
+                Ned,
+                delta_e,
                 alfa,
                 gamma_c,
             ),
@@ -154,7 +157,10 @@ def v_rd(
             dg,
             E_s,
             As,
-            loads,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
             alfa,
             gamma_c,
         )
@@ -166,7 +172,10 @@ def v_rd(
             z,
             E_s,
             As,
-            loads,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
             alfa,
             gamma_c,
         )
@@ -181,7 +190,10 @@ def v_rd(
             dg,
             E_s,
             As,
-            loads,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
             asw,
             sw,
             f_ywd,
@@ -200,7 +212,10 @@ def v_rdc(
     dg: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
@@ -239,7 +254,7 @@ def v_rdc(
 
     if approx_lvl == 2:
         return v_rdc_approx2(
-            fck, z, bw, dg, E_s, As, loads, gamma_c
+            fck, z, bw, dg, E_s, As, Med, Ved, Ned, delta_e, gamma_c
         )
     if approx_lvl == 5:
         return v_rdc_approx3(
@@ -249,7 +264,10 @@ def v_rdc(
             bw,
             E_s,
             As,
-            loads,
+            Med,
+            Ved,
+            Ned,
+            delta_e,
             alfa,
             gamma_c,
         )
@@ -290,7 +308,10 @@ def v_rdc_approx2(
     dg: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     gamma_c: float = 1.5,
 ) -> float:
     """Gives the shear resistance for concrete with approx level 2
@@ -320,7 +341,7 @@ def v_rdc_approx2(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     k_dg = max(32 / (16 + dg), 0.75)
     kv = (0.4 / (1 + 1500 * epsilonx)) * (1300 / (1000 + k_dg * z))
     return (kv * fsqr * z * bw) / gamma_c
@@ -333,7 +354,10 @@ def v_rdc_approx3(
     bw: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
@@ -365,7 +389,7 @@ def v_rdc_approx3(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = 20 + 10000 * epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    theta_min = 20 + 10000 * epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     V_rd_max = v_rd_max(
         approx_lvl,
         fck,
@@ -374,13 +398,16 @@ def v_rdc_approx3(
         z,
         E_s,
         As,
-        loads,
+        Med,
+        Ved,
+        Ned,
+        delta_e,
         alfa,
         gamma_c,
     )
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     kv = max(
-        (0.4 / (1 + 1500 * epsilonx)) * (1 - loads.get('Ved') / V_rd_max),
+        (0.4 / (1 + 1500 * epsilonx)) * (1 - Ved / V_rd_max),
         0,
     )
 
@@ -430,7 +457,10 @@ def v_rd_max(
     z: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     alfa: float = 90,
     gamma_c: float = 1.5,
 ) -> float:
@@ -463,12 +493,12 @@ def v_rd_max(
 
     if approx_lvl == 4:
         return v_rd_max_approx2(
-            fck, bw, theta, z, E_s, As, loads, alfa, gamma_c
+            fck, bw, theta, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
 
     if approx_lvl == 5:
         return v_rd_max_approx3(
-            fck, bw, z, E_s, As, loads, alfa, gamma_c
+            fck, bw, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
         )
     raise ValueError("invalid approx level")
 
@@ -519,7 +549,10 @@ def v_rd_max_approx2(
     z: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
@@ -547,7 +580,7 @@ def v_rd_max_approx2(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads('Ned'), z, loads('delta_e'))
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
         (1 / tan(theta * pi / 180)) ** 2
     )
@@ -572,7 +605,10 @@ def v_rd_max_approx3(
     z: float,
     E_s: float,
     As: float,
-    loads: dict,
+    Med: float,
+    Ved: float,
+    Ned: float,
+    delta_e: float,
     alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
@@ -600,11 +636,11 @@ def v_rd_max_approx3(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e)
     theta_min = 20 + 10000 * epsilonx
 
     return v_rd_max_approx2(
-        fck, bw, theta_min, z, E_s, As, loads, alfa, gamma_c
+        fck, bw, theta_min, z, E_s, As, Med, Ved, Ned, delta_e, alfa, gamma_c
     )
 
 
@@ -766,6 +802,3 @@ def v_rd_ct_approx2(
     return (i_c * b_wy / S_cy) * (
         ((f_ctd**2) + alfa_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
     )
-
-
-print(v_rd_max(3, 30, 50, 20, 200, 210000, 1000, create_load_dict(200e6, 50e3, 10e3, 50), 20, 1.5))

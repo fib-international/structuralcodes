@@ -1,8 +1,13 @@
 "Covers torsion in Model code 2010, 7.3.4"
 
 from math import pi, tan, sin, cos
+<<<<<<< HEAD
 
 from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
+=======
+from structuralcodes.codes.mc2010._concrete_shear import epsilon_x
+from structuralcodes.codes.mc2010._concrete_shear import v_rd_max
+>>>>>>> 24c619fd35643733a72814a44dd1ef1bd3f60834
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
@@ -58,6 +63,7 @@ def t_rd_max(
         The maximum allowed torsion allowed
     """
     t_ef = d_k / 8
+    nfc = min((30 / f_ck) ** (1 / 3), 1)
 
     if approx_lvl == 3:
         k_epsilon = 0.55
@@ -72,7 +78,11 @@ def t_rd_max(
             epsilon_x(E_s, As, Med, Ved, Ned, z, delta_e) + 0.002
         ) * ((1 / tan(theta_min * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
+<<<<<<< HEAD
     k_c = eta_fc(f_ck) * k_epsilon
+=======
+    k_c = nfc * k_epsilon
+>>>>>>> 24c619fd35643733a72814a44dd1ef1bd3f60834
     result = (
         k_c
         * f_ck
@@ -173,5 +183,3 @@ def t_rd(
         <= 1
     )
     return check
-
-print(t_rd_max(35, 150, 50000, 40, 1, 200000, 2000, 0, 2000, 0, 180, 20, 1.5))
