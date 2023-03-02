@@ -6,7 +6,7 @@ import pytest
 from structuralcodes.codes.mc2010 import _concrete_torsion
 
 
-def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float)-> dict:
+def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float) -> dict:
     """returns dictionary assosiated with loads"""
     dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
     return dictionary
@@ -50,25 +50,25 @@ def test_t_rd_max(
 
 @pytest.mark.parametrize(
     '''t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, alfa, d_k, a_k, gamma_c, expected''',
+        loads, d_k, a_k, alfa, gamma_c, expected''',
     [
         (100e3, 3, 35, 200, 40, 180, 200000, 2000, create_load_dict(0, 10e3, 10e3, 20),
-         90, 150, 50000, 1.5, True),
+         150, 50000, 90, 1.5, True),
         (100e3, 3, 35, 200, 40, 180, 200000, 2000, create_load_dict(0, 1000e3, 10e3, 20),
-         90, 150, 50000, 1.5, False),
+         150, 50000, 90, 1.5, False),
         (100e3, 3, 35, 200, 40, 180, 200000, 2000, create_load_dict(0, 10e3, 10e3, 20),
-         90, 150, 50000, 1.5, True),
+         150, 50000, 90, 1.5, True),
         (10000e3, 3, 35, 200, 40, 180, 200000, 2000, create_load_dict(0, 10e3, 10e3, 20),
-         90, 150, 50000, 1.5, False),
+         150, 50000, 90, 1.5, False),
     ],
 )
 def test_t_rd(
         t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, alfa, d_k, a_k, gamma_c, expected
+        loads, d_k, a_k, alfa, gamma_c, expected
         ):
 
     """Test the t_rd function."""
     assert math.isclose(_concrete_torsion.t_rd(
         t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, alfa, d_k, a_k, gamma_c), expected)
+        loads, d_k, a_k, alfa, gamma_c), expected)
 

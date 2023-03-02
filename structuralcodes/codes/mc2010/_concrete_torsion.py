@@ -93,10 +93,9 @@ def t_rd(
     E_s: float,
     As: float,
     loads: dict,
-    alfa: float,
-    f_ck: float,
     d_k: float,
     a_k: float,
+    alfa: float = 90.0,
     gamma_c: float = 1.5,
 ) -> bool:
     """Checks if the combination of torstion ans shear is ok
@@ -117,7 +116,6 @@ def t_rd(
         positive sign for tension and negative sign for compression
         delta_e (float): The exentricity of the load in mm
         alfa (float): Inclination of the stirrups in degrees
-        f_ck: Characteristic strength in MPa
         d_k: Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
         gamma_c (float): Safety factor
@@ -128,7 +126,7 @@ def t_rd(
         (
             t_ed
             / t_rd_max(
-                f_ck,
+                fck,
                 d_k,
                 a_k,
                 theta,
