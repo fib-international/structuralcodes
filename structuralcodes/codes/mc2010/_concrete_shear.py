@@ -108,7 +108,7 @@ def v_rd(
     """
 
     if not with_shear_reinforcment:
-        if not approx_lvl == (1 or 2):
+        if not approx_lvl == 1 or approx_lvl == 2:
             warnings.warn(
                 "Choosen approximation is not suited without reinforcment"
             )
@@ -125,7 +125,7 @@ def v_rd(
             gamma_c,
         )
 
-    if approx_lvl == (3 or 4):
+    if approx_lvl == 3 or approx_lvl == 4:
         return min(
             v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
@@ -169,23 +169,25 @@ def v_rd(
         )
         if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)) < V_rd_max:
             return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)
-        v_rd(
-            4,
-            with_shear_reinforcment,
-            fck,
-            z,
-            bw,
-            dg,
-            E_s,
-            As,
-            loads,
-            asw,
-            sw,
-            f_ywd,
-            theta,
-            alfa,
-            gamma_c,
-        )
+        else:
+            return v_rd(
+                4,
+                with_shear_reinforcment,
+                fck,
+                z,
+                bw,
+                dg,
+                E_s,
+                As,
+                loads,
+                asw,
+                sw,
+                f_ywd,
+                theta,
+                alfa,
+                gamma_c
+            )
+
     raise ValueError("invalid approx level")
 
 
