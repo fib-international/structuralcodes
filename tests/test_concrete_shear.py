@@ -13,22 +13,22 @@ def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float)-> dict:
 
 
 @pytest.mark.parametrize(
-    'E_s, As, Med, Ved, Ned, z, deltaE, expected',
+    'E_s, As, z, loads, expected',
     [
-        (200000, 1000, 50000000, 10000, 2000, 160, 50, 8.1e-4),
-        (210000, 1000, 50000000, 10000, 2000, 160, 50, 7.7e-4),
-        (210000, 5000, 50000000, 10000, 2000, 160, 50, 1.5e-4),
-        (210000, 2000, 50000000, 10000, 2000, 160, 50, 3.9e-4),
-        (210000, 2000, 40000000, 20000, 2000, 160, 50, 3.2e-4),
-        (210000, 2000, 40000000, 20000, 1000, 160, 50, 3.2e-4),
-        (210000, 2000, 40000000, 20000, 1000, 140, 50, 3.64965e-4),
-        (210000, 2000, 40000000, 20000, 1000, 180, 50, 2.9e-4),
+        (200000, 1000, 160, create_load_dict(50000000, 10000, 2000, 50), 8.1e-4),
+        (210000, 1000, 160, create_load_dict(50000000, 10000, 2000, 50), 7.7e-4),
+        (210000, 5000, 160, create_load_dict(50000000, 10000, 2000, 50), 1.5e-4),
+        (210000, 2000, 160, create_load_dict(50000000, 10000, 2000, 50), 3.9e-4),
+        (210000, 2000, 160, create_load_dict(40000000, 20000, 2000, 50), 3.2e-4),
+        (210000, 2000, 160, create_load_dict(40000000, 20000, 1000, 50), 3.2e-4),
+        (210000, 2000, 140, create_load_dict(40000000, 20000, 1000, 50), 3.64965e-4),
+        (210000, 2000, 180, create_load_dict(40000000, 20000, 1000, 50), 2.9e-4),
     ],
 )
-def test_epsilon_x(E_s, As, Med, Ved, Ned, z, deltaE, expected):
+def test_epsilon_x(E_s, As, z, loads, expected):
     """Test the epsilon_x function."""
     assert math.isclose(_concrete_shear.epsilon_x(
-        E_s, As, Med, Ved, Ned, z, deltaE), expected, rel_tol=0.05
+        E_s, As, z, loads), expected, rel_tol=0.05
     )
 
 

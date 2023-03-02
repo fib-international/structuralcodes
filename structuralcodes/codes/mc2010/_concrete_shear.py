@@ -7,11 +7,8 @@ from math import pi, tan, sin
 def epsilon_x(
     E_s: float,
     As: float,
-    Med: float,
-    Ved: float,
-    Ned: float,
     z: float,
-    delta_e: float,
+    loads: dict,
 ) -> float:
     """The maximum allowed shear resistance
 
@@ -30,11 +27,11 @@ def epsilon_x(
         value
     Returns:
         float: The longitudinal strain"""
-    if Ned >= 0:
+    if loads.get('Ned') >= 0:
         return max(
             (
                 (1 / (2 * E_s * As))
-                * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) + (delta_e / z)))
+                * ((abs(loads.get('Med')) / z) + abs(loads.get('Ved')) + loads.get('Ned') * ((1 / 2) + (loads.get('delta_e') / z)))
             ),
             0,
         )
@@ -42,7 +39,7 @@ def epsilon_x(
     return max(
         (
             (1 / (2 * E_s * As))
-            * ((abs(Med) / z) + abs(Ved) + Ned * ((1 / 2) - (delta_e / z)))
+            * ((abs(loads.get('Med')) / z) + abs(loads.get('Ved')) + loads.get('Ned') * ((1 / 2) - (loads.get('delta_e') / z)))
         ),
         0,
     )
@@ -320,7 +317,7 @@ def v_rdc_approx2(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, z, loads)
     k_dg = max(32 / (16 + dg), 0.75)
     kv = (0.4 / (1 + 1500 * epsilonx)) * (1300 / (1000 + k_dg * z))
     return (kv * fsqr * z * bw) / gamma_c
@@ -365,7 +362,7 @@ def v_rdc_approx3(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = 20 + 10000 * epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    theta_min = 20 + 10000 * epsilon_x(E_s, As, z, loads)
     V_rd_max = v_rd_max(
         approx_lvl,
         fck,
@@ -378,7 +375,7 @@ def v_rdc_approx3(
         alfa,
         gamma_c,
     )
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, z, loads)
     kv = max(
         (0.4 / (1 + 1500 * epsilonx)) * (1 - loads.get('Ved') / V_rd_max),
         0,
@@ -547,7 +544,7 @@ def v_rd_max_approx2(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, z, loads)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
         (1 / tan(theta * pi / 180)) ** 2
     )
@@ -600,7 +597,7 @@ def v_rd_max_approx3(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    epsilonx = epsilon_x(E_s, As, loads.get('Med'), loads.get('Ved'), loads.get('Ned'), z, loads.get('delta_e'))
+    epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
 
     return v_rd_max_approx2(
