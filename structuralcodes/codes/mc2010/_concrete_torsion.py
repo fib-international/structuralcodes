@@ -48,7 +48,9 @@ def t_rd_max(
         positive sign for tension and negative sign for compression
         z (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
-        delta_e (float): the exentrisity of the load in mm
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
 
     return:
         The maximum allowed torsion allowed
@@ -114,7 +116,9 @@ def t_rd(
         Ved: (float): The shear working on the material in N
         Ned: (float): The normal force working on the material in N with
         positive sign for tension and negative sign for compression
-        delta_e (float): The exentricity of the load in mm
+        delta_E (float): The eccentricity of the axial load due to
+        imperfection in the construction with distance in mm as a positive
+        value
         alfa (float): Inclination of the stirrups in degrees
         d_k: Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18

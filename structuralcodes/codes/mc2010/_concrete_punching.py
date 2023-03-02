@@ -186,10 +186,6 @@ def v_rdc_punching(
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
         l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
@@ -274,10 +270,6 @@ def v_rds_punching(
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
         l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
