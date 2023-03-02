@@ -26,25 +26,25 @@ def test_ved_ti(t_ed, a_k, z_i, expected):
 
 
 @pytest.mark.parametrize(
-    '''f_ck, d_k, a_k, theta, approx_lvl_s, z, E_s, As,
+    '''f_ck, d_k, a_k, theta, approx_lvl, z, E_s, As,
         loads, gamma_c, expected''',
     [
-        (35, 150, 50000, 40, 1, 180, 200000, 2000, create_load_dict(0, 2000, 0, 20), 1.5,
-         11256044),
-        (35, 150, 50000, 40, 2, 180, 200000, 2000, create_load_dict(0, 2000, 0, 20), 1.5,
-         13301400),
         (35, 150, 50000, 40, 3, 180, 200000, 2000, create_load_dict(0, 2000, 0, 20), 1.5,
+         11256044),
+        (35, 150, 50000, 40, 4, 180, 200000, 2000, create_load_dict(0, 2000, 0, 20), 1.5,
+         13301400),
+        (35, 150, 50000, 40, 5, 180, 200000, 2000, create_load_dict(0, 2000, 0, 20), 1.5,
          10084000),
 
     ],
 )
 def test_t_rd_max(
-        f_ck, d_k, a_k, theta, approx_lvl_s, z, E_s, As,
+        f_ck, d_k, a_k, theta, approx_lvl, z, E_s, As,
         loads, gamma_c, expected):
 
     """Test the t_rd_max function."""
     assert math.isclose(_concrete_torsion.t_rd_max(
-            f_ck, d_k, a_k, theta, approx_lvl_s, z, E_s, As,
+            f_ck, d_k, a_k, theta, approx_lvl, z, E_s, As,
             loads, gamma_c), expected, rel_tol=0.001)
 
 

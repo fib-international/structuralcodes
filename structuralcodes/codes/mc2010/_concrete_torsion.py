@@ -92,7 +92,7 @@ def t_rd(
     z: float,
     E_s: float,
     As: float,
-    loads: float,
+    loads: dict,
     alfa: float,
     f_ck: float,
     d_k: float,
