@@ -31,7 +31,11 @@ def epsilon_x(
         return max(
             (
                 (1 / (2 * E_s * As))
-                * ((abs(loads.get('Med')) / z) + abs(loads.get('Ved')) + loads.get('Ned') * ((1 / 2) + (loads.get('delta_e') / z)))
+                * (
+                    (abs(loads.get('Med')) / z)
+                    + abs(loads.get('Ved'))
+                    + loads.get('Ned') * ((1 / 2) + (loads.get('delta_e') / z))
+                )
             ),
             0,
         )
@@ -39,7 +43,11 @@ def epsilon_x(
     return max(
         (
             (1 / (2 * E_s * As))
-            * ((abs(loads.get('Med')) / z) + abs(loads.get('Ved')) + loads.get('Ned') * ((1 / 2) - (loads.get('delta_e') / z)))
+            * (
+                (abs(loads.get('Med')) / z)
+                + abs(loads.get('Ved'))
+                + loads.get('Ned') * ((1 / 2) - (loads.get('delta_e') / z))
+            )
         ),
         0,
     )
@@ -50,7 +58,9 @@ def eta_fc(fck: float):
     return min((30 / fck) ** (1 / 3), 1)
 
 
-def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float) -> dict:
+def create_load_dict(
+    Med: float, Ved: float, Ned: float, delta_e: float
+) -> dict:
     """returns dictionary assosiated with loads"""
     dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
     return dictionary
@@ -125,7 +135,7 @@ def v_rd(
             gamma_c,
         )
 
-    if approx_lvl == 3 or approx_lvl == 4:
+    if approx_lvl in (3, 4):
         return min(
             v_rds(asw, sw, z, f_ywd, theta, alfa),
             v_rd_max(
@@ -169,24 +179,23 @@ def v_rd(
         )
         if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)) < V_rd_max:
             return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)
-        else:
-            return v_rd(
-                4,
-                with_shear_reinforcment,
-                fck,
-                z,
-                bw,
-                dg,
-                E_s,
-                As,
-                loads,
-                asw,
-                sw,
-                f_ywd,
-                theta,
-                alfa,
-                gamma_c
-            )
+        return v_rd(
+            4,
+            with_shear_reinforcment,
+            fck,
+            z,
+            bw,
+            dg,
+            E_s,
+            As,
+            loads,
+            asw,
+            sw,
+            f_ywd,
+            theta,
+            alfa,
+            gamma_c,
+        )
 
     raise ValueError("invalid approx level")
 
@@ -237,9 +246,7 @@ def v_rdc(
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
     if approx_lvl == 2:
-        return v_rdc_approx2(
-            fck, z, bw, dg, E_s, As, loads, gamma_c
-        )
+        return v_rdc_approx2(fck, z, bw, dg, E_s, As, loads, gamma_c)
     if approx_lvl == 5:
         return v_rdc_approx3(
             approx_lvl,
@@ -466,9 +473,7 @@ def v_rd_max(
         )
 
     if approx_lvl == 5:
-        return v_rd_max_approx3(
-            fck, bw, z, E_s, As, loads, alfa, gamma_c
-        )
+        return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alfa, gamma_c)
     raise ValueError("invalid approx level")
 
 
