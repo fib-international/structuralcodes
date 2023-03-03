@@ -27,18 +27,6 @@ def epsilon_x(
         value
     Returns:
         float: The longitudinal strain"""
-    if loads.get('Ned') >= 0:
-        return max(
-            (
-                (1 / (2 * E_s * As))
-                * (
-                    (abs(loads.get('Med')) / z)
-                    + abs(loads.get('Ved'))
-                    + loads.get('Ned') * ((1 / 2) + (loads.get('delta_e') / z))
-                )
-            ),
-            0,
-        )
 
     return max(
         (
@@ -46,7 +34,7 @@ def epsilon_x(
             * (
                 (abs(loads.get('Med')) / z)
                 + abs(loads.get('Ved'))
-                + loads.get('Ned') * ((1 / 2) - (loads.get('delta_e') / z))
+                + loads.get('Ned') * ((1 / 2) + (loads.get('delta_e') / z))
             )
         ),
         0,
@@ -245,9 +233,9 @@ def v_rdc(
     if approx_lvl == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
-    if approx_lvl == 2:
+    elif approx_lvl == 2:
         return v_rdc_approx2(fck, z, bw, dg, E_s, As, loads, gamma_c)
-    if approx_lvl == 5:
+    elif approx_lvl == 5:
         return v_rdc_approx3(
             approx_lvl,
             fck,
@@ -371,7 +359,8 @@ def v_rdc_approx3(
         float: Design shear resistance without shear reinforcement
     """
     fsqr = min(fck**0.5, 8)
-    theta_min = 20 + 10000 * epsilon_x(E_s, As, z, loads)
+    epsilonx = epsilon_x(E_s, As, z, loads)
+    theta_min = 20 + 10000 * epsilonx
     V_rd_max = v_rd_max(
         approx_lvl,
         fck,
@@ -384,7 +373,6 @@ def v_rdc_approx3(
         alfa,
         gamma_c,
     )
-    epsilonx = epsilon_x(E_s, As, z, loads)
     kv = max(
         (0.4 / (1 + 1500 * epsilonx)) * (1 - loads.get('Ved') / V_rd_max),
         0,
@@ -398,8 +386,8 @@ def v_rds(
     sw: float,
     z: float,
     f_ywd: float,
-    theta: float,
-    alpha: float,
+    theta: float = 45.0,
+    alpha: float = 90.0,
 ) -> float:
     """The shear resistans that shear reinforcement gives
 
@@ -410,7 +398,7 @@ def v_rds(
         z: (float): The length to the areasenter of cross-section in mm
         f_ywd (float): Design yield strength of the shear reinforcement in MPa
         theta (float): Inclitaniton of the compression stressfield in degrees
-        alfa (float): Inclination of the stirrups
+        alpha (float): Inclination of the stirrups
 
     Returns:
         The design shear resistance provided by shear reinforcement
@@ -461,18 +449,19 @@ def v_rd_max(
         imperfection in the construction with distance in mm as a positive
         value
         alfa (float): Inclination of the stirrups in degrees
+
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
     if approx_lvl == 3:
         return v_rd_max_approx1(fck, bw, theta, z, alfa, gamma_c)
 
-    if approx_lvl == 4:
+    elif approx_lvl == 4:
         return v_rd_max_approx2(
             fck, bw, theta, z, E_s, As, loads, alfa, gamma_c
         )
 
-    if approx_lvl == 5:
+    elif approx_lvl == 5:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alfa, gamma_c)
     raise ValueError("invalid approx level")
 
@@ -662,7 +651,7 @@ def v_rd_ct(
         approximation level"""
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
-    if approx_lvl_h == 2:
+    elif approx_lvl_h == 2:
         return v_rd_ct_approx2(
             f_ctd,
             i_c,
@@ -706,6 +695,7 @@ def v_rd_ct_approx1(
         l_x (float): Distance from the edge to point of
         failure (Figure: 7.3-12)
         l_bd0 (float): follows 7.13-5
+
     return:
         Vrd Appoximation 1 for hollow slabs"""
     alfa_l = l_x / (1.2 * l_bd0)

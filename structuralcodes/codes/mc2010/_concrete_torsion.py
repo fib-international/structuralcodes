@@ -145,7 +145,7 @@ def t_rd(
         ** 2
         + (
             loads.get('Ved')
-            / v_rd_max(
+            / v_rd_max(  # pylint: disable=r0801
                 approx_lvl,
                 fck,
                 bw,
