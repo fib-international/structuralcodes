@@ -248,7 +248,7 @@ def v_rds_punching(
     corner: bool,
     m_rd: float,
     m_pd: float,
-    alfa: float,
+    alpha: float,
     f_bd: float,
     f_ywd: float,
     kam_w: float,
@@ -280,7 +280,7 @@ def v_rds_punching(
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
         in MPa
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
         f_bd (float): The design bond strength in MPa
         f_ywd (float): Design yield strength of the shear reinforcement in Mpa
         kam_w (float): The diameter of the shear reinforcement
@@ -312,17 +312,17 @@ def v_rds_punching(
             )
             / 6
         )
-        * (sin(alfa * pi / 180) + cos(alfa * pi / 180))
-        * (sin(alfa * pi / 180) + f_bd * d / (f_ywd * kam_w)),
+        * (sin(alpha * pi / 180) + cos(alpha * pi / 180))
+        * (sin(alpha * pi / 180) + f_bd * d / (f_ywd * kam_w)),
         f_ywd,
     )
 
-    if (a_sw * k_e * sigma_swd * sin(alfa * pi / 180)) < 0.5 * v_ed:
+    if (a_sw * k_e * sigma_swd * sin(alpha * pi / 180)) < 0.5 * v_ed:
         warnings.warn(
             """In order to ensure sufficent deformation capacity,
                       the shear resistance in punching most increase"""
         )
-    result = a_sw * k_e * sigma_swd * sin(alfa * pi / 180)
+    result = a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
     return result
 
 
@@ -441,7 +441,7 @@ def v_rd_punching(
     corner: bool,
     m_rd: float,
     m_pd: float,
-    alfa: float,
+    alpha: float,
     f_bd: float,
     f_ywd: float,
     kam_w: float,
@@ -484,7 +484,7 @@ def v_rd_punching(
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
         in MPa
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
         f_bd (float): The design bond strength in MPa
         f_ywd (float): Design yield strength of the shear reinforcement in Mpa
         kam_w (float): The diameter of the shear reinforcement
@@ -532,7 +532,7 @@ def v_rd_punching(
             corner,
             m_rd,
             m_pd,
-            alfa,
+            alpha,
             f_bd,
             f_ywd,
             kam_w,

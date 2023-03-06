@@ -6,7 +6,7 @@ import pytest
 from structuralcodes.codes.mc2010 import _concrete_shear
 
 
-def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float)-> dict:
+def create_load_dict(Med: float, Ved: float, Ned: float, delta_e: float) -> dict:
     """returns dictionary assosiated with loads"""
     dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
     return dictionary
@@ -33,7 +33,7 @@ def test_epsilon_x(E_s, As, z, loads, expected):
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, fck, bw, theta, z, E_s, As, loads, alfa,
+    '''approx_lvl, fck, bw, theta, z, E_s, As, loads, alpha,
     gamma_c, expected''',
     [
         (3, 30, 50, 20, 200, 210000, 1000,
@@ -51,17 +51,17 @@ def test_epsilon_x(E_s, As, z, loads, expected):
     ],
 )
 def test_vrd_max(
-    approx_lvl, fck, bw, theta, z, E_s, As, loads, alfa, gamma_c, expected
+    approx_lvl, fck, bw, theta, z, E_s, As, loads, alpha, gamma_c, expected
 ):
     """Test the v_rd_max function."""
     assert math.isclose(_concrete_shear.v_rd_max(
-        approx_lvl, fck, bw, theta, z, E_s, As, loads, alfa, gamma_c),
+        approx_lvl, fck, bw, theta, z, E_s, As, loads, alpha, gamma_c),
         expected, rel_tol=0.5
     )
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, fck, z, bw, dg, E_s, As, loads, alfa, gamma_c, expected''',
+    '''approx_lvl, fck, z, bw, dg, E_s, As, loads, alpha, gamma_c, expected''',
     [
         (1, 35, 180, 300, 0, 0, 0, create_load_dict(0, 0, 0, 0), 0, 1.5, 31294),
         (1, 35, 200, 300, 0, 0, 0, create_load_dict(0, 0, 0, 0), 0, 1.5, 34077),
@@ -76,12 +76,12 @@ def test_vrd_max(
     ],
 )
 def test_v_rdc(
-    approx_lvl, fck, z, bw, dg, E_s, As, loads, alfa, gamma_c, expected
+    approx_lvl, fck, z, bw, dg, E_s, As, loads, alpha, gamma_c, expected
 ):
 
     """Test the v_rdc function."""
     assert math.isclose(_concrete_shear.v_rdc(
-                approx_lvl, fck, z, bw, dg, E_s, As, loads, alfa, gamma_c
+                approx_lvl, fck, z, bw, dg, E_s, As, loads, alpha, gamma_c
                 ),
         expected, rel_tol=0.001)
 
@@ -199,7 +199,7 @@ def test_v_rd_ct(
 @pytest.mark.parametrize(
     '''approx_lvl, reinforcment, fck, z,
     bw, dg, E_s, As, loads,
-    asw, sw, f_ywd, theta, alfa, gamma_c, expected''',
+    asw, sw, f_ywd, theta, alpha, gamma_c, expected''',
     [
         (1, False, 35, 180, 200, 16, 200000, 2000,
             create_load_dict(0, 2000, 0, 20), 0, 0, 434, 40, 90, 1.5, 20863),
@@ -212,13 +212,13 @@ def test_v_rd_ct(
 def test_v_rd(
     approx_lvl, reinforcment, fck, z,
     bw, dg, E_s, As, loads,
-    asw, sw, f_ywd, theta, alfa, gamma_c, expected
+    asw, sw, f_ywd, theta, alpha, gamma_c, expected
 ):
 
     """Test the tau_edi function."""
     assert math.isclose(_concrete_shear.v_rd(
         approx_lvl, reinforcment, fck, z,
         bw, dg, E_s, As, loads,
-        asw, sw, f_ywd, theta, alfa, gamma_c,
+        asw, sw, f_ywd, theta, alpha, gamma_c,
     ),
         expected, rel_tol=0.001)

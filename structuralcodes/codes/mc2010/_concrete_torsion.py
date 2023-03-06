@@ -97,7 +97,7 @@ def t_rd(
     loads: dict,
     d_k: float,
     a_k: float,
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> bool:
     """Checks if the combination of torstion ans shear is ok
@@ -119,7 +119,7 @@ def t_rd(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
         d_k: Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
         gamma_c (float): Safety factor
@@ -154,7 +154,7 @@ def t_rd(
                 E_s,
                 As,
                 loads,
-                alfa,
+                alpha,
                 gamma_c,
             )
         )

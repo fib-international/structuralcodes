@@ -54,7 +54,7 @@ def tau_rdi_with_reinforcement(
     mu: float,
     ro: float,
     sigma_n: float,
-    alfa: float,
+    alpha: float,
     beta_c: float,
     f_ck: float,
     f_yd: float,
@@ -76,7 +76,7 @@ def tau_rdi_with_reinforcement(
         crossing the interface
         sigma_n (float): The loweat expected compressiv stress resulting
         from normal forces acting on the interface in MPa
-        alfa (float): The inclination of reinforcement crossing the
+        alpha (float): The inclination of reinforcement crossing the
         interface (tabel 7.3-14)
         beta_c (float): The coefficient for strength of
         compresstion strut (tabel 7.3-2)
@@ -96,8 +96,8 @@ def tau_rdi_with_reinforcement(
         * ro
         * f_yd
         * (
-            ro * sin(alfa * pi / 180)
-            + cos(alfa * pi / 180)
+            ro * sin(alpha * pi / 180)
+            + cos(alpha * pi / 180)
             + k2 * ro * (f_yd * f_cd) ** 0.5
         ),
         beta_c * v * f_cd,

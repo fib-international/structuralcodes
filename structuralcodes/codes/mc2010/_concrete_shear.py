@@ -68,7 +68,7 @@ def v_rd(
     sw: Optional[float],
     f_ywd: Optional[float],
     theta: Optional[float],
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """Compute the shear resistance of a web or slab.
@@ -95,7 +95,7 @@ def v_rd(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
         f_ywd (float): The design yield strength of the shear reinforcement
@@ -119,13 +119,13 @@ def v_rd(
             E_s,
             As,
             loads,
-            alfa,
+            alpha,
             gamma_c,
         )
 
     if approx_lvl in (3, 4):
         return min(
-            v_rds(asw, sw, z, f_ywd, theta, alfa),
+            v_rds(asw, sw, z, f_ywd, theta, alpha),
             v_rd_max(
                 approx_lvl,
                 fck,
@@ -135,7 +135,7 @@ def v_rd(
                 E_s,
                 As,
                 loads,
-                alfa,
+                alpha,
                 gamma_c,
             ),
         )
@@ -150,7 +150,7 @@ def v_rd(
             E_s,
             As,
             loads,
-            alfa,
+            alpha,
             gamma_c,
         )
         V_rd_max = v_rd_max(
@@ -162,11 +162,11 @@ def v_rd(
             E_s,
             As,
             loads,
-            alfa,
+            alpha,
             gamma_c,
         )
-        if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)) < V_rd_max:
-            return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alfa)
+        if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alpha)) < V_rd_max:
+            return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alpha)
         return v_rd(
             4,
             with_shear_reinforcment,
@@ -181,7 +181,7 @@ def v_rd(
             sw,
             f_ywd,
             theta,
-            alfa,
+            alpha,
             gamma_c,
         )
 
@@ -197,7 +197,7 @@ def v_rdc(
     E_s: float,
     As: float,
     loads: dict,
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The design shear resistance of a web or a slab without
@@ -224,7 +224,7 @@ def v_rdc(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
 
     Returns:
         float: The design shear resistance attributed to the concrete
@@ -244,7 +244,7 @@ def v_rdc(
             E_s,
             As,
             loads,
-            alfa,
+            alpha,
             gamma_c,
         )
     raise ValueError("Invalid approx level")
@@ -328,7 +328,7 @@ def v_rdc_approx3(
     E_s: float,
     As: float,
     loads: dict,
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """Gives the shear resistance for concrete with approx level 3
@@ -353,7 +353,7 @@ def v_rdc_approx3(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -370,7 +370,7 @@ def v_rdc_approx3(
         E_s,
         As,
         loads,
-        alfa,
+        alpha,
         gamma_c,
     )
     kv = max(
@@ -425,7 +425,7 @@ def v_rd_max(
     E_s: float,
     As: float,
     loads: dict,
-    alfa: float = 90,
+    alpha: float = 90,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, when there is shear reinforcment
@@ -448,21 +448,21 @@ def v_rd_max(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
 
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
     if approx_lvl == 3:
-        return v_rd_max_approx1(fck, bw, theta, z, alfa, gamma_c)
+        return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
 
     elif approx_lvl == 4:
         return v_rd_max_approx2(
-            fck, bw, theta, z, E_s, As, loads, alfa, gamma_c
+            fck, bw, theta, z, E_s, As, loads, alpha, gamma_c
         )
 
     elif approx_lvl == 5:
-        return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alfa, gamma_c)
+        return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
     raise ValueError("invalid approx level")
 
 
@@ -471,7 +471,7 @@ def v_rd_max_approx1(
     bw: float,
     theta: float,
     z: float,
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, with level 1 approximation.
@@ -486,7 +486,7 @@ def v_rd_max_approx1(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -499,7 +499,7 @@ def v_rd_max_approx1(
         * bw
         * z
         * (
-            ((1 / tan(theta * pi / 180)) + (1 / tan(alfa * pi / 180)))
+            ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
             / (1 + (1 / tan(theta * pi / 180)) ** 2)
         )
     )
@@ -513,7 +513,7 @@ def v_rd_max_approx2(
     E_s: float,
     As: float,
     loads: dict,
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, with level 2 approximation
@@ -535,7 +535,7 @@ def v_rd_max_approx2(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -553,7 +553,7 @@ def v_rd_max_approx2(
         * bw
         * z
         * (
-            ((1 / tan(theta * pi / 180)) + (1 / tan(alfa * pi / 180)))
+            ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
             / (1 + (1 / tan(theta * pi / 180)) ** 2)
         )
     )
@@ -566,7 +566,7 @@ def v_rd_max_approx3(
     E_s: float,
     As: float,
     loads: dict,
-    alfa: float = 90.0,
+    alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed shear resistance, with level 3 approximation
@@ -588,7 +588,7 @@ def v_rd_max_approx3(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
-        alfa (float): Inclination of the stirrups in degrees
+        alpha (float): Inclination of the stirrups in degrees
 
     Returns:
         float: The maximum allowed shear resistance regardless of
@@ -597,7 +597,7 @@ def v_rd_max_approx3(
     theta_min = 20 + 10000 * epsilonx
 
     return v_rd_max_approx2(
-        fck, bw, theta_min, z, E_s, As, loads, alfa, gamma_c
+        fck, bw, theta_min, z, E_s, As, loads, alpha, gamma_c
     )
 
 
@@ -698,11 +698,11 @@ def v_rd_ct_approx1(
 
     return:
         Vrd Appoximation 1 for hollow slabs"""
-    alfa_l = l_x / (1.2 * l_bd0)
+    alpha_l = l_x / (1.2 * l_bd0)
     return (
         0.8
         * ((i_c * b_w) / s_c)
-        * ((f_ctd**2) + alfa_l * sigma_cp * f_ctd) ** 0.5
+        * ((f_ctd**2) + alpha_l * sigma_cp * f_ctd) ** 0.5
     )
 
 
@@ -752,11 +752,11 @@ def v_rd_ct_approx2(
        return:
            The maximum shear force for level 2 approximation"""
 
-    alfa_l = l_x / (1.2 * l_bd0)
+    alpha_l = l_x / (1.2 * l_bd0)
     sigma_cpy = ((1 / A_c) * ((y_c - y) / i_c)) * f_p_lx
     tau_cpy = (
         (1 / b_wy) * ((A_cy / A_c) - (S_cy * (y_c - y_pt)) / i_c) * f_p_lx_dx
     )
     return (i_c * b_wy / S_cy) * (
-        ((f_ctd**2) + alfa_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
+        ((f_ctd**2) + alpha_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
     )

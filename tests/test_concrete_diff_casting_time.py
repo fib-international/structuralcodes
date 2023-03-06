@@ -47,18 +47,18 @@ def test_tau_rdi_without_reinforcement(
 
 
 @pytest.mark.parametrize(
-    '''c_r, k1, k2, mu, ro, sigma_n, alfa,
+    '''c_r, k1, k2, mu, ro, sigma_n, alpha,
     beta_c, f_ck, f_yd, f_cd, expected''',
     [
         (0.1, 0.5, 0.9, 0.7, 0.05, 100, 15, 0.5, 30, 434, 17, 4.675),
     ],
 )
 def test_tau_rdi_with_reinforcement(
-    c_r, k1, k2, mu, ro, sigma_n, alfa, beta_c, f_ck, f_yd, f_cd, expected
+    c_r, k1, k2, mu, ro, sigma_n, alpha, beta_c, f_ck, f_yd, f_cd, expected
 ):
 
     """Test the tau_rdi_with_reinforcement function."""
     assert math.isclose(_concrete_interface_different_casting_times.tau_rdi_with_reinforcement(
-        c_r, k1, k2, mu, ro, sigma_n, alfa, beta_c, f_ck, f_yd, f_cd
+        c_r, k1, k2, mu, ro, sigma_n, alpha, beta_c, f_ck, f_yd, f_cd
     ),
         expected, rel_tol=0.001)

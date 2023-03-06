@@ -50,7 +50,7 @@ def test_t_rd_max(
 
 @pytest.mark.parametrize(
     '''t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, d_k, a_k, alfa, gamma_c, expected''',
+        loads, d_k, a_k, alpha, gamma_c, expected''',
     [
         (100e3, 3, 35, 200, 40, 180, 200000, 2000, create_load_dict(0, 10e3, 10e3, 20),
          150, 50000, 90, 1.5, True),
@@ -64,11 +64,11 @@ def test_t_rd_max(
 )
 def test_t_rd(
         t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, d_k, a_k, alfa, gamma_c, expected
+        loads, d_k, a_k, alpha, gamma_c, expected
         ):
 
     """Test the t_rd function."""
     assert math.isclose(_concrete_torsion.t_rd(
         t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, d_k, a_k, alfa, gamma_c), expected)
+        loads, d_k, a_k, alpha, gamma_c), expected)
 
