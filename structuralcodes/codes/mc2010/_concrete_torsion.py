@@ -39,7 +39,7 @@ def t_rd_max(
         d_k (float): Is the diameter in the smalest circel in the cross section
         a_k: Can be found in figure 7.3-18
         theta (float): Inclitaniton of the compression stressfield in degrees
-        approx_lvl_s (int): Approximation method for cocrete with reinforcement
+        approx_lvl (int): Approximation method for cocrete with reinforcement
         E_s (float): The E_s-modulus to the materialb in MPa
         As (float): The cross-section reinforcement in mm^2
         Med (float): The moment working on the material in Nmm
@@ -105,7 +105,7 @@ def t_rd(
     fib Model Code 2010, eq. (7.3-56)
 
     Args:
-        approx_lvl_s (int): Approximation level for steel
+        approx_lvl (int): Approximation level for steel
         fck (float): Characteristic strength in MPa
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section

@@ -86,8 +86,7 @@ def v_rd(
     fib Model Code 2010, Eq. (7.3-11)
 
     Args:
-        approx_lvl_c (int): Approximation level for concrete
-        approx_lvl_s (int): Approximation level for reinforcment
+        approx_lvl (int): Approximation level for concrete
         reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
@@ -216,8 +215,7 @@ def v_rdc(
     fib Model Code 2010, Eq. (7.3-17)
 
     Args:
-        approx_lvl_c (int): Approximation level for concrete
-        approx_lvl_s (int): Approximation level for reinforcement
+        approx_lvl (int): Approximation level for concrete
         with_shear_reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
@@ -307,7 +305,6 @@ def v_rdc_approx2(
 
     Args:
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
         z (float): The length to the areasenter of cross-section in mm
         bw (float): Thickness of web in cross section
         dg (float): Maximum size of aggregate
@@ -319,6 +316,7 @@ def v_rdc_approx2(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value
+        gamma_c (float): Concrete safety factor
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -443,7 +441,7 @@ def v_rd_max(
     fib Model Code 2010, eq. (7.3-24) and (7.3-26)
 
     Args:
-        approx_lvl_s (int): Approximation level for steel
+        approx_lvl (int): Approximation level for steel
         fck (float): Characteristic strength in MPa
         gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
