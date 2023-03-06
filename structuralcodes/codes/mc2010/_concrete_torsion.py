@@ -85,7 +85,7 @@ def t_rd_max(
     return result
 
 
-def t_rd(
+def t_rd(  # pylint: disable=r0801
     t_ed: float,
     approx_lvl: int,
     fck: float,
@@ -145,7 +145,7 @@ def t_rd(
         ** 2
         + (
             loads.get('Ved')
-            / v_rd_max(  # pylint: disable=r0801
+            / v_rd_max(
                 approx_lvl,
                 fck,
                 bw,

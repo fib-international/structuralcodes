@@ -132,7 +132,7 @@ def v_rd(
             alpha,
             gamma_c,
         )
-    f_ywd = f_ywk/gamma_s
+    f_ywd = f_ywk / gamma_s
     if approx_lvl in (1, 2):
         return min(
             v_rds(asw, sw, z, f_ywk, theta, alpha),
@@ -242,9 +242,9 @@ def v_rdc(
     if approx_lvl == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
-    elif approx_lvl == 2:
+    if approx_lvl == 2:
         return v_rdc_approx2(fck, z, bw, dg, E_s, As, loads, gamma_c)
-    elif approx_lvl == 3:
+    if approx_lvl == 3:
         return v_rdc_approx3(
             approx_lvl,
             fck,
@@ -415,7 +415,7 @@ def v_rds(
     """
     if 45 < theta or theta < 20:
         warnings.warn("Too high or too low compression field angel")
-    f_ywd = f_ywk/gamma_s
+    f_ywd = f_ywk / gamma_s
     result = (
         (asw / sw)
         * z
@@ -466,12 +466,12 @@ def v_rd_max(
     if approx_lvl == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
 
-    elif approx_lvl == 2:
+    if approx_lvl == 2:
         return v_rd_max_approx2(
             fck, bw, theta, z, E_s, As, loads, alpha, gamma_c
         )
 
-    elif approx_lvl == 3:
+    if approx_lvl == 3:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
     raise ValueError("invalid approx level")
 
@@ -661,7 +661,7 @@ def v_rd_ct(
         approximation level"""
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
-    elif approx_lvl_h == 2:
+    if approx_lvl_h == 2:
         return v_rd_ct_approx2(
             f_ctd,
             i_c,
@@ -772,4 +772,23 @@ def v_rd_ct_approx2(
     )
 
 
-print(v_rd(1, True, 35, 180, 200, 16, 200000, 2000,create_load_dict(0, 2000, 0, 20), 500, 200, 500, 40, 90, 1.5, 1.15))
+print(
+    v_rd(
+        1,
+        True,
+        35,
+        180,
+        200,
+        16,
+        200000,
+        2000,
+        create_load_dict(0, 2000, 0, 20),
+        500,
+        200,
+        500,
+        40,
+        90,
+        1.5,
+        1.15,
+    )
+)
