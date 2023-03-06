@@ -25,7 +25,7 @@ def epsilon_x(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value in compression direction
-    
+
     Returns:
         float: The longitudinal strain"""
 
@@ -76,10 +76,11 @@ def v_rd(
     loads: dict,
     asw: Optional[float],
     sw: Optional[float],
-    f_ywd: Optional[float],
+    f_ywk: Optional[float],
     theta: Optional[float],
     alpha: float = 90.0,
     gamma_c: float = 1.5,
+    gamma_s: float = 1.15,
 ) -> float:
     """Compute the shear resistance of a web or slab.
 
@@ -131,10 +132,10 @@ def v_rd(
             alpha,
             gamma_c,
         )
-
+    f_ywd = f_ywk/gamma_s
     if approx_lvl in (1, 2):
         return min(
-            v_rds(asw, sw, z, f_ywd, theta, alpha),
+            v_rds(asw, sw, z, f_ywk, theta, alpha),
             v_rd_max(
                 approx_lvl,
                 fck,
@@ -393,9 +394,10 @@ def v_rds(
     asw: float,
     sw: float,
     z: float,
-    f_ywd: float,
+    f_ywk: float,
     theta: float = 45.0,
     alpha: float = 90.0,
+    gamma_s: float = 1.15,
 ) -> float:
     """The shear resistans that shear reinforcement gives
 
@@ -413,7 +415,7 @@ def v_rds(
     """
     if 45 < theta or theta < 20:
         warnings.warn("Too high or too low compression field angel")
-
+    f_ywd = f_ywk/gamma_s
     result = (
         (asw / sw)
         * z
@@ -768,3 +770,6 @@ def v_rd_ct_approx2(
     return (i_c * b_wy / S_cy) * (
         ((f_ctd**2) + alpha_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
     )
+
+
+print(v_rd(1, True, 35, 180, 200, 16, 200000, 2000,create_load_dict(0, 2000, 0, 20), 500, 200, 500, 40, 90, 1.5, 1.15))
