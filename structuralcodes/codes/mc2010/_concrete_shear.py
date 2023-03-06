@@ -189,7 +189,7 @@ def v_rd(
             loads,
             asw,
             sw,
-            f_ywd,
+            f_ywk,
             theta,
             alpha,
             gamma_c,
@@ -772,23 +772,4 @@ def v_rd_ct_approx2(
     )
 
 
-print(
-    v_rd(
-        1,
-        True,
-        35,
-        180,
-        200,
-        16,
-        200000,
-        2000,
-        create_load_dict(0, 2000, 0, 20),
-        500,
-        200,
-        500,
-        40,
-        90,
-        1.5,
-        1.15,
-    )
-)
+print(v_rd(2, True, 35, 180, 200, 16, 200000, 2000, create_load_dict(0, 2000, 0, 20), 500, 200, 500, 40, 90, 1.5, 1.15))
