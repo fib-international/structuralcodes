@@ -25,6 +25,7 @@ def epsilon_x(
         delta_E (float): The eccentricity of the axial load due to
         imperfection in the construction with distance in mm as a positive
         value in compression direction
+    
     Returns:
         float: The longitudinal strain"""
 
@@ -42,7 +43,7 @@ def epsilon_x(
 
 
 def eta_fc(fck: float) -> float:
-    """returns eta_fc that is used to determin the strength reduction factor
+    """Returns eta_fc that is used to determin the strength reduction factor
 
     fib Model Code 2010, eq. (7.3-28)
 
