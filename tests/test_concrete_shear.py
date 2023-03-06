@@ -36,17 +36,17 @@ def test_epsilon_x(E_s, As, z, loads, expected):
     '''approx_lvl, fck, bw, theta, z, E_s, As, loads, alpha,
     gamma_c, expected''',
     [
-        (3, 30, 50, 20, 200, 210000, 1000,
+        (1, 30, 50, 20, 200, 210000, 1000,
             create_load_dict(200e6, 50e3, 10e3, 50), 20, 1.5, 70707),
-        (4, 30, 50, 20, 200, 210000, 1000,
+        (2, 30, 50, 20, 200, 210000, 1000,
             create_load_dict(200e6, 50e3, 10e3, 50), 20, 1.5, 39997),
-        (4, 30, 50, 20, 200, 210000, 1000,
+        (2, 30, 50, 20, 200, 210000, 1000,
             create_load_dict(50e6, 10e3, 10e3, 50), 20, 1.5, 55179.55),
-        (4, 30, 50, 45, 200, 210000, 1000,
+        (2, 30, 50, 45, 200, 210000, 1000,
             create_load_dict(0, 0, 0, 50), 20, 1.5, 243586),
-        (4, 30, 50, 45, 200, 210000, 1000, create_load_dict(0, 0, 0, 50),
+        (2, 30, 50, 45, 200, 210000, 1000, create_load_dict(0, 0, 0, 50),
             45, 1.5, 130000),
-        (5, 30, 50, 20, 200, 210000, 1000,
+        (3, 30, 50, 20, 200, 210000, 1000,
             create_load_dict(50e6, 10e3, 10e3, 50), 20, 1.5, 102995),
     ],
 )
@@ -69,9 +69,9 @@ def test_vrd_max(
          48828),
         (2, 35, 140, 300, 32, 21e4, 2000, create_load_dict(40e6, 2e4, 1000, 50), 0, 1.5,
          50375),
-        (5, 35, 200, 300, 32, 21e4, 2000, create_load_dict(40e6, 2e4, 1000, 50), 1.5, 1.5,
+        (3, 35, 200, 300, 32, 21e4, 2000, create_load_dict(40e6, 2e4, 1000, 50), 1.5, 1.5,
          67566),
-        (5, 35, 200, 300, 32, 21e4, 2000, create_load_dict(40e6, 20e6, 1000, 50), 1.5, 1.5,
+        (3, 35, 200, 300, 32, 21e4, 2000, create_load_dict(40e6, 20e6, 1000, 50), 1.5, 1.5,
          0),
     ],
 )
@@ -197,7 +197,7 @@ def test_v_rd_ct(
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, reinforcment, fck, z,
+    '''approx_lvl, with_shear_reinforcment, fck, z,
     bw, dg, E_s, As, loads,
     asw, sw, f_ywd, theta, alpha, gamma_c, expected''',
     [
@@ -205,19 +205,19 @@ def test_v_rd_ct(
             create_load_dict(0, 2000, 0, 20), 0, 0, 434, 40, 90, 1.5, 20863),
         (2, False, 35, 180, 200, 16, 200000, 2000,
             create_load_dict(0, 2000, 0, 20), 0, 0, 434, 40, 90, 1.5, 62336),
-        (3, True, 35, 180, 200, 16, 200000, 2000,
+        (1, True, 35, 180, 200, 16, 200000, 2000,
             create_load_dict(0, 2000, 0, 20), 500, 200, 434, 40, 90, 1.5, 216096),
     ],
 )
 def test_v_rd(
-    approx_lvl, reinforcment, fck, z,
+    approx_lvl, with_shear_reinforcment, fck, z,
     bw, dg, E_s, As, loads,
     asw, sw, f_ywd, theta, alpha, gamma_c, expected
 ):
 
     """Test the tau_edi function."""
     assert math.isclose(_concrete_shear.v_rd(
-        approx_lvl, reinforcment, fck, z,
+        approx_lvl, with_shear_reinforcment, fck, z,
         bw, dg, E_s, As, loads,
         asw, sw, f_ywd, theta, alpha, gamma_c,
     ),

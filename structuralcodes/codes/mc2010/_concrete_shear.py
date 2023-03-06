@@ -116,7 +116,7 @@ def v_rd(
     """
 
     if not with_shear_reinforcment:
-        if not approx_lvl == 1 or approx_lvl == 2:
+        if approx_lvl not in (1, 2):
             warnings.warn(
                 "Choosen approximation is not suited without reinforcment"
             )
@@ -133,7 +133,7 @@ def v_rd(
             gamma_c,
         )
 
-    if approx_lvl in (3, 4):
+    if approx_lvl in (1, 2):
         return min(
             v_rds(asw, sw, z, f_ywd, theta, alpha),
             v_rd_max(
@@ -150,7 +150,7 @@ def v_rd(
             ),
         )
 
-    if approx_lvl == 5:
+    if approx_lvl == 3:
         V_rdc = v_rdc(
             approx_lvl,
             fck,
@@ -178,7 +178,7 @@ def v_rd(
         if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alpha)) < V_rd_max:
             return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alpha)
         return v_rd(
-            4,
+            2,
             with_shear_reinforcment,
             fck,
             z,
@@ -245,7 +245,7 @@ def v_rdc(
 
     elif approx_lvl == 2:
         return v_rdc_approx2(fck, z, bw, dg, E_s, As, loads, gamma_c)
-    elif approx_lvl == 5:
+    elif approx_lvl == 3:
         return v_rdc_approx3(
             approx_lvl,
             fck,
@@ -463,15 +463,15 @@ def v_rd_max(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    if approx_lvl == 3:
+    if approx_lvl == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
 
-    elif approx_lvl == 4:
+    elif approx_lvl == 2:
         return v_rd_max_approx2(
             fck, bw, theta, z, E_s, As, loads, alpha, gamma_c
         )
 
-    elif approx_lvl == 5:
+    elif approx_lvl == 3:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
     raise ValueError("invalid approx level")
 
