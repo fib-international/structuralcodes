@@ -7,6 +7,7 @@ def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
 
     fib Model Code 2010, eq. (7.3-57)
+
     Args:
         V_ed (float): The acting shear force from the columns
         v_prep_d_max (float): The maximum shear force per unit length
@@ -25,8 +26,8 @@ def m_ed(
     l_y: float,
     l_min: float,
     inner: bool,
-    edge_par1: bool,
-    edge_per2: bool,
+    edge_par: bool,
+    edge_per: bool,
     corner: bool,
 ) -> float:
     """The average bending moment acting in the support strip.
@@ -38,10 +39,8 @@ def m_ed(
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
+        l_x (float): The width in x direction that the collumn carries
+        l_y (float): The width in x direction that the collumn carries
         l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
@@ -50,7 +49,7 @@ def m_ed(
         tention reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
 
-    return:
+    Return:
         The bending moment acting in the support strip regardless of the
         position of the column
     """
@@ -59,9 +58,9 @@ def m_ed(
     b_s = min(1.5 * (r_sx * r_sy) ** 0.5, l_min)
     if inner:
         return v_ed * ((1 / 8) + e_u / (2 * b_s))
-    if edge_par1:
+    if edge_par:
         return max(v_ed * ((1 / 8) + e_u / (2 * b_s)), v_ed / 4)
-    if edge_per2:
+    if edge_per:
         return v_ed * ((1 / 8) + e_u / (b_s))
     if corner:
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
@@ -88,9 +87,8 @@ def psi_punching(
     """The rotation of the slab around the supported area
 
     fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77)
-    args:
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
+    
+    Args:
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
@@ -100,10 +98,6 @@ def psi_punching(
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
         l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
@@ -115,7 +109,7 @@ def psi_punching(
         m_pd: (float): The average decompresstion moment due to prestressing
         in MPa
 
-    return:
+    Return:
         psi for the choosen approx level in punching"""
 
     r_s = max(0.22 * l_x, 0.22 * l_y)
@@ -172,8 +166,10 @@ def v_rdc_punching(
     gamma_c: float = 1.5,
 ) -> float:
     """Punching resistance from the concrete
+
     fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63)
-    args:
+
+    Args:
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
@@ -196,7 +192,11 @@ def v_rdc_punching(
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
         in MPa
-    return:
+        v_prep_d_max (float): The maximum shear force per unit length
+        perpendiculerer to the basic control parameter (Figure 7.3-24)
+        gamma_c: Safety factor for concrete
+
+    Return:
         v_rdc for punching with the right approx level"""
 
     k_dg = max(32 / (16 + dg), 0.75)
@@ -256,13 +256,12 @@ def v_rds_punching(
 ):
     """The punching resistance from shear reinforcement
      fib Model Code 2010, eq. (7.3-64) and (7.3-65)
+
     Args:
         e_u (float): The ecentrisity of the result of shear forces
         with respect to the centroid (Figure 7.3-27b)
         b_u (float): The diamter of a circle with same surface as the
         region inside the basic control perimeter (Figure 7.3-27b)
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
@@ -286,8 +285,7 @@ def v_rds_punching(
         kam_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
 
-
-    return: Punching resistance that comes from reinforcement
+    Return: Punching resistance that comes from reinforcement
     """
     k_e = 1 / (1 + e_u / b_u)
     sigma_swd = min(
@@ -350,8 +348,10 @@ def v_rd_max_punching(
     stirrups_compression: bool,
     gamma_c: float = 1.5,
 ):
-    """Finds the maximum value you can have for v_rd
+    """Finds the maximum value you can have for v_rd_punching
+
     fib Model Code 2010, eq. (7.3-68) and (7.3-69)
+
     Args:
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
@@ -359,8 +359,7 @@ def v_rd_max_punching(
         d (float): The mean value of the effective depth in mm
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
-        dg (float): Maximum size of aggregate
-        d_v (float): The effective depth considering support in mm
+        
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
@@ -370,12 +369,19 @@ def v_rd_max_punching(
         tention reinforcement paralell to the edge
         edge_per (bool): Is true only if the column is a edge column with
         tention reinforcement perpendicular to the edge
+        dg (float): Maximum size of aggregate
         corner (bool): Is true only if the column is a corner column
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
         in MPa
+        v_prep_d_max (float): The maximum shear force per unit length
+        perpendiculerer to the basic control parameter (Figure 7.3-24)
+        d_v (float): The effective depth considering support in mm
+        f_ck (float): Characteristic strength in MPa
+        d_head (bool): True if diameter of heads is three times larger than 
         stirrups_compression: (bool): Stirrups with sufficient length at
         compression face, and bent on tension face
+        
 
     Return
         The maximum allowed
@@ -425,8 +431,8 @@ def v_rd_max_punching(
 
 
 def v_rd_punching(
-    e_u,
-    b_u,
+    e_u: float,
+    b_u: float,
     l_x: float,
     l_y: float,
     f_yd: float,
@@ -455,14 +461,14 @@ def v_rd_punching(
     gamma_c: float = 1.5,
 ):
     """The total resistance for punching, both Vrd,c and Vrd,s
+
      fib Model Code 2010, eq. (7.3-60)
+
         Args:
         e_u (float): The ecentrisity of the result of shear forces
         with respect to the centroid (Figure 7.3-27b)
         b_u (float): The diamter of a circle with same surface as the
         region inside the basic control perimeter (Figure 7.3-27b)
-        r_s (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
@@ -470,10 +476,6 @@ def v_rd_punching(
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
-        r_sx (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
-        r_sy (float): Denotes the position where the radial bending moment is
-        zero with respect to support axis in x direction
         l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
@@ -489,8 +491,13 @@ def v_rd_punching(
         f_ywd (float): Design yield strength of the shear reinforcement in Mpa
         kam_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
+        dg (float): Maximum size of aggregate
+        f_ck (float): Characteristic strength in MPa
+        d_v (float): The effective depth considering support in mm
+        v_prep_d_max (float): The maximum shear force per unit length
+        perpendiculerer to the basic control parameter (Figure 7.3-24)
 
-    return: The maximum allowed punching resistance, regardless of
+    Return: The maximum allowed punching resistance, regardless of
     values from v_rdc and v_rds"""
 
     result = min(

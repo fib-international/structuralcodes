@@ -40,7 +40,7 @@ def test_tau_rdi_without_reinforcement(
 ):
 
     """Test the tau_rdi_without_reinforcement function."""
-    assert math.isclose(_concrete_interface_different_casting_times.tau_rdi_without_reinforceent(
+    assert math.isclose(_concrete_interface_different_casting_times.tau_rdi_without_reinforcement(
         c_a, f_ctd, mu, sigma_n, f_ck, f_cd
     ),
         expected, rel_tol=0.001)

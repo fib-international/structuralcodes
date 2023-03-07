@@ -234,6 +234,7 @@ def v_rdc(
         imperfection in the construction with distance in mm as a positive
         value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
 
     Returns:
         float: The design shear resistance attributed to the concrete

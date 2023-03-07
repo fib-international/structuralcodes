@@ -4,7 +4,9 @@ from math import pi, sin, cos
 
 def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
     """Shear at the interface between cocrete cast at different times
+
     fib Model Code 2010, eq. (7.3-49)
+
     Args:
         beta (float): The ratio of longitudinal force in the new concrete and
         the longitudinal force in either compression or tension zone
@@ -17,7 +19,7 @@ def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
     return (beta * v_ed) / (z * b_i)
 
 
-def tau_rdi_without_reinforceent(
+def tau_rdi_without_reinforcement(
     c_a: float,
     f_ctd: float,
     mu: float,
@@ -39,7 +41,7 @@ def tau_rdi_without_reinforceent(
         f_cd (float): The design value of cylinder compressive
         strength concrete in MPa
 
-    return:
+    Return:
         The shear resistance without reinforcement at the intesection with
     different casting time"""
 
@@ -85,7 +87,7 @@ def tau_rdi_with_reinforcement(
         f_cd (float): The design value of cylinder compressive
         strength concrete
 
-    return:
+    Return:
         Shear resistance with reinforcement at intesection with
         different casting time"""
     v = min(0.55 * (30 / f_ck) ** (1 / 3), 0.55)
