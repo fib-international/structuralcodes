@@ -550,6 +550,7 @@ def v_rd_max_approx2(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
+    
     epsilonx = epsilon_x(E_s, As, z, loads)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
         (1 / tan(theta * pi / 180)) ** 2
@@ -603,6 +604,7 @@ def v_rd_max_approx3(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
+    
     epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
 
@@ -659,6 +661,7 @@ def v_rd_ct(
     Return:
         The maximum allowed shear force in a hollow core. Regardless of the
         approximation level"""
+    
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
     if approx_lvl_h == 2:
@@ -706,8 +709,9 @@ def v_rd_ct_approx1(
         failure (Figure: 7.3-12)
         l_bd0 (float): follows 7.13-5
 
-    return:
+    Return:
         Vrd Appoximation 1 for hollow slabs"""
+    
     alpha_l = l_x / (1.2 * l_bd0)
     return (
         0.8
@@ -759,7 +763,7 @@ def v_rd_ct_approx2(
        sigma_cpy: The compressiv stress in the concrete at hight y and l_x
        tau_cpy: The shear stress due to prestress at hight y and l_x
 
-       return:
+       Return:
            The maximum shear force for level 2 approximation"""
 
     alpha_l = l_x / (1.2 * l_bd0)
