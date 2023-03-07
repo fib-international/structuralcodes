@@ -109,7 +109,7 @@ def v_rd(
             value
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
-        f_ywd (float): The design yield strength of the shear reinforcement
+        f_ywk (float): The characteristic yield strength of the shear reinforcement
         theta (float): Inclitantion of the compression stressfield in degrees
         alpha (float): Inclination of the stirrups in degrees
         gamma_c (float): Concrete safety factor
@@ -412,7 +412,7 @@ def v_rds(
         asw (float): Area of shear reinforcement in mm
         sw (float): Senter distance between the shear reinforcement in mm
         z (float): The length to the areasenter of cross-section in mm
-        f_ywd (float): Design yield strength of the shear reinforcement in MPa
+        f_ywk (float): The characteristic yield strength of the shear reinforcement
         theta (float): Inclitaniton of the compression stressfield in degrees
         alpha (float): Inclination of the stirrups
         gamma_s (float): Steel safety factor
