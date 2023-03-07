@@ -87,7 +87,7 @@ def psi_punching(
     """The rotation of the slab around the supported area
 
     fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77)
-    
+
     Args:
         l_x (float): The distance between two columns in x direction
         l_y (float): The distance between two columns in y direction
@@ -250,9 +250,10 @@ def v_rds_punching(
     m_pd: float,
     alpha: float,
     f_bd: float,
-    f_ywd: float,
+    f_ywk: float,
     kam_w: float,
     a_sw: float,
+    gamma_s: float,
 ):
     """The punching resistance from shear reinforcement
      fib Model Code 2010, eq. (7.3-64) and (7.3-65)
@@ -281,12 +282,15 @@ def v_rds_punching(
         in MPa
         alpha (float): Inclination of the stirrups in degrees
         f_bd (float): The design bond strength in MPa
-        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
+        f_ywk (float): Characteristic yield strength of the shear
+        reinforcement in Mpa
         kam_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
+        gamma_s (float): Steels reduction factor
 
     Return: Punching resistance that comes from reinforcement
     """
+    f_ywd = f_ywk / gamma_s
     k_e = 1 / (1 + e_u / b_u)
     sigma_swd = min(
         (
@@ -378,13 +382,13 @@ def v_rd_max_punching(
         perpendiculerer to the basic control parameter (Figure 7.3-24)
         d_v (float): The effective depth considering support in mm
         f_ck (float): Characteristic strength in MPa
-        d_head (bool): True if diameter of heads is three times larger than 
+        d_head (bool): True if diameter of heads is three times larger than
         stirrups_compression: (bool): Stirrups with sufficient length at
         compression face, and bent on tension face
-        
+        gamma_c (float): Concrete reduction factor
 
     Return
-        The maximum allowed
+        The maximum allowed punching resistance
     """
 
     if d_head:
@@ -449,7 +453,7 @@ def v_rd_punching(
     m_pd: float,
     alpha: float,
     f_bd: float,
-    f_ywd: float,
+    f_ywk: float,
     kam_w: float,
     a_sw: float,
     dg: float,
@@ -459,6 +463,7 @@ def v_rd_punching(
     d_head: bool,
     stirrups_compression: bool,
     gamma_c: float = 1.5,
+    gamma_s: float = 1.15,
 ):
     """The total resistance for punching, both Vrd,c and Vrd,s
 
@@ -488,7 +493,8 @@ def v_rd_punching(
         in MPa
         alpha (float): Inclination of the stirrups in degrees
         f_bd (float): The design bond strength in MPa
-        f_ywd (float): Design yield strength of the shear reinforcement in Mpa
+        f_ywk (float): Characteristic yield strength of the shear reinforcement
+        in Mpa
         kam_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
         dg (float): Maximum size of aggregate
@@ -541,9 +547,10 @@ def v_rd_punching(
             m_pd,
             alpha,
             f_bd,
-            f_ywd,
+            f_ywk,
             kam_w,
             a_sw,
+            gamma_s,
         ),
         v_rd_max_punching(
             l_x,
