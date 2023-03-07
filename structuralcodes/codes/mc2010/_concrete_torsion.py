@@ -32,8 +32,10 @@ def t_rd_max(
     gamma_c: float = 1.5,
 ) -> float:
     """The maximum allowed torsion allowed
+
     fib Model Code 2010, eq. (7.3-56)
-    args:
+
+    Args:
         f_ck (float): Characteristic strength in MPa
         gamma_c (float): Concrete safety factor
         d_k (float): Is the diameter in the smalest circel in the cross section
@@ -52,7 +54,7 @@ def t_rd_max(
         imperfection in the construction with distance in mm as a positive
         value
 
-    return:
+    Return:
         The maximum allowed torsion allowed
     """
     t_ef = d_k / 8
@@ -105,11 +107,11 @@ def t_rd(  # pylint: disable=r0801
     fib Model Code 2010, eq. (7.3-56)
 
     Args:
-        approx_lvl (int): Approximation level for steel
+        t_ed (float): The torsion working on the material in Nmm
+        approx_lvl (int): Approximation level choosen for shear resistance
         fck (float): Characteristic strength in MPa
-        z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
+        z: (float): The length to the areasenter of cross-section in mm
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
         Med: (float): The moment working on the material in Nmm
@@ -120,10 +122,11 @@ def t_rd(  # pylint: disable=r0801
         imperfection in the construction with distance in mm as a positive
         value
         alpha (float): Inclination of the stirrups in degrees
-        d_k: Is the diameter in the smalest circel in the cross section
-        a_k: Can be found in figure 7.3-18
+        d_k (float): Is the diameter in the smalest circel in the cross section
+        a_k (float): Can be found in figure 7.3-18
         gamma_c (float): Safety factor
-    return:
+
+    Return:
         Returns a bool that is true if the criteria for torsion and
         shear is fulfilled"""
     check = bool(

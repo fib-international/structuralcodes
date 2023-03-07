@@ -64,7 +64,7 @@ def m_ed(
         return v_ed * ((1 / 8) + e_u / (b_s))
     if corner:
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
-    raise ValueError("the placement is not defined, one needs to be True")
+    raise ValueError("Placement is not defined, only one needs to be True")
 
 
 def psi_punching(
@@ -363,7 +363,6 @@ def v_rd_max_punching(
         d (float): The mean value of the effective depth in mm
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
-
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid

@@ -10,9 +10,9 @@ def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
     Args:
         beta (float): The ratio of longitudinal force in the new concrete and
         the longitudinal force in either compression or tension zone
+        v_ed (float): The shear force at the interface in N
         z (float): The inner lever arm of the composed section in mm
         b_i (float): The width of the inerface in mm
-        v_ed (float): The shear force at the interface in N
 
     return:
         The shear force that should be used at the intersection"""
@@ -34,6 +34,7 @@ def tau_rdi_without_reinforcement(
 
     Args:
         c_a (float): The coefficient for adhesive bond (tabel 7.3-1)
+        f_ctd (float): The design axial tensil strength of concrete
         mu (float): The friction coefficient
         sigma_n (float): The loweat expected compressiv stress from
         normal forces in MPa
