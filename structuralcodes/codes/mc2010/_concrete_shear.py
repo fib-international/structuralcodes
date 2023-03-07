@@ -241,7 +241,6 @@ def v_rdc(
 
     if approx_lvl == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
-
     if approx_lvl == 2:
         return v_rdc_approx2(fck, z, bw, dg, E_s, As, loads, gamma_c)
     if approx_lvl == 3:
@@ -322,6 +321,7 @@ def v_rdc_approx2(
     Returns:
         float: Design shear resistance without shear reinforcement
     """
+
     fsqr = min(fck**0.5, 8)
     epsilonx = epsilon_x(E_s, As, z, loads)
     k_dg = max(32 / (16 + dg), 0.75)
@@ -367,6 +367,7 @@ def v_rdc_approx3(
     Returns:
         float: Design shear resistance without shear reinforcement
     """
+
     fsqr = min(fck**0.5, 8)
     epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
@@ -432,9 +433,9 @@ def v_rd_max(
     bw: float,
     theta: float,
     z: float,
-    E_s: float,
-    As: float,
-    loads: dict,
+    E_s: Optional[float],
+    As: Optional[float],
+    loads: Optional[dict],
     alpha: float = 90,
     gamma_c: float = 1.5,
 ) -> float:
@@ -465,12 +466,10 @@ def v_rd_max(
         approximation level"""
     if approx_lvl == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
-
     if approx_lvl == 2:
         return v_rd_max_approx2(
             fck, bw, theta, z, E_s, As, loads, alpha, gamma_c
         )
-
     if approx_lvl == 3:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
     raise ValueError("invalid approx level")
@@ -550,7 +549,7 @@ def v_rd_max_approx2(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    
+
     epsilonx = epsilon_x(E_s, As, z, loads)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
         (1 / tan(theta * pi / 180)) ** 2
@@ -604,7 +603,7 @@ def v_rd_max_approx3(
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
-    
+
     epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
 
@@ -661,7 +660,6 @@ def v_rd_ct(
     Return:
         The maximum allowed shear force in a hollow core. Regardless of the
         approximation level"""
-    
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
     if approx_lvl_h == 2:
@@ -711,7 +709,7 @@ def v_rd_ct_approx1(
 
     Return:
         Vrd Appoximation 1 for hollow slabs"""
-    
+
     alpha_l = l_x / (1.2 * l_bd0)
     return (
         0.8
