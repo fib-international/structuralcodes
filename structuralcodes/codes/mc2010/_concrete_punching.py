@@ -363,7 +363,7 @@ def v_rd_max_punching(
         d (float): The mean value of the effective depth in mm
         e_s (float): The E_s-modulus for steel in Mpa
         approx_lvl_p (float): The approx level for punching
-        
+
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
