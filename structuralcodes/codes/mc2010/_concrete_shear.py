@@ -10,21 +10,22 @@ def epsilon_x(
     z: float,
     loads: dict,
 ) -> float:
-    """The maximum allowed shear resistance
+    """Calculate the longitudinal strain from a distance z
 
     fib Model Code 2010, eq. (7.3-16)
 
     Args:
         E (float): The E-modulus to the material in MPa
-        As (Float): The cross-section area of reinforcement in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
+        As (float): The cross-section area of reinforcement in mm^2
         z: (float): The effective shear depth in mm
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value in compression direction
+        loads (dictionary) The given loads in a dictionary:
+            Med (Float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value in compression direction
 
     Returns:
         float: The longitudinal strain"""
@@ -43,7 +44,7 @@ def epsilon_x(
 
 
 def eta_fc(fck: float) -> float:
-    """Returns eta_fc that is used to determin the strength reduction factor
+    """Calculating eta_fc to determin the strength reduction factor
 
     fib Model Code 2010, eq. (7.3-28)
 
@@ -51,8 +52,9 @@ def eta_fc(fck: float) -> float:
         fck (float): Characteristic strength in MPa
 
     Returns:
-        (float): eta_fc in the strength reduction factor
+        float: eta_fc in the strength reduction factor
     """
+
     return min((30 / fck) ** (1 / 3), 1)
 
 
@@ -88,28 +90,30 @@ def v_rd(
 
     Args:
         approx_lvl (int): Approximation level for concrete
-        reinforcment (bool): Shear reinforced concrete or no shear
+        with_shear_reinforcment (bool): Shear reinforced concrete or no shear
         reinforcement
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        z: (float): distances between the centerline of the
+        z (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
-        bw: (float): Thickness of web in cross section in mm
-        dg: (float): Maximum size of aggregate in mm
-        E_s: (float): The E_s-modulus to the materialb in MPa
-        As: (float): The cross-section area of reinforcement in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
-        alpha (float): Inclination of the stirrups in degrees
+        bw (float): Thickness of web in cross section in mm
+        dg (float): Maximum size of aggregate in mm
+        E_s (float): The E_s-modulus to the material in MPa
+        As (float): The cross-section area of reinforcement in mm^2
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         asw (float): Area of shear reinforcement in mm^2
         sw (float): Senter distance between the shear reinforcement in mm
         f_ywd (float): The design yield strength of the shear reinforcement
         theta (float): Inclitantion of the compression stressfield in degrees
+        alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
+        gamma_s (float): Steel safety factor
 
     Returns:
         float: Design shear resistance
@@ -210,30 +214,29 @@ def v_rdc(
     alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
-    """The design shear resistance of a web or a slab without
-    shear reinforcement.
+    """Calculate shear resistance of a web / slab without shear reinforcement.
 
     fib Model Code 2010, Eq. (7.3-17)
 
     Args:
         approx_lvl (int): Approximation level for concrete
-        with_shear_reinforcment (bool): Shear reinforced concrete or no shear
-        reinforcement
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section in mm
-        dg: (float): Maximum size of aggregate
-        E_s: (float): The E_s-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        z (float): The length to the areasenter of cross-section in mm
+        bw (float): Thickness of web in cross section in mm
+        dg (float): Maximum size of aggregate
+        E_s (float): The E_s-modulus to the materialb in MPa
+        As (float): The cross-section area in mm^2
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
+
 
     Returns:
         float: The design shear resistance attributed to the concrete
@@ -264,7 +267,7 @@ def v_rdc_approx1(
     bw: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """Gives the shear resistance for concrete with approx level 1
+    """Calculate shear resistance for concrete with approx level 1
 
     For members with no segnificant axal load, with fyk <= 600 Mpa,
     fck <= 70 Mpa and with maximum aggrigate size of not less then 10mm.
@@ -274,8 +277,8 @@ def v_rdc_approx1(
     Args:
         fck (float): The characteristic compressive strength in MPa.
         z (float): The length to the areasenter of cross-section in mm
-        gamma_c: Safety factor for concrete
-        bw: Thickness of web in cross section
+        bw (float): Thickness of web in cross section
+        gamma_c (float): Safety factor for concrete
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -295,7 +298,7 @@ def v_rdc_approx2(
     loads: dict,
     gamma_c: float = 1.5,
 ) -> float:
-    """Gives the shear resistance for concrete with approx level 2
+    """Calculate shear resistance for concrete with approx level 2
 
     In higher strength concrete and light-weight aggregate concretes,
     the fracture surface may go through the aggregate particles,
@@ -310,12 +313,14 @@ def v_rdc_approx2(
         dg (float): Maximum size of aggregate
         E_s (float): The E_s-modulus to the materialb in MPa
         As (float): The cross-section area in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned (float): The normal force working on the material in N
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         gamma_c (float): Concrete safety factor
 
     Returns:
@@ -340,7 +345,7 @@ def v_rdc_approx3(
     alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
-    """Gives the shear resistance for concrete with approx level 3
+    """Calculate shear resistance for concrete with approx level 3
 
     The design shear resistance of a web or a slab without
     shear reinforcement.
@@ -349,20 +354,21 @@ def v_rdc_approx3(
 
     Args:
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
         z: (float): The length to the areasenter of cross-section in mm
         bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
+
 
     Returns:
         float: Design shear resistance without shear reinforcement
@@ -406,10 +412,12 @@ def v_rds(
     Args:
         asw (float): Area of shear reinforcement in mm
         sw (float): Senter distance between the shear reinforcement in mm
-        z: (float): The length to the areasenter of cross-section in mm
+        z (float): The length to the areasenter of cross-section in mm
         f_ywd (float): Design yield strength of the shear reinforcement in MPa
         theta (float): Inclitaniton of the compression stressfield in degrees
         alpha (float): Inclination of the stirrups
+        gamma_s (float): Steel safety factor
+
 
     Returns:
         The design shear resistance provided by shear reinforcement
@@ -446,24 +454,26 @@ def v_rd_max(
     Args:
         approx_lvl (int): Approximation level for steel
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
-        E_s: (float): The E_s-modulus to the materialb in MPa
-        As: (float): The cross-section area in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        bw (float): Thickness of web in cross section
+        theta (float): Inclitaniton of the compression stressfield in degrees
+        z (float): The length to the areasenter of cross-section in mm
+        E_s (float): The E_s-modulus to the materialb in MPa
+        As (float): The cross-section area in mm^2
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
 
     Returns:
         float: The maximum allowed shear resistance regardless of
         approximation level"""
+
     if approx_lvl == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
     if approx_lvl == 2:
@@ -489,17 +499,14 @@ def v_rd_max_approx1(
 
     Args:
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
+        bw (float): Thickness of web in cross section
+        theta (float): Inclitaniton of the compression stressfield in degrees
         z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
 
     Returns:
-        float: The maximum allowed shear resistance regardless of
-        approximation level"""
+        float: Maximum allowed shear resistance for approximation level 1"""
 
     return (
         0.55
@@ -531,24 +538,24 @@ def v_rd_max_approx2(
 
     Args:
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
-        E_s: (float): The E_s-modulus to the materialb in MPa
-        As: (float): The cross-section area of reinforcement in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        bw (float): Thickness of web in cross section
+        theta (float): Inclitaniton of the compression stressfield in degrees
+        z (float): The length to the areasenter of cross-section in mm
+        E_s (float): The E_s-modulus to the materialb in MPa
+        As (float): The cross-section area of reinforcement in mm^2
+        loads (dictionary): The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
 
     Returns:
-        float: The maximum allowed shear resistance regardless of
-        approximation level"""
+        float: Maximum allowed shear resistance for approximation level 2"""
 
     epsilonx = epsilon_x(E_s, As, z, loads)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
@@ -585,24 +592,23 @@ def v_rd_max_approx3(
 
     Args:
         fck (float): Characteristic strength in MPa
-        gamma_c (float): Concrete safety factor
-        z: (float): The length to the areasenter of cross-section in mm
-        bw: (float): Thickness of web in cross section
-        dg: (float): Maximum size of aggregate
-        E_s: (float): The E_s-modulus to the materialb in MPa
-        As: (float): The cross-section area of reinforcement in mm^2
-        Med (Float): The positive moment working on the material in Nmm
-        Ved (float): The positive shear force working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        bw (float): Thickness of web in cross section
+        z (float): The length to the areasenter of cross-section in mm
+        E_s (float): The E_s-modulus to the materialb in MPa
+        As (float): The cross-section area of reinforcement in mm^2
+        loads (dictionary): The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         alpha (float): Inclination of the stirrups in degrees
+        gamma_c (float): Concrete safety factor
 
     Returns:
-        float: The maximum allowed shear resistance regardless of
-        approximation level"""
+        float: Maximum allowed shear resistance for approximation level 3"""
 
     epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
@@ -636,10 +642,10 @@ def v_rd_ct(
     fib Model Code 2010, eq. (7.3-44) and (7.3-45)
 
     Args:
-        approx_lvl_h (int): What approximation level we want for hollow core
+        approx_lvl_h (int): approximationlevel for hollow core
         f_ctd (float): The design value of concrete axial tensile strength
         i_c (float): Second moment of area in mm^4
-        s_c (float): First moment of area, abouve and about the
+        s_c (float): First moment of area, above and about the
         centriodal axis in mm^3
         b_w (float): The width of the cross-section at the centroidal axis
         sigma_cp (float): The compressive stress at centroidal axis
@@ -660,6 +666,7 @@ def v_rd_ct(
     Return:
         The maximum allowed shear force in a hollow core. Regardless of the
         approximation level"""
+
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
     if approx_lvl_h == 2:
@@ -772,6 +779,3 @@ def v_rd_ct_approx2(
     return (i_c * b_wy / S_cy) * (
         ((f_ctd**2) + alpha_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
     )
-
-
-print(v_rd(2, True, 35, 180, 200, 16, 200000, 2000, create_load_dict(0, 2000, 0, 20), 500, 200, 500, 40, 90, 1.5, 1.15))
