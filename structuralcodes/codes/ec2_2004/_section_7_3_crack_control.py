@@ -8,7 +8,7 @@ import scipy.interpolate
 
 
 def w_max(exposure_class: str, load_combination: str) -> float:
-    """Computes the recomended value of the maximum crack width.
+    """Computes the recommended value of the maximum crack width.
 
     EUROCODE 2 1992-1-1:2004, Table (7.1N)
 
@@ -68,7 +68,7 @@ def As_min(
 
     Args:
         A_ct (float): is the area of concrete within the tensile zone in mm2.
-            The tensile zone is that parg of the section which is calculated
+            The tensile zone is that part of the section which is calculated
             to be in tension just before the formation of the first crack.
         sigma_s (float): is the absolute value of the maximum stress in MPa
             permitted in the reinforcement immediately after the formation
@@ -82,8 +82,7 @@ def As_min(
             is expected earlier than 28 days.
         _k (float): is the coefficient which allow for the effect of
             non-uniform self-equilibrating stresses, which lead to a
-            reduction of restraint forces. Use 'k_crack_min_steel_area'
-            to compute it
+            reduction of restraint forces.
             k=1 for webs w<=300mm or flanges widths less than 300mm
             k=0.65 for webs w>=800mm or flanges with widths greater than 800mm
             Intermediate values may be interpolated.
@@ -137,14 +136,14 @@ def k(h: float) -> float:
         return 1
     if h < 800:
         interpol = scipy.interpolate.interp1d((300, 800), (1, 0.65))
-        return (float)(interpol(h))
+        return interpol(h)
     return 0.65
 
 
 def kc_tension() -> float:
     """Computes the coefficient which takes account of the stress
     distribution within the section immediately prior to cracking and
-    the change of the lever arm in pure dtension.
+    the change of the lever arm in pure tension.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.1)
 
@@ -313,7 +312,7 @@ def As_min_p(
             to be in tension just before the formation of the first crack.
         sigma_s (float): is the absolute value of the maximum stress in MPa
             permitted in the reinforcement immediately after the formation
-            of the crack. This may be taken as theyield strength of the
+            of the crack. This may be taken as the yield strength of the
             reinforcement, fyk. A lower value may, however, be needed to
             satisfy the crack width limits according to the maximum
             bar size of spacing (see 7.3.3 (2)).
@@ -323,8 +322,7 @@ def As_min_p(
             is expected earlier than 28 days.
         _k (float): is the coefficient which allow for the effect of
             non-uniform self-equilibrating stresses, which lead to a
-            reduction of restraint forces. Use 'k_crack_min_steel_area'
-            to compute it
+            reduction of restraint forces.
             k=1 for webs w<=300mm or flanges widths less than 300mm
             k=0.65 for webs w>=800mm or flanges with widths greater than 800mm
             Intermediate values may be interpolated.
@@ -337,7 +335,7 @@ def As_min_p(
             Equal to 0 if only prestressing is used in control cracking
         phi_p (float): equivalent diameter in mm of tendon acoording
             to 6.8.2
-        chi (float): ratio of bond strength of prestressing and reinforcing
+        xi (float): ratio of bond strength of prestressing and reinforcing
             steel, according to Table 6.2 in 6.8.2
         delta_s (float): stress variation in MPa in prestressing tendons
             from the state of zero strain of the concrete at the same level
@@ -611,7 +609,7 @@ def esm_ecm(
 
     Args:
         sigma_s (float): is the stress in MPa in the tension reinforcement
-            assuming a cracked section. FOr pretensioned members, s_steel may
+            assuming a cracked section. For pretensioned members, s_steel may
             be replaced by increment of s_steel stress variation in
             prestressing tendons from the state of zero strain of the
             concrete at the same level.
@@ -620,10 +618,10 @@ def esm_ecm(
             Eq. (7.10)
         _kt (float): is a factor dependent on the load duration
         fct_eff (float): is the mean value of the tensile strength in MPa
-            of the concrete effectvie at the time when the cracks may
+            of the concrete effective at the time when the cracks may
             first be expected to occur: fct_eff=fctm or fctm(t) if
             crack is expected earlier than 28 days.
-        Es: steel elastic mudulus in MPa
+        Es: steel elastic modulus in MPa
 
     Returns:
         float: the strain difference between concrete and steel
@@ -664,7 +662,7 @@ def w_spacing(c: float, phi: float) -> float:
     Args:
         c (float): cover of  the longitudinal reinforcement in mm
         phi (float): is the bar diameter in mm. Where mixed bar diameters
-            used, then it should be replaced for an equivalente bar diameter.
+            used, then it should be replaced for an equivalent bar diameter.
 
     Returns:
         float: threshold distance in mm
@@ -728,23 +726,23 @@ def k1(bond_type: str) -> float:
         bond_type (str): the bond property of the reinforcement.
         Possible values:
             - 'bond': for high bond bars
-            - 'plane': for bars with an effectively plain surface (e.g.
+            - 'plain': for bars with an effectively plain surface (e.g.
             prestressing tendons)
 
     Returns:
         (float): value of the k1 coefficient
 
     Raises:
-        ValueError: if bond_type is neither 'bond' nor 'plane'
+        ValueError: if bond_type is neither 'bond' nor 'plain'
         TypeError: if bond_type is not an str
     """
     if not isinstance(bond_type, str):
         raise TypeError(f'bond_type={bond_type} is not an str')
 
     bond_type = bond_type.lower().strip()
-    if bond_type != 'bond' and bond_type != 'plane':
+    if bond_type not in ('bond', 'plain'):
         raise ValueError(
-            f'bond_type={bond_type} can only have "bond" or "plane" as values'
+            f'bond_type={bond_type} can only have "bond" or "plain" as values'
         )
 
     return 0.8 if bond_type == 'bond' else 1.6
@@ -758,8 +756,8 @@ def k2(epsilon_r: float) -> float:
 
     Args:
         epsilon_r (float): ratio epsilon_2/epsilon_1 where epsilon_1 is
-            thre greater and epsilon_2 is the lesser strain at the boundaries
-            of the section considererd, assessed on the basis of a cracked
+            the greater and epsilon_2 is the lesser strain at the boundaries
+            of the section considered, assessed on the basis of a cracked
             section. epsilon_r=0 for bending and epsilon_r=1 for pure tension.
 
     Returns:
@@ -798,8 +796,8 @@ def sr_max_close(
     _rho_p_eff: float,
     _k1: float,
     _k2: float,
-    _k3: float,
-    _k4: float,
+    _k3: t.Optional[float] = None,
+    _k4: t.Optional[float] = None,
 ) -> float:
     """Computes the maximum crack spacing in cases where bonded reinforcement
     is fixed at reasonably close centres within the tension zone
@@ -810,15 +808,17 @@ def sr_max_close(
     Args:
         c (float): is the cover in mm of the longitudinal reinforcement
         phi (float): is the bar diameter in mm. Where mixed bar diameters
-            used, then it should be replaced for an equivalente bar diameter.
+            used, then it should be replaced for an equivalent bar diameter.
         _rho_p_eff (float): effective bond ratio between areas given by the
             Eq. (7.10)
         _k1 (float): coefficient that takes into account the bound properties
             of the bonded reinforcement
         _k2 (float): coefficient that takes into account the distribution of
             of the strain
-        _k3 (float): coefficient from the National Annex
-        _k4 (float): coefficient from the National Annex
+        _k3 (float, optional): coefficient from the National Annex.
+            If not specified then _k3=3.4
+        _k4 (float): coefficient from the National Annex.
+            If not specified then _k4=0.425
 
     Returns:
         float: the maximum crack spaing in mm.
@@ -829,6 +829,11 @@ def sr_max_close(
         ValueError: if _k1 is not 0.8 or 1.6
         ValueError: if _k2 is not between 0.5 and 1.0
     """
+    if _k3 is None:
+        _k3 = k3()
+    if _k4 is None:
+        _k4 = k4()
+
     if c < 0:
         raise ValueError(f'c={c} cannot be less than zero')
     if phi < 0:
@@ -839,7 +844,7 @@ def sr_max_close(
         raise ValueError(f'_k3={_k3} cannot be less than zero')
     if _k4 < 0:
         raise ValueError(f'_k4={_k4} cannot be less than zero')
-    if _k1 != 0.8 and _k1 != 1.6:
+    if _k1 not in (0.8, 1.6):
         raise ValueError(f'_k1={_k1} can only take as values 0.8 and 1.6')
     if _k2 < 0.5 or _k2 > 1:
         raise ValueError(f'_k2={_k2} is not between 0.5 and 1.0')
@@ -849,8 +854,8 @@ def sr_max_close(
 
 def sr_max_far(h: float, x: float) -> float:
     """Computes the maximum crack spacing in cases where bonded reinforcement
-    is fixed at reasonably close centres within the tension zone
-    (w_spacing>5(c+phi/2)).
+    exceeds (w_spacing>5(c+phi/2)) or where there is no bonded reinforcement
+    at all.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.14)
 

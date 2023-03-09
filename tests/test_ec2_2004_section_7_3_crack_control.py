@@ -535,7 +535,7 @@ def test_phi_eq_raises_expected_values(n1, n2, phi1, phi2, exception_type):
 
 @pytest.mark.parametrize(
     'bond_type, expected',
-    [('bond', 0.8), ('plane', 1.6), ('BOND ', 0.8), (' PLANE ', 1.6)],
+    [('bond', 0.8), ('PLAIN', 1.6), ('BOND ', 0.8), (' PLAIN ', 1.6)],
 )
 def test_k1_returns_expected_values(bond_type, expected):
     """Test k1 returns expected values"""
@@ -588,6 +588,9 @@ def test_k4_returns_expected_values():
         (20, 8, 5, 0.8, 0.5, 3.4, 0.425, 68.272),
         (30, 15, 0.2, 1.6, 0.5, 3.4, 0.425, 127.5),
         (45, 20, 0.4, 0.8, 1, 3.4, 0.425, 170),
+        (45, 20, 0.4, 0.8, 1, 3.4, None, 170),
+        (45, 20, 0.4, 0.8, 1, None, 0.425, 170),
+        (45, 20, 0.4, 0.8, 1, None, None, 170),
     ],
 )
 def test_sr_max_close(c, phi, rho_p_eff, k1, k2, k3, k4, expected):
