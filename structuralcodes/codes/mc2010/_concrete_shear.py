@@ -270,7 +270,7 @@ def v_rdc_approx1(
     """Calculate shear resistance for concrete with approx level 1
 
     For members with no segnificant axal load, with fyk <= 600 Mpa,
-    fck <= 70 Mpa and with maximum aggrigate size of not less then 10mm.
+    fck <= 70 Mpa and with maximum aggrigate size of no less then 10mm.
 
     fib Model Code 2010, Eq. (7.3-17) and (7.3-19)
 
