@@ -582,7 +582,7 @@ def kt(load_type: str) -> float:
         raise TypeError
 
     load_type = load_type.lower().strip()
-    if load_type != 'short' and load_type != 'long':
+    if load_type not in ('short', 'long'):
         raise ValueError(
             f'load_type={load_type} can only have "short" or "long" as a value'
         )
@@ -641,7 +641,7 @@ def esm_ecm(
         raise ValueError(f'fct_eff={fct_eff} cannot be less than 0')
     if Es < 0:
         raise ValueError(f'Es={Es} cannot be less than 0')
-    if _kt != 0.6 and _kt != 0.4:
+    if _kt not in (0.6, 0.4):
         raise ValueError(f'_kt={_kt} can only take as values 0.4 and 0.6')
 
     min_val = 0.6 * sigma_s / Es
