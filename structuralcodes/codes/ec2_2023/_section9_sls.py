@@ -4,7 +4,7 @@
 def Ec_eff(fcm: float, phi: float, kE: float = 9500) -> float:
     """Returns de Effective modulus of elasticity from fcm and phi
 
-    FprEN 1992-1-1:2022, Eq. (9.1)
+    FprEN 1992-1-1:2023, Eq. (9.1)
 
     Args:
         fcm (float): The mean compressive strength in MPa.
@@ -25,7 +25,7 @@ def As_min_y(
     """Returns the minimum reinforcement to avoid yielding of steel. Box or T
        sections are to be divided into rectangles
 
-    FprEN 1992-1-1:2022, Eq. (9.4)
+    FprEN 1992-1-1:2023, Eq. (9.4)
     Eq. (9.2) and (9.3) are particular cases of the general equation
     Eq. (9.2) is valid for pure bending, hence NEd=0
     Eq. (9.3) is valid for pure tension. The general expression has an upper
@@ -65,7 +65,7 @@ def kh(b: float, h: float) -> float:
     account for imposed restrained deformations due
      to shrinkage
 
-    FprEN 1992-1-1:2022, Eq. (9.5)
+    FprEN 1992-1-1:2023, Eq. (9.5)
 
     Args:
         b (float): width of the rectangle in meters
@@ -74,3 +74,24 @@ def kh(b: float, h: float) -> float:
     Returns:
         Factor kh which applies to the tensile resistance of concrete"""
     return min(max(0.8 - 0.6 * (min(b, h) - 0.3), 0.5), 0.8)
+
+
+def k_1_r(h: float, x: float, ay: float) -> float:
+    """Return k1/r factor to account for increase in crack width due to 
+    curvature of the section in bending
+
+    FprEN 1992-1-1:2023 Eq. (9.9)
+
+    Args:
+        h (float): height of the section in consistent units (e.g. meters)
+        x (float): distance from most compressed fibre to neutra axis in 
+        consistent units (e.g. meters)
+        ay: cover to centre of tensioned reinforcement closest to most 
+        tensioned face in consistent units 
+        (e.g. meters)
+
+    Returs:
+        Factor k1/r (non-dimensional)"""
+    return (h-x)/(h-ay-x)
+
+def epssm_epscm()

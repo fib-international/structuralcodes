@@ -79,3 +79,25 @@ def test_kh(test_input1, test_input2, expected):
     assert math.isclose(
         _section9_sls.kh(test_input1, test_input2), expected, rel_tol=0.05
     )
+
+
+@pytest.mark.parametrize(
+    'test_input1, test_input2, test_input3, expected',
+    [
+        (200, 30, 45,  1.36),
+        (500, 120, 45, 1.134),
+        (1000, 200, 45, 1.06),
+        (200, 30, 50, 1.417),
+        (500, 120, 55, 1.169),
+        (1000, 200, 82, 1.114),
+        (300, 30, 58, 1.274),
+        (450, 30, 32, 1.082),
+        (650, 110, 45, 1.091),
+    ],
+)
+def test_k_1_r(test_input1, test_input2, test_input3, expected):
+    """Test the k1/r function."""
+    assert math.isclose(
+        _section9_sls.k_1_r(test_input1, test_input2, test_input3), expected,
+        rel_tol=0.05
+    )
