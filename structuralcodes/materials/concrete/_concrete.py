@@ -1,7 +1,8 @@
 """Core implementation of the concrete material"""
 import abc
 import typing as t
-from structuralcodes.core.base import Material
+from structuralcodes.core.base import Material, ConstitutiveLaw
+from structuralcodes.core.constitutive_laws import ParabolaRectangle
 
 
 class Concrete(Material):
@@ -9,6 +10,7 @@ class Concrete(Material):
 
     _fck: float
     _existing: bool
+    _stressStrain: ConstitutiveLaw
 
     def __init__(
         self,
@@ -27,6 +29,9 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
+        self._stressStrain = ParabolaRectangle(
+            self._fck, name=name + '_ConstLaw'
+        )
 
     @property
     def fck(self) -> float:
@@ -43,3 +48,19 @@ class Concrete(Material):
     def _reset_attributes(self):
         """Each concrete should define its own _reset_attributes method
         This is because fck setting, reset the object arguments"""
+
+    @property
+    def stressStrain(self) -> ConstitutiveLaw:
+        """Returns the constitutive law object"""
+        return self._stressStrain
+
+    @stressStrain.setter
+    def stressStrain(self, stressStrain: ConstitutiveLaw) -> None:
+        """Setter for constitutive law"""
+        if 'concrete' in stressStrain.__materials__:
+            self._stressStrain = stressStrain
+        else:
+            raise ValueError(
+                'The constitutive law selected is not suitable '
+                'for being used with a concrete material.'
+            )
