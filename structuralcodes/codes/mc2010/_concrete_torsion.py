@@ -42,17 +42,20 @@ def t_rd_max(
         a_k: Can be found in figure 7.3-18
         theta (float): Inclitaniton of the compression stressfield in degrees
         approx_lvl (int): Approximation method for cocrete with reinforcement
-        E_s (float): The E_s-modulus to the materialb in MPa
-        As (float): The cross-section reinforcement in mm^2
-        Med (float): The moment working on the material in Nmm
-        Ved (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
         z (float): distances between the centerline of the
         compressive chord and the reinforcement in mm
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
+        E_s (float): The E_s-modulus to the materialb in MPa
+        As (float): The cross-section reinforcement in mm^2
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
+        gamma_c (float): Concrete safety factor
+
 
     Return:
         The maximum allowed torsion allowed
@@ -111,19 +114,21 @@ def t_rd(  # pylint: disable=r0801
         approx_lvl (int): Approximation level choosen for shear resistance
         fck (float): Characteristic strength in MPa
         bw: (float): Thickness of web in cross section
+        theta (float): Inclitaniton of the compression stressfield in degrees
         z: (float): The length to the areasenter of cross-section in mm
         E_s: (float): The E_s-modulus to the materialb in MPa
         As: (float): The cross-section area in mm^2
-        Med: (float): The moment working on the material in Nmm
-        Ved: (float): The shear working on the material in N
-        Ned: (float): The normal force working on the material in N with
-        positive sign for tension and negative sign for compression
-        delta_E (float): The eccentricity of the axial load due to
-        imperfection in the construction with distance in mm as a positive
-        value
-        alpha (float): Inclination of the stirrups in degrees
+        loads (dictionary) The given loads in a dictionary:
+            Med (float): The positive moment working on the material in Nmm
+            Ved (float): The positive shear force working on the material in N
+            Ned (float): The normal force working on the material in N with
+            positive sign for tension and negative sign for compression
+            delta_E (float): The eccentricity of the axial load due to
+            imperfection in the construction with distance in mm as a positive
+            value
         d_k (float): Is the diameter in the smalest circel in the cross section
         a_k (float): Can be found in figure 7.3-18
+        alpha (float): Inclination of the stirrups in degrees
         gamma_c (float): Safety factor
 
     Return:
