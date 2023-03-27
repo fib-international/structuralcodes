@@ -63,6 +63,7 @@ def create_load_dict(
 ) -> dict:
     """returns dictionary assosiated with loads"""
     dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
+
     return dictionary
 
 
@@ -125,6 +126,7 @@ def v_rd(
             warnings.warn(
                 "Choosen approximation is not suited without reinforcment"
             )
+
         return v_rdc(
             approx_lvl,
             fck,
@@ -137,7 +139,9 @@ def v_rd(
             alpha,
             gamma_c,
         )
+
     f_ywd = f_ywk / gamma_s
+
     if approx_lvl in (1, 2):
         return min(
             v_rds(asw, sw, z, f_ywk, theta, alpha),
@@ -168,6 +172,7 @@ def v_rd(
             alpha,
             gamma_c,
         )
+
         V_rd_max = v_rd_max(
             approx_lvl,
             fck,
@@ -180,8 +185,10 @@ def v_rd(
             alpha,
             gamma_c,
         )
+
         if (V_rdc + v_rds(asw, sw, z, f_ywd, theta, alpha)) < V_rd_max:
             return V_rdc + v_rds(asw, sw, z, f_ywd, theta, alpha)
+
         return v_rd(
             2,
             with_shear_reinforcment,
@@ -244,8 +251,10 @@ def v_rdc(
 
     if approx_lvl == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
+
     if approx_lvl == 2:
         return v_rdc_approx2(fck, z, bw, dg, E_s, As, loads, gamma_c)
+
     if approx_lvl == 3:
         return v_rdc_approx3(
             approx_lvl,
@@ -258,6 +267,7 @@ def v_rdc(
             alpha,
             gamma_c,
         )
+
     raise ValueError("Invalid approx level")
 
 
@@ -270,7 +280,7 @@ def v_rdc_approx1(
     """Calculate shear resistance for concrete with approx level 1
 
     For members with no segnificant axal load, with fyk <= 600 Mpa,
-    fck <= 70 Mpa and with maximum aggrigate size of not less then 10mm.
+    fck <= 70 Mpa and with maximum aggrigate size of no less then 10mm.
 
     fib Model Code 2010, Eq. (7.3-17) and (7.3-19)
 
@@ -285,6 +295,7 @@ def v_rdc_approx1(
     """
     fsqr = min(fck**0.5, 8)
     kv = 180 / (1000 + 1.25 * z)
+
     return (kv * fsqr * z * bw) / gamma_c
 
 
@@ -333,6 +344,7 @@ def v_rdc_approx2(
     epsilonx = epsilon_x(E_s, As, z, loads)
     k_dg = max(32 / (16 + dg), 0.75)
     kv = (0.4 / (1 + 1500 * epsilonx)) * (1300 / (1000 + k_dg * z))
+
     return (kv * fsqr * z * bw) / gamma_c
 
 
@@ -435,6 +447,7 @@ def v_rds(
         * ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
         * sin(alpha * pi / 180)
     )
+
     return result
 
 
@@ -479,12 +492,15 @@ def v_rd_max(
 
     if approx_lvl == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
+
     if approx_lvl == 2:
         return v_rd_max_approx2(
             fck, bw, theta, z, E_s, As, loads, alpha, gamma_c
         )
+
     if approx_lvl == 3:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
+
     raise ValueError("invalid approx level")
 
 
@@ -672,6 +688,7 @@ def v_rd_ct(
 
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
+
     if approx_lvl_h == 2:
         return v_rd_ct_approx2(
             f_ctd,
@@ -688,6 +705,7 @@ def v_rd_ct(
             f_p_lx,
             f_p_lx_dx,
         )
+
     raise ValueError("Invalid approx level")
 
 
@@ -721,6 +739,7 @@ def v_rd_ct_approx1(
         Vrd Appoximation 1 for hollow slabs"""
 
     alpha_l = l_x / (1.2 * l_bd0)
+
     return (
         0.8
         * ((i_c * b_w) / s_c)
@@ -779,6 +798,7 @@ def v_rd_ct_approx2(
     tau_cpy = (
         (1 / b_wy) * ((A_cy / A_c) - (S_cy * (y_c - y_pt)) / i_c) * f_p_lx_dx
     )
+
     return (i_c * b_wy / S_cy) * (
         ((f_ctd**2) + alpha_l * sigma_cpy * f_ctd) ** 0.5 - tau_cpy
     )
