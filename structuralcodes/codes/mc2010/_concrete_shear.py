@@ -327,6 +327,8 @@ def v_rdc_approx2(
         float: Design shear resistance without shear reinforcement
     """
 
+    if fck > 70:
+        dg = 0
     fsqr = min(fck**0.5, 8)
     epsilonx = epsilon_x(E_s, As, z, loads)
     k_dg = max(32 / (16 + dg), 0.75)
