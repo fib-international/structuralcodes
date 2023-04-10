@@ -590,7 +590,7 @@ def kt(load_type: str) -> float:
     return 0.6 if load_type == 'short' else 0.4
 
 
-def esm_ecm(
+def eps_sm_eps_cm(
     sigma_s: float,
     _alpha_e: float,
     _rho_p_eff: float,
@@ -598,12 +598,12 @@ def esm_ecm(
     fct_eff: float,
     Es: float,
 ) -> float:
-    """Returns the strain difference (esm - ecm) needed to compute the crack
-    width. esm is the mean strain in the reinforcement under the relevant
-    combination of loads of imposed deformations and taking into account the
-    effects of tension stiffening. Only the additional tensile strain beyond
-    the state of zero strain of the concrete is considered. ecm is the mean
-    strain in the concrete between the cracks.
+    """Returns the strain difference (epsilon_sm - epsilon_cm) needed to
+    compute the crack width. esm is the mean strain in the reinforcement under
+    the relevant combination of loads of imposed deformations and taking into
+    account the effects of tension stiffening. Only the additional tensile
+    strain beyond the state of zero strain of the concrete is considered.
+    epsilon_cm is the mean strain in the concrete between the cracks.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.9)
 
@@ -748,14 +748,14 @@ def k1(bond_type: str) -> float:
     return 0.8 if bond_type == 'bond' else 1.6
 
 
-def k2(epsilon_r: float) -> float:
+def k2(eps_r: float) -> float:
     """Computes a coefficient which takes into account of the
     distribution of strain:
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.13)
 
     Args:
-        epsilon_r (float): ratio epsilon_2/epsilon_1 where epsilon_1 is
+        eps_r (float): ratio epsilon_2/epsilon_1 where epsilon_1 is
             the greater and epsilon_2 is the lesser strain at the boundaries
             of the section considered, assessed on the basis of a cracked
             section. epsilon_r=0 for bending and epsilon_r=1 for pure tension.
@@ -764,12 +764,12 @@ def k2(epsilon_r: float) -> float:
         float: the k2 coefficient value.
 
     Raises:
-        ValueError: if epsilon_r is not between 0 and 1.
+        ValueError: if eps_r is not between 0 and 1.
     """
-    if epsilon_r < 0 or epsilon_r > 1:
-        raise ValueError(f'epsilon_r={epsilon_r} must be between 0 and 1')
+    if eps_r < 0 or eps_r > 1:
+        raise ValueError(f'eps_r={eps_r} must be between 0 and 1')
 
-    return (1 + epsilon_r) / 2
+    return (1 + eps_r) / 2
 
 
 def k3():
@@ -911,14 +911,14 @@ def sr_max_theta(sr_max_y: float, sr_max_z: float, theta: float) -> float:
     return 1 / (a + b)
 
 
-def wk(sr_max: float, _esm_ecm: float) -> float:
+def wk(sr_max: float, _eps_sm_eps_cm: float) -> float:
     """Computes the crack width
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.8)
 
     Args:
         sr_max (float): the maximum crack length spacing in mm.
-        _esm_ecm (float): the difference between the mean strain in the
+        _eps_sm_eps_cm (float): the difference between the mean strain in the
             reinforcement under relevant combination of loads, including
             the effect of imposed deformations and taking into account
             tension stiffening and the mean strain in the concrete
@@ -932,7 +932,9 @@ def wk(sr_max: float, _esm_ecm: float) -> float:
     """
     if sr_max < 0:
         raise ValueError(f'sr_max={sr_max} cannot be less than zero')
-    if _esm_ecm < 0:
-        raise ValueError(f'_esm_scm={_esm_ecm} cannot be less than zero')
+    if _eps_sm_eps_cm < 0:
+        raise ValueError(
+            f'_eps_sm_eps_cm={_eps_sm_eps_cm} cannot be less than zero'
+        )
 
-    return sr_max * _esm_ecm
+    return sr_max * _eps_sm_eps_cm

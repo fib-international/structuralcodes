@@ -174,7 +174,7 @@ def test_crack_As_min_raises_valueerror(a_ct, s_steel, fct_eff, k, kc):
 
 @pytest.mark.parametrize(
     (
-        'a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e,    '
+        'a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e,'
         ' incr_stress, expected'
     ),
     [
@@ -204,7 +204,7 @@ def test_As_min_p_returns_expected_values(
 
 
 @pytest.mark.parametrize(
-    'a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e,     incr_stress',
+    'a_ct, s_steel, fct_eff, k, kc, ap, d_steel, d_press, e, incr_stress',
     [
         (-80000, 400, 4, 0.9, 0.75, 500, 10, 10, 0.5, 10),
         (80000, -400, 4, 0.9, 0.75, 500, 10, 10, 0.5, 10),
@@ -438,9 +438,9 @@ def test_kt_raise_value_errors():
 def test_esm_ecm_returns_expected_values(
     s_steel, alpha_e, rho_p_eff, kt, fct_eff, es, expected
 ):
-    """Test esm_ecm returns the expected values"""
+    """Test eps_sm_eps_cm returns the expected values"""
     assert math.isclose(
-        _section_7_3_crack_control.esm_ecm(
+        _section_7_3_crack_control.eps_sm_eps_cm(
             s_steel, alpha_e, rho_p_eff, kt, fct_eff, es
         ),
         expected,
@@ -467,9 +467,9 @@ def test_esm_ecm_raises_exception(
     fct_eff,
     es,
 ):
-    """Test esm_ecm raise expected exceptions"""
+    """Test eps_sm_eps_cm raise expected exceptions"""
     with pytest.raises(ValueError):
-        _section_7_3_crack_control.esm_ecm(
+        _section_7_3_crack_control.eps_sm_eps_cm(
             s_steel, alpha_e, rho_p_eff, kt, fct_eff, es
         )
 
@@ -690,26 +690,26 @@ def test_sr_max_theta_raises_exceptions(sr_max_y, sr_max_z, theta):
 
 
 @pytest.mark.parametrize(
-    'sr_max, esm_ecm, expected',
+    'sr_max, eps_sm_eps_cm, expected',
     [
         (200, 0.00112, 0.224),
         (260, 0.0007, 0.182),
     ],
 )
-def test_wk_returns_expected_values(sr_max, esm_ecm, expected):
+def test_wk_returns_expected_values(sr_max, eps_sm_eps_cm, expected):
     """Test wk returns expected values"""
     assert math.isclose(
-        _section_7_3_crack_control.wk(sr_max, esm_ecm),
+        _section_7_3_crack_control.wk(sr_max, eps_sm_eps_cm),
         expected,
         rel_tol=10e-5,
     )
 
 
 @pytest.mark.parametrize(
-    'sr_max, esm_ecm',
+    'sr_max, eps_sm_eps_cm',
     [(-200, 0.0001), (200, -0.0001)],
 )
-def test_wk_raises_exceptions(sr_max, esm_ecm: float):
+def test_wk_raises_exceptions(sr_max, eps_sm_eps_cm: float):
     """Test wk raises value errors"""
     with pytest.raises(ValueError):
-        _section_7_3_crack_control.wk(sr_max, esm_ecm)
+        _section_7_3_crack_control.wk(sr_max, eps_sm_eps_cm)
