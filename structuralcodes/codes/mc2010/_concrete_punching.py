@@ -24,7 +24,6 @@ def m_ed(
     e_u: float,
     l_x: float,
     l_y: float,
-    l_min: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -40,13 +39,12 @@ def m_ed(
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
         l_x (float): The width in x direction that the collumn carries
-        l_y (float): The width in x direction that the collumn carries
-        l_min (float): The shorter side of the the L_x and L_y
+        l_y (float): The width in y direction that the collumn carries
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
+        tension reinforcement parallel to the edge
         edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
+        tension reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
 
     Return:
@@ -55,9 +53,10 @@ def m_ed(
     """
     r_sx = 0.22 * l_x
     r_sy = 0.22 * l_y
+    l_min = min(l_x, l_y)
     b_s = min(1.5 * (r_sx * r_sy) ** 0.5, l_min)
     if inner:
-        return v_ed * ((1 / 8) + e_u / (2 * b_s))
+        return v_ed * ((1 / 8) + abs(e_u) / (2 * b_s))
     if edge_par:
         return max(v_ed * ((1 / 8) + e_u / (2 * b_s)), v_ed / 4)
     if edge_per:
@@ -76,7 +75,6 @@ def psi_punching(
     approx_lvl_p: float,
     v_ed: float,
     e_u: float,
-    l_min: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -93,52 +91,35 @@ def psi_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
+        e_s (float): The E_modulus for steel in MPa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
-        l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
+        tension reinforcement parallel to the edge
         edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
+        tension reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
         in MPa
 
     Return:
-        psi for the choosen approx level in punching"""
+        psi for the chosen approx level in punching"""
 
     r_s = max(0.22 * l_x, 0.22 * l_y)
+    l_min = min(l_x, l_y)
 
     if approx_lvl_p == 1:
-        if not 0.5 < l_x / l_y < 2:
-            warnings.warn("Reconsider maximum r_s value")
         psi = 1.5 * r_s * f_yd / (d * e_s)
 
-    elif approx_lvl_p in (2, 3):
-        if 0.5 < l_x / l_y < 2:
-            warnings.warn("Reconsider maximum r_s value")
-        psi = (1.5 * r_s * f_yd / (d * e_s)) * (
-            (
-                m_ed(
-                    v_ed,
-                    e_u,
-                    l_x,
-                    l_y,
-                    l_min,
-                    inner,
-                    edge_par,
-                    edge_per,
-                    corner,
-                )
-                - m_pd
-            )
-            / (m_rd - m_pd)
-        ) ** 1.5
+    elif approx_lvl_p == 2:
+        r_sx = 0.22 * l_x
+        r_sy = 0.22 * l_y
+        bs = min(1.5 * (r_sx * r_sy)** 0.5, l_min)
+        psi = (1.5 * r_s * f_yd / (d * e_s)) * ((m_ed(v_ed, e_u, l_x, l_y, inner, edge_par, edge_per, corner)) / (m_rd)) ** 1.5
 
     return psi
 
@@ -155,7 +136,6 @@ def v_rdc_punching(
     d_v: float,
     v_ed: float,
     e_u: float,
-    l_min: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -174,7 +154,7 @@ def v_rdc_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
+        e_s (float): The E_modulus for steel in MPa
         approx_lvl_p (float): The approx level for punching
         dg (float): Maximum size of aggregate
         f_ck (float): Characteristic strength in MPa
@@ -182,12 +162,11 @@ def v_rdc_punching(
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
-        l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
+        tension reinforcement parallel to the edge
         edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
+        tension reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
@@ -216,7 +195,6 @@ def v_rdc_punching(
                 approx_lvl_p,
                 v_ed,
                 e_u,
-                l_min,
                 inner,
                 edge_par,
                 edge_per,
@@ -241,7 +219,6 @@ def v_rds_punching(
     e_s: float,
     approx_lvl_p: float,
     v_ed: float,
-    l_min: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -251,7 +228,7 @@ def v_rds_punching(
     alpha: float,
     f_bd: float,
     f_ywk: float,
-    kam_w: float,
+    phi_w: float,
     a_sw: float,
     gamma_s: float,
 ):
@@ -267,15 +244,14 @@ def v_rds_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
+        e_s (float): The E_modulus for steel in MPa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
-        l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
+        tension reinforcement parallel to the edge
         edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
+        tension reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
@@ -283,8 +259,8 @@ def v_rds_punching(
         alpha (float): Inclination of the stirrups in degrees
         f_bd (float): The design bond strength in MPa
         f_ywk (float): Characteristic yield strength of the shear
-        reinforcement in Mpa
-        kam_w (float): The diameter of the shear reinforcement
+        reinforcement in MPa
+        phi_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
         gamma_s (float): Steels reduction factor
 
@@ -304,7 +280,6 @@ def v_rds_punching(
                 approx_lvl_p,
                 v_ed,
                 e_u,
-                l_min,
                 inner,
                 edge_par,
                 edge_per,
@@ -315,14 +290,14 @@ def v_rds_punching(
             / 6
         )
         * (sin(alpha * pi / 180) + cos(alpha * pi / 180))
-        * (sin(alpha * pi / 180) + f_bd * d / (f_ywd * kam_w)),
+        * (sin(alpha * pi / 180) + f_bd * d / (f_ywd * phi_w)),
         f_ywd,
     )
 
-    if (a_sw * k_e * sigma_swd * sin(alpha * pi / 180)) < 0.5 * v_ed:
+    if (a_sw * k_e * f_ywd) < 0.5 * v_ed:
         warnings.warn(
             """In order to ensure sufficent deformation capacity,
-                      the shear resistance in punching most increase"""
+                      consider increasing the amount of punching shear reinforcement"""
         )
     result = a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
     return result
@@ -337,7 +312,6 @@ def v_rd_max_punching(
     approx_lvl_p: float,
     v_ed: float,
     e_u: float,
-    l_min: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -361,17 +335,16 @@ def v_rd_max_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
+        e_s (float): The E_modulus for steel in MPa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
         e_u (float): Refers to the eccentricity of the resultant of shear
         forces with respect to the centroid
-        l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
+        tension reinforcement parallel to the edge
         edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
+        tension reinforcement perpendicular to the edge
         dg (float): Maximum size of aggregate
         corner (bool): Is true only if the column is a corner column
         m_rd (float): The design average strength per unit length in MPa
@@ -414,7 +387,6 @@ def v_rd_max_punching(
                 approx_lvl_p,
                 v_ed,
                 e_u,
-                l_min,
                 inner,
                 edge_par,
                 edge_per,
@@ -443,7 +415,6 @@ def v_rd_punching(
     e_s: float,
     approx_lvl_p: float,
     v_ed: float,
-    l_min: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -453,7 +424,7 @@ def v_rd_punching(
     alpha: float,
     f_bd: float,
     f_ywk: float,
-    kam_w: float,
+    phi_w: float,
     a_sw: float,
     dg: float,
     f_ck: float,
@@ -477,15 +448,14 @@ def v_rd_punching(
         l_y (float): The distance between two columns in y direction
         f_yd (float): Design strength of reinforment steel in MPa
         d (float): The mean value of the effective depth in mm
-        e_s (float): The E_s-modulus for steel in Mpa
+        e_s (float): The E_modulus for steel in MPa
         approx_lvl_p (float): The approx level for punching
         v_ed (float): The acting shear force from the columns
-        l_min (float): The shorter side of the the L_x and L_y
         inner (bool): Is true only if the column is a inner column
         edge_par (bool): Is true only if the column is a edge column with
-        tention reinforcement paralell to the edge
+        tension reinforcement parallel to the edge
         edge_per (bool): Is true only if the column is a edge column with
-        tention reinforcement perpendicular to the edge
+        tension reinforcement perpendicular to the edge
         corner (bool): Is true only if the column is a corner column
         m_rd (float): The design average strength per unit length in MPa
         m_pd: (float): The average decompresstion moment due to prestressing
@@ -493,8 +463,8 @@ def v_rd_punching(
         alpha (float): Inclination of the stirrups in degrees
         f_bd (float): The design bond strength in MPa
         f_ywk (float): Characteristic yield strength of the shear reinforcement
-        in Mpa
-        kam_w (float): The diameter of the shear reinforcement
+        in MPa
+        phi_w (float): The diameter of the shear reinforcement
         a_sw (float): The area of the shear reinforcement in mm^2
         dg (float): Maximum size of aggregate
         f_ck (float): Characteristic strength in MPa
@@ -518,7 +488,6 @@ def v_rd_punching(
             d_v,
             v_ed,
             e_u,
-            l_min,
             inner,
             edge_par,
             edge_per,
@@ -537,7 +506,6 @@ def v_rd_punching(
             e_s,
             approx_lvl_p,
             v_ed,
-            l_min,
             inner,
             edge_par,
             edge_per,
@@ -547,7 +515,7 @@ def v_rd_punching(
             alpha,
             f_bd,
             f_ywk,
-            kam_w,
+            phi_w,
             a_sw,
             gamma_s,
         ),
@@ -560,7 +528,6 @@ def v_rd_punching(
             approx_lvl_p,
             v_ed,
             e_u,
-            l_min,
             inner,
             edge_par,
             edge_per,
