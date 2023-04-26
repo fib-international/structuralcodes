@@ -16,7 +16,7 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
 
     Returns:
         The shear force that will occur due to torsion force."""
-    
+
     return t_ed * z_i / (2 * a_k)
 
 
@@ -61,21 +61,21 @@ def t_rd_max(
         The maximum allowed torsion allowed
     """
     t_ef = d_k / 8
-    
+
     if approx_lvl == 1:
         k_epsilon = 0.55
-    
+
     elif approx_lvl == 2:
         epsilonx = epsilon_x(E_s, As, z, loads)
         epsilon_1 = epsilonx + (epsilonx + 0.002) * ((1 / tan(theta * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    
+
     elif approx_lvl == 3:
         epsilonx = epsilon_x(E_s, As, z, loads)
         theta_min = 20 + 10000 * epsilonx
         epsilon_1 = epsilonx + (epsilonx + 0.002) * ((1 / tan(theta_min * pi / 180)) ** 2)
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
-    
+
     k_c = eta_fc(f_ck) * k_epsilon
     result = (
         k_c
@@ -170,5 +170,5 @@ def t_rd(  # pylint: disable=r0801
         ** 2
         <= 1
     )
-    
+
     return check
