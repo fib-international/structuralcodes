@@ -80,7 +80,7 @@ def psi_punching(
     edge_per: bool,
     corner: bool,
     m_rd: float,
-    m_pd: float,
+    x_direction: bool
 ) -> float:
     """The rotation of the slab around the supported area
 
@@ -110,15 +110,14 @@ def psi_punching(
         psi for the chosen approx level in punching"""
 
     r_s = max(0.22 * l_x, 0.22 * l_y)
-    l_min = min(l_x, l_y)
-
     if approx_lvl_p == 1:
         psi = 1.5 * r_s * f_yd / (d * e_s)
 
     elif approx_lvl_p == 2:
-        r_sx = 0.22 * l_x
-        r_sy = 0.22 * l_y
-        bs = min(1.5 * (r_sx * r_sy)** 0.5, l_min)
+        if x_direction is True:
+            r_s = 0.22 * l_x
+        else:
+            r_s = 0.22 * l_y
         psi = (1.5 * r_s * f_yd / (d * e_s)) * ((m_ed(v_ed, e_u, l_x, l_y, inner, edge_par, edge_per, corner)) / (m_rd)) ** 1.5
 
     return psi
