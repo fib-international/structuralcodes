@@ -39,7 +39,8 @@ def t_rd_max(
     Args:
         f_ck (float): Characteristic strength in MPa
         gamma_c (float): Concrete safety factor
-        d_k (float): Is the diameter in the smallest circel in the cross section
+        d_k (float): Is the diameter in the smallest circel in the
+        cross section
         a_k: Can be found in figure 7.3-18
         theta (float): inclination of the compression stressfield in degrees
         approx_lvl (int): Approximation method for concrete with reinforcement
@@ -67,13 +68,17 @@ def t_rd_max(
 
     elif approx_lvl == 2:
         epsilonx = epsilon_x(E_s, As, z, loads)
-        epsilon_1 = epsilonx + (epsilonx + 0.002) * ((1 / tan(theta * pi / 180)) ** 2)
+        epsilon_1 = epsilonx + (epsilonx + 0.002) * (
+            (1 / tan(theta * pi / 180)) ** 2
+        )
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     elif approx_lvl == 3:
         epsilonx = epsilon_x(E_s, As, z, loads)
         theta_min = 20 + 10000 * epsilonx
-        epsilon_1 = epsilonx + (epsilonx + 0.002) * ((1 / tan(theta_min * pi / 180)) ** 2)
+        epsilon_1 = epsilonx + (epsilonx + 0.002) * (
+            (1 / tan(theta_min * pi / 180)) ** 2
+        )
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     k_c = eta_fc(f_ck) * k_epsilon
@@ -127,7 +132,8 @@ def t_rd(  # pylint: disable=r0801
             delta_E (float): The eccentricity of the axial load due to
             imperfection in the construction with distance in mm as a positive
             value
-        d_k (float): Is the diameter in the smallest circel in the cross section
+        d_k (float): Is the diameter in the smallest circel in the
+        cross section
         a_k (float): Can be found in figure 7.3-18
         alpha (float): Inclination of the stirrups in degrees
         gamma_c (float): Safety factor

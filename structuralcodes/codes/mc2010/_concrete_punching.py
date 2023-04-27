@@ -80,7 +80,7 @@ def psi_punching(
     edge_per: bool,
     corner: bool,
     m_rd: float,
-    x_direction: bool
+    x_direction: bool,
 ) -> float:
     """The rotation of the slab around the supported area
 
@@ -118,7 +118,10 @@ def psi_punching(
             r_s = 0.22 * l_x
         else:
             r_s = 0.22 * l_y
-        psi = (1.5 * r_s * f_yd / (d * e_s)) * ((m_ed(v_ed, e_u, l_x, l_y, inner, edge_par, edge_per, corner)) / (m_rd)) ** 1.5
+        psi = (1.5 * r_s * f_yd / (d * e_s)) * (
+            (m_ed(v_ed, e_u, l_x, l_y, inner, edge_par, edge_per, corner))
+            / (m_rd)
+        ) ** 1.5
 
     return psi
 
@@ -296,7 +299,7 @@ def v_rds_punching(
     if (a_sw * k_e * f_ywd) < 0.5 * v_ed:
         warnings.warn(
             """In order to ensure sufficent deformation capacity,
-                      consider increasing the amount of punching shear reinforcement"""
+            consider increasing the amount of punching shear reinforcement"""
         )
     result = a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
     return result
