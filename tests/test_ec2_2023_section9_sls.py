@@ -99,5 +99,107 @@ def test_k_1_r(test_input1, test_input2, test_input3, expected):
     """Test the k1/r function."""
     assert math.isclose(
         _section9_sls.k_1_r(test_input1, test_input2, test_input3), expected,
-        rel_tol=0.05
+        rel_tol=0.01
     )
+
+
+@pytest.mark.parametrize(
+    'test_input1, test_input2, test_input3, test_input4, test_input5,'+
+    ' test_input6, expected',
+    [
+    (100,0.4,4.072,0.005,5.365,200000,0.0003),
+    (100,0.6,4.072,0.005,5.365,200000,0.0002),
+    (150,0.4,2.565,0.01,6.354,200000,0.00045),
+    (150,0.6,2.565,0.01,6.354,200000,0.0003),
+    (200,0.4,2.896,0.015,6.091,200000,0.0006),
+    (200,0.6,2.896,0.015,6.091,200000,0.0004),
+    (250,0.4,3.21,0.02,5.869,200000,0.000891),
+    (250,0.6,3.21,0.02,5.869,200000,0.000712),
+    (300,0.4,3.795,0.025,5.512,200000,0.001155),
+    (300,0.6,3.795,0.025,5.512,200000,0.000982)
+    ],
+)
+def test_eps_sm_eps_cm(test_input1, test_input2, test_input3, test_input4, test_input5, 
+               test_input6, expected):
+    """Test the k1/r function."""
+    assert math.isclose(
+        _section9_sls.epssm_epscm(test_input1, test_input2, test_input3,test_input4, 
+                            test_input5,test_input6), expected,
+        rel_tol=0.01
+    )
+
+@pytest.mark.parametrize(
+    'test_input1, test_input2, test_input3, expected',
+    [
+    (1000,500,175,0.825),
+    (1000,250,175,0.883),
+    (500,250,250,0.5),
+    (150,75,80,0.5),
+    (150,0.1,80,0.733),
+    ],
+)
+def test_kfl(test_input1, test_input2, test_input3, expected):
+    """Test the kfl function."""
+    assert math.isclose(
+        _section9_sls.kfl(test_input1, test_input2, test_input3), expected,
+        rel_tol=0.01
+    )
+
+
+
+
+@pytest.mark.parametrize(
+    'test_input1, test_input2, test_input3, test_input4, test_input5,'+
+    ' test_input6,test_input7, test_input8, expected',
+    [
+    (25,0.5,0.9,16,0.015,1.3,1000,15,104.167),
+    (40,0.5,0.9,16,0.015,1.3,1000,15,126.667),
+    (40,0.7,0.9,25,0.015,1.2,1000,15,205.833),
+    (40,0.7,0.9,25,0.025,1.2,1000,15,147.5),
+    (40,1,0.9,25,0.025,1.2,1000,15,185),
+    (40,1,0.9,25,0.025,1.2,150,3,159.25),
+    (40,1,0.9,25,0.025,1.3,150,3,147),
+    (80,0.65,1.2,20,0.025,1.3,250,3,206.667),
+    (80,0.65,1.2,20,0.01,1.3,250,3,247),
+        ],
+)
+def test_srm_cal(test_input1, test_input2, test_input3, test_input4, test_input5, 
+               test_input6,test_input7, test_input8, expected):
+    """Test the srm_cal function."""
+    assert math.isclose(
+        _section9_sls.srm_cal(test_input1, test_input2, test_input3,test_input4, 
+                            test_input5, test_input6, test_input7, test_input8), expected,
+        rel_tol=0.01
+    )
+
+@pytest.mark.parametrize(
+    'test_input1, test_input2, test_input3, test_input4, test_input5,'+
+    ' test_input6, test_input7, test_input8, test_input9, test_input10,'+
+    ' test_input11, test_input12, test_input13, test_input14,'+
+    ' expected1, expected2, expected3, expected4',
+    [
+    (1.3,1000,500,175,45,0.9,16,0.0153,110,253,0.4,2.56,6.35,200000,0.218,1.063,175.343,0.000898),
+    (1.3,500,150,55,80,0.9,25,0.035,0.225,320,0.6,3.56,7,200000,0.394,1.227,202.27,0.00122),
+    (1.2,500,250,55,80,0.9,25,0.035,0.225,320,0.6,3.56,7,200000,0.358,1.227,199.464,0.00122),
+    (1.2,500,250,55,80,0.9,12,0.012,0.225,320,0.6,3.56,7,200000,0.215,1.208,231.25,0.00064),
+    (1.3,300,150,150,35,0.9,16,0.0085382,0.05,250,0.4,2.89,6.09,200000,0.193,1.167,169.621,0.00075),
+    (1.3,300,150,150,35,1.2,16,0.0085382,0.05,250,0.4,2.89,6.09,200000,0.237,1.167,208.661,0.00075),
+    (1.3,300,150,150,45,1.2,16,0.0085382,0.075,250,0.4,2.89,6.09,200000,0.265,1.215,223.661,0.00075),
+        ],
+)
+def test_wk_cal(test_input1, test_input2, test_input3, test_input4, test_input5,
+               test_input6,test_input7, test_input8, test_input9, test_input10,
+               test_input11,test_input12, test_input13, test_input14, expected1,
+               expected2, expected3, expected4):
+    """Test the wk_cal function."""
+    (wk_cal_,k_1_r_,srm_cal_,epssm_epscm_)=_section9_sls.wk_cal(test_input1, test_input2, test_input3,test_input4, 
+                            test_input5,test_input6,test_input7, test_input8, test_input9,
+                            test_input10, test_input11, test_input12, test_input13,
+                             test_input14)
+    
+    assert math.isclose(wk_cal_, expected1, rel_tol=0.01)
+    assert math.isclose(k_1_r_, expected2, rel_tol=0.01)
+    assert math.isclose(srm_cal_, expected3, rel_tol=0.01)
+    assert math.isclose(epssm_epscm_, expected4, rel_tol=0.01)
+
+

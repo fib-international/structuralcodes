@@ -3,7 +3,8 @@
 import math
 
 from structuralcodes.codes import mc2010
-#import structuralcodes.codes.mc2010 as mc2010
+
+# import structuralcodes.codes.mc2010 as mc2010
 
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
@@ -16,7 +17,7 @@ def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
     compressive strength
 
-    FprEN 1992-1-1, Table 5.1""""""
+    FprEN 1992-1-1, Table 5.1
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
