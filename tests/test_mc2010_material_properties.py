@@ -8,14 +8,12 @@ from structuralcodes.codes.mc2010 import _concrete_material_properties
 
 
 @pytest.mark.parametrize(
-    'test_input, expected',
+    'test_input, expect',
     [(12, 20), (35, 43), (55, 63), (90, 98), (120, 128)],
 )
-def test_fcm(test_input, expected):
+def test_fcm(test_input, expect):
     """Test the fcm function."""
-    assert math.isclose(
-        _concrete_material_properties.fcm(test_input), expected
-    )
+    assert math.isclose(_concrete_material_properties.fcm(test_input), expect)
 
 
 @pytest.mark.parametrize(

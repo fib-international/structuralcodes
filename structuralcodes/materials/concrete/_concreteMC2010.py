@@ -48,27 +48,6 @@ class ConcreteMC2010(Concrete):
         self._fctkmax = None
         self._Gf = None
 
-    def update_attributes(self, updated_attributes: dict) -> None:
-        """Function for updating the attributes specified in the input
-        dictionary
-
-        Args:
-            updated_attributes (dict): the dictionary of parameters to be
-                updated (not found parameters are skipped with a warning)
-        """
-        for key, value in updated_attributes.items():
-            if not hasattr(self, '_' + key):
-                str_list_keys = ''
-                for k in updated_attributes.keys():
-                    str_list_keys += k + ', '
-                str_warn = (
-                    f'WARNING: attribute {key} not found. Ignoring the entry.'
-                )
-                str_warn += '\nAvailable keys: ' + str_list_keys
-                warnings.warn(str_warn)
-                continue
-            setattr(self, '_' + key, value)
-
     @property
     def fcm(self) -> float:
         """Returns fcm in MPa.

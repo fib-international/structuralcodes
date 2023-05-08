@@ -19,7 +19,7 @@ On the higher levels there will be material, cross section and element classes r
 
 ## Contribution guidelines :handshake:
 
-For the moment, the core team has completed an initial structure for the lowest level, i.e. how to structure the models from the structural design codes. Contributions that seek to add content to this level are highly appreciated :heart:
+For the moment, the core team has completed an initial structure for the two lowest levels, i.e. how to structure the models from the structural design codes, and how to create classes that represent materials. Contributions that seek to add content to the lowest level are highly appreciated :heart:
 
 Here is how to get started, it is actually quite easy:
 

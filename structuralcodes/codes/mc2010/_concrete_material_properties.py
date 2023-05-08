@@ -126,7 +126,6 @@ def _check_cem_strength_class(cem_class: str) -> None:
         Raises a ValueError if a non-implemented cement strength class
          is used.
     """
-
     CEM_CLASSES = ["32.5 N", "32.5 R", "42.5 N", "42.5 R", "52.5 N",
                    "52.5 R"]
     if cem_class.upper() not in CEM_CLASSES:
