@@ -463,7 +463,7 @@ def v_rd_max(
     alpha: float = 90,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, when there is shear reinforcment
+    """The maximum allowed shear resistance, when there is shear reinforcement
 
     fib Model Code 2010, eq. (7.3-24) and (7.3-26)
 
