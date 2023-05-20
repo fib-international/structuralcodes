@@ -420,7 +420,7 @@ def v_rds(
     alpha: float = 90.0,
     gamma_s: float = 1.15,
 ) -> float:
-    """The shear resistans that shear reinforcement gives
+    """The shear resistance that shear reinforcement gives
 
     fib Model Code 2010, Eq. (7.3-25) and (7.3-29)
     Args:
