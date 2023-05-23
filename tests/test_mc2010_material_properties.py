@@ -137,18 +137,22 @@ def test_Gf(test_input, expected):
         ('quartzite', None),
         ('Limestone', None),
         ('SANDSTONE', None),
-        ('test', None) # Raises ValueError
+        ('test', None),  # Raises ValueError
     ],
 )
 def test_check_agg_type(agg_type, expected):
     """Test check_agg_type function."""
     try:
-        assert _concrete_material_properties._check_agg_types(agg_type) == expected
+        assert (
+            _concrete_material_properties._check_agg_types(agg_type)
+            == expected
+        )
     except ValueError:
         with pytest.raises(ValueError) as exc_info:
-            _concrete_material_properties._check_agg_types(agg_type) == expected
-            assert str(exc_info.value).startswith(
-                    "The specified cement type")
+            _concrete_material_properties._check_agg_types(
+                agg_type
+            ) == expected
+            assert str(exc_info.value).startswith("The specified cement type")
 
 
 @pytest.mark.parametrize(
@@ -160,18 +164,22 @@ def test_check_agg_type(agg_type, expected):
         ("42.5 R", None),
         ("52.5 N", None),
         ("52.5 R", None),
-        ("", None), # raises ValueError
+        ("", None),  # raises ValueError
     ],
 )
 def test_check_cem_strength_class(cem_class, expected):
     """Test check_cem_strength_class function."""
     try:
-        assert _concrete_material_properties._check_cem_strength_class(cem_class) == expected
+        assert (
+            _concrete_material_properties._check_cem_strength_class(cem_class)
+            == expected
+        )
     except ValueError:
         with pytest.raises(ValueError) as exc_info:
-            _concrete_material_properties._check_cem_strength_class(cem_class) == expected
-            assert str(exc_info.value).startswith(
-                    "Unknown cem_class used.")
+            _concrete_material_properties._check_cem_strength_class(
+                cem_class
+            ) == expected
+            assert str(exc_info.value).startswith("Unknown cem_class used.")
 
 
 @pytest.mark.parametrize(
@@ -196,121 +204,256 @@ def test_check_cem_strength_class(cem_class, expected):
         ("32.5 N", 61, "basalt", {"S": 0.2, "alpha_e": 1.2}),
         ("32.5 N", 61, "quartzite", {"S": 0.2, "alpha_e": 1.0}),
         ("32.5 N", 61, "limestone", {"S": 0.2, "alpha_e": 0.9}),
-        ("32.5 N", 61, "sandstone", {"S": 0.2, "alpha_e": 0.7})
+        ("32.5 N", 61, "sandstone", {"S": 0.2, "alpha_e": 0.7}),
     ],
 )
 def test_get_Ecmod_coeffs(cem_class, fcm, agg_type, expected):
     """Test get_Ecmod_coeffs function."""
-    assert _concrete_material_properties._get_Ecmod_coeffs(cem_class, fcm, agg_type) == expected
+    assert (
+        _concrete_material_properties._get_Ecmod_coeffs(
+            cem_class, fcm, agg_type
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
     'fc, TABULAR_VALUES, fc_value_type, expected',
     [
-        (28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            "mean", 36364.06146
+        (
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "mean",
+            36364.06146,
         ),
-        (20, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            "char", 36364.06146
+        (
+            20,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "char",
+            36364.06146,
         ),
-        (28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.0},
-            "mean", 30303.38455
+        (
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.0,
+            },
+            "mean",
+            30303.38455,
         ),
-        (28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 0.9},
-            "mean", 27273.04609
+        (
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 0.9,
+            },
+            "mean",
+            27273.04609,
         ),
-        (28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 0.7},
-            "mean", 21212.36918
-        )
+        (
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 0.7,
+            },
+            "mean",
+            21212.36918,
+        ),
     ],
 )
 def test_calc_E28(fc, TABULAR_VALUES, fc_value_type, expected):
     """Test _calc_E28 function."""
     assert np.isclose(
-        _concrete_material_properties._calc_E28(fc, TABULAR_VALUES, fc_value_type),
-        expected, rtol=1e-5
+        _concrete_material_properties._calc_E28(
+            fc, TABULAR_VALUES, fc_value_type
+        ),
+        expected,
+        rtol=1e-5,
     )
 
 
 @pytest.mark.parametrize(
     'time, TABULAR_VALUES, expected',
     [
-        (1, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            0.342022
+        (
+            1,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            0.342022,
         ),
-        (7, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            0.778801
+        (
+            7,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            0.778801,
         ),
-        (28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            1.
+        (
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            1.0,
         ),
-        (60, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            1.08244
+        (
+            60,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            1.08244,
         ),
-    ]
+    ],
 )
 def test_calc_beta_cc(time, TABULAR_VALUES, expected):
     """Test _calc_beta_cc function."""
     assert np.isclose(
         _concrete_material_properties._calc_beta_cc(time, TABULAR_VALUES),
-        expected, rtol=1e-5
+        expected,
+        rtol=1e-5,
     )
 
 
 @pytest.mark.parametrize(
     'beta_cc, expected',
-    [
-        (0.342022, .584827),
-        (0.778801, .882497),
-        (1, 1),
-        (1.08244, 1.04040)
-    ],
+    [(0.342022, 0.584827), (0.778801, 0.882497), (1, 1), (1.08244, 1.04040)],
 )
 def test_calc_beta_e(beta_cc, expected):
     """Test _calc_beta_e function."""
     assert np.isclose(
         _concrete_material_properties._calc_beta_e(beta_cc),
-        expected, rtol=1e-5
+        expected,
+        rtol=1e-5,
     )
 
 
 @pytest.mark.parametrize(
     'time, fc, TABULAR_VALUES, fc_value_type, expected',
     [
-        (1, 28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            "mean", 21266.68497
+        (
+            1,
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "mean",
+            21266.68497,
         ),
-        (7, 28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            "mean", 32091.17160
+        (
+            7,
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "mean",
+            32091.17160,
         ),
-        (7, 20, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-                 "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-         "char", 32091.17160
-         ),
-        (28, 28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            "mean", 36364.06146
+        (
+            7,
+            20,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "char",
+            32091.17160,
         ),
-        (60, 28, {"alpha": 0, "S": 0.25, "alpha_as": 700,
-            "alpha_ds1": 4, "alpha_ds2": 0.012, "alpha_e": 1.2},
-            "mean", 37833.16954
-        )
+        (
+            28,
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "mean",
+            36364.06146,
+        ),
+        (
+            60,
+            28,
+            {
+                "alpha": 0,
+                "S": 0.25,
+                "alpha_as": 700,
+                "alpha_ds1": 4,
+                "alpha_ds2": 0.012,
+                "alpha_e": 1.2,
+            },
+            "mean",
+            37833.16954,
+        ),
     ],
 )
 def test_calc_E(time, fc, TABULAR_VALUES, fc_value_type, expected):
     """Test _calc_E function."""
     assert np.isclose(
-        _concrete_material_properties._calc_E(time, fc, TABULAR_VALUES, fc_value_type),
-        expected, rtol=1e-5
+        _concrete_material_properties._calc_E(
+            time, fc, TABULAR_VALUES, fc_value_type
+        ),
+        expected,
+        rtol=1e-5,
     )

@@ -2,7 +2,7 @@
 import math
 import numpy as np
 
-_EC0 = 21.5e3 # MPa
+_EC0 = 21.5e3  # MPa
 
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
@@ -103,10 +103,12 @@ def _check_agg_types(agg_type: str) -> None:
     """
     AGG_TYPES = ['basalt', 'quartzite', 'limestone', 'sandstone']
     if agg_type.lower() not in AGG_TYPES:
-        raise ValueError(f"The specified cement type {agg_type} is not"
+        raise ValueError(
+            f"The specified cement type {agg_type} is not"
             " implemented in the creep and shrinkage laws of the fib "
             "Model Code 2010. It can only be one of these: "
-            f"{list(AGG_TYPES)}.")
+            f"{list(AGG_TYPES)}."
+        )
 
 
 def _check_cem_strength_class(cem_class: str) -> None:
@@ -126,11 +128,12 @@ def _check_cem_strength_class(cem_class: str) -> None:
         Raises a ValueError if a non-implemented cement strength class
          is used.
     """
-    CEM_CLASSES = ["32.5 N", "32.5 R", "42.5 N", "42.5 R", "52.5 N",
-                   "52.5 R"]
+    CEM_CLASSES = ["32.5 N", "32.5 R", "42.5 N", "42.5 R", "52.5 N", "52.5 R"]
     if cem_class.upper() not in CEM_CLASSES:
-        raise ValueError("Unknown cem_class used. Please choose one of "
-            f"the following {list(CEM_CLASSES)}.")
+        raise ValueError(
+            "Unknown cem_class used. Please choose one of "
+            f"the following {list(CEM_CLASSES)}."
+        )
 
 
 def _get_Ecmod_coeffs(cem_class: str, fcm: float, agg_type: str) -> dict:
@@ -176,8 +179,8 @@ def _get_Ecmod_coeffs(cem_class: str, fcm: float, agg_type: str) -> dict:
 
 
 def _calc_E28(
-        fc: float, TABULAR_VALUES: dict,
-        fc_value_type: str = "char") -> float:
+    fc: float, TABULAR_VALUES: dict, fc_value_type: str = "char"
+) -> float:
     """Calculate the modulus of elasticity for normal weight concrete
         at 28 days.
 
@@ -201,8 +204,10 @@ def _calc_E28(
     elif fc_value_type == "mean":
         fcm = fc
     else:
-        raise ValueError("The value_type of fc can only be one of the "
-                         "following: 'mean' or 'char'.")
+        raise ValueError(
+            "The value_type of fc can only be one of the "
+            "following: 'mean' or 'char'."
+        )
 
     return _EC0 * TABULAR_VALUES['alpha_e'] * (fcm / 10) ** (1 / 3)
 
@@ -242,8 +247,9 @@ def _calc_beta_e(beta_cc: float) -> float:
     return np.sqrt(beta_cc)
 
 
-def _calc_E(time: float, fc: float, TABULAR_VALUES: dict,
-            fc_value_type: str = "char") -> float:
+def _calc_E(
+    time: float, fc: float, TABULAR_VALUES: dict, fc_value_type: str = "char"
+) -> float:
     """Calculate the modulus of elasticity for normal weight concrete
         at time 'time' (not 28 days).
 

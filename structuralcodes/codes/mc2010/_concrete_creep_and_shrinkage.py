@@ -27,12 +27,14 @@ def _check_fcm(fcm: float) -> None:
             of the specified range.
     """
     if fcm < 20 or fcm > 130:
-        raise ValueError("The specified mean compressive strength is "
+        raise ValueError(
+            "The specified mean compressive strength is "
             "outside of the range of applicability for the creep and "
             "shrinkage laws given in the fib Model Code 2010. The mean"
             " compressive strength has to be within the range of "
             "20-130 MPa. Current compressive strength is"
-            f": {fcm} MPa.")
+            f": {fcm} MPa."
+        )
 
 
 def _check_initial_stress(sigma: float, fcm: float) -> None:
@@ -52,17 +54,21 @@ def _check_initial_stress(sigma: float, fcm: float) -> None:
             greater than 0.4*fcm or raises an ValueError if the
             compressive stress is greater than 0.6*fcm.
     """
-    if abs(sigma) > 0.6*fcm:
-        raise ValueError("The stress level exceeds the range of application."
+    if abs(sigma) > 0.6 * fcm:
+        raise ValueError(
+            "The stress level exceeds the range of application."
             "Maximum allowable stress is 0.6*fcm. Current stress level "
-            "is {round(abs(sigma)/fcm, 3)}*fcm.")
-    elif abs(sigma) > 0.4*fcm:
-        print("WARNING: Initial stress is too high to consider the "
+            "is {round(abs(sigma)/fcm, 3)}*fcm."
+        )
+    elif abs(sigma) > 0.4 * fcm:
+        print(
+            "WARNING: Initial stress is too high to consider the "
             "concrete as an aging linear visco-elastic material: "
             f"sigma = {round(abs(sigma)/fcm,3)}*fcm > 0.4*fcm. Nonlinear"
             " creep calculations are performed according to subclause "
             "5.1.9.4.3 (d) of the fib Model Code 2010 to account for "
-            "large compressive stresses.")
+            "large compressive stresses."
+        )
 
 
 def _check_age_at_loading(t0: float) -> None:
@@ -79,11 +85,13 @@ def _check_age_at_loading(t0: float) -> None:
         Raises a ValueError if the age of the concrete is too low.
     """
     if t0 < 1:
-        raise ValueError("The load is applied too soon to the concrete"
-        " in order to calculate the creep and shrinkage behaviour "
-        "according to the fib Model Code 2010. The minimum age of the "
-        f"concrete is 1 day, whereas according to the input the load is"
-        " applied after {t0} day.")
+        raise ValueError(
+            "The load is applied too soon to the concrete"
+            " in order to calculate the creep and shrinkage behaviour "
+            "according to the fib Model Code 2010. The minimum age of the "
+            "concrete is 1 day, whereas according to the input the load is"
+            f" applied after {t0} day."
+        )
 
 
 def _check_RH(rh: float) -> None:
@@ -100,11 +108,13 @@ def _check_RH(rh: float) -> None:
             range of applicability.
     """
     if (rh < 0.4 or rh > 1) and (rh < 40 or rh > 100):
-        raise ValueError("The specified relative humidity is outside "
+        raise ValueError(
+            "The specified relative humidity is outside "
             "of the range of applicability to calculate the creep and "
             "shrinkage according to the fib Model Code 2010. The "
             "relative humidity has to be within the range of 0.4-1.0 or "
-            f"40-100%. Currently rh={rh}.")
+            f"40-100%. Currently rh={rh}."
+        )
 
 
 def _check_env_temp(T: float) -> None:
@@ -121,12 +131,14 @@ def _check_env_temp(T: float) -> None:
             outside of the range of applicability.
     """
     if T < 5 or T > 30:
-        print("WARNING: The given environmental temperature is outside"
-        " of the applicable range of 5-30 degrees Celcius for the"
-        " creep and shrinkage calculations according to the fib Model "
-        f"Code 2010, T={T} degrees Celcius. Creep and shrinkage will"
-        " be calculated according to subclause 5.1.10 of the fib Model"
-        " Code 2010.")
+        print(
+            "WARNING: The given environmental temperature is outside"
+            " of the applicable range of 5-30 degrees Celcius for the"
+            " creep and shrinkage calculations according to the fib Model "
+            f"Code 2010, T={T} degrees Celcius. Creep and shrinkage will"
+            " be calculated according to subclause 5.1.10 of the fib Model"
+            " Code 2010."
+        )
 
 
 def _check_cem_strength_class(cem_class: str) -> None:
@@ -147,11 +159,12 @@ def _check_cem_strength_class(cem_class: str) -> None:
          is used.
     """
 
-    CEM_CLASSES = ["32.5 N", "32.5 R", "42.5 N", "42.5 R", "52.5 N",
-                   "52.5 R"]
+    CEM_CLASSES = ["32.5 N", "32.5 R", "42.5 N", "42.5 R", "52.5 N", "52.5 R"]
     if cem_class.upper() not in CEM_CLASSES:
-        raise ValueError("Unknown cem_class used. Please choose one of "
-            f"the following {list(CEM_CLASSES)}.")
+        raise ValueError(
+            "Unknown cem_class used. Please choose one of "
+            f"the following {list(CEM_CLASSES)}."
+        )
 
 
 def _get_creep_shrinkage_coeffs(cem_class: str) -> dict:
@@ -170,7 +183,7 @@ def _get_creep_shrinkage_coeffs(cem_class: str) -> dict:
     _check_cem_strength_class(cem_class)
     if cem_class.upper() in ["32.5 R", "42.5 N"]:
         ALPHA = 0
-        ALPHA_AS= 700
+        ALPHA_AS = 700
         ALPHA_DS1 = 4
         ALPHA_DS2 = 0.012
     elif cem_class.upper() in ["42.5 R", "52.5 N", "52.5 R"]:
@@ -184,8 +197,12 @@ def _get_creep_shrinkage_coeffs(cem_class: str) -> dict:
         ALPHA_DS1 = 3
         ALPHA_DS2 = 0.013
 
-    return {'alpha': ALPHA, 'alpha_as': ALPHA_AS, 'alpha_ds1': ALPHA_DS1,
-            'alpha_ds2': ALPHA_DS2}
+    return {
+        'alpha': ALPHA,
+        'alpha_as': ALPHA_AS,
+        'alpha_ds1': ALPHA_DS1,
+        'alpha_ds2': ALPHA_DS2,
+    }
 
 
 def _calc_temp_corr_age(t0: float, T_cur: float) -> float:
@@ -210,8 +227,7 @@ def _calc_temp_corr_age(t0: float, T_cur: float) -> float:
     return np.sum(dt * np.exp(13.65 - (4000 / (273 + T_dt))))
 
 
-def _calc_modified_t0(
-        t0: float, T_cur: float, TABULAR_VALUES: dict) -> float:
+def _calc_modified_t0(t0: float, T_cur: float, TABULAR_VALUES: dict) -> float:
     """Calculate the modified age at loading (t0) to account for the
         effect of the type of cement and curing temperature on the
         degree of hydration and - in turn - on creep.
@@ -235,11 +251,10 @@ def _calc_modified_t0(
     _check_age_at_loading(t0)
     t0T = _calc_temp_corr_age(t0, T_cur)
     ALPHA = TABULAR_VALUES['alpha']
-    return max(t0T * ((9/(2 + t0T**1.2)) + 1)**ALPHA, 0.5)
+    return max(t0T * ((9 / (2 + t0T**1.2)) + 1) ** ALPHA, 0.5)
 
 
-def _calc_notional_drying_shrinkage(
-        fcm: float, TABULAR_VALUES:dict) -> float:
+def _calc_notional_drying_shrinkage(fcm: float, TABULAR_VALUES: dict) -> float:
     """Calculate the notional drying shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-80.
@@ -254,13 +269,15 @@ def _calc_notional_drying_shrinkage(
     returns:
         float: The notional drying shrinkage in mm/mm.
     """
-    return ((220 + 110*TABULAR_VALUES['alpha_ds1'])
-            * np.exp(-TABULAR_VALUES['alpha_ds2'] * fcm))*1e-6
+    return (
+        (220 + 110 * TABULAR_VALUES['alpha_ds1'])
+        * np.exp(-TABULAR_VALUES['alpha_ds2'] * fcm)
+    ) * 1e-6
 
 
 def _calc_beta_ds(
-        time: np.ndarray, ts: float, notional_size: float
-    ) -> np.ndarray:
+    time: np.ndarray, ts: float, notional_size: float
+) -> np.ndarray:
     """Calculate the multiplication factor beta_ds.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-82.
@@ -277,8 +294,7 @@ def _calc_beta_ds(
         numpy.ndarray: Multiplication factor used for calculating the
             drying shrinkage as a function of time.
     """
-    return np.sqrt((time - ts)
-           / (0.035*(notional_size)**2 + (time - ts)))
+    return np.sqrt((time - ts) / (0.035 * (notional_size) ** 2 + (time - ts)))
 
 
 def _calc_beta_s1(fcm: float) -> float:
@@ -294,7 +310,7 @@ def _calc_beta_s1(fcm: float) -> float:
         float: Multiplication factor used when calculating the drying
             shrinkage.
     """
-    return min((35/fcm)**0.1, 1.0)
+    return min((35 / fcm) ** 0.1, 1.0)
 
 
 def _calc_beta_RH(rh: float, beta_s1: float) -> float:
@@ -312,26 +328,36 @@ def _calc_beta_RH(rh: float, beta_s1: float) -> float:
             shrinkage.
     """
     if rh < 1:
-        if rh >= 0.99*beta_s1:
+        if rh >= 0.99 * beta_s1:
             return 0.25
-        elif 0.4*beta_s1 <= rh < 0.99*beta_s1:
-            return -1.55*(1 - rh**3)
+        elif 0.4 * beta_s1 <= rh < 0.99 * beta_s1:
+            return -1.55 * (1 - rh**3)
         else:
-            raise ValueError("The specified rh*beta_s1 is not in the "
-                "range of application.")
+            raise ValueError(
+                "The specified rh*beta_s1 is not in the "
+                "range of application."
+            )
     else:
-        if rh >= 99*beta_s1:
+        if rh >= 99 * beta_s1:
             return 0.25
-        elif 40*beta_s1 <= rh < 99*beta_s1:
-            return -1.55*(1 - (rh/100)**3)
+        elif 40 * beta_s1 <= rh < 99 * beta_s1:
+            return -1.55 * (1 - (rh / 100) ** 3)
         else:
-            raise ValueError("The specified rh*beta_s1 ratio is not in"
-                " the range of application.")
+            raise ValueError(
+                "The specified rh*beta_s1 ratio is not in"
+                " the range of application."
+            )
 
 
 def calc_drying_shrinkage(
-        time: np.ndarray, fcm: float, ts: float, notional_size: float,
-        rh: float, cem_class: str, agg_type: str) -> np.ndarray:
+    time: np.ndarray,
+    fcm: float,
+    ts: float,
+    notional_size: float,
+    rh: float,
+    cem_class: str,
+    agg_type: str,
+) -> np.ndarray:
     """Calculate the drying shrinkage of the concrete element.
 
     Defined in fib Model Code 2010 (2013), Eqs. 5.1-77 and 5.1-80 - 5.1-83
@@ -361,18 +387,19 @@ def calc_drying_shrinkage(
     """
     _check_RH(rh)
     _check_fcm(fcm)
-    _concrete_material_properties. _check_agg_types(agg_type)
+    _concrete_material_properties._check_agg_types(agg_type)
     _check_cem_strength_class(cem_class)
     TABULAR_VALUES = _get_creep_shrinkage_coeffs(cem_class)
     eps_csd0 = _calc_notional_drying_shrinkage(fcm, TABULAR_VALUES)
     beta_ds = _calc_beta_ds(time, ts, notional_size)
     beta_s1 = _calc_beta_s1(fcm)
     beta_rh = _calc_beta_RH(rh, beta_s1)
-    return eps_csd0*beta_rh*beta_ds
+    return eps_csd0 * beta_rh * beta_ds
 
 
 def _calc_notional_autogenous_shrinkage(
-        fcm: float, TABULAR_VALUE: dict) -> float:
+    fcm: float, TABULAR_VALUE: dict
+) -> float:
     """Calculate the notional autogenous shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-78.
@@ -387,8 +414,11 @@ def _calc_notional_autogenous_shrinkage(
     returns:
         float: The notional autogenous shrinkage in mm/mm.
     """
-    return -TABULAR_VALUE['alpha_as']*1e-6 \
-        * ((0.1*fcm)/(6 + 0.1*fcm))**2.5
+    return (
+        -TABULAR_VALUE['alpha_as']
+        * 1e-6
+        * ((0.1 * fcm) / (6 + 0.1 * fcm)) ** 2.5
+    )
 
 
 def _calc_beta_au(time: np.ndarray) -> np.ndarray:
@@ -409,8 +439,8 @@ def _calc_beta_au(time: np.ndarray) -> np.ndarray:
 
 
 def calc_autogenous_shrinkage(
-        time: np.ndarray, fcm: float, cem_class: str, agg_type: str
-    ) -> np.ndarray:
+    time: np.ndarray, fcm: float, cem_class: str, agg_type: str
+) -> np.ndarray:
     """Calculate the autogenous shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eqs. 5.1-76 and 5.1-78 - 5.1-79
@@ -439,7 +469,7 @@ def calc_autogenous_shrinkage(
     TABULAR_VALUES = _get_creep_shrinkage_coeffs(cem_class)
     eps_au0 = _calc_notional_autogenous_shrinkage(fcm, TABULAR_VALUES)
     beta_au = _calc_beta_au(time)
-    return eps_au0*beta_au
+    return eps_au0 * beta_au
 
 
 def _calc_beta_bc_fcm(fcm: float) -> float:
@@ -456,11 +486,10 @@ def _calc_beta_bc_fcm(fcm: float) -> float:
     returns:
         float: Multiplication factor beta_bc_fcm.
     """
-    return 1.8/fcm**0.7
+    return 1.8 / fcm**0.7
 
 
-def _calc_beta_bc_t(
-        time: np.ndarray, t0: float, t0_adj: float) -> np.ndarray:
+def _calc_beta_bc_t(time: np.ndarray, t0: float, t0_adj: float) -> np.ndarray:
     """Calculate multiplication factor that accounts for the effect of
         the age of the of the concrete to calculate the basic
         creep coefficient.
@@ -479,11 +508,12 @@ def _calc_beta_bc_t(
     returns:
         numpy.ndarray: Multiplication factors beta_bc_t.
     """
-    return np.log(((30/t0_adj + 0.035)**2) * (time - t0) + 1)
+    return np.log(((30 / t0_adj + 0.035) ** 2) * (time - t0) + 1)
 
 
 def calc_basic_creep_coefficient(
-        beta_bc_fcm: float, beta_bc_t: np.ndarray) -> np.ndarray:
+    beta_bc_fcm: float, beta_bc_t: np.ndarray
+) -> np.ndarray:
     """Calculate the basic creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-64.
@@ -518,7 +548,7 @@ def _calc_beta_dc_fcm(fcm: float) -> float:
     returns:
         float: Multiplication factor beta_dc_fcm.
     """
-    return 412/fcm**1.4
+    return 412 / fcm**1.4
 
 
 def _calc_beta_dc_RH(rh: float, notional_size: float) -> float:
@@ -538,9 +568,9 @@ def _calc_beta_dc_RH(rh: float, notional_size: float) -> float:
     """
     _check_RH(rh)
     if rh < 1:
-        return (1 - rh) / ((0.1*notional_size/100)**(1/3))
+        return (1 - rh) / ((0.1 * notional_size / 100) ** (1 / 3))
     else:
-        return (1 - rh/100) / ((0.1*notional_size/100)**(1/3))
+        return (1 - rh / 100) / ((0.1 * notional_size / 100) ** (1 / 3))
 
 
 def _calc_beta_dc_t0(t0_adj: float) -> float:
@@ -575,7 +605,7 @@ def _calc_alpha_fcm(fcm: float) -> float:
     returns:
         float: Multiplication factor alpha_fcm.
     """
-    return np.sqrt(35/fcm)
+    return np.sqrt(35 / fcm)
 
 
 def _calc_beta_h(notional_size: float, alpha_fcm: float) -> float:
@@ -595,7 +625,7 @@ def _calc_beta_h(notional_size: float, alpha_fcm: float) -> float:
     returns:
         float: Multiplication factor beta_h.
     """
-    return min(1.5*notional_size + 250*alpha_fcm, 1500*alpha_fcm)
+    return min(1.5 * notional_size + 250 * alpha_fcm, 1500 * alpha_fcm)
 
 
 def _calc_gamma_t0(t0_adj: float) -> float:
@@ -613,12 +643,12 @@ def _calc_gamma_t0(t0_adj: float) -> float:
     returns:
         float: Exponent gamma_t0.
     """
-    return 1 / (2.3 + 3.5/np.sqrt(t0_adj))
+    return 1 / (2.3 + 3.5 / np.sqrt(t0_adj))
 
 
 def _calc_beta_dc_t(
-        time: np.ndarray, t0: float, beta_h: float, gamma_t0: float
-    ) -> np.ndarray:
+    time: np.ndarray, t0: float, beta_h: float, gamma_t0: float
+) -> np.ndarray:
     """Calculate multiplication factor that accounts for the different
         considered values of time. Used to calculate the drying creep
         coefficient.
@@ -644,9 +674,11 @@ def _calc_beta_dc_t(
 
 
 def calc_drying_creep_coefficient(
-        beta_dc_fcm: float, beta_dc_RH: float, beta_dc_t0: float,
-        beta_dc_t: np.ndarray
-    ) -> np.ndarray:
+    beta_dc_fcm: float,
+    beta_dc_RH: float,
+    beta_dc_t0: float,
+    beta_dc_t: np.ndarray,
+) -> np.ndarray:
     """Calculate drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-67.
@@ -688,14 +720,20 @@ def _calc_k_sigma(sigma: float, fcm: float) -> float:
         float: Absolute value of the ratio between the stress in the
             concrete and the mean concrete strength.
     """
-    return abs(sigma/fcm)
+    return abs(sigma / fcm)
 
 
 def calc_creep_coefficient(
-        time: np.ndarray, t0: float, T_cur: float, fcm: float, rh: float,
-        notional_size: float, sigma: float, agg_type: str,
-        cem_class: str
-    ) -> np.ndarray:
+    time: np.ndarray,
+    t0: float,
+    T_cur: float,
+    fcm: float,
+    rh: float,
+    notional_size: float,
+    sigma: float,
+    agg_type: str,
+    cem_class: str,
+) -> np.ndarray:
     """Calculate the creep coefficient.
 
     Defined in fib Model Code 2010, Eqs. 5.1-63 and 5.1-64 - 5.1-71
@@ -747,21 +785,26 @@ def calc_creep_coefficient(
     gamma_t0 = _calc_gamma_t0(t0_adj)
     beta_dc_t = _calc_beta_dc_t(time, t0, beta_h, gamma_t0)
     phi_dc = calc_drying_creep_coefficient(
-            beta_dc_fcm, beta_dc_RH, beta_dc_t0, beta_dc_t)
+        beta_dc_fcm, beta_dc_RH, beta_dc_t0, beta_dc_t
+    )
     # Calculate the creep coefficient (phi) (see Eq. 5.1-63)
     phi = phi_bc + phi_dc
     # Include the effect of high stress if needed (see Eq. 5.1-74 of [1]):
     k_sigma = _calc_k_sigma(sigma, fcm)
     if 0.4 <= k_sigma <= 0.6:
-        return np.exp(1.5*(k_sigma-0.4)) * phi
+        return np.exp(1.5 * (k_sigma - 0.4)) * phi
     else:
         return phi
 
 
 def calc_creep_compliance(
-        t0: float, fcm: float, T_cur: float, phi: np.ndarray,
-        agg_type: str, cem_class: str
-    ) -> np.ndarray:
+    t0: float,
+    fcm: float,
+    T_cur: float,
+    phi: np.ndarray,
+    agg_type: str,
+    cem_class: str,
+) -> np.ndarray:
     """Calculate the creep compliance function.
 
     Defined in fib Model Code 2010, Eq. 5.1-61.
@@ -792,8 +835,14 @@ def calc_creep_compliance(
     _concrete_material_properties._check_agg_types(agg_type)
     _check_cem_strength_class(cem_class)
     TABULAR_VALUES_CEM = _get_creep_shrinkage_coeffs(cem_class)
-    TABULAR_VALUES_EC = _concrete_material_properties._get_Ecmod_coeffs(cem_class, fcm, agg_type)
+    TABULAR_VALUES_EC = _concrete_material_properties._get_Ecmod_coeffs(
+        cem_class, fcm, agg_type
+    )
     t0_adj = _calc_modified_t0(t0, T_cur, TABULAR_VALUES_CEM)
-    Eci_t0 = _concrete_material_properties._calc_E(t0_adj, fcm, TABULAR_VALUES_EC, "mean")
-    E28 = _concrete_material_properties._calc_E28(fcm, TABULAR_VALUES_EC, "mean")
+    Eci_t0 = _concrete_material_properties._calc_E(
+        t0_adj, fcm, TABULAR_VALUES_EC, "mean"
+    )
+    E28 = _concrete_material_properties._calc_E28(
+        fcm, TABULAR_VALUES_EC, "mean"
+    )
     return (1 / Eci_t0) + (phi / E28)
