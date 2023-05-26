@@ -5,6 +5,7 @@ import pytest
 
 from structuralcodes.codes.mc2010 import _concrete_interface_different_casting_times
 
+
 @pytest.mark.parametrize(
     '''beta, v_ed, z, b_i, expected''',
     [

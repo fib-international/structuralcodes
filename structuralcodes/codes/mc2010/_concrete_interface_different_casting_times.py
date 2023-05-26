@@ -3,7 +3,7 @@ from math import pi, sin, cos
 
 
 def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
-    """Shear at the interface between cocrete cast at different times
+    """Shear at the interface between concrete cast at different times
 
     fib Model Code 2010, eq. (7.3-49)
 
@@ -33,10 +33,10 @@ def tau_rdi_without_reinforcement(
     fib Model Code 2010, eq. (7.3-50)
 
     Args:
-        c_a (float): The coefficient for adhesive bond (tabel 7.3-1)
-        f_ctd (float): The design axial tensil strength of concrete
+        c_a (float): The coefficient for adhesive bond (Tabel 7.3-1)
+        f_ctd (float): The design axial tensile strength of concrete
         mu (float): The friction coefficient
-        sigma_n (float): The loweat expected compressiv stress from
+        sigma_n (float): The lowest expected compressive stress from
         normal forces in MPa
         f_ck (float): Characteristic strength in MPa
         f_cd (float): The design value of cylinder compressive
@@ -69,20 +69,20 @@ def tau_rdi_with_reinforcement(
     fib Model Code 2010, eq. (7.3-51)
 
     Args:
-        c_r (float): Coefficient for aggregate interlock effects (tabel 7.3-2)
-        k1 (float): The interction coefficient for tensile
-        force activated in reinforcment (tabel 7.3-2)
-        k2 (float): The interction coeffiction for flexural
-        resistance (tabel 7.3-2)
-        mu (float): The friction coefficient (tabel 7.3-2)
-        ro (float): The reinforcement ratio of reinforing steel
+        c_r (float): Coefficient for aggregate interlock effects (Tabel 7.3-2)
+        k1 (float): The interaction coefficient for tensile
+        force activated in reinforcment (Tabel 7.3-2)
+        k2 (float): The interaction coeffiction for flexural
+        resistance (Tabel 7.3-2)
+        mu (float): The friction coefficient (Tabel 7.3-2)
+        ro (float): The reinforcement ratio of reinforcing steel
         crossing the interface
-        sigma_n (float): The loweat expected compressiv stress resulting
+        sigma_n (float): The lowest expected compressive stress resulting
         from normal forces acting on the interface in MPa
         alpha (float): The inclination of reinforcement crossing the
-        interface (tabel 7.3-14)
+        interface (Tabel 7.3-14)
         beta_c (float): The coefficient for strength of
-        compresstion strut (tabel 7.3-2)
+        compression strut (Tabel 7.3-2)
         f_ck (float): Characteristic strength in MPa
         f_yd (float): design strength of reinforment steel in MPa
         f_cd (float): The design value of cylinder compressive
@@ -95,14 +95,8 @@ def tau_rdi_with_reinforcement(
     result = min(
         (c_r * f_ck ** (1 / 3))
         + (mu * sigma_n)
-        + k1
-        * ro
-        * f_yd
-        * (
-            ro * sin(alpha * pi / 180)
-            + cos(alpha * pi / 180)
-            + k2 * ro * (f_yd * f_cd) ** 0.5
-        ),
+        + k1 * ro * f_yd * (mu * sin(alpha * pi / 180) + cos(alpha * pi / 180))
+        + k2 * ro * (f_yd * f_cd) ** 0.5,
         beta_c * v * f_cd,
     )
     return result
