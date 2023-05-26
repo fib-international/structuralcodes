@@ -31,7 +31,7 @@ def t_rd_max(
     loads: dict,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed torsion allowed
+    """The maximum allowed torsion
 
     fib Model Code 2010, eq. (7.3-56)
 
