@@ -1,6 +1,9 @@
 """A Python package that contains models from structural design codes"""
-from . import codes, core, materials
-from .codes import get_design_codes, set_design_code, set_national_annex
+from .codes import set_design_code, get_design_codes, set_national_annex
+
+from . import materials
+from . import core
+from . import codes
 
 __version__ = ''
 
