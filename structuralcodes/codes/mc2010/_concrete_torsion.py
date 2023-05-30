@@ -4,6 +4,15 @@ from math import pi, tan, sin, cos
 from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
 
 
+def create_load_dict(
+    Med: float, Ved: float, Ned: float, delta_e: float
+) -> dict:
+    """returns dictionary assosiated with loads"""
+    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
+
+    return dictionary
+
+
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
     """Shear force due to torsion
 

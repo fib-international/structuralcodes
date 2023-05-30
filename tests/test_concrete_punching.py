@@ -7,8 +7,8 @@ from structuralcodes.codes.mc2010 import _concrete_punching
 
 
 @pytest.mark.parametrize(
-    '''Ved, e_u, l_x, l_y, l_min, inner,
-    edge_par1, edge_per2, corner, expected''',
+    '''Ved, e_u, l_x, l_y, inner,
+    edge_par, edge_per, corner, expected''',
     [
         (10e3, 20, 2e3, 2e3, True, False, False, False, 1401),
         (10e3, 20, 2e3, 3e3, False, True, False, False, 2500),
@@ -17,12 +17,12 @@ from structuralcodes.codes.mc2010 import _concrete_punching
     ],
 )
 def test_m_ed(
-    Ved, e_u, l_x, l_y, inner, edge_par1, edge_per2, corner, expected
+    Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected
 ):
     """Test the m_ed function."""
     assert math.isclose(
         _concrete_punching.m_ed(
-            Ved, e_u, l_x, l_y, inner, edge_par1, edge_per2, corner
+            Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner
         ),
         expected,
         rel_tol=0.001,

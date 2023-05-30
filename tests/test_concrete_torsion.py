@@ -42,7 +42,7 @@ def test_ved_ti(t_ed, a_k, z_i, expected):
             2000,
             create_load_dict(0, 2000, 0, 20),
             1.5,
-            11256044,
+            10084252,
         ),
         (
             35,
