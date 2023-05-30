@@ -14,6 +14,7 @@ deps:  ## Install dependencies
 
 form:  ## Code formatting
 	python -m black $(PACKAGE_NAME)
+	python -m black tests
 
 lint:  ## Linting and static type checking
 	python -m flake8 $(PACKAGE_NAME)
