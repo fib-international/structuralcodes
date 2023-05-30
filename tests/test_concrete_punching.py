@@ -17,14 +17,16 @@ from structuralcodes.codes.mc2010 import _concrete_punching
     ],
 )
 def test_m_ed(
-    Ved, e_u, l_x, l_y, inner,
-    edge_par1, edge_per2, corner, expected
+    Ved, e_u, l_x, l_y, inner, edge_par1, edge_per2, corner, expected
 ):
-
     """Test the m_ed function."""
-    assert math.isclose(_concrete_punching.m_ed(
-        Ved, e_u, l_x, l_y, inner,
-        edge_par1, edge_per2, corner), expected, rel_tol=0.001)
+    assert math.isclose(
+        _concrete_punching.m_ed(
+            Ved, e_u, l_x, l_y, inner, edge_par1, edge_per2, corner
+        ),
+        expected,
+        rel_tol=0.001,
+    )
 
 
 @pytest.mark.parametrize(
@@ -32,20 +34,77 @@ def test_m_ed(
     l_min, inner, edge_par, edge_per, corner, m_rd,
     m_pd, expected''',
     [
-        (2e3, 3e3, 434, 160, 200e3, 1, 50e3, 20,
-         True, False, False, False, 140, 0, 0.013426875),
-        (2e3, 3e3, 434, 160, 200e3, 2, 10e3, 20,
-         True, False, False, False, 140, 0, 0.41269218238),
+        (
+            2e3,
+            3e3,
+            434,
+            160,
+            200e3,
+            1,
+            50e3,
+            20,
+            True,
+            False,
+            False,
+            False,
+            140,
+            0,
+            0.013426875,
+        ),
+        (
+            2e3,
+            3e3,
+            434,
+            160,
+            200e3,
+            2,
+            10e3,
+            20,
+            True,
+            False,
+            False,
+            False,
+            140,
+            0,
+            0.41269218238,
+        ),
     ],
 )
 def test_psi_punching(
-    l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-    inner, edge_par, edge_per, corner, m_rd,
-    m_pd, expected
+    l_x,
+    l_y,
+    f_yd,
+    d,
+    e_s,
+    approx_lvl_p,
+    Ved,
+    e_u,
+    inner,
+    edge_par,
+    edge_per,
+    corner,
+    m_rd,
+    m_pd,
+    expected,
 ):
-
     """Test the psi_punching function."""
-    assert math.isclose(_concrete_punching.psi_punching(
-        l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-        inner, edge_par, edge_per, corner, m_rd,
-        m_pd), expected, rel_tol=0.001)
+    assert math.isclose(
+        _concrete_punching.psi_punching(
+            l_x,
+            l_y,
+            f_yd,
+            d,
+            e_s,
+            approx_lvl_p,
+            Ved,
+            e_u,
+            inner,
+            edge_par,
+            edge_per,
+            corner,
+            m_rd,
+            m_pd,
+        ),
+        expected,
+        rel_tol=0.001,
+    )

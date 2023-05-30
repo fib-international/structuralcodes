@@ -3,7 +3,9 @@ import math
 
 import pytest
 
-from structuralcodes.codes.mc2010 import _concrete_interface_different_casting_times
+from structuralcodes.codes.mc2010 import (
+    _concrete_interface_different_casting_times,
+)
 
 
 @pytest.mark.parametrize(
@@ -17,12 +19,14 @@ from structuralcodes.codes.mc2010 import _concrete_interface_different_casting_t
     ],
 )
 def test_tau_edi(beta, v_ed, z, b_i, expected):
-
     """Test the tau_edi function."""
-    assert math.isclose(_concrete_interface_different_casting_times.tau_edi(
-        beta, v_ed, z, b_i
-    ),
-        expected, rel_tol=0.001)
+    assert math.isclose(
+        _concrete_interface_different_casting_times.tau_edi(
+            beta, v_ed, z, b_i
+        ),
+        expected,
+        rel_tol=0.001,
+    )
 
 
 @pytest.mark.parametrize(
@@ -39,12 +43,14 @@ def test_tau_edi(beta, v_ed, z, b_i, expected):
 def test_tau_rdi_without_reinforcement(
     c_a, f_ctd, mu, sigma_n, f_ck, f_cd, expected
 ):
-
     """Test the tau_rdi_without_reinforcement function."""
-    assert math.isclose(_concrete_interface_different_casting_times.tau_rdi_without_reinforcement(
-        c_a, f_ctd, mu, sigma_n, f_ck, f_cd
-    ),
-        expected, rel_tol=0.001)
+    assert math.isclose(
+        _concrete_interface_different_casting_times.tau_rdi_without_reinforcement(
+            c_a, f_ctd, mu, sigma_n, f_ck, f_cd
+        ),
+        expected,
+        rel_tol=0.001,
+    )
 
 
 @pytest.mark.parametrize(
@@ -57,9 +63,11 @@ def test_tau_rdi_without_reinforcement(
 def test_tau_rdi_with_reinforcement(
     c_r, k1, k2, mu, ro, sigma_n, alpha, beta_c, f_ck, f_yd, f_cd, expected
 ):
-
     """Test the tau_rdi_with_reinforcement function."""
-    assert math.isclose(_concrete_interface_different_casting_times.tau_rdi_with_reinforcement(
-        c_r, k1, k2, mu, ro, sigma_n, alpha, beta_c, f_ck, f_yd, f_cd
-    ),
-        expected, rel_tol=0.001)
+    assert math.isclose(
+        _concrete_interface_different_casting_times.tau_rdi_with_reinforcement(
+            c_r, k1, k2, mu, ro, sigma_n, alpha, beta_c, f_ck, f_yd, f_cd
+        ),
+        expected,
+        rel_tol=0.001,
+    )
