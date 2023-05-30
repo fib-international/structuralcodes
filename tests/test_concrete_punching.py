@@ -29,8 +29,8 @@ def test_m_ed(Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected):
 
 @pytest.mark.parametrize(
     '''l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-    l_min, inner, edge_par, edge_per, corner, m_rd,
-    m_pd, expected''',
+    inner, edge_par, edge_per, corner, m_rd,
+    x_direction, expected''',
     [
         (
             2e3,
@@ -46,7 +46,7 @@ def test_m_ed(Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected):
             False,
             False,
             140,
-            0,
+            True,
             0.013426875,
         ),
         (
@@ -63,7 +63,7 @@ def test_m_ed(Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected):
             False,
             False,
             140,
-            0,
+            False,
             0.41269218238,
         ),
     ],
@@ -82,7 +82,7 @@ def test_psi_punching(
     edge_per,
     corner,
     m_rd,
-    m_pd,
+    x_direction,
     expected,
 ):
     """Test the psi_punching function."""
@@ -101,7 +101,7 @@ def test_psi_punching(
             edge_per,
             corner,
             m_rd,
-            m_pd,
+            x_direction,
         ),
         expected,
         rel_tol=0.001,
