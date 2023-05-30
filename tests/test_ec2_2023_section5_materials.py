@@ -139,7 +139,7 @@ def test_hn_raises_errors(Ac, u):
     ],
 )
 def test_A_phi_correction_exp(hn, atm_conditions, expected):
-    """Test the A_phi_correction_exp"""
+    """Test the A_phi_correction_exp function"""
     assert math.isclose(
         _section5_materials.A_phi_correction_exp(hn, atm_conditions),
         expected,
@@ -154,3 +154,107 @@ def test_A_phi_correction_exp_raises_errors(hn, atm_conditions):
     """Test A_phi_correction_exp raises errors"""
     with pytest.raises(ValueError):
         _section5_materials.A_phi_correction_exp(hn, atm_conditions)
+
+
+@pytest.mark.parametrize(
+    't0, atm_conditions, _hn, concrete_class, expected',
+    [
+        (10, 'dry', 500, 'CS', 2.5),
+        (28, 'humid', 200, 'CN', 1.6),
+        (91, 'dry', 750, 'CR', 1.45),
+        (60, 'humid', 600, 'CS', 1.41016),
+    ],
+)
+def test_phi_50y_t0(t0, atm_conditions, _hn, concrete_class, expected):
+    """Test phi_50y_t0 function"""
+    assert math.isclose(
+        _section5_materials.phi_50y_t0(
+            t0, atm_conditions, _hn, concrete_class
+        ),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    't0, atm_conditions, _hn, concrete_class',
+    [
+        (-1, 'dry', 500, 'CS'),
+        (50, 'ASDF', 500, 'CS'),
+        (50, 'dry', 50, 'CS'),
+        (50, 'dry', 1500, 'CS'),
+        (50, 'dry', 500, 'ASD'),
+        (1, 'dry', 100, 'CS'),
+    ],
+)
+def test_phi_50y_t0_raises_errors(t0, atm_conditions, _hn, concrete_class):
+    """Test phi_50y_t0 raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.phi_50y_t0(t0, atm_conditions, _hn, concrete_class)
+
+
+@pytest.mark.parametrize(
+    'fck_28, atm_conditions, _hn, concrete_class, expected',
+    [
+        (35, 'dry', 500, 'CS', 0.45),
+        (50, 'humid', 1000, 'CN', 0.23),
+        (80, 'dry', 200, 'CR', 0.54),
+        (40, 'humid', 300, 'CS', 0.29),
+        (25, 'dry', 800, 'CN', 0.46333),
+    ],
+)
+def test_eps_cs_50y(fck_28, atm_conditions, _hn, concrete_class, expected):
+    """Test phi_50y_t0 function"""
+    assert math.isclose(
+        _section5_materials.eps_cs_50y(
+            fck_28, atm_conditions, _hn, concrete_class
+        ),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'fck_28, atm_conditions, _hn, concrete_class',
+    [
+        (15, 'dry', 500, 'CS'),
+        (90, 'dry', 500, 'CS'),
+        (50, 'ASDF', 500, 'CS'),
+        (50, 'dry', 50, 'CS'),
+        (50, 'dry', 1500, 'CS'),
+        (50, 'dry', 500, 'ASD'),
+        (1, 'dry', 100, 'CS'),
+    ],
+)
+def test_eps_cs_50y_raises_errors(fck_28, atm_conditions, _hn, concrete_class):
+    """Test eps_cs_50y raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.eps_cs_50y(
+            fck_28, atm_conditions, _hn, concrete_class
+        )
+
+
+@pytest.mark.parametrize(
+    'fck, fck_ref, expected',
+    [(60, 40, 0.873580464736299), (40, 45, 1), (60, 50, 0.941036028881029)],
+)
+def test_eta_cc(fck, fck_ref, expected):
+    """Test eta_cc function"""
+    assert math.isclose(
+        _section5_materials.eta_cc(fck, fck_ref),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize('fck, fck_ref', [(-10, 40), (0, 20), (30, -10)])
+def test_eta_cc_raises_errors(fck, fck_ref):
+    """Test eta_cc raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.eta_cc(fck, fck_ref)
+
+
+def test_k_tc_raises_errors(t_ref, t0, concrete_class):
+    """Test k_tc taises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.k_tc(t_ref, t0, concrete_class)
