@@ -16,9 +16,7 @@ from structuralcodes.codes.mc2010 import _concrete_punching
         (10e3, 20, 2e3, 3e3, False, False, False, True, 5000),
     ],
 )
-def test_m_ed(
-    Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected
-):
+def test_m_ed(Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected):
     """Test the m_ed function."""
     assert math.isclose(
         _concrete_punching.m_ed(
