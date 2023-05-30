@@ -14,7 +14,7 @@ from structuralcodes.materials.concrete import create_concrete, ConcreteMC2010
 )
 @pytest.mark.parametrize(
     'fck, expected_name',
-    [(20, 'C20'), (25, 'C25'), (30, 'C30'), (35, 'C35'), (40, 'C40')]
+    [(20, 'C20'), (25, 'C25'), (30, 'C30'), (35, 'C35'), (40, 'C40')],
 )
 def test_create_concrete(design_code_to_set, fck, expected_name):
     """Test creating a concrete with MC2010."""
@@ -61,10 +61,7 @@ def test_not_implemented_existing_error():
 # Series of tests using ConcreteMC2010 class
 
 
-fck_parametrized = pytest.mark.parametrize(
-    'fck',
-    [20, 25, 30, 35, 40]
-)
+fck_parametrized = pytest.mark.parametrize('fck', [20, 25, 30, 35, 40])
 
 
 @fck_parametrized
@@ -118,7 +115,7 @@ def test_reset_properties():
 
 fcm_parametrized = pytest.mark.parametrize(
     'test_input, expected',
-    [(12, 20), (35, 43), (55, 63), (90, 98), (120, 128)],    
+    [(12, 20), (35, 43), (55, 63), (90, 98), (120, 128)],
 )
 
 
@@ -126,9 +123,7 @@ fcm_parametrized = pytest.mark.parametrize(
 def test_fcm_getter(test_input, expected):
     """Test the fcm getter."""
     c = ConcreteMC2010(fck=test_input)
-    assert math.isclose(
-        c.fcm, expected
-    )
+    assert math.isclose(c.fcm, expected)
 
 
 @fcm_parametrized
@@ -137,9 +132,7 @@ def test_fcm_setter(test_input, expected):
     c = ConcreteMC2010(fck=test_input)
     c.fcm = expected
 
-    assert math.isclose(
-        c.fcm, expected
-    )
+    assert math.isclose(c.fcm, expected)
 
 
 @pytest.mark.parametrize(
@@ -181,9 +174,7 @@ fctm_parmetrized = pytest.mark.parametrize(
 def test_fctm_getter(test_input, expected):
     """Test the fctm getter function."""
     c = ConcreteMC2010(fck=test_input)
-    assert math.isclose(
-        c.fctm, expected, rel_tol=0.02
-    )
+    assert math.isclose(c.fctm, expected, rel_tol=0.02)
 
 
 @fctm_parmetrized
@@ -192,15 +183,10 @@ def test_fctm_setter(test_input, expected):
     c = ConcreteMC2010(fck=test_input)
     c.fctm = expected
 
-    assert math.isclose(
-        c.fctm, expected
-    )
+    assert math.isclose(c.fctm, expected)
 
 
-@pytest.mark.parametrize(
-    'test_input',
-    [10, 15, 20, 25, 30, 35]
-)
+@pytest.mark.parametrize('test_input', [10, 15, 20, 25, 30, 35])
 def test_fctm_setter_warning(test_input):
     """
     Test the fctm setter function.
@@ -240,9 +226,7 @@ fctkmin_parametrized = pytest.mark.parametrize(
 def test_fctkmin_getter(test_input, expected):
     """Test the fctkmin getter function."""
     c = ConcreteMC2010(fck=test_input)
-    assert math.isclose(
-        c.fctkmin, expected, rel_tol=0.031
-    )
+    assert math.isclose(c.fctkmin, expected, rel_tol=0.031)
 
 
 @fctkmin_parametrized
@@ -251,9 +235,7 @@ def test_fctkmin_setter(test_input, expected):
     c = ConcreteMC2010(fck=test_input)
     c.fctkmin = expected
 
-    assert math.isclose(
-        c.fctkmin, expected
-    )
+    assert math.isclose(c.fctkmin, expected)
 
 
 fctkmax_parmetrized = pytest.mark.parametrize(
@@ -284,9 +266,7 @@ fctkmax_parmetrized = pytest.mark.parametrize(
 def test_fctkmax_getter(test_input, expected):
     """Test the fctkmax getter function."""
     c = ConcreteMC2010(fck=test_input)
-    assert math.isclose(
-        c.fctkmax, expected, rel_tol=0.028
-    )
+    assert math.isclose(c.fctkmax, expected, rel_tol=0.028)
 
 
 @fctkmax_parmetrized
@@ -295,9 +275,7 @@ def test_fctkmax_setter(test_input, expected):
     c = ConcreteMC2010(fck=test_input)
     c.fctkmax = expected
 
-    assert math.isclose(
-        c.fctkmax, expected
-    )
+    assert math.isclose(c.fctkmax, expected)
 
 
 gf_parametrized = pytest.mark.parametrize(
@@ -316,9 +294,7 @@ gf_parametrized = pytest.mark.parametrize(
 def test_Gf_getter(test_input, expected):
     """Test the Gf getter function."""
     c = ConcreteMC2010(fck=test_input)
-    assert math.isclose(
-        c.Gf, expected, rel_tol=1e-5
-    )
+    assert math.isclose(c.Gf, expected, rel_tol=1e-5)
 
 
 @gf_parametrized
@@ -327,9 +303,4 @@ def test_Gf_setter(test_input, expected):
     c = ConcreteMC2010(fck=test_input)
     c.Gf = expected
 
-    assert math.isclose(
-        c.Gf, expected
-    )
-
-
-
+    assert math.isclose(c.Gf, expected)
