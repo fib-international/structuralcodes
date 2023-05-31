@@ -254,7 +254,148 @@ def test_eta_cc_raises_errors(fck, fck_ref):
         _section5_materials.eta_cc(fck, fck_ref)
 
 
+@pytest.mark.parametrize(
+    't_ref, t0, concrete_class, expected',
+    [
+        (20, 40, 'CR', 0.85),
+        (27, 180, 'CR', 1),
+        (57, 180, 'CS', 0.85),
+        (55, 180, 'CS', 1),
+    ],
+)
+def test_k_tc(t_ref, t0, concrete_class, expected):
+    """Test k_tc function"""
+    assert math.isclose(
+        _section5_materials.k_tc(t_ref, t0, concrete_class),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    't_ref, t0, concrete_class',
+    [(-3, 20, 'CS'), (10, -5, 'CS'), (10, 10, 'aadsf')],
+)
 def test_k_tc_raises_errors(t_ref, t0, concrete_class):
     """Test k_tc taises errors"""
     with pytest.raises(ValueError):
         _section5_materials.k_tc(t_ref, t0, concrete_class)
+
+
+@pytest.mark.parametrize(
+    'fck, eta_cc, k_tc, gamma_C, expected',
+    [
+        (40, 0.9, 0.85, 1.35, 22.6666666666667),
+        (35, 1, 1, 1.5, 23.3333333333333),
+        (50, 0.85, 0.85, 1.4, 25.8035714285714),
+    ],
+)
+def test_fcd(fck, eta_cc, k_tc, gamma_C, expected):
+    """Test fcd function"""
+    assert math.isclose(
+        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_C),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'fck, eta_cc, k_tc, gamma_C',
+    [
+        (-10, 0.5, 0.85, 1.5),
+        (40, -1, 0.85, 1.5),
+        (40, 2, 1, 1.5),
+        (40, 0.9, 0.9, 1.5),
+        (40, 0.9, 1.0, -2),
+    ],
+)
+def test_fcd_raises_errors(fck, eta_cc, k_tc, gamma_C):
+    """Test fcd function raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_C)
+
+
+@pytest.mark.parametrize(
+    't_ref, concrete_class, expected',
+    [(25, 'CR', 0.8), (30, 'CR', 0.7), (48, 'cs', 0.8), (70, 'CS', 0.7)],
+)
+def test_k_tt(t_ref, concrete_class, expected):
+    """Test k_tt function"""
+    assert math.isclose(
+        _section5_materials.k_tt(t_ref, concrete_class),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize('t_ref, concrete_class', [(-10, 'CR'), (20, 'ADSF')])
+def test_k_tt_raises_errors(t_ref, concrete_class):
+    """Test k_tt raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.k_tt(t_ref, concrete_class)
+
+
+@pytest.mark.parametrize(
+    'fctk_5, k_tt, gamma_C', [(-20, 0.8, 1.5), (40, 0.65, 1.3), (40, 0.7, -1)]
+)
+def test_fctd_raises_errors(fctk_5, k_tt, gamma_C):
+    """Test fctd raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.fctd(fctk_5, k_tt, gamma_C)
+
+
+@pytest.mark.parametrize(
+    'fctk_5, k_tt, gamma_C, expected',
+    [
+        (2, 0.7, 1.5, 0.933333333333333),
+        (3, 0.8, 1.25, 1.92),
+        (1.8, 0.7, 1.3, 0.969230769230769),
+    ],
+)
+def test_fctd(fctk_5, k_tt, gamma_C, expected):
+    """Test fctd"""
+    assert math.isclose(
+        _section5_materials.fctd(fctk_5, k_tt, gamma_C),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'fcm, expected',
+    [(30, 0.0021750627541677), (50, 0.00257882204904827), (80, 0.0028)],
+)
+def test_eps_c1(fcm, expected):
+    """Test eps_c1"""
+    assert math.isclose(
+        _section5_materials.eps_c1(fcm),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize('fcm', [(-20)])
+def test_eps_c1_raises_errors(fcm):
+    """Test eps_c1 raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.eps_c1(fcm)
+
+
+@pytest.mark.parametrize(
+    'fcm, expected',
+    [(70, 0.00301456920899968), (50, 0.0035), (80, 0.00286325067128806)],
+)
+def test_eps_cu1(fcm, expected):
+    """Test eps_cu1"""
+    assert math.isclose(
+        _section5_materials.eps_cu1(fcm),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize('fcm', [(-20)])
+def test_eps_cu1_raises_errors(fcm):
+    """Test eps_cu1 raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.eps_cu1(fcm)

@@ -524,6 +524,11 @@ def k_tc(t_ref: float, t0: float, concrete_class: str) -> float:
         ValueError: if t0 is less than 0
         ValueError if concrete_class is not 'CS', 'CN', or 'CR'
     """
+    if t_ref < 0:
+        raise ValueError(f't_ref={t_ref} must be larger than 0')
+    if t0 < 0:
+        raise ValueError(f't0={t0} must be larger than 0')
+
     concrete_class = concrete_class.upper().strip()
 
     if concrete_class not in ('CS', 'CN', 'CR'):
@@ -532,10 +537,207 @@ def k_tc(t_ref: float, t0: float, concrete_class: str) -> float:
             + 'should can only take "CS", "CN" or "CR" as values'
         )
 
-    if concrete_class in ('CR', 'CN') and t_ref <= 28 and t0 <= 90:
+    if concrete_class in ('CR', 'CN') and t_ref <= 28 and t0 > 90:
         return 1
 
-    if concrete_class == 'CS' and t_ref <= 56 and t0 <= 90:
+    if concrete_class == 'CS' and t_ref <= 56 and t0 > 90:
         return 1
 
     return 0.85
+
+
+def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
+    """Computes the value of the design compressive
+    strength of concrete
+
+    FprEN 1992-1-1, Eq. (5.3)
+
+    Args:
+        fck (float): characteristic compressive strength in MPa
+        _eta_cc (float): factor for measuring the difference between
+            the undistributed compressive strength of a cylinder and
+            the effective compressive strength in the real structural
+            member
+        _k_tc (float): factor for taking into consideration high
+            sustained loads and of time of loading
+        gamma_C (float): partial factor of concrete
+
+    Returns:
+        float: the design compressive strngth of concrete in MPa
+
+    Raises:
+        ValueError: if fck is less than 0
+        ValueError if _etc_cc is not between 0 and 1
+        ValueError: if _k_tc is not 0.85 or 1.0
+        ValueError: if gamma_C is less or equal to 0
+    """
+    if fck < 0:
+        raise ValueError(f'fck={fck} must be larger than 0')
+    if _eta_cc < 0 or _eta_cc > 1:
+        raise ValueError(f'_eta_cc={_eta_cc} must be between 0 and 1')
+    if _k_tc not in (0.85, 1.0):
+        raise ValueError(f'_k_tc={_k_tc} must be 1.0 or 0.85s')
+    if gamma_C <= 0:
+        raise ValueError(f'gamma_C={gamma_C} must be larger than 0')
+
+    return _eta_cc * _k_tc * fck / gamma_C
+
+
+def k_tt(t_ref: float, concrete_class: str) -> float:
+    """Computes the factor for considering the effect of high sustained
+    loads and of time of loading on concrete tensile strength
+
+    FprEN 1992-1-1, Eq. (5.5)
+
+    Args:
+        t_ref (float): the reference time in days
+        concrete_class (str): 'CS', 'CN' or 'CR'
+
+    Returns:
+        float: the factor value
+
+    Raises:
+        ValueError: if t_ref is less than 0
+        ValueError if concrete_class is not 'CS', 'CN', or 'CR'
+    """
+    if t_ref < 0:
+        raise ValueError(f't_ref={t_ref} must be larger than 0')
+
+    concrete_class = concrete_class.upper().strip()
+
+    if concrete_class not in ('CS', 'CN', 'CR'):
+        raise ValueError(
+            f'concrete_class={concrete_class}'
+            + 'should can only take "CS", "CN" or "CR" as values'
+        )
+
+    if concrete_class in ('CR', 'CN') and t_ref <= 28:
+        return 0.8
+
+    if concrete_class == 'CS' and t_ref <= 56:
+        return 0.8
+
+    return 0.7
+
+
+def fctd(_fctk_5: float, _k_tt: float, gamma_C: float) -> float:
+    """Computes the value of the design tensile strength of concrete
+
+    FprEN 1992-1-1, Eq. (5.5)
+
+    Args:
+        fctk_5 (float): the 5% mean concrete tensile strength fractile in MPa
+        _k_tt (float): the factor for considering the effect of high sustained
+            loads and of time of loading on concrete tensile strength
+        gamma_C (float): partial factor of concrete
+
+    Returns:
+        float: the design tensile strength of concrete in MPa
+
+    Raises:
+        ValueError: if fctk_5 is less than 0
+        ValueError: if _k_tt is not 0.7 or 0.8
+        ValueError: gamma_C is less or equal than 0
+    """
+    if _fctk_5 < 0:
+        raise ValueError(f'fctk_5={_fctk_5} must be larger or equal to 0')
+    if _k_tt not in (0.7, 0.8):
+        raise ValueError(f'_k_tt={_k_tt} must be 0.7 or 0.8')
+    if gamma_C <= 0:
+        raise ValueError(f'gamma_C={gamma_C} must be larger than 0')
+
+    return _k_tt * _fctk_5 / gamma_C
+
+
+def eps_c1(_fcm: float) -> float:
+    """Computes the strain at maximum compressive strength of
+    concrete (fcm)
+
+    FprEN 1992-1-1, Eq. (5.9)
+
+    Args:
+        _fcm (float): the mean strength of concrete in MPa
+
+    Returns:
+        float: the strain at maximum compressive strength of concrete
+
+    Raises:
+        ValueError: if _fcm is less than 0
+    """
+    if _fcm < 0:
+        raise ValueError(f'_fcm={_fcm} must be larger or equal to 0')
+
+    return min(0.7 * math.pow(_fcm, 1 / 3), 2.8) / 1000
+
+
+def eps_cu1(_fcm: float) -> float:
+    """Computes the strain at concrete failure of concrete
+
+    FprEN 1992-1-1, Eq. (5.10)
+
+    Args:
+        _fcm (float): the mean strength of concrete in MPa
+
+    Returns:
+        float: the maximum strength at failer of concrete
+
+    Raises:
+        ValueError: if _fcm is less than 0
+    """
+    if _fcm < 0:
+        raise ValueError(f'_fcm={_fcm} must be larger or equal to 0')
+
+    return min(2.8 + 14 * (1 - _fcm / 108) ** 4, 3.5) / 1000
+
+
+def sigma_c(
+    _Ecm: float, _fcm: float, _eps_c: float, _eps_c1: float, _eps_cu1: float
+) -> float:
+    """Computes the compressive stress of concrete given
+    a strain eps_c under short term uniaxial compression
+
+    FprEN 1992-1-1, Eq. (5.6)
+
+    Args:
+        _Ecm (float): the secant modulus between sigma_c=0 and
+            sigma_c=0.4*fcm in MPa
+        _fcm (float): the mean compressive strength of concrete
+            in MPa
+        _eps_c (float): the strain of concrete
+        _eps_c1 (float): the strain of concrete at stress _fcm
+        _eps_cu1 (float): the strain at failure of concrete
+
+    Returns:
+        float: the compressive stress of concrete in MPa
+
+    Raises:
+        ValueError: if _Ecm is less or equal to 0
+        ValueError: if _fcm is less or equal to 0
+        ValueError: if _eps_c is less than 0
+        ValueError: if _eps_c1 is less or equal to 0
+        ValueError: if _eps_cu1 is less or equal than 0
+        ValueError: if _eps_c is larger than _eps_cu1
+    """
+    if _Ecm <= 0:
+        raise ValueError(f'_Ecm={_Ecm} must be larger than 0')
+    if _fcm <= 0:
+        raise ValueError(f'_fcm={_fcm} must be larger than 0')
+    if _eps_c < 0:
+        raise ValueError(f'_eps_c={_eps_c} must be larger or equal to 0')
+    if _eps_c1 <= 0:
+        raise ValueError(f'_eps_c1={_eps_c1} must be larger than 0')
+    if _eps_cu1 < 0:
+        raise ValueError(f'_eps_cu1={_eps_cu1} must be larger or equal to 0')
+    if _eps_c < _eps_cu1:
+        raise ValueError(
+            f'Current strain value _eps_c={_eps_c} is larger than'
+            + f'the strain at failure _eps_cu1={_eps_cu1}'
+        )
+
+    k = 1.05 * _Ecm * _eps_c1 / _fcm
+    eta = _eps_c / _eps_c1
+
+    n = k * eta - eta**2
+    d = 1 + (k - 2) * eta
+
+    return n / d * _fcm
