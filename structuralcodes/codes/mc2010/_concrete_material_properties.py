@@ -136,7 +136,7 @@ def _check_cem_strength_class(cem_class: str) -> None:
         )
 
 
-def _get_Ecmod_coeffs(cem_class: str, fcm: float, agg_type: str) -> dict:
+def _get_Ecmod_coeffs(cem_class: str, _fcm: float, agg_type: str) -> dict:
     """Get the coefficients to calculate the (time-dependent) ccncrete
         modulus of elasticity belonging to the specified cement strength
         class, fcm and aggregate type.
@@ -145,7 +145,7 @@ def _get_Ecmod_coeffs(cem_class: str, fcm: float, agg_type: str) -> dict:
 
     args:
         cem_class (str): The cement strength class that is used.
-        fcm (float): The mean compressive strength of the concrete in
+        _fcm (float): The mean compressive strength of the concrete in
             MPa.
         agg_type (str): The type of aggregate used in the concrete.
 
@@ -155,14 +155,14 @@ def _get_Ecmod_coeffs(cem_class: str, fcm: float, agg_type: str) -> dict:
     _check_cem_strength_class(cem_class)
     _check_agg_types(agg_type)
     if cem_class.upper() in ["32.5 R", "42.5 N"]:
-        if fcm > 60:
+        if _fcm > 60:
             S = 0.20
         else:
             S = 0.25
     elif cem_class.upper() in ["42.5 R", "52.5 N", "52.5 R"]:
         S = 0.20
     elif cem_class.upper() in ["32.5 N"]:
-        if fcm > 60:
+        if _fcm > 60:
             S = 0.20
         else:
             S = 0.38
@@ -200,16 +200,16 @@ def _calc_E28(
             at 28 days in MPa.
     """
     if fc_value_type == "char":
-        fcm = fc + 8
+        _fcm = fc + 8
     elif fc_value_type == "mean":
-        fcm = fc
+        _fcm = fc
     else:
         raise ValueError(
             "The value_type of fc can only be one of the "
             "following: 'mean' or 'char'."
         )
 
-    return _EC0 * TABULAR_VALUES['alpha_e'] * (fcm / 10) ** (1 / 3)
+    return _EC0 * TABULAR_VALUES['alpha_e'] * (_fcm / 10) ** (1 / 3)
 
 
 def _calc_beta_cc(time: float, TABULAR_VALUES: dict) -> float:

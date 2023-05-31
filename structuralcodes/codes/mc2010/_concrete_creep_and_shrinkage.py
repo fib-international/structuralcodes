@@ -4,12 +4,19 @@
 
 TODO:
  - Add the light-weight aggregate formulas
- - Include the additional creep and shrinkage terms for other temperatures (see 5.1.10.7 of [1])
+ - Include the additional creep and shrinkage terms for other temperatures
+   (see 5.1.10.7 of [1])
 """
 
 import numpy as np
 
-from structuralcodes.codes.mc2010 import _concrete_material_properties
+from structuralcodes.codes.mc2010._concrete_material_properties import (
+    _check_agg_types,
+    _get_Ecmod_coeffs,
+    _calc_E,
+    _calc_E28,
+    _check_cem_strength_class,
+)
 
 
 def _check_fcm(fcm: float) -> None:
@@ -60,7 +67,7 @@ def _check_initial_stress(sigma: float, fcm: float) -> None:
             "Maximum allowable stress is 0.6*fcm. Current stress level "
             "is {round(abs(sigma)/fcm, 3)}*fcm."
         )
-    elif abs(sigma) > 0.4 * fcm:
+    if abs(sigma) > 0.4 * fcm:
         print(
             "WARNING: Initial stress is too high to consider the "
             "concrete as an aging linear visco-elastic material: "
@@ -138,32 +145,6 @@ def _check_env_temp(T: float) -> None:
             f"Code 2010, T={T} degrees Celcius. Creep and shrinkage will"
             " be calculated according to subclause 5.1.10 of the fib Model"
             " Code 2010."
-        )
-
-
-def _check_cem_strength_class(cem_class: str) -> None:
-    """Check if a cement strength class is used for which required model
-        parameters are available.
-
-    Defined in fib Model Code 2010 (2013), Eq. 5.1-73 and table 5.1-12.
-
-    args:
-        cem_class (str): The cement strength class that is used.
-            The choices are:
-                '32.5 N',
-                '32.5 R', '42.5 N',
-                '42.5 R', '52.5 N', '52.5 R'.
-
-    returns:
-        Raises a ValueError if a non-implemented cement strength class
-         is used.
-    """
-
-    CEM_CLASSES = ["32.5 N", "32.5 R", "42.5 N", "42.5 R", "52.5 N", "52.5 R"]
-    if cem_class.upper() not in CEM_CLASSES:
-        raise ValueError(
-            "Unknown cem_class used. Please choose one of "
-            f"the following {list(CEM_CLASSES)}."
         )
 
 
@@ -330,23 +311,18 @@ def _calc_beta_RH(rh: float, beta_s1: float) -> float:
     if rh < 1:
         if rh >= 0.99 * beta_s1:
             return 0.25
-        elif 0.4 * beta_s1 <= rh < 0.99 * beta_s1:
+        if 0.4 * beta_s1 <= rh < 0.99 * beta_s1:
             return -1.55 * (1 - rh**3)
-        else:
-            raise ValueError(
-                "The specified rh*beta_s1 is not in the "
-                "range of application."
-            )
-    else:
-        if rh >= 99 * beta_s1:
-            return 0.25
-        elif 40 * beta_s1 <= rh < 99 * beta_s1:
-            return -1.55 * (1 - (rh / 100) ** 3)
-        else:
-            raise ValueError(
-                "The specified rh*beta_s1 ratio is not in"
-                " the range of application."
-            )
+        raise ValueError(
+            "The specified rh*beta_s1 is not in the range of application."
+        )
+    if rh >= 99 * beta_s1:
+        return 0.25
+    if 40 * beta_s1 <= rh < 99 * beta_s1:
+        return -1.55 * (1 - (rh / 100) ** 3)
+    raise ValueError(
+        "The specified rh*beta_s1 ratio is not in the range of application."
+    )
 
 
 def calc_drying_shrinkage(
@@ -387,7 +363,7 @@ def calc_drying_shrinkage(
     """
     _check_RH(rh)
     _check_fcm(fcm)
-    _concrete_material_properties._check_agg_types(agg_type)
+    _check_agg_types(agg_type)
     _check_cem_strength_class(cem_class)
     TABULAR_VALUES = _get_creep_shrinkage_coeffs(cem_class)
     eps_csd0 = _calc_notional_drying_shrinkage(fcm, TABULAR_VALUES)
@@ -463,7 +439,7 @@ def calc_autogenous_shrinkage(
         numpy.ndarray: The autogenous shrinkage strains for the given
             times.
     """
-    _concrete_material_properties._check_agg_types(agg_type)
+    _check_agg_types(agg_type)
     _check_fcm(fcm)
     _check_cem_strength_class(cem_class)
     TABULAR_VALUES = _get_creep_shrinkage_coeffs(cem_class)
@@ -569,8 +545,7 @@ def _calc_beta_dc_RH(rh: float, notional_size: float) -> float:
     _check_RH(rh)
     if rh < 1:
         return (1 - rh) / ((0.1 * notional_size / 100) ** (1 / 3))
-    else:
-        return (1 - rh / 100) / ((0.1 * notional_size / 100) ** (1 / 3))
+    return (1 - rh / 100) / ((0.1 * notional_size / 100) ** (1 / 3))
 
 
 def _calc_beta_dc_t0(t0_adj: float) -> float:
@@ -768,15 +743,17 @@ def calc_creep_coefficient(
     _check_fcm(fcm)
     _check_RH(rh)
     _check_initial_stress(sigma, fcm)
-    _concrete_material_properties._check_agg_types(agg_type)
+    _check_agg_types(agg_type)
     _check_cem_strength_class(cem_class)
     TABULAR_VALUES = _get_creep_shrinkage_coeffs(cem_class)
     t0_adj = _calc_modified_t0(t0, T_cur, TABULAR_VALUES)
-    # Calculate the basic creep coefficient (phi_bc) (see Eqs. 5.1-64 - 5.1-66 of [1]):
+    # Calculate the basic creep coefficient (phi_bc)
+    # (see Eqs. 5.1-64 - 5.1-66 of [1]):
     beta_bc_fcm = _calc_beta_bc_fcm(fcm)
     beta_bc_t = _calc_beta_bc_t(time, t0, t0_adj)
     phi_bc = calc_basic_creep_coefficient(beta_bc_fcm, beta_bc_t)
-    # Calculate the drying creep coefficient (phi_dc) (see Eqs. 5.1-67 - 5.1-71 of [1]):
+    # Calculate the drying creep coefficient (phi_dc)
+    # (see Eqs. 5.1-67 - 5.1-71 of [1]):
     beta_dc_fcm = _calc_beta_dc_fcm(fcm)
     beta_dc_RH = _calc_beta_dc_RH(rh, notional_size)
     beta_dc_t0 = _calc_beta_dc_t0(t0_adj)
@@ -793,8 +770,7 @@ def calc_creep_coefficient(
     k_sigma = _calc_k_sigma(sigma, fcm)
     if 0.4 <= k_sigma <= 0.6:
         return np.exp(1.5 * (k_sigma - 0.4)) * phi
-    else:
-        return phi
+    return phi
 
 
 def calc_creep_compliance(
@@ -832,17 +808,11 @@ def calc_creep_compliance(
     """
     _check_age_at_loading(t0)
     _check_fcm(fcm)
-    _concrete_material_properties._check_agg_types(agg_type)
+    _check_agg_types(agg_type)
     _check_cem_strength_class(cem_class)
     TABULAR_VALUES_CEM = _get_creep_shrinkage_coeffs(cem_class)
-    TABULAR_VALUES_EC = _concrete_material_properties._get_Ecmod_coeffs(
-        cem_class, fcm, agg_type
-    )
+    TABULAR_VALUES_EC = _get_Ecmod_coeffs(cem_class, fcm, agg_type)
     t0_adj = _calc_modified_t0(t0, T_cur, TABULAR_VALUES_CEM)
-    Eci_t0 = _concrete_material_properties._calc_E(
-        t0_adj, fcm, TABULAR_VALUES_EC, "mean"
-    )
-    E28 = _concrete_material_properties._calc_E28(
-        fcm, TABULAR_VALUES_EC, "mean"
-    )
+    Eci_t0 = _calc_E(t0_adj, fcm, TABULAR_VALUES_EC, "mean")
+    E28 = _calc_E28(fcm, TABULAR_VALUES_EC, "mean")
     return (1 / Eci_t0) + (phi / E28)
