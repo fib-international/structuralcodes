@@ -70,7 +70,7 @@ def _alpha_l() -> float:
 
     Defined in EN 1992-1-1 (2005), Eq. (6.4).
     """
-    pass
+    # pass
 
 
 # Equation (6.7N)
@@ -139,18 +139,19 @@ def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
     # 0.2fcd.
     sigma_cp = Ned / Ac
     if sigma_cp <= 0.0:
-        return 1.0
+        value = 1.0
     elif sigma_cp <= 0.25 * fcd:
-        return 1.0 + sigma_cp / fcd
+        value = 1.0 + sigma_cp / fcd
     elif sigma_cp <= 0.5 * fcd:
-        return 1.25
+        value = 1.25
     elif sigma_cp < fcd:
-        return 2.5 * (1 - sigma_cp / fcd)
+        value = 2.5 * (1 - sigma_cp / fcd)
     else:
         raise ValueError(
             f"sigma_cp/fcd={sigma_cp/fcd}. Prestress has to be smaller"
             " than design compressive strength."
         )
+    return value
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -233,7 +234,7 @@ def Vrdc_prin_stress():
 
     EN 1992-1-1 (2005), Eq. (6.4)
     """
-    pass
+    # pass
 
 
 # Equation (6.5)

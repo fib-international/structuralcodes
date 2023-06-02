@@ -3,6 +3,7 @@ import math
 import pytest
 
 from structuralcodes.codes.ec2 import shear
+from structuralcodes.codes.ec2.shear import _k, _rho_L, _sigma_cp, _theta
 
 
 @pytest.mark.parametrize(
@@ -18,7 +19,7 @@ from structuralcodes.codes.ec2 import shear
 )
 def test_k(d, expected):
     """Test the _k function."""
-    assert math.isclose(shear._k(d), expected, rel_tol=0.01)
+    assert math.isclose(_k(d), expected, rel_tol=0.01)
 
 
 @pytest.mark.parametrize(
@@ -33,7 +34,7 @@ def test_k(d, expected):
 )
 def test_rho_L(Asl, bw, d, expected):
     """Test the _rho_L function"""
-    assert math.isclose(shear._rho_L(Asl, bw, d), expected, rel_tol=0.01)
+    assert math.isclose(_rho_L(Asl, bw, d), expected, rel_tol=0.01)
 
 
 @pytest.mark.parametrize(
@@ -49,12 +50,12 @@ def test_rho_L(Asl, bw, d, expected):
 )
 def test_sigma_cp(Ned, Ac, fcd, expected):
     """Test the sigma_cp function."""
-    assert math.isclose(shear._sigma_cp(Ned, Ac, fcd), expected, rel_tol=0.01)
+    assert math.isclose(_sigma_cp(Ned, Ac, fcd), expected, rel_tol=0.01)
 
 
 def test_alpha_l():
     """To be included later."""
-    pass
+    # pass
 
 
 @pytest.mark.parametrize(
@@ -92,7 +93,7 @@ def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
 
 def test_Vrdc_prin_stress():
     """To be included later."""
-    pass
+    # pass
 
 
 @pytest.mark.parametrize(
@@ -137,7 +138,7 @@ def test_v(fck, expected):
 def test_theta(theta, cot_min, cot_max, expected):
     """Test the theta function."""
     with pytest.raises(ValueError) as exc_info:
-        assert shear._theta(theta, cot_min, cot_max) == expected
+        assert _theta(theta, cot_min, cot_max) == expected
     assert str(exc_info.value).startswith("Wrong value for theta is chosen.")
 
 
