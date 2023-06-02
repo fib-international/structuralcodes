@@ -19,7 +19,7 @@ def _k(d: float) -> float:
         float: Correction factor to account for the cross-sectional
             size on the shear resistance.
     """
-    return min(1. + math.sqrt(200./d), 2.0)
+    return min(1.0 + math.sqrt(200.0 / d), 2.0)
 
 
 # Part of Equation (6.2).
@@ -40,7 +40,7 @@ def _rho_L(Asl: float, bw: float, d: float) -> float:
         float: The maximum allowable reinforcement ratio of the
             longitudinal reinforcement, unitless.
     """
-    return min(Asl/(bw*d), 0.02)
+    return min(Asl / (bw * d), 0.02)
 
 
 # Part of Equation(6.2).
@@ -59,7 +59,7 @@ def _sigma_cp(NEd: float, Ac: float, fcd: float) -> float:
         float: The maximum allowable average prestress in the
             cross-section in MPa.
     """
-    return min(NEd/Ac, 0.2*fcd)
+    return min(NEd / Ac, 0.2 * fcd)
 
 
 # Part of Equation 6.4)
@@ -74,7 +74,7 @@ def _alpha_l() -> float:
 
 
 # Equation (6.7N)
-def _theta(theta: float, cot_min: float = 1., cot_max: float = 2.5) -> None:
+def _theta(theta: float, cot_min: float = 1.0, cot_max: float = 2.5) -> None:
     """Check if the provided angle theta is within the bounds provided
         by the code.
 
@@ -99,8 +99,10 @@ def _theta(theta: float, cot_min: float = 1., cot_max: float = 2.5) -> None:
     # Use round to allow less precise angles (i.e. 21.8 degrees instead
     # of 21.801..... degrees for cot_max = 2.5).
     theta_ = math.radians(theta)
-    if (round(1./math.tan(theta_), 2) < cot_min
-            or round(1./math.tan(theta_), 2) > cot_max):
+    if (
+        round(1.0 / math.tan(theta_), 2) < cot_min
+        or round(1.0 / math.tan(theta_), 2) > cot_max
+    ):
         raise ValueError(
             "Wrong value for theta is chosen. Theta has "
             f"to be chosen such that 1/tan(theta) lies between "
@@ -135,20 +137,21 @@ def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
     """
     # No function call for sigma_cp, value is allowed to be higher than
     # 0.2fcd.
-    sigma_cp = Ned/Ac
-    if sigma_cp <= 0.:
-        return 1.
-    elif sigma_cp <= 0.25*fcd:
-        return 1. + sigma_cp/fcd
-    elif sigma_cp <= 0.5*fcd:
+    sigma_cp = Ned / Ac
+    if sigma_cp <= 0.0:
+        return 1.0
+    elif sigma_cp <= 0.25 * fcd:
+        return 1.0 + sigma_cp / fcd
+    elif sigma_cp <= 0.5 * fcd:
         return 1.25
     elif sigma_cp < fcd:
-        return 2.5*(1 - sigma_cp/fcd)
+        return 2.5 * (1 - sigma_cp / fcd)
     else:
         raise ValueError(
             f"sigma_cp/fcd={sigma_cp/fcd}. Prestress has to be smaller"
             " than design compressive strength."
         )
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                               NORMAL CONCRETE                               #
@@ -157,8 +160,14 @@ def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
 
 # Equation (6.2 a + b)
 def VRdc(
-        fck: float, d: float, Asl: float, bw: float, NEd: float,
-        Ac: float, k1: float = 0.15, gamma_c: float = 1.5
+    fck: float,
+    d: float,
+    Asl: float,
+    bw: float,
+    NEd: float,
+    Ac: float,
+    k1: float = 0.15,
+    gamma_c: float = 1.5,
 ) -> float:
     """Compute the design strength of the shear resistance.
 
@@ -186,13 +195,17 @@ def VRdc(
     Returns:
         float: The concrete shear resistance in MPa.
     """
-    fcd = fck/gamma_c
-    CRdc = 0.18/gamma_c
-    return max(
-        CRdc*_k(d)*(100*_rho_L(Asl, bw, d)*fck)**(1./3.)
-        + k1*_sigma_cp(NEd, Ac, fcd),  # VRdc
-        vmin(fck, d) + k1*_sigma_cp(NEd, Ac, fcd)  # VRdcmin
-        )*bw*d
+    fcd = fck / gamma_c
+    CRdc = 0.18 / gamma_c
+    return (
+        max(
+            CRdc * _k(d) * (100 * _rho_L(Asl, bw, d) * fck) ** (1.0 / 3.0)
+            + k1 * _sigma_cp(NEd, Ac, fcd),  # VRdc
+            vmin(fck, d) + k1 * _sigma_cp(NEd, Ac, fcd),  # VRdcmin
+        )
+        * bw
+        * d
+    )
 
 
 # Equation (6.3N)
@@ -209,7 +222,7 @@ def vmin(fck: float, d: float) -> float:
         float: The minimal shear stress resistance of the concrete in
             MPa.
     """
-    return 0.035*_k(d)**(3./2.)*fck**(1/2)
+    return 0.035 * _k(d) ** (3.0 / 2.0) * fck ** (1 / 2)
 
 
 # Equation (6.4)
@@ -246,8 +259,8 @@ def VEdmax_unreinf(
             calculations, the unreduced shear force has to comply to
             this value.
     """
-    fcd = fck/gamma_c
-    return 0.5*bw*d*v(fck)*fcd
+    fcd = fck / gamma_c
+    return 0.5 * bw * d * v(fck) * fcd
 
 
 # Equation (6.6N)
@@ -264,7 +277,8 @@ def v(fck: float) -> float:
         float: A concrete reduction factor to account for concrete
             cracked by shear forces.
     """
-    return 0.6*(1 - fck/250.)
+    return 0.6 * (1 - fck / 250.0)
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                         SHEAR REINFORCEMENT                         #
@@ -274,8 +288,13 @@ def v(fck: float) -> float:
 # Equation (6.8 & 6.13)
 # For alpha == 90 degrees, Equation (6.13) reduces to Equation (6.8).
 def VRds(
-        Asw: float, s: float, z: float, theta: float, fyk: float,
-        alpha: float = 90., gamma_s: float = 1.15
+    Asw: float,
+    s: float,
+    z: float,
+    theta: float,
+    fyk: float,
+    alpha: float = 90.0,
+    gamma_s: float = 1.15,
 ) -> float:
     """Calculate the shear resistance of vertical shear reinforcement.
 
@@ -305,19 +324,31 @@ def VRds(
     Raises:
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
     """
-    fywd = fyk/gamma_s
+    fywd = fyk / gamma_s
     _theta(theta)
     theta = math.radians(theta)
     alpha = math.radians(alpha)
-    return Asw/s*z*fywd*(1/math.tan(theta) + 1./math.tan(alpha))\
+    return (
+        Asw
+        / s
+        * z
+        * fywd
+        * (1 / math.tan(theta) + 1.0 / math.tan(alpha))
         * math.sin(alpha)
+    )
 
 
 # Equation (6.9 & 6.14)
 # For alpha == 90 degrees, Equation (6.14) reduces to Equation (6.9).
 def VRdmax(
-        bw: float, z: float, fck: float, theta: float, NEd: float,
-        Ac: float, gamma_c: float = 1.5, alpha: float = 90.
+    bw: float,
+    z: float,
+    fck: float,
+    theta: float,
+    NEd: float,
+    Ac: float,
+    gamma_c: float = 1.5,
+    alpha: float = 90.0,
 ) -> float:
     """Calculate the maximum shear strength of the compression strut.
 
@@ -347,20 +378,32 @@ def VRdmax(
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
         ValueError: When sigma_cp > fcd.
     """
-    fcd = fck/gamma_c
+    fcd = fck / gamma_c
     _theta(theta)
     theta = math.radians(theta)
     alpha = math.radians(alpha)
-    return alpha_cw(NEd, Ac, fcd)*bw*z*v(fck)*fcd \
-        * (1./math.tan(theta) + 1./math.tan(alpha))\
-        / (1 + 1./math.tan(theta)**2)
+    return (
+        alpha_cw(NEd, Ac, fcd)
+        * bw
+        * z
+        * v(fck)
+        * fcd
+        * (1.0 / math.tan(theta) + 1.0 / math.tan(alpha))
+        / (1 + 1.0 / math.tan(theta) ** 2)
+    )
 
 
 # Equation (6.12 & 6.15)
 # For alpha == 90 degrees, Equation (6.15) reduces to Equation (6.12).
 def Asw_max(
-    fcd: float, fck: float, bw: float, s: float, fywd: float,
-    NEd: float, Ac: float, alpha: float = 90.
+    fcd: float,
+    fck: float,
+    bw: float,
+    s: float,
+    fywd: float,
+    NEd: float,
+    Ac: float,
+    alpha: float = 90.0,
 ) -> float:
     """Calculate the maximum cross-sectional area of the shear
         reinforcement, based on the assumption 1/tan(theta) == 1.
@@ -388,5 +431,13 @@ def Asw_max(
         ValueError: When sigma_cp > fcd.
     """
     alpha = math.radians(alpha)
-    return 1./2.*alpha_cw(NEd, Ac, fcd)*v(fck)*fcd*bw*s \
-        / (fywd*math.sin(alpha))
+    return (
+        1.0
+        / 2.0
+        * alpha_cw(NEd, Ac, fcd)
+        * v(fck)
+        * fcd
+        * bw
+        * s
+        / (fywd * math.sin(alpha))
+    )
