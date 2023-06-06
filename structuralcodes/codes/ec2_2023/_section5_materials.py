@@ -1,6 +1,7 @@
 """Functions from Section 5 of FprEN 1992-1-1:2022"""
 
 import math
+import typing as t
 import numpy as np
 import scipy.interpolate
 
@@ -246,11 +247,11 @@ def phi_50y_t0(
         )
 
     if concrete_class == 'CS':
-        t = (3, 10, 32, 91, 365)
+        _t = (3, 10, 32, 91, 365)
     elif concrete_class == 'CN':
-        t = (1, 7, 28, 91, 365)
+        _t = (1, 7, 28, 91, 365)
     elif concrete_class == 'CR':
-        t = (1, 3, 23, 91, 365)
+        _t = (1, 3, 23, 91, 365)
 
     h_v = (100, 200, 500, 1000)
 
@@ -301,7 +302,7 @@ def phi_50y_t0(
             0.8,
         )
 
-    grid = np.array(np.meshgrid(t, h_v)).T.reshape(-1, 2)
+    grid = np.array(np.meshgrid(_t, h_v)).T.reshape(-1, 2)
     p = (t0, _hn)
 
     interp = scipy.interpolate.griddata(grid, values, p, method='linear')
@@ -728,7 +729,7 @@ def sigma_c(
         raise ValueError(f'_eps_c1={_eps_c1} must be larger than 0')
     if _eps_cu1 < 0:
         raise ValueError(f'_eps_cu1={_eps_cu1} must be larger or equal to 0')
-    if _eps_c < _eps_cu1:
+    if _eps_c > _eps_cu1:
         raise ValueError(
             f'Current strain value _eps_c={_eps_c} is larger than'
             + f'the strain at failure _eps_cu1={_eps_cu1}'
@@ -741,3 +742,383 @@ def sigma_c(
     d = 1 + (k - 2) * eta
 
     return n / d * _fcm
+
+
+def weight_c(concrete_type: str) -> float:
+    """
+    Returns the mean unit weight of concrete in kN/m3
+
+    FprEN 1992-1-1, 5.1.6-5
+
+    Args:
+        concrete_type (str):
+            'nc' for normal concrete
+            'npc' for normal plain concrete
+
+    Returns:
+        float: mean unit weight in kN/m3
+
+    Raises:
+        ValueError: if concrete_type is not 'nc' or 'npc'
+    """
+    concrete_type = concrete_type.lower().strip()
+
+    if concrete_type == 'nc':
+        return 25
+    if concrete_type == 'npc':
+        return 24
+
+    raise ValueError(
+        f'concrete_type={concrete_type} can only take'
+        + '"nc" or "npc" as values'
+    )
+
+
+def alpha_c_th() -> float:
+    """
+    Returns the linear coefficient of thermal expansion in 1/Cº
+    for concrete
+
+    FprEN 1992-1-1, 5.1.6-6
+
+    Returns:
+        float: the linear coefficient of thermal expansion in 1/Cº
+            for concrete
+    """
+    return 10 * 10e-6
+
+
+def r_steel_stress_strain_params(
+    ductility_class: str,
+) -> t.Tuple[float, float]:
+    """Returns the properties that define the stress-strain diagram
+    for reinforced steel k and eps_uk
+
+    FprEN 1992-1-1, Table 5.5
+
+    Args:
+        ductility_class (str): 'A', 'B' or 'C'
+
+    Returns:
+        Tuple(float, float): with the characteristic value k
+            and the characteristic strain at maximum force eps_uk
+
+    Raises:
+        ValueError: if ductility class is not 'A', 'B' or 'C'
+    """
+    ductility_class = ductility_class.upper().strip()
+
+    if ductility_class == 'A':
+        return (1.05, 0.025)
+    if ductility_class == 'B':
+        return (1.08, 0.05)
+    if ductility_class == 'C':
+        return (1.25, 0.075)
+    raise ValueError(
+        f'ductility_class={ductility_class} can only '
+        + 'take as values "A", "B" or "C'
+    )
+
+
+def Es() -> float:
+    """Returns the value of the modulus of elasticity for
+    weldable reinforcing steel.
+
+    FprEN 1992-1-1, 5.2.4-3
+
+    Returns:
+        float: modulus of elasticity in MPa
+    """
+    return 200000
+
+
+def alpha_s_th() -> float:
+    """Returns the linear coefficient of thermal expansion in 1/Cº
+    for weldable reinforced steel
+
+    FprEN 1992-1-1, 5.2.4-5
+
+    Returns:
+        float: the linear coefficient of thermal expansion in 1/Cº
+            for weldable reinforce steel
+    """
+    return 10 * 10e-6
+
+
+def weight_s() -> float:
+    """Returns the mean unit weight of reinforced steel
+    for the purposes of design in kN/m3
+
+    FprEN 1992-1-1, 5.2.4-4
+
+    Returns:
+        float: the mean unit weight in kN/m3
+    """
+    return 78.5
+
+
+def fyd(fyk: float, gamma_S: float) -> float:
+    """Design value for the yielding stress for welding
+    reinforcing steel
+
+    FprEN 1992-1-1, Eq (5.11)
+
+    Args:
+        fyk (float): characteristic yield stress for the steel in MPa
+        gamma_S (float): safety coefficient
+
+    Returns:
+        float: design yielding stress for steel in MPa
+
+    Raises:
+        ValueError: if fyk is less than 0
+        ValueError: if gamma_S is less or equal to 0
+    """
+    if fyk < 0:
+        raise ValueError(f'fyk={fyk} cannot be less than 0')
+    if gamma_S <= 0:
+        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+
+    return fyk / gamma_S
+
+
+def eps_ud(eps_uk: float, gamma_S: float) -> float:
+    """Design value for the ultimate limit strain
+    welding reinforcing steel
+
+    FprEN 1992-1-1, 5.2.4-2
+
+    Args:
+        eps_uk (float): characteristic ultimate limit
+            strain
+        gamma_S (float): safety coefficient
+
+    Returns:
+        float: design ultimate strain limit
+
+    Raises:
+        ValueError: if eps_uk is less than 0
+        ValueError: if gamma_S is less or equal to 0
+    """
+    if eps_uk < 0:
+        raise ValueError(f'eps_uk={eps_uk} must be equal or larger to 0')
+    if gamma_S < 0:
+        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+
+    return eps_uk / gamma_S
+
+
+def sigma_s(
+    eps: float, fy: float, k: float, eps_u: float, _Es: float = 200000
+) -> float:
+    """Compute the stress for welded reinforcing steel
+    in MPa for a given strain
+
+    FprEN 1992-1-1, 5.2.4
+
+    Args:
+        eps (float): the strain value
+        fy (float): the yielding stress in MPa.
+            fyd: for the design strength
+            fyk: for the characteristic strength
+        k (float): curve parameter. Ratio between the ultimate
+            stress and the yielding stress.
+            k = 1 for horizontal post-elastic branch without
+            strain limit
+        eps_u (float): ultimate strain at failure
+            eps_ud: for the design ultimate strain
+            eps_uk: for the characteristic ultimate strain
+
+    Keyword args:
+        _Es (float): the modulus of elasticity for reinforcing steel
+    Returns:
+        float: stre nominal stress in MPa
+
+    Raises:
+        ValueError: if eps is less than 0 or larger than eps_uk
+        ValueError: if _Es is less or equal to 0
+        ValueError: if fy is less or equal to 0
+        ValueError: if k is less than 1
+        ValueError: if eps_u is less or equal to 0 and k > 1
+    """
+    if eps < 0:
+        raise ValueError(f'eps={eps} must be larger or equal to 0')
+    if eps_u <= 0:
+        raise ValueError(f'eps_u={eps_u} must be larger than 0')
+    if eps > eps_u and k > 1:
+        raise ValueError(
+            f'eps={eps} must be equal o less than'
+            + 'eps_uk={eps_u} when k is larger than 1'
+        )
+    if _Es <= 0:
+        raise ValueError(f'_Es={_Es} must be larger than 0')
+    if fy <= 0:
+        raise ValueError(f'fyk={fy} must be larger than 0')
+    if k < 0:
+        raise ValueError(f'k={k} must be larger than 1')
+
+    eps_y = fy / _Es
+
+    # If in elastic area
+    if eps <= eps_y:
+        return eps * _Es
+
+    # If in plastic area
+    m = fy * (k - 1) / (eps_u - eps_y)
+    return fy + m * (eps - eps_y)
+
+
+def p_steel_stress_strain_params(
+    prestress_class: str, element: str
+) -> t.Tuple[float, float]:
+    """Computes the stress-strain-diagram parameters
+    fp01k and fpk
+
+    FprEN 1992-1-1, 5.3.3
+
+    Args:
+        prestress_class (str): possible values: Y1560, 1670,
+            Y1770, Y1860, Y1770, Y1860, Y1960, Y2060,
+            Y1030, Y1050, Y1100 and Y1230
+        element (str):
+            'W' for Wires
+            'S' for Strands
+            'B' for Bars
+
+    Returns:
+        Tuple(float, float): with the value of fp01k and fpk in MPa
+
+    Raises:
+        ValueError: if combination of prestress_class and element
+            is not a possible value from the range
+    """
+    prestress_class = prestress_class.upper().strip()
+    element = element.upper().strip()
+    data = {
+        'W': {
+            'Y1570': (1380, 1570),
+            'Y1670': (1470, 1670),
+            'Y1770': (1550, 1770),
+            'Y1860': (1650, 1860),
+        },
+        'S': {
+            'Y1770': (1560, 1770),
+            'Y1860': (1640, 1860),
+            'Y1960': (1740, 1960),
+            'Y2060': (1830, 2060),
+        },
+        'B': {
+            'Y1030': (835, 1030),
+            'Y1050': (950, 1050),
+            'Y1100': (900, 1100),
+            'Y1230': (1080, 1230),
+        },
+    }
+
+    if element not in data:
+        raise ValueError(f'element={element} has not a valid value')
+
+    material = data[element]
+
+    if prestress_class not in material:
+        raise ValueError(
+            f'prestress_class={prestress_class} has not a valid value'
+        )
+
+    return material[prestress_class]
+
+
+def fpd(fp01k: float, gamma_S: float) -> float:
+    """Computes the design value for the prestressing steel stress
+
+    FprEN 1992-1-1, 5.3.3
+
+    Args:
+        fp01k (float): the 0.1% proof stress in MPa
+        gamma_S (float): the safety coefficient
+
+    Returns:
+        float: the design value for the design prestressing
+            steel stress in MPa
+
+    Raises:
+        ValueError: if fp01k is less than 0
+        ValueError: if gamma_S is less or equal to 0
+    """
+    if fp01k < 0:
+        raise ValueError(f'fp01k={fp01k} must be larger or equal to 0')
+    if gamma_S <= 0:
+        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+
+    return fp01k / gamma_S
+
+
+def Ep() -> float:
+    """Returns the modulus of elasticity for prestressing steel
+    in MPa
+
+    Returns:
+        float: modulus of elasticity in MPa
+    """
+    return 200000
+
+
+def sigma_p(
+    eps: float,
+    fpy: float,
+    fpu: float,
+    eps_u: float = 0.035,
+    _Ep: float = 200000,
+) -> float:
+    """Computes the stress for prestressing steel as a
+    function of the strain
+
+    FprEN 1992-1-1, 5.3.3
+
+    Args:
+        eps (float): strain value
+        fpy (float): yielding stress of the steel in MPa
+            fd for design stress values
+            fp01k for nominal stress values
+        fpu (float): the maximum stress at eps_u in MPa
+            fpd: for design stress values
+            fpk: for nominal stress values
+            fpu == fpy for horizontal post-elastic branch without
+            strain limit.
+
+    Keyword Args:
+        eps_u (float): ultimate strain.
+            eps_uk = 0.035 for nominal ultimate strain
+            eps_ud for design ultimate strain
+        _Ep (float): modulus of elasticity of prestressing steel
+            in MPa
+
+    Raises:
+        ValueError: if eps is less than 0 or larger than eps_u
+        ValueError: if fpy is less or equal to 0
+        ValueError: if fpu is less than fpy
+        ValueError: if eps_u is lower or equal to 0
+        ValueError: if _Ep is less or equal to 0
+    """
+    if eps < 0:
+        raise ValueError(f'eps={eps} must be larger or equal to 0')
+    if eps_u <= 0:
+        raise ValueError(f'eps_u={eps_u} must be larger than 0')
+    if eps_u < eps and fpy != fpu:
+        raise ValueError(f'eps_u={eps_u} must be larger than eps={eps}')
+    if fpy <= 0:
+        raise ValueError(f'fpy={fpy} must be larger than 0')
+    if fpu < fpy:
+        raise ValueError(f'fpu={fpy} must be larger or equal to fpy={fpy}')
+    if _Ep <= 0:
+        raise ValueError(f'_Ep={_Ep} must be larger than 0')
+
+    eps_y = fpy / _Ep
+
+    # If elastic
+    if eps <= eps_y:
+        return eps * _Ep
+
+    # If plastic
+    m = (fpu - fpy) / (eps_u - eps_y)
+    return fpy + m * (eps - eps_y)

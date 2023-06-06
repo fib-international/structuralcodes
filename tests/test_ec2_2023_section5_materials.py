@@ -399,3 +399,245 @@ def test_eps_cu1_raises_errors(fcm):
     """Test eps_cu1 raises errors"""
     with pytest.raises(ValueError):
         _section5_materials.eps_cu1(fcm)
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, eps_c, eps_c1, eps_cu1, expected',
+    [
+        (37562, 50, 0.0025, 0.00257882204904827, 0.0035, 49.9547867728839),
+        (25000, 80, 0.002, 0.0028, 0.00286325067128806, 51.3165266106443),
+    ],
+)
+def test_sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1, expected):
+    """Test sigma_c function"""
+    assert math.isclose(
+        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, eps_c, eps_c1, eps_cu1',
+    [
+        (-37562, 50, 0.0025, 0.00257882204904827, 0.0035),
+        (37562, -50, 0.0025, 0.00257882204904827, 0.0035),
+        (37562, 50, -0.0025, 0.00257882204904827, 0.0035),
+        (37562, 50, 0.0025, 0, 0.0035),
+        (37562, 50, 0.0025, -0.00257882204904827, 0.0035),
+        (37562, 50, 0.0025, 0.00257882204904827, -0.0035),
+        (37562, 50, 0.02, 0.00257882204904827, 0.0035),
+    ],
+)
+def test_sigma_c_raises_errors(Ecm, fcm, eps_c, eps_c1, eps_cu1):
+    """Test sigma_c_raises_errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1)
+
+
+@pytest.mark.parametrize('concrete_type, expected', [('nc', 25), ('npc', 24)])
+def test_concrete_mean_unit_weight(concrete_type, expected):
+    """Test concrete_mean_weight function"""
+    assert math.isclose(
+        _section5_materials.weight_c(concrete_type),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'concrete_type',
+    [
+        ('ADSF'),
+    ],
+)
+def test_weight_c_raises_errors(concrete_type):
+    """Test weight_c raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.weight_c(concrete_type)
+
+
+def test_alpha_c_th():
+    """Test alpha_c_th function"""
+    assert math.isclose(
+        _section5_materials.alpha_c_th(), 10 * 10e-6, rel_tol=10e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'ductility_class, expected_k, expected_eps_uk',
+    [('A', 1.05, 0.025), ('B', 1.08, 0.05), ('C', 1.25, 0.075)],
+)
+def test_r_steel_stress_strain_params(
+    ductility_class, expected_k, expected_eps_uk
+):
+    """Test r_steel_stress_strain retuns proper values"""
+    params = _section5_materials.r_steel_stress_strain_params(ductility_class)
+    assert math.isclose(params[0], expected_k, rel_tol=10e-5)
+    assert math.isclose(params[1], expected_eps_uk, rel_tol=10e-5)
+
+
+def test_r_steel_stress_strain_params_raises_errors():
+    """Test r_steel_stress_strain_params raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.r_steel_stress_strain_params('asdf')
+
+
+def test_Es():
+    """Test Es function"""
+    assert math.isclose(_section5_materials.Es(), 200000, rel_tol=10e-5)
+
+
+def test_alpha_s_th():
+    """Test alpha_s_th function"""
+    assert math.isclose(
+        _section5_materials.alpha_s_th(), 10 * 10e-6, rel_tol=10e-5
+    )
+
+
+def test_weight_s():
+    """Test weight_s function"""
+    assert math.isclose(_section5_materials.weight_s(), 78.5, rel_tol=10e-5)
+
+
+@pytest.mark.parametrize(
+    'fyk, gamma_S, expected',
+    [(500, 1.15, 434.782609), (600, 1.15, 521.739130), (400, 1, 400)],
+)
+def test_fyd(fyk, gamma_S, expected):
+    """Test fyd function"""
+    assert math.isclose(
+        _section5_materials.fyd(fyk, gamma_S), expected, rel_tol=10e-5
+    )
+
+
+@pytest.mark.parametrize('fyk, gamma_S', [(-300, 1.15), (600, -3)])
+def test_fyd_raises_errors(fyk, gamma_S):
+    """Test fyd function raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.fyd(fyk, gamma_S)
+
+
+@pytest.mark.parametrize(
+    'eps_uk, gamma_S, expected',
+    [
+        (0.025, 1.15, 0.02174),
+        (0.05, 1, 0.05),
+    ],
+)
+def test_eps_ud(eps_uk, gamma_S, expected):
+    """Test eps_ud function"""
+    assert math.isclose(
+        _section5_materials.eps_ud(eps_uk, gamma_S), expected, rel_tol=10e-5
+    )
+
+
+@pytest.mark.parametrize('eps_uk, gamma_S', [(-0.025, 1.15), (0.025, -1)])
+def test_eps_ud_raises_errors(eps_uk, gamma_S):
+    """Test eps_ud raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.eps_ud(eps_uk, gamma_S)
+
+
+@pytest.mark.parametrize(
+    'eps, fy, k, eps_u, expected',
+    [
+        (0.015, 500, 1.05, 0.025, 513.888888888889),
+        (0.043, 521, 1, 0.0435, 521),
+        (0.001, 400, 1.25, 0.075, 200),
+        (0.043, 521, 1.08, 0.0435, 562.170402249664),
+    ],
+)
+def test_sigma_s(eps, fy, k, eps_u, expected):
+    """Test sigma_s function"""
+    assert math.isclose(
+        _section5_materials.sigma_s(eps, fy, k, eps_u), expected, rel_tol=10e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'fp01k, gamma_S, expected',
+    [(1560, 1.15, 1356.521739), (1740, 1, 1740), (950, 1.15, 826.086956)],
+)
+def test_fpd(fp01k, gamma_S, expected):
+    """Test fpd function"""
+    assert math.isclose(
+        _section5_materials.fpd(fp01k, gamma_S), expected, rel_tol=10e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'prestress_class, element, expected',
+    [
+        ('Y1770', 'W', (1550, 1770)),
+        ('Y1960', 'S', (1740, 1960)),
+        ('Y1030', 'b', (835, 1030)),
+    ],
+)
+def test_p_steel_strain_params(prestress_class, element, expected):
+    """Test p_steel_strain_params"""
+    assert (
+        _section5_materials.p_steel_stress_strain_params(
+            prestress_class, element
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    'prestress_class, element', [('Y1770', 'o'), ('ASDF', 'S')]
+)
+def test_p_steel_strain_params_raises_errors(prestress_class, element):
+    """Test p_steel_strain_params raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.p_steel_stress_strain_params(
+            prestress_class, element
+        )
+
+
+@pytest.mark.parametrize('fp01k, gamma_S', [(-1560, 1), (1560, 0), (1560, -1)])
+def test_fpd_raises_errors(fp01k, gamma_S):
+    """Test fpd raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.fpd(fp01k, gamma_S)
+
+
+def test_Ep():
+    """Test Ep function"""
+    assert math.isclose(_section5_materials.Ep(), 200000, rel_tol=10e-5)
+
+
+@pytest.mark.parametrize(
+    'eps, fpy, fpu, eps_u, Ep, expected',
+    [
+        (0.03, 1380, 1570, 0.035, 200000, 1536.19217081851),
+        (0.004, 1740, 1960, 0.0304347826086957, 200000, 800),
+        (0.02, 1650, 1860, 0.035, 200000, 1742.24299065421),
+        (0.032, 900, 900, 0.0304347826086957, 200000, 900),
+    ],
+)
+def test_steel_p(eps, fpy, fpu, eps_u, Ep, expected):
+    """Test steel_p function"""
+    assert math.isclose(
+        _section5_materials.sigma_p(eps, fpy, fpu, eps_u, Ep),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'eps, fpy, fpu, eps_u, Ep',
+    [
+        (-0.03, 1380, 1570, 0.035, 200000),
+        (0.035, 1380, 1570, 0.03, 200000),
+        (0.02, -1380, 1570, 0.035, 200000),
+        (0.02, 1380, 1200, 0.025, 200000),
+        (0.02, 1380, -1570, 0.025, 200000),
+        (0.02, 1380, 1570, -0.025, 200000),
+        (0.02, 1380, 1570, 0.025, -200000),
+    ],
+)
+def test_steel_p_raises_errors(eps, fpy, fpu, eps_u, Ep):
+    """Test steel_p raises errors"""
+    with pytest.raises(ValueError):
+        _section5_materials.sigma_p(eps, fpy, fpu, eps_u, Ep)
