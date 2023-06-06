@@ -8,9 +8,6 @@ import scipy.interpolate
 from structuralcodes.codes import mc2010
 
 
-# 5.1.3 Strength
-
-
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Determines the mean strength of concrete from its characteristic
     value
@@ -73,9 +70,6 @@ def fctk_95(_fctm: float) -> float:
         float: the 5% mean concrete tensile strength fractile in MPa
     """
     return abs(_fctm) * 1.3
-
-
-# 5.1.4 Elastic deformation
 
 
 def Ecm(_fcm: float, kE: float = 9500) -> float:
