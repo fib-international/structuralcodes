@@ -2,8 +2,8 @@
 import math
 import pytest
 
-from structuralcodes.codes.ec2 import shear
-from structuralcodes.codes.ec2.shear import _k, _rho_L, _sigma_cp, _theta
+from structuralcodes.codes.ec2_2004 import shear
+from structuralcodes.codes.ec2_2004.shear import _k, _rho_L, _sigma_cp, _theta
 
 
 @pytest.mark.parametrize(
