@@ -30,8 +30,8 @@ def _rho_L(Asl: float, bw: float, d: float) -> float:
 
     Args:
         Asl (float): The cross-sectional area of the tensile
-            reinforcement, anchored atleast (lbd + d) beyond the
-            considdered cross-section, in mm2.
+            reinforcement, anchored at least (lbd + d) beyond the
+            considered cross-section, in mm2.
         bw (float): The smallest width of the cross-section in tension
             in mm.
         d (float): The effective depth of the cross-section in mm.
@@ -62,7 +62,7 @@ def _sigma_cp(NEd: float, Ac: float, fcd: float) -> float:
     return min(NEd / Ac, 0.2 * fcd)
 
 
-# Part of Equation 6.4)
+# Part of Equation (6.4)
 def _alpha_l() -> float:
     # To be included later.
     """Compute the relative anchorage length for prestreched
@@ -179,7 +179,7 @@ def VRdc(
         d (float): The effective depth of the cross-section in mm.
         Asl (float): The cross-sectional area of the tensile
             reinforcement, anchored atleast (lbd + d) beyond the
-            considdered cross-section, in mm2.
+            considered cross-section, in mm2.
         bw (float): The smallest width of the cross-section in tension
             in mm.
         NEd (float): The normal force in the cross-section due to
@@ -313,7 +313,7 @@ def VRds(
 
     Kwargs:
         alpha (float): The angle of the shear reinforcement with
-            respect to the neutral axis in degrees. Detault value = 90
+            respect to the neutral axis in degrees. Default value = 90
             degrees.
         gamma_s (float): Partial factor of the reinforcement steel.
             Default value = 1.15. Value might differ between
@@ -369,7 +369,7 @@ def VRdmax(
         gamma_c (float): Partial factor for concrete. Default value =
             1.5, value might differ between National Annexes.
         alpha (float): The angle of the shear reinforcement with
-            respect to the neutral axis in degrees. Detault value = 90
+            respect to the neutral axis in degrees. Default value = 90
             degrees.
 
     Returns:
