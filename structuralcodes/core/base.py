@@ -66,11 +66,11 @@ class ConstitutiveLaw(abc.ABC):
         return self._name
 
     @abc.abstractmethod
-    def getStress(self, eps: float) -> float:
+    def get_stress(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
         stress given the strain level"""
 
     @abc.abstractmethod
-    def getTangent(self, eps: float) -> float:
+    def get_tangent(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level"""

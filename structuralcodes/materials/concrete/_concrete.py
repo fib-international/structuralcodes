@@ -2,7 +2,7 @@
 import abc
 import typing as t
 from structuralcodes.core.base import Material, ConstitutiveLaw
-from structuralcodes.core.constitutive_laws import ParabolaRectangle
+from structuralcodes.materials.constitutive_laws import ParabolaRectangle
 
 
 class Concrete(Material):
@@ -10,7 +10,7 @@ class Concrete(Material):
 
     _fck: float
     _existing: bool
-    _stressStrain: ConstitutiveLaw
+    _stress_strain: ConstitutiveLaw
 
     def __init__(
         self,
@@ -29,7 +29,7 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
-        self._stressStrain = ParabolaRectangle(
+        self._stress_strain = ParabolaRectangle(
             self._fck, name=name + '_ConstLaw'
         )
 
@@ -50,15 +50,15 @@ class Concrete(Material):
         This is because fck setting, reset the object arguments"""
 
     @property
-    def stressStrain(self) -> ConstitutiveLaw:
+    def stress_strain(self) -> ConstitutiveLaw:
         """Returns the constitutive law object"""
-        return self._stressStrain
+        return self._stress_strain
 
-    @stressStrain.setter
-    def stressStrain(self, stressStrain: ConstitutiveLaw) -> None:
+    @stress_strain.setter
+    def stressStrain(self, stress_strain: ConstitutiveLaw) -> None:
         """Setter for constitutive law"""
-        if 'concrete' in stressStrain.__materials__:
-            self._stressStrain = stressStrain
+        if 'concrete' in stress_strain.__materials__:
+            self._stress_strain = stress_strain
         else:
             raise ValueError(
                 'The constitutive law selected is not suitable '
