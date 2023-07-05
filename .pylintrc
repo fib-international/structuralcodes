@@ -2,4 +2,7 @@
 disable =
     invalid-name,
     too-few-public-methods,
-    too-many-instance-attributes
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-many-lines,
+    too-many-locals
