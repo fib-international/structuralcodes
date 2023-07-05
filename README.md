@@ -1,4 +1,4 @@
-# :construction_worker_woman: Structural Design Codes :construction_worker_man:
+# Structural Design Codes
 
 *A Python package with models from structural design codes.*
 
@@ -21,9 +21,11 @@ On the higher levels there will be material, cross section and element classes r
 
 For the moment, the core team has completed an initial structure for the two lowest levels, i.e. how to structure the models from the structural design codes, and how to create classes that represent materials. Contributions that seek to add content to the lowest level are highly appreciated :heart:
 
+We have defined a set of [milestones](https://github.com/fib-international/structuralcodes/milestones) that indicate our priorities. Contributions related to the milestones are highly appreciated. Other contributions are of course also welcome!
+
 Here is how to get started, it is actually quite easy:
 
-- Register an issue where you give a clear reference to the design code and the equations that you plan to contribute. Make sure that the topic is not already started by someone else.
+- Register an issue where you give a clear reference to the design code and the equations that you plan to contribute. Make sure that the topic is not already started by someone else. If the contribution is related to an existing issue, there is no need to register a new one, but make sure to comment in the issue that you are working on it.
 - Create a fork of the repo.
 - Set up your local development environment, see below :arrow_heading_down:.
 - Start developing the feature in a feature branch with a suitable title :rocket:
