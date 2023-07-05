@@ -124,7 +124,7 @@ class UserDefined(ConstitutiveLaw):
     __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
 
     def __init__(
-        self, x: list[float], y: list[float], name: t.Optional[str] = None
+        self, x: t.List[float], y: t.List[float], name: t.Optional[str] = None
     ) -> None:
         """Initialize a UserDefined constitutive law"""
         name = name if name is not None else "UserDefinedLaw"
