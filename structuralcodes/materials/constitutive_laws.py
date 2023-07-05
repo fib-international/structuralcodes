@@ -66,7 +66,7 @@ class ElasticPlastic(ConstitutiveLaw):
         sig[sig > self._fy] = eps[sig > self._fy] * self._Eh + delta_sig
         if self._eps_su is not None:
             sig[eps > self._eps_su] = 0
-            sig[eps < -self._eps_su] = 0
+            sig[eps < -self._eps_su] = 0  # pylint: disable=E1130
         return sig
 
     def get_tangent(self, eps: float) -> float:
