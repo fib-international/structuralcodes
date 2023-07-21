@@ -63,14 +63,25 @@ def _sigma_cp(NEd: float, Ac: float, fcd: float) -> float:
 
 
 # Part of Equation (6.4)
-def _alpha_l() -> float:
-    # To be included later.
+def _alpha_l(L_x, L_pt2) -> float:
     """Compute the relative anchorage length for prestreched
         prestressing steel.
 
     Defined in EN 1992-1-1 (2005), Eq. (6.4).
+
+    Args:
+        L_x (float): Distance from the considered cross-section until
+            the starting point of the transference length of the
+            prestress steel.
+        L_pt2 (float): Maximum value of the transference length of the
+            prestress steel, according to Eq. (8.18).
+
+    Returns:
+        float: Fraction (relative anchorage length) for determining the
+            amount of prestress that may be used when determining
+            the shear resistance using Mohr's circle.
     """
-    # pass
+    return min(L_x / L_pt2, 1.0)
 
 
 # Equation (6.7N)
@@ -227,14 +238,63 @@ def vmin(fck: float, d: float) -> float:
 
 
 # Equation (6.4)
-def Vrdc_prin_stress():
-    # To be inclued later.
-    """Calculate the principal tensile stress in uncracked, prestressed
-    elements without shear reinforcement.
+def Vrdc_prin_stress(
+    I: float,
+    bw: float,
+    S: float,
+    fctd: float,
+    NEd: float,
+    Ac: float,
+    L_x: float = None,
+    L_pt2: float = None,
+) -> float:
+    """Calculate the shear resistance in uncracked, prestressed
+    elements without shear reinforcement, value is determined via Mohr's
+    circle.
 
-    EN 1992-1-1 (2005), Eq. (6.4)
+    The maximal value of the principle tensile stress does no
+        necessarily lay at the centre of gravity. If this is the
+        ase the minimum value of the shear resistance and
+        corresponding stress needs to be found at the relevant location.
+
+    EN 1992-1-1 (2005), Eq. (6.4).
+
+    Args:
+        I (float): The second moment of area of the considered
+            cross-section in mm4.
+        bw (float): The width of the cross-section at the centre of gravity.
+        S (float): The first moment of area of the considered
+            cross-section of the part above the centre of gravity, and
+            with respect to the centre of gravity in mm3.
+        fctd (float): Design value of the tensile strength of the concrete.
+        NEd (float): The normal force in the cross-section due to
+            loading or prestress (NEd > 0 for compression) in N.
+        Ac (float): The cross-sectional area of the concrete in mm2.
+
+    Kwargs:
+        L_x (float): Distance from the considered cross-section until
+            the starting point of the transference length of the
+            prestress steel. This value should be provided when the
+            prestressing steel is prestreched. Default value is None.
+        L_pt2 (float): Maximum value of the transference length of the
+            prestress steel, according to Eq. (8.18). This value should be
+            provided when the prestressing steel is prestreched. Default
+            value is None.
+
+    Returns:
+        float: The maximum allowable shear force in N for an uncracked,
+        prestressed element without shear reinforcement, determined from
+        maximum allowable principle stress.
     """
-    # pass
+    # No function call for sigma_cp, value is allowed to be higher than
+    # 0.2fcd.
+    sigma_cp = NEd / Ac
+    if L_x is None or L_pt2 is None:
+        alpha_L = 1.0
+    else:
+        alpha_L = _alpha_l(L_x, L_pt2)
+
+    return I * bw / S * math.sqrt(fctd**2 + alpha_L * sigma_cp * fctd)
 
 
 # Equation (6.5)

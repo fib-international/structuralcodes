@@ -3,7 +3,13 @@ import math
 import pytest
 
 from structuralcodes.codes.ec2_2004 import shear
-from structuralcodes.codes.ec2_2004.shear import _k, _rho_L, _sigma_cp, _theta
+from structuralcodes.codes.ec2_2004.shear import (
+    _k,
+    _rho_L,
+    _sigma_cp,
+    _theta,
+    _alpha_l,
+)
 
 
 @pytest.mark.parametrize(
@@ -49,13 +55,23 @@ def test_rho_L(Asl, bw, d, expected):
     ],
 )
 def test_sigma_cp(Ned, Ac, fcd, expected):
-    """Test the sigma_cp function."""
+    """Test the _sigma_cp function."""
     assert math.isclose(_sigma_cp(Ned, Ac, fcd), expected, rel_tol=0.01)
 
 
-def test_alpha_l():
-    """To be included later."""
-    # pass
+@pytest.mark.parametrize(
+    'L_x, L_pt2, expected',
+    [
+        (0, 2, 0),
+        (0.5, 2, 0.25),
+        (1, 2, 0.5),
+        (2, 2, 1),
+        (3, 2, 1),
+    ],
+)
+def test_alpha_l(L_x, L_pt2, expected):
+    """Test the _alpha_l function."""
+    assert math.isclose(_alpha_l(L_x, L_pt2), expected, rel_tol=1e-5)
 
 
 @pytest.mark.parametrize(
@@ -72,7 +88,6 @@ def test_vmin(fck, d, expected):
     assert math.isclose(shear.vmin(fck, d), expected, rel_tol=0.01)
 
 
-# Expand test below.
 @pytest.mark.parametrize(
     'fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected',
     [
@@ -91,9 +106,24 @@ def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
     )
 
 
-def test_Vrdc_prin_stress():
-    """To be included later."""
-    # pass
+@pytest.mark.parametrize(
+    'Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected',
+    [
+        (3125e6, 300, 9375e3, 1.2, 1.5e6, 150e3, 0, 2, 120000),
+        (3125e6, 300, 9375e3, 1.2, 1.5e6, 150e3, 0.5, 2, 210713),
+        (3125e6, 300, 9375e3, 1.2, 1.5e6, 150e3, 1.0, 2, 272764),
+        (3125e6, 300, 9375e3, 1.2, 1.5e6, 150e3, 2.0, 2, 366606),
+        (3125e6, 300, 9375e3, 1.2, 1.5e6, 150e3, None, 2, 366606),
+        (3125e6, 300, 9375e3, 1.2, 1.5e6, 150e3, None, None, 366606),
+    ],
+)
+def test_Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected):
+    """Test Vrdc_prin_stress function."""
+    assert math.isclose(
+        shear.Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2),
+        expected,
+        rel_tol=1e-2,
+    )
 
 
 @pytest.mark.parametrize(
