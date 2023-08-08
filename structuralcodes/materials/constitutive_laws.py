@@ -1,6 +1,7 @@
 """Collection of some standard constitutive laws"""
 import typing as t
 import numpy as np
+from numpy.typing import ArrayLike
 from ..core.base import ConstitutiveLaw
 
 
@@ -19,12 +20,12 @@ class Elastic(ConstitutiveLaw):
         super().__init__(name=name)
         self._E = E
 
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> float:
         """Return stress given strain"""
         eps = np.asarray(eps)
         return self._E * eps
 
-    def get_tangent(self, eps: float) -> float:
+    def get_tangent(self, eps: ArrayLike) -> float:
         """Return the tangent"""
         return self._E
 
@@ -57,7 +58,7 @@ class ElasticPlastic(ConstitutiveLaw):
         self._eps_su = eps_su
         self._eps_sy = fy / E
 
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain"""
         eps = np.atleast_1d(np.asarray(eps))
         sig = self._E * eps
@@ -69,7 +70,7 @@ class ElasticPlastic(ConstitutiveLaw):
             sig[eps < -self._eps_su] = 0  # pylint: disable=E1130
         return sig
 
-    def get_tangent(self, eps: float) -> float:
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tanet for given strain"""
         tol = 1.0e-6
         if abs(eps) - self._eps_sy > tol:
@@ -98,7 +99,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         self._eps_u = -abs(eps_u)
         self._n = n
 
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain"""
         eps = np.atleast_1d(np.asarray(eps))
         # Parabolic branch
@@ -110,7 +111,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         sig[eps > 0] = 0
         return sig
 
-    def get_tangent(self, eps: float) -> float:
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain"""
         # this function is still TO DO
         return 0.0
@@ -124,7 +125,7 @@ class UserDefined(ConstitutiveLaw):
     __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
 
     def __init__(
-        self, x: t.List[float], y: t.List[float], name: t.Optional[str] = None
+        self, x: ArrayLike, y: ArrayLike, name: t.Optional[str] = None
     ) -> None:
         """Initialize a UserDefined constitutive law"""
         name = name if name is not None else "UserDefinedLaw"
@@ -142,13 +143,13 @@ class UserDefined(ConstitutiveLaw):
             self._x = x
             self._y = y
 
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain"""
         eps = np.atleast_1d(np.asarray(eps))
         sig = np.interp(eps, self._x, self._y, left=0, right=0)
         return sig
 
-    def get_tangent(self, eps: float) -> float:
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain"""
         # this function is still TO DO
         return 0.0
