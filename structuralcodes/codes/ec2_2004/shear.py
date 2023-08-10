@@ -239,7 +239,7 @@ def vmin(fck: float, d: float) -> float:
 
 # Equation (6.4)
 def Vrdc_prin_stress(
-    I: float,
+    Iy: float,
     bw: float,
     S: float,
     fctd: float,
@@ -260,7 +260,7 @@ def Vrdc_prin_stress(
     EN 1992-1-1 (2005), Eq. (6.4).
 
     Args:
-        I (float): The second moment of area of the considered
+        Iy (float): The second moment of area of the considered
             cross-section in mm4.
         bw (float): The width of the cross-section at the centre of gravity.
         S (float): The first moment of area of the considered
@@ -294,7 +294,7 @@ def Vrdc_prin_stress(
     else:
         alpha_L = _alpha_l(L_x, L_pt2)
 
-    return I * bw / S * math.sqrt(fctd**2 + alpha_L * sigma_cp * fctd)
+    return Iy * bw / S * math.sqrt(fctd**2 + alpha_L * sigma_cp * fctd)
 
 
 # Equation (6.5)
