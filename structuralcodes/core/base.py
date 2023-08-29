@@ -74,3 +74,49 @@ class ConstitutiveLaw(abc.ABC):
     def get_tangent(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level"""
+
+
+class Section(abc.ABC):
+    """ "Abstract base class for a cross secion.
+    The section is defined by local axes x and y"""
+
+    section_counter: t.ClassVar[int] = 0
+
+    def __init__(self, name: t.Optional[str] = None) -> None:
+        self.id = self.section_counter
+        self._name = name if name is not None else "Section_{}".format(self.id)
+        self._increase_global_counter()
+
+    @property
+    def name(self):
+        """Returns the name of the section"""
+        return self._name
+
+    @classmethod
+    def _increase_global_counter(cls):
+        cls.section_counter += 1
+
+    @property
+    @abc.abstractmethod
+    def area(self) -> float:
+        """Returns the area of concrete"""
+
+    @abc.abstractmethod
+    def bending_strength_xp(self, N: float = 0) -> float:
+        """Returns the beding strength in x+ direction for a given
+        value of axial force (+: tension, -: compression)"""
+
+    @abc.abstractmethod
+    def bending_strength_xn(self, N: float = 0) -> float:
+        """Returns the beding strength in x- direction for a given
+        value of axial force (+: tension, -: compression)"""
+
+    @abc.abstractmethod
+    def bending_strength_yp(self, N: float = 0) -> float:
+        """Returns the beding strength in y+ direction for a given
+        value of axial force (+: tension, -: compression)"""
+
+    @abc.abstractmethod
+    def bending_strength_yn(self, N: float = 0) -> float:
+        """Returns the beding strength in y- direction for a given
+        value of axial force (+: tension, -: compression)"""
