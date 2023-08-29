@@ -55,15 +55,21 @@ class Material(abc.ABC):
 class ConstitutiveLaw(abc.ABC):
     """Abstract base class for constitutive laws."""
 
+    constitutive_law_counter: t.ClassVar[int] = 0
+
     def __init__(self, name: t.Optional[str] = None) -> None:
-        self._name = name if name is not None else "ConstitutiveLaw"
-        # Comment for future: I would like to have global counters for
-        # automaticaly name stuff ?
+        self.id = self.constitutive_law_counter
+        self._name = name if name is not None else f"ConstitutiveLaw_{self.id}"
+        self._increase_global_counter()
 
     @property
     def name(self):
         """Returns the name of the constitutive law"""
         return self._name
+
+    @classmethod
+    def _increase_global_counter(cls):
+        cls.constitutive_law_counter += 1
 
     @abc.abstractmethod
     def get_stress(self, eps: float) -> float:
