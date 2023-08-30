@@ -113,8 +113,18 @@ class ParabolaRectangle(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain"""
-        # this function is still TO DO
-        return 0.0
+        eps = np.atleast_1d(np.asarray(eps))
+        # parabolic branch
+        tangent = (
+            self._n
+            * self._fc
+            / self._eps_0
+            * (1 - (eps / self._eps_0)) ** (self._n - 1)
+        )
+        # Elsewhere tangent is zero
+        tangent[eps < self._eps_0] = 0.0
+        tangent[eps > 0] = 0.0
+        return tangent
 
 
 class UserDefined(ConstitutiveLaw):
@@ -152,4 +162,4 @@ class UserDefined(ConstitutiveLaw):
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain"""
         # this function is still TO DO
-        return 0.0
+        raise NotImplementedError

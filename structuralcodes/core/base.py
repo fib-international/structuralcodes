@@ -81,6 +81,11 @@ class ConstitutiveLaw(abc.ABC):
         """Each constitutive law should provide a method to return the
         tangent at a given strain level"""
 
+    def get_secant(self, eps: float) -> float:
+        """Method to return the
+        secant at a given strain level"""
+        sig = self.get_stress(eps)
+        return sig / eps
 
 class Section(abc.ABC):
     """ "Abstract base class for a cross secion.
@@ -126,3 +131,5 @@ class Section(abc.ABC):
     def bending_strength_yn(self, N: float = 0) -> float:
         """Returns the beding strength in y- direction for a given
         value of axial force (+: tension, -: compression)"""
+
+
