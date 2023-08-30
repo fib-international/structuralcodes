@@ -80,3 +80,9 @@ class ConstitutiveLaw(abc.ABC):
     def get_tangent(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level"""
+
+    def get_secant(self, eps: float) -> float:
+        """Method to return the
+        secant at a given strain level"""
+        sig = self.get_stress(eps)
+        return sig / eps
