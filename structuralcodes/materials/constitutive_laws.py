@@ -118,7 +118,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         tangent = (
             self._n
             * self._fc
-            / self._eps_0 
+            / self._eps_0
             * (1 - (eps / self._eps_0)) ** (self._n - 1)
         )
         # Elsewhere tangent is zero
