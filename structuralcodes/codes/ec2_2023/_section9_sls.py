@@ -1,7 +1,13 @@
 """Functions from Section 9 of FprEN 1992-1-1:2023"""
 
+import math
 
-def Ec_eff(fcm: float, phi: float, kE: float = 9500) -> float:
+
+from ._section5_materials import fctm, fcm
+from ._annexB_time_dependent import alpha_c
+
+
+def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
     """Returns de Effective modulus of elasticity from fcm and phi
 
     FprEN 1992-1-1:2023, Eq. (9.1)
@@ -15,8 +21,8 @@ def Ec_eff(fcm: float, phi: float, kE: float = 9500) -> float:
 
     Returns:
         float: The effective modulus of elastiticy in MPa."""
-    Ecm = kE * fcm ** (1 / 3)
-    return 1.05 * Ecm / (1 + phi)
+    Ecm = kE * fcm_ ** (1 / 3)
+    return alpha_c(fcm_) * Ecm / (1 + phi)
 
 
 def As_min_y(
@@ -242,3 +248,48 @@ def wk_cal(
     epssm_epscm_ = epssm_epscm(sigma_s, kt, fct_eff, rho_eff, alphae, Es)
     wk_cal_ = kw * k_1_r_ * srm_cal_ * epssm_epscm_
     return wk_cal_, k_1_r_, srm_cal_, epssm_epscm_
+
+
+def delta_simpl(
+    delta_loads: float,
+    delta_shr: float,
+    fck1: float,
+    phi1: float,
+    b1: float,
+    h: float,
+    d: float,
+    As1: float,
+    Mk: float,
+) -> float:
+    """Simplified calculation of the deflection for rectangular sections
+
+       Fpr EN1991-1-1:2023 Eq. (9.23)
+
+    Args:
+        delta_loads (float): linear elastic deflection due to loads
+        delta_shr (float): linear elastic deflection due to shrinkage
+        fck1 (float): characteristic concrete strength in MPa
+        phi1 (float): weighted mean value of the creep coefficient
+        b1 (float): width of rectangular cross-section in m
+        h (float): height of rectanguar cross-section in m
+        d (float): effective height of cross-section in m
+        As1 (float): tension reinforcement at centre span for continuous in cm2
+            beams or at the embedment for a cantilever
+        Mk (float): characteristic moment at centre span for continuous
+            beams or at the embedment for a cantilever
+    """
+    Mcr = fctm(fck1) * 1000 * b1 * h ** (2) / 6
+    zeta = 1 - 0.5 * (Mcr / Mk) ** 2
+    rho_l = As1 / b1 / d * 1e-4
+    alpha_e_eff = 200000 / Ec_eff(fcm(fck1), phi1)
+    Ig_Icr = 1 / (
+        2.7 * math.pow(alpha_e_eff * rho_l, 0.6) * math.pow(d / h, 3)
+    )
+
+    if Mk < Mcr:
+        kS = 1.00
+        kI = 1.00
+    else:
+        kS = 455 * rho_l**2 - 35 * rho_l + 1.6
+        kI = zeta * Ig_Icr + (1 - zeta)
+    return kI * (delta_loads + kS * delta_shr)
