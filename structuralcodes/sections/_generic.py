@@ -1,6 +1,6 @@
 """"Generic class section implemenetation"""
 import typing as t
-from structuralcodes.core.base import Section
+from structuralcodes.core.base import Section, SectionCalculator
 
 # Generic cross section implementation
 # Characteristics:
@@ -17,28 +17,11 @@ class GenericSection(Section):
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
-        
-    @property
-    def area(self) -> float:
-        """Returns the area of concrete"""
-        return NotImplemented
-    
-    def bending_strength_xp(self, N: float = 0) -> float:
-        """Returns the beding strength in x+ direction for a given
-        value of axial force (+: tension, -: compression)"""
-        return NotImplemented
+        sectionanlyzer: GenericSectionCalculator
 
-    def bending_strength_xn(self, N: float = 0) -> float:
-        """Returns the beding strength in x- direction for a given
-        value of axial force (+: tension, -: compression)"""
-        return NotImplemented
 
-    def bending_strength_yp(self, N: float = 0) -> float:
-        """Returns the beding strength in y+ direction for a given
-        value of axial force (+: tension, -: compression)"""
-        return NotImplemented
+class GenericSectionCalculator(SectionCalculator):
+    '''Calculator class implementing analysis algortims for '''
 
-    def bending_strength_yn(self, N: float = 0) -> float:
-        """Returns the beding strength in y- direction for a given
-        value of axial force (+: tension, -: compression)"""
-        return NotImplemented
+    def __init__(self) -> None:
+        super().__init__()

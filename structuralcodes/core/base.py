@@ -87,6 +87,7 @@ class ConstitutiveLaw(abc.ABC):
         sig = self.get_stress(eps)
         return sig / eps
 
+
 class Section(abc.ABC):
     """ "Abstract base class for a cross secion.
     The section is defined by local axes x and y"""
@@ -107,29 +108,7 @@ class Section(abc.ABC):
     def _increase_global_counter(cls):
         cls.section_counter += 1
 
-    @property
-    @abc.abstractmethod
-    def area(self) -> float:
-        """Returns the area of concrete"""
 
-    @abc.abstractmethod
-    def bending_strength_xp(self, N: float = 0) -> float:
-        """Returns the beding strength in x+ direction for a given
-        value of axial force (+: tension, -: compression)"""
-
-    @abc.abstractmethod
-    def bending_strength_xn(self, N: float = 0) -> float:
-        """Returns the beding strength in x- direction for a given
-        value of axial force (+: tension, -: compression)"""
-
-    @abc.abstractmethod
-    def bending_strength_yp(self, N: float = 0) -> float:
-        """Returns the beding strength in y+ direction for a given
-        value of axial force (+: tension, -: compression)"""
-
-    @abc.abstractmethod
-    def bending_strength_yn(self, N: float = 0) -> float:
-        """Returns the beding strength in y- direction for a given
-        value of axial force (+: tension, -: compression)"""
-
-
+# base sectionAnalyzer
+class SectionCalculator(abc.ABC):
+    ''' Base class defining the interface for a section calculator'''
