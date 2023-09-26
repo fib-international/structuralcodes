@@ -27,3 +27,41 @@ line-length = 79
 skip-string-normalization = "True"
 check = "True"
 diff = "True"
+
+[tool.ruff]
+line-length = 79
+select = [
+    "F",
+    "E",
+    "W",
+    "N",
+    "BLE",
+    "Q",
+    "D",
+    "RET",
+    "SIM",
+    "ARG",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+]
+ignore = [
+    "N802",
+    "N803",
+    "N806",
+    "N999",
+    "PLR0913",
+    "PLR2004",
+    "PLW0603",
+    "D205",
+    "D417",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "double"
