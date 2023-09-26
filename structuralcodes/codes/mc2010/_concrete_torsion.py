@@ -8,9 +8,7 @@ def create_load_dict(
     Med: float, Ved: float, Ned: float, delta_e: float
 ) -> dict:
     """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-
-    return dictionary
+    return {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
@@ -91,7 +89,7 @@ def t_rd_max(
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     k_c = eta_fc(f_ck) * k_epsilon
-    result = (
+    return (
         k_c
         * f_ck
         * t_ef
@@ -101,8 +99,6 @@ def t_rd_max(
         * cos(theta * pi / 180)
         / gamma_c
     )
-
-    return result
 
 
 def t_rd(  # pylint: disable=r0801
@@ -150,7 +146,7 @@ def t_rd(  # pylint: disable=r0801
     Return:
         Returns a bool that is true if the criterion for torsion and
         shear is fulfilled"""
-    check = bool(
+    return bool(
         (
             t_ed
             / t_rd_max(
@@ -185,5 +181,3 @@ def t_rd(  # pylint: disable=r0801
         ** 2
         <= 1
     )
-
-    return check

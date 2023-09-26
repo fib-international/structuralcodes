@@ -92,11 +92,10 @@ def tau_rdi_with_reinforcement(
         Shear resistance with reinforcement at intesection with
         different casting time"""
     v = min(0.55 * (30 / f_ck) ** (1 / 3), 0.55)
-    result = min(
+    return min(
         (c_r * f_ck ** (1 / 3))
         + (mu * sigma_n)
         + k1 * ro * f_yd * (mu * sin(alpha * pi / 180) + cos(alpha * pi / 180))
         + k2 * ro * (f_yd * f_cd) ** 0.5,
         beta_c * v * f_cd,
     )
-    return result

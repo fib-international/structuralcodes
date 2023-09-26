@@ -207,8 +207,7 @@ def v_rdc_punching(
         ),
         0.6,
     )
-    result = k_psi * b_0(v_ed, v_prep_d_max) * d_v * (f_ck**0.5) / gamma_c
-    return result
+    return k_psi * b_0(v_ed, v_prep_d_max) * d_v * (f_ck**0.5) / gamma_c
 
 
 def v_rds_punching(
@@ -301,8 +300,7 @@ def v_rds_punching(
             """In order to ensure sufficent deformation capacity,
             consider increasing the amount of punching shear reinforcement"""
         )
-    result = a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
-    return result
+    return a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
 
 
 def v_rd_max_punching(
@@ -399,12 +397,11 @@ def v_rd_max_punching(
         ),
         0.6,
     )
-    result = min(
+    return min(
         (k_sys * k_psi * b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5)
         / gamma_c,
         (b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5) / gamma_c,
     )
-    return result
 
 
 def v_rd_punching(
@@ -477,7 +474,7 @@ def v_rd_punching(
     Return: The maximum allowed punching resistance, regardless of
     values from v_rdc and v_rds"""
 
-    result = min(
+    return min(
         v_rdc_punching(
             l_x,
             l_y,
@@ -545,4 +542,3 @@ def v_rd_punching(
             gamma_c,
         ),
     )
-    return result

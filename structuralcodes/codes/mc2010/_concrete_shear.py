@@ -62,9 +62,7 @@ def create_load_dict(
     Med: float, Ved: float, Ned: float, delta_e: float
 ) -> dict:
     """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-
-    return dictionary
+    return {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
 
 
 def v_rd(
@@ -440,15 +438,13 @@ def v_rds(
     if 45 < theta or theta < 20:
         warnings.warn('Too high or too low compression field angel')
     f_ywd = f_ywk / gamma_s
-    result = (
+    return (
         (asw / sw)
         * z
         * f_ywd
         * ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
         * sin(alpha * pi / 180)
     )
-
-    return result
 
 
 def v_rd_max(
