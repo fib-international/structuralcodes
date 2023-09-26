@@ -45,9 +45,8 @@ def create_concrete(
 
     # Check if the code is a proper concrete code
     code = None
-    if _code is not None:
-        if 'concrete' in _code.__materials__:
-            code = _code
+    if _code is not None and 'concrete' in _code.__materials__:
+        code = _code
     if code is None:
         raise ValueError(
             'The design code is not set, either use '

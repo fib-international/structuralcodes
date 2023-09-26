@@ -114,10 +114,7 @@ def psi_punching(
         psi = 1.5 * r_s * f_yd / (d * e_s)
 
     elif approx_lvl_p == 2:
-        if x_direction is True:
-            r_s = 0.22 * l_x
-        else:
-            r_s = 0.22 * l_y
+        r_s = 0.22 * l_x if x_direction is True else 0.22 * l_y
         psi = (1.5 * r_s * f_yd / (d * e_s)) * (
             (m_ed(v_ed, e_u, l_x, l_y, inner, edge_par, edge_per, corner))
             / (m_rd)
