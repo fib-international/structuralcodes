@@ -1,4 +1,4 @@
-"""EUROCODE 2 1992-1-1:2004"""
+"""EUROCODE 2 1992-1-1:2004."""
 import typing as t
 
 from ._section_7_3_crack_control import (

@@ -1,4 +1,4 @@
-"""Concrete material"""
+"""Concrete material."""
 import typing as t
 from structuralcodes.codes import _use_design_code
 from ._concrete import Concrete
@@ -18,8 +18,7 @@ def create_concrete(
     existing: bool = False,
     design_code: t.Optional[str] = None,
 ) -> t.Optional[Concrete]:
-    """
-    A factory function to create the correct type of concrete based on the
+    """A factory function to create the correct type of concrete based on the
     desired design code.
 
     Args:
