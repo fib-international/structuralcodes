@@ -4,6 +4,7 @@
 
 [![Build](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v0.json)](https://github.com/charliermarsh/ruff)
 
 **:construction: Note! This package is work in progress. Feel free to join the discussions in the pull requests. :construction:**
 
@@ -31,7 +32,7 @@ Here is how to get started, it is actually quite easy:
 - Start developing the feature in a feature branch with a suitable title :rocket:
 - Please follow common best practice when committing, provide a meaningful commit message, and split different sub-topics in separate commits :thumbsup:
 - Feel free to open a draft pull request as soon as you start committing so that the community can follow the development.
-- We use `black`, `flake8` and `pylint` for code formatting and linting, and we have a test suite based on `pytest`. Please make sure that these checks pass before committing code :heavy_check_mark:
+- We use `black` and `ruff` for code formatting and linting, and we have a test suite based on `pytest`. Please make sure that these checks pass before committing code :heavy_check_mark:
 - Remember to add tests for the new features that you implement :man_scientist:
 - Remember to add docstrings to your functions and classes. We use the [google format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
 - When you feel that your contribution is ready, mark your pull request as ready for review, and we will assign some suitable reviewers :nerd_face:
@@ -42,6 +43,6 @@ The core team continues working on the structure for the higher levels of the pa
 
 For the moment, there are no third party dependencies to the package, but it is always useful to work in a virtual environment. To create one on Windows, type `py -m venv venv`, and activate it by typing `venv\scripts\activate`.
 
-We use `black` for code formatting, `flake8` and `pylint` for linting, and have set up our test suite using `pytest`. Make sure you have these installed (`make deps`). We have set up VS Code to use these tools automatically. Open VS Code inside the repo (`code .`), view the tests in the test pane on the left side, and notice how the linters highlight parts of your code that should be rewritten.
+We use `black` for code formatting, `ruff` for linting, and have set up our test suite using `pytest`. Make sure you have these installed (`make deps`). We have set up VS Code to use testing. Open VS Code inside the repo (`code .`) and view the tests in the test pane on the left side.
 
-We have supplied a makefile that you may use to run formatting (`make form`), linting (`make lint`) and testing (`make test`). Don't have `make`? You can get it from [chocolatey](https://community.chocolatey.org/packages/make), `choco install make`. If you don't want to use `make`, feel free to e.g. `py -m black structuralcodes` and `py -m pytest`.
+We have supplied a makefile that you may use to run formatting (`make form`), linting (`make lint`) and testing (`make test`). Don't have `make`? You can get it from [chocolatey](https://community.chocolatey.org/packages/make), `choco install make`. If you don't want to use `make`, feel free to manually type the commands from the makefile e.g. `py -m black structuralcodes` and `py -m pytest`.
