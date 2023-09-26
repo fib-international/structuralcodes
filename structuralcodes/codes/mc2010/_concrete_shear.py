@@ -124,7 +124,7 @@ def v_rd(
     if not with_shear_reinforcment:
         if approx_lvl not in (1, 2):
             warnings.warn(
-                "Choosen approximation is not suited without reinforcment"
+                'Choosen approximation is not suited without reinforcment'
             )
 
         return v_rdc(
@@ -207,7 +207,7 @@ def v_rd(
             gamma_c,
         )
 
-    raise ValueError("invalid approx level")
+    raise ValueError('invalid approx level')
 
 
 def v_rdc(
@@ -268,7 +268,7 @@ def v_rdc(
             gamma_c,
         )
 
-    raise ValueError("Invalid approx level")
+    raise ValueError('Invalid approx level')
 
 
 def v_rdc_approx1(
@@ -438,7 +438,7 @@ def v_rds(
         The design shear resistance provided by shear reinforcement
     """
     if 45 < theta or theta < 20:
-        warnings.warn("Too high or too low compression field angel")
+        warnings.warn('Too high or too low compression field angel')
     f_ywd = f_ywk / gamma_s
     result = (
         (asw / sw)
@@ -501,7 +501,7 @@ def v_rd_max(
     if approx_lvl == 3:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
 
-    raise ValueError("invalid approx level")
+    raise ValueError('invalid approx level')
 
 
 def v_rd_max_approx1(
@@ -706,7 +706,7 @@ def v_rd_ct(
             f_p_lx_dx,
         )
 
-    raise ValueError("Invalid approx level")
+    raise ValueError('Invalid approx level')
 
 
 def v_rd_ct_approx1(

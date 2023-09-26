@@ -18,7 +18,7 @@ class Concrete(Material):
         existing: t.Optional[bool] = False,
     ) -> None:
         """Initializes an abstract concrete material"""
-        name = name if name is not None else "Concrete"
+        name = name if name is not None else 'Concrete'
         super().__init__(density=density, name=name)
 
         self._fck = abs(fck)

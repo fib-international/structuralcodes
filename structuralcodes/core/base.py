@@ -17,7 +17,7 @@ class Material(abc.ABC):
             name (Optional[str]): descriptive name of the material
         """
         self._density = abs(density)
-        self._name = name if name is not None else "Material"
+        self._name = name if name is not None else 'Material'
 
     def update_attributes(self, updated_attributes: t.Dict) -> None:
         """Function for updating the attributes specified in the input

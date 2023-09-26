@@ -63,7 +63,7 @@ def m_ed(
         return v_ed * ((1 / 8) + e_u / (b_s))
     if corner:
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
-    raise ValueError("Placement is not defined, only one needs to be True")
+    raise ValueError('Placement is not defined, only one needs to be True')
 
 
 def psi_punching(
