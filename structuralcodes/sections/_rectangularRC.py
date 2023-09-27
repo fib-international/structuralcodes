@@ -105,7 +105,31 @@ class RectangularRC(Section):
     "auto" the confinement will be automatically computed
     stirrups_data: StirrupsData (default = None) to use when need
     automatic computation of concrete confinement
-    name: optional string for identidying the section"""
+    name: optional string for identidying the section
+
+    Axes definition:
+    
+                     z ▲
+                       │
+                       │
+            ┌──────────┼───────────┐
+            │          │           │
+            │          │           │
+            │          │           │
+            │          │           │
+            │          │           │
+            │          │           │
+            │          │           │
+            │          └───────────┼─────►
+            │                      │     y
+            │                      │
+            │                      │
+            │                      │
+            │                      │
+            │                      │
+            │                      │
+            └──────────────────────┘
+ """
 
     def __init__(
             self,

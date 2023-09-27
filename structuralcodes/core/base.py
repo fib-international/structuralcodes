@@ -2,6 +2,7 @@
 import abc
 import typing as t
 import warnings
+import structuralcodes.sections._section_results as s_res
 
 
 class Material(abc.ABC):
@@ -89,8 +90,26 @@ class ConstitutiveLaw(abc.ABC):
 
 
 class Section(abc.ABC):
-    """ "Abstract base class for a cross secion.
-    The section is defined by local axes x and y"""
+    """Abstract base class for a cross secion.
+    The section is defined by local axes y and z (mapped to x and y):
+
+                         z  .
+                        |,.-'.
+                    _,--|     `._
+                _.-'    |        `.
+           _,,-'        |          `.
+       _.-'             |            `.
+      '.                |              `.
+        \               |                `.
+         `.             ------------------------
+           \                          ,,'       y
+            `.                     _,'
+              \                 _,'
+               `.            _,'
+                 \         ,'
+                  `.    ,-'
+                    `,-'
+    """
 
     section_counter: t.ClassVar[int] = 0
 
@@ -109,6 +128,52 @@ class Section(abc.ABC):
         cls.section_counter += 1
 
 
-# base sectionAnalyzer
 class SectionCalculator(abc.ABC):
-    ''' Base class defining the interface for a section calculator'''
+    '''Abstract class for SectionCalculators
+    defining the interface'''
+
+    def __init__(self, section: Section) -> None:
+        '''Initialization of SectionCalculator object, providing
+        a Section object'''
+        self.section = section
+
+    @abc.abstractmethod
+    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+        """Calculates the gross section properties of the section
+        This function is private and called when the section is created
+        It stores the result into the result object
+
+        Returns:
+        gross_section_properties (GrossSection)"""
+
+    @abc.abstractmethod
+    def calculate_bending_strength(
+        self, theta=0, n=0
+    ) -> s_res.UltimateBendingMomentResult:
+        """Calculates the bending strength for given inclination of n.a.
+        and axial load
+
+        Input:
+        theta (float, default = 0): inclination of n.a. respect to y axis
+        n (float, default = 0): axial load applied to the section (+: tension, -: compression)
+
+        Return:
+        ultimate_bending_moment_result (UltimateBendingMomentResult)"""
+
+    @abc.abstractmethod
+    def calculate_moment_curvature(
+        self, theta=0, n=0
+    ) -> s_res.MomentCurvatureResults:
+        """Calculates the moment-curvature relation for given inclination of
+        n.a. and axial load
+
+        Input:
+        theta (float, default = 0): inclination of n.a. respect to y axis
+        n (float, default = 0): axial load applied to the section
+            (+: tension, -: compression)
+        chi_incr (float, default = 1e-8): the curvature increment for the
+            analysis
+
+        Return:
+        moment_curvature_result (MomentCurvatureResults)
+        """
