@@ -21,16 +21,21 @@ On the higher levels there will be material, cross section and element classes r
 
 For the moment, the core team has completed an initial structure for the two lowest levels, i.e. how to structure the models from the structural design codes, and how to create classes that represent materials. Contributions that seek to add content to the lowest level are highly appreciated :heart:
 
-We have defined a set of [milestones](https://github.com/fib-international/structuralcodes/milestones) that indicate our priorities. Contributions related to the milestones are highly appreciated. Other contributions are of course also welcome!
+We have defined a set of [milestones](https://github.com/fib-international/structuralcodes/milestones) that indicate our priorities. Issues are linked to each milesstone, and some of the issues include a to-do list and have linked pull requests. Contributions related to the milestones are highly appreciated. For the moment, our first priority is to add code related to _fib_ Model Code 2020, but other contributions are of course also welcome!
 
-Here is how to get started, it is actually quite easy:
+Here is how to get started.
 
-- Register an issue where you give a clear reference to the design code and the equations that you plan to contribute. Make sure that the topic is not already started by someone else. If the contribution is related to an existing issue, there is no need to register a new one, but make sure to comment in the issue that you are working on it.
+First:
+
+- Take a look at the milestones, find one that suits your interests, and navigate to a related issue. Create a comment in the issue indicating the topic that you wish to contribute. Make sure that the topic is not already started by someone else.
+- If you didn't find a suitable milestone or issue, please create a new issue where you describe your request or feature idea. Make sure that you get a GO from the core team before continuing your contribution. We promise to provide feedback as soon as we can.
+
+Then:
 - Create a fork of the repo.
 - Set up your local development environment, see below :arrow_heading_down:.
 - Start developing the feature in a feature branch with a suitable title :rocket:
 - Please follow common best practice when committing, provide a meaningful commit message, and split different sub-topics in separate commits :thumbsup:
-- Feel free to open a draft pull request as soon as you start committing so that the community can follow the development.
+- Feel free to open a draft pull request as soon as you start committing so that the community can follow the development. The core team will make sure the pull request is linked to the relevant issue, and that we [keep track of the progress](https://github.com/orgs/fib-international/projects/1).
 - We use `black`, `flake8` and `pylint` for code formatting and linting, and we have a test suite based on `pytest`. Please make sure that these checks pass before committing code :heavy_check_mark:
 - Remember to add tests for the new features that you implement :man_scientist:
 - Remember to add docstrings to your functions and classes. We use the [google format](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
