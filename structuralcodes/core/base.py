@@ -91,24 +91,8 @@ class ConstitutiveLaw(abc.ABC):
 
 class Section(abc.ABC):
     """Abstract base class for a cross secion.
-    The section is defined by local axes y and z (mapped to x and y):
-
-                         z  .
-                        |,.-'.
-                    _,--|     `._
-                _.-'    |        `.
-           _,,-'        |          `.
-       _.-'             |            `.
-      '.                |              `.
-        \               |                `.
-         `.             ------------------------
-           \                          ,,'       y
-            `.                     _,'
-              \                 _,'
-               `.            _,'
-                 \         ,'
-                  `.    ,-'
-                    `,-'
+    The section is defined by local axes y and z (mapped to x and y cartesian
+    plane respectively)
     """
 
     section_counter: t.ClassVar[int] = 0
@@ -155,7 +139,8 @@ class SectionCalculator(abc.ABC):
 
         Input:
         theta (float, default = 0): inclination of n.a. respect to y axis
-        n (float, default = 0): axial load applied to the section (+: tension, -: compression)
+        n (float, default = 0): axial load applied to the section (+: tension,
+        -: compression)
 
         Return:
         ultimate_bending_moment_result (UltimateBendingMomentResult)"""

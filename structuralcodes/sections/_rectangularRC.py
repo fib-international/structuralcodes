@@ -10,7 +10,6 @@ from structuralcodes.core.base import Section
 from structuralcodes.materials.concrete import Concrete
 # For now this is just a trick! refactor later TODO!
 from structuralcodes.materials.constitutive_laws import ElasticPlastic
-from ._utils import Fiber
 
 
 @dataclass(frozen=True)
@@ -108,7 +107,7 @@ class RectangularRC(Section):
     name: optional string for identidying the section
 
     Axes definition:
-    
+
                      z ▲
                        │
                        │
@@ -129,6 +128,10 @@ class RectangularRC(Section):
             │                      │
             │                      │
             └──────────────────────┘
+
+            RectangularRCSection.fromGeometry(Geometry(itPolygons,itMaterials))
+
+            
  """
 
     def __init__(

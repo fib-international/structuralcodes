@@ -1,5 +1,5 @@
 ''' Results '''
-import typing as t
+# import typing as t
 from dataclasses import dataclass
 
 
@@ -74,20 +74,21 @@ class MomentCurvatureResults:
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
-    chi: t.List[float]  # the curvatures
-    eps_axial: t.List[float]  # the axial strain (at csection entroid)
-    m: t.List[float]  # the moment
+    chi: float = 0  # the curvatures
+    eps_axial: float = 0  # the axial strain (at csection entroid)
+    m: float = 0  # the moment
 
     # The strains can be reconstructed at each step from chi and eps_axial
     # The stresses can be recomputed if needed on the fly? Or storing them?
+
 
 @dataclass
 class UltimateBendingMomentResult:
     '''class for storing the ultimate bending moment computation
     for a given inclination of n.a. and axial load'''
 
-    theta: float = 0 # the inclination of n.a.
+    theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
-    m: float = 0 # the ultimate moment for given theta and n
-    chi: float = 0 # the curvature corresponding to the ultimate moment
-    eps_a: float = 0 # the axial strain at the centroid corresponding to the ultimate moment
+    m: float = 0  # the ultimate moment for given theta and n
+    chi: float = 0  # the curvature corresponding to the ultimate moment
+    eps_a: float = 0  # the axial strain at the centroid corresponding to Mult
