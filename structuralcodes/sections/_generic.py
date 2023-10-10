@@ -2,8 +2,15 @@
 from __future__ import annotations
 
 import typing as t
-from math import sin, cos
-from shapely.geometry import Polygon, LineString, LinearRing, MultiPolygon
+import warnings
+from numpy.typing import ArrayLike
+import numpy as np
+from shapely.geometry import (Polygon,
+                              Point,
+                              LineString,
+                              LinearRing,
+                              MultiPolygon,
+                              MultiLineString)
 from shapely.ops import split
 from structuralcodes.core.base import Material
 from structuralcodes.core.base import Section, SectionCalculator
@@ -19,6 +26,139 @@ import structuralcodes.sections._section_results as s_res
 
 # For now dataclass, if we need convert to regular class,
 # init commented for now
+
+
+class Geometry:
+    '''Base class for a geometry object'''
+
+    section_counter: t.ClassVar[int] = 0
+
+    def __init__(
+        self,
+        name: t.Optional[str] = None
+    ) -> None:
+        """Initializes a geometry object
+        The name serves for filtering
+        in a compound object. By default it
+        creates a new name each time"""
+        if name is not None:
+            self._name = name
+        else:
+            counter = Geometry.return_global_counter_and_increase()
+            self._name = f"Geometry_{counter}"
+
+    @property
+    def name(self):
+        """Returns the name of the Geometry"""
+        return self._name
+
+    @classmethod
+    def _increase_global_counter(cls):
+        '''Increases the global counter by one'''
+        cls.section_counter += 1
+
+    @classmethod
+    def return_global_counter_and_increase(cls):
+        '''Returns the current counter and increases it by one'''
+        counter = cls.section_counter
+        cls._increase_global_counter()
+        return counter
+
+
+class PointGeometry(Geometry):
+    '''Class for a point geometry with material.
+
+    Basically it is a wrapper for shapely Point
+    including the material (and other parameters that
+    may be needed)'''
+    def __init__(
+        self,
+        point: t.Union[Point, ArrayLike],
+        diameter: float,
+        material: Material,
+        name: t.Optional[str] = None
+    ):
+        super().__init__(name)
+        # I check if point is a shapely Point or an ArrayLike object
+        if not isinstance(point, Point):
+            # It is an ArrayLike object -> create the Point given the
+            # coordinates (coordinates can be a List, Tuple, np.array, ...)
+            coords = np.atleast_1d(point)
+            num = len(coords)
+            if num < 2:
+                raise ValueError('Two coordinates are needed')
+            if num > 2:
+                warn_str = f'Two coordinates are needed. {num}'
+                warn_str += ' coords provided. The extra entries will be'
+                warn_str += ' discarded'
+                warnings.warn(warn_str)
+            point = Point(coords)
+        if not isinstance(material, Material):
+            raise TypeError('The material should be of Material class')
+        self._point = point
+        self._diameter = diameter
+        self._material = material
+        self._area = np.pi * diameter**2 / 4.0
+
+    @property
+    def diameter(self) -> float:
+        '''Returns the point diameter'''
+        return self._diameter
+
+    @property
+    def area(self) -> float:
+        '''Returns the point area'''
+        return self._area
+
+    @property
+    def material(self) -> Material:
+        '''Returns the point material'''
+        return self._material
+
+    @property
+    def x(self) -> float:
+        '''Returns the x coordinate of the point'''
+        return self._point.x
+
+    @property
+    def y(self) -> float:
+        '''Returns the y coordinate of the point'''
+        return self._point.y
+
+    @property
+    def point(self) -> Point:
+        '''Returns the shapely Point object'''
+        return self._point
+
+
+def create_line_point_angle(
+    point: t.Union[Point, t.Tuple[float, float]],
+    theta: float,
+    bbox: t.Tuple[float, float, float, float]
+) -> LineString:
+    '''Creates a line from point and angle within the bounding
+    box'''
+    # create a unit vector defining the line
+    v = (np.cos(theta), np.sin(theta))
+
+    # check if the line is vertical to avoid div by zero
+    if abs(v[0]) > 1e-8:
+        # it is a non vertical line
+        tg = v[1] / v[0]
+        x1 = bbox[0] - 1e-3
+        x2 = bbox[2] + 1e-3
+        y1 = point[1] + (x1 - point[0]) * tg
+        y2 = point[1] + (x2 - point[0]) * tg
+    else:
+        # it is a near-vertical line
+        # atg is almost zero
+        atg = v[0] / v[1]
+        y1 = bbox[1] - 1e-3
+        y2 = bbox[2] + 1e-3
+        x1 = point[0] + (y1 - point[1]) * atg
+        x2 = point[0] + (y2 - point[1]) * atg
+    # create the splitting line
+    return LineString([(x1, y1), (x2, y2)])
 
 
 class SurfaceGeometry:
@@ -71,43 +211,27 @@ class SurfaceGeometry:
 
     def split(
         self,
-        point: t.Tuple[float, float],
-        theta: float
+        line: t.Union[LineString, t.Tuple[t.Tuple[float, float], float]]
     ) -> t.Tuple[t.List[SurfaceGeometry], t.List[SurfaceGeometry]]:
         """Splits the geometry using a line
 
         Args:
-            point (float,float): a point in the splitting line
-            theta (float): angle (in radians) respect to horiztonal axis
+            line: can be a LineString shapely object, or a tuple
+                  (point, theta) where point is a tuple (x,y) and
+                  theta is the angle respect the horizontal axis
 
         Returns:
             (above_polygons, below_polygons)
         """
 
-        # get boundingbox of polygon
-        bbox = self.polygon.bounds
+        if not isinstance(line, LineString):
+            point = line[0]
+            theta = line[1]
 
-        # create a unit vector defining the line
-        v = (cos(theta), sin(theta))
+            # get boundingbox of polygon
+            bbox = self.polygon.bounds
 
-        # check if the line is vertical to avoid div by zero
-        if abs(v[0]) > 1e-8:
-            # it is a non vertical line
-            tg = v[1] / v[0]
-            x1 = bbox[0] - 1e-3
-            x2 = bbox[2] + 1e-3
-            y1 = point[1] + (x1 - point[0]) * tg
-            y2 = point[1] + (x2 - point[0]) * tg
-        else:
-            # it is a near-vertical line
-            # atg is almost zero
-            atg = v[0] / v[1]
-            y1 = bbox[1] - 1e-3
-            y2 = bbox[2] + 1e-3
-            x1 = point[0] + (y1 - point[1]) * atg
-            x2 = point[0] + (y2 - point[1]) * atg
-        # create the splitting line
-        line = LineString([(x1, y1), (x2, y2)])
+            line = create_line_point_angle(point, theta, bbox)
 
         # split the geometry about the line
         above_polygons = []
@@ -134,13 +258,31 @@ class SurfaceGeometry:
 
         return above_polygons, below_polygons
 
+    def split_two_lines(
+        self,
+        lines: t.Union[t.Tuple[LineString, LineString], MultiLineString]
+    ) -> Polygon:
+        '''Docstrings'''
+        if isinstance(lines, MultiLineString):
+            multi_line = lines
+        elif isinstance(lines, tuple):
+            if len(lines) != 2:
+                raise RuntimeError('Two lines must be input')
+            multi_line = MultiLineString(lines)
+        lines_polygon = multi_line.convex_hull
+
+        # get the intersection
+        return self.polygon.intersection(lines_polygon)
+
     # here we can also add static methods like:
-    # from_point
+    # from_points
     # from_points_and_facets
     # from_surface_geometry
     # from_dxf
     # from_ascii
     # ...
+    # we could also add methods wrapping shapely function, like:
+    # mirror, translation, rotation, etc.
 
 
 class CompoundGeometry(SurfaceGeometry):
@@ -175,6 +317,10 @@ class CompoundGeometry(SurfaceGeometry):
                 # the list of materials is provided, one for each polygon
                 pass
             raise NotImplementedError
+            # x = np.asarray(x, dtype=np.float64)
+            # y = np.asarray(y, dtype=np.float64)
+            # if x.shape != y.shape:
+            #     raise ValueError("x and y must be array-like with the same shape")
         elif isinstance(geometries, list):
             # a list of SurfaceGeometry is provided
             checked_geometries = []
@@ -203,7 +349,7 @@ class CompoundGeometry(SurfaceGeometry):
 
     # Add methods for translation and rotation of compound and single geoms
 
-
+   
 def add_reinforcement(
     geo: SurfaceGeometry | CompoundGeometry,
     coords: t.Tuple(float, float),
@@ -213,14 +359,11 @@ def add_reinforcement(
     """Adds a reinforcement bar to the geometry
 
     Proposals:
-    1. we can create a SurfaceGeometry where the bar is
-    of circular form. So we just need a method that
-    creates a polygon discretizing a bar
-    2. Or we can rethink the structure and add:
-        i. Geometry class
+    1. Or we can rethink the structure and add:
+        i. Geometry class (group_label -> to be use for filtering)
         ii. PointGeometry(Geometry) that is a point with a mat
         iii. SurfaceGeometry(Geometry) that is a polygon with a mat
-        iv. CompountGeometry(Geometry) that is a set of geometries
+        iv. CompoundGeometry(Geometry) that is a set of geometries
 
     For compound we could implement simple + method so that geo1 + geo2
     returns a compunt.
