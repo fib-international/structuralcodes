@@ -115,13 +115,13 @@ def _theta(theta: float, cot_min: float = 1.0, cot_max: float = 2.5) -> None:
         or round(1.0 / math.tan(theta_), 2) > cot_max
     ):
         raise ValueError(
-            "Wrong value for theta is chosen. Theta has "
-            f"to be chosen such that 1/tan(theta) lies between "
-            f"{cot_min} and {cot_max}. This corresponds to an angle "
-            f"between {round(math.degrees(math.atan(1/cot_min)),2)} "
-            f"and {round(math.degrees(math.atan(1/cot_max)),2)} "
-            f"degrees, respectively. Current angle is set at {theta}"
-            " degrees."
+            'Wrong value for theta is chosen. Theta has '
+            f'to be chosen such that 1/tan(theta) lies between '
+            f'{cot_min} and {cot_max}. This corresponds to an angle '
+            f'between {round(math.degrees(math.atan(1/cot_min)),2)} '
+            f'and {round(math.degrees(math.atan(1/cot_max)),2)} '
+            f'degrees, respectively. Current angle is set at {theta}'
+            ' degrees.'
         )
 
 
@@ -159,8 +159,8 @@ def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
         value = 2.5 * (1 - sigma_cp / fcd)
     else:
         raise ValueError(
-            f"sigma_cp/fcd={sigma_cp/fcd}. Prestress has to be smaller"
-            " than design compressive strength."
+            f'sigma_cp/fcd={sigma_cp/fcd}. Prestress has to be smaller'
+            ' than design compressive strength.'
         )
     return value
 
@@ -289,10 +289,7 @@ def Vrdc_prin_stress(
     # No function call for sigma_cp, value is allowed to be higher than
     # 0.2fcd.
     sigma_cp = NEd / Ac
-    if L_x is None or L_pt2 is None:
-        alpha_L = 1.0
-    else:
-        alpha_L = _alpha_l(L_x, L_pt2)
+    alpha_L = 1.0 if L_x is None or L_pt2 is None else _alpha_l(L_x, L_pt2)
 
     return Iy * bw / S * math.sqrt(fctd**2 + alpha_L * sigma_cp * fctd)
 
