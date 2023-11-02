@@ -1,7 +1,7 @@
 """Functions from Section 9 of EN 1992-1-1:2023"""
 
 import math
-
+from typing import Tuple
 
 from ._section5_materials import fctm, fcm
 from ._annexB_time_dependent import alpha_c
@@ -27,7 +27,7 @@ def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
 
 def As_min_y(
     NEd: float, b: float, h: float, fct_eff: float, fyk: float
-) -> tuple[float, float]:
+) -> Tuple[float, float]:
     """Returns the minimum reinforcement to avoid yielding of steel. Box or T
        sections are to be divided into rectangles
 
@@ -214,7 +214,7 @@ def wk_cal(
     fct_eff: float,
     alphae: float,
     Es: float,
-) -> tuple[float, float, float, float]:
+) -> Tuple[float, float, float, float]:
     """returns the characteristic crack width, wk,cal, as well as auxiliary
         variables, 1/r, srm,cal and epssm-epscm
 
