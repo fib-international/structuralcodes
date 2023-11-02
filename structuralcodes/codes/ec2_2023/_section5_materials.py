@@ -1,4 +1,4 @@
-"""Functions from Section 5 of FprEN 1992-1-1:2022"""
+"""Functions from Section 5 of FprEN 1992-1-1:2022."""
 
 import math
 import typing as t
@@ -9,8 +9,7 @@ from structuralcodes.codes import mc2010
 
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
-    """Determines the mean strength of concrete from its characteristic
-    value
+    """Determines the mean strength of concrete from its characteristic value.
 
     FprEN 1992-1-1, Table 5.1
 
@@ -29,7 +28,7 @@ def fcm(fck: float, delta_f: float = 8.0) -> float:
 
 def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
-    compressive strength
+    compressive strength.
 
     FprEN 1992-1-1, Table 5.1
 
@@ -45,7 +44,7 @@ def fctm(fck: float) -> float:
 
 
 def fctk_5(_fctm: float) -> float:
-    """Compute the 5% mean concrete tensile strength fractile
+    """Compute the 5% mean concrete tensile strength fractile.
 
     FprEN 1992-1-1, Table 5.1
 
@@ -59,7 +58,7 @@ def fctk_5(_fctm: float) -> float:
 
 
 def fctk_95(_fctm: float) -> float:
-    """Compute the 95% mean concrete tensile strength fractile
+    """Compute the 95% mean concrete tensile strength fractile.
 
     FprEN 1992-1-1, Table 5.1
 
@@ -73,8 +72,7 @@ def fctk_95(_fctm: float) -> float:
 
 
 def Ecm(_fcm: float, kE: float = 9500) -> float:
-    """Computes the secant modulus between sigma_c=0 and
-    sigma_c=0.4*fcm
+    """Computes the secant modulus between sigma_c=0 and sigma_c=0.4*fcm.
 
     FprEN 1992-1-1, Eq. (5.1)
 
@@ -104,8 +102,7 @@ def Ecm(_fcm: float, kE: float = 9500) -> float:
 
 
 def hn(Ac: float, u: float) -> float:
-    """Computes the notional size of a given concrete
-    cross-section
+    """Computes the notional size of a given concrete cross-section.
 
     FprEN 1992-1-1, Table 5.2
 
@@ -129,8 +126,8 @@ def hn(Ac: float, u: float) -> float:
 
 
 def A_phi_correction_exp(_hn: float, atm_conditions: str) -> float:
-    """Computes the correction exponent for the modification for
-    the phi_50y_t0 with respect the fck value:
+    """Computes the correction exponent for the modification for the phi_50y_t0
+    with respect the fck value.
 
     FprEN 1992-1-1, Table 5.2
 
@@ -163,13 +160,11 @@ def A_phi_correction_exp(_hn: float, atm_conditions: str) -> float:
         )
 
     interpol = scipy.interpolate.interp1d(x, y)
-    val = interpol(_hn)
-    return val
+    return interpol(_hn)
 
 
 def phi_correction_factor(fck: float, A_exponent: float) -> float:
-    """Computes the correction factor for the computation of the
-    phi_50y_t0
+    """Computes the correction factor for the computation of the phi_50y_t0.
 
     FprEN 1992-1-1, Table 5.2
 
@@ -199,8 +194,8 @@ def phi_correction_factor(fck: float, A_exponent: float) -> float:
 def phi_50y_t0(
     t0: float, atm_conditions: str, _hn: float, concrete_class: str
 ) -> float:
-    """Computes the creep coefficient of plain concrete at 50 years
-    of loading. Interpolation is lineal between values
+    """Computes the creep coefficient of plain concrete at 50 years of loading.
+    Interpolation is lineal between values.
 
     FprEN 1992-1-1, Table 5.2
 
@@ -311,8 +306,8 @@ def phi_50y_t0(
 def eps_cs_50y(
     fck_28: float, atm_conditions: str, _hn: float, concrete_class: str
 ) -> float:
-    """Computes the nominal total shrinkage in ‰ for concrete after
-    a duration of drying of 50 years
+    """Computes the nominal total shrinkage in ‰ for concrete after a duration
+    of drying of 50 years.
 
     FprEN 1992-1-1, Table 5.3
 
@@ -477,7 +472,7 @@ def eps_cs_50y(
 def eta_cc(fck: float, fck_ref: float = 40) -> float:
     """Computes the factor to measure the difference between the undistributed
     compressibe strength of a cylinder and the effective compressive strength
-    in a structural member
+    in a structural member.
 
     FprEN 1992-1-1, Eq. (5.4)
 
@@ -501,8 +496,8 @@ def eta_cc(fck: float, fck_ref: float = 40) -> float:
 
 
 def k_tc(t_ref: float, t0: float, concrete_class: str) -> float:
-    """Computes the factor for considering the effect of high sustained
-    loads and of time of loading on concrete compressive strength
+    """Computes the factor for considering the effect of high sustained loads
+    and of time of loading on concrete compressive strength.
 
     FprEN 1992-1-1, Eq. (5.3)
 
@@ -542,8 +537,7 @@ def k_tc(t_ref: float, t0: float, concrete_class: str) -> float:
 
 
 def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
-    """Computes the value of the design compressive
-    strength of concrete
+    """Computes the value of the design compressive strength of concrete.
 
     FprEN 1992-1-1, Eq. (5.3)
 
@@ -579,8 +573,8 @@ def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
 
 
 def k_tt(t_ref: float, concrete_class: str) -> float:
-    """Computes the factor for considering the effect of high sustained
-    loads and of time of loading on concrete tensile strength
+    """Computes the factor for considering the effect of high sustained loads
+    and of time of loading on concrete tensile strength.
 
     FprEN 1992-1-1, Eq. (5.5)
 
@@ -616,7 +610,7 @@ def k_tt(t_ref: float, concrete_class: str) -> float:
 
 
 def fctd(_fctk_5: float, _k_tt: float, gamma_C: float) -> float:
-    """Computes the value of the design tensile strength of concrete
+    """Computes the value of the design tensile strength of concrete.
 
     FprEN 1992-1-1, Eq. (5.5)
 
@@ -645,8 +639,7 @@ def fctd(_fctk_5: float, _k_tt: float, gamma_C: float) -> float:
 
 
 def eps_c1(_fcm: float) -> float:
-    """Computes the strain at maximum compressive strength of
-    concrete (fcm)
+    """Computes the strain at maximum compressive strength of concrete (fcm).
 
     FprEN 1992-1-1, Eq. (5.9)
 
@@ -666,7 +659,7 @@ def eps_c1(_fcm: float) -> float:
 
 
 def eps_cu1(_fcm: float) -> float:
-    """Computes the strain at concrete failure of concrete
+    """Computes the strain at concrete failure of concrete.
 
     FprEN 1992-1-1, Eq. (5.10)
 
@@ -688,8 +681,8 @@ def eps_cu1(_fcm: float) -> float:
 def sigma_c(
     _Ecm: float, _fcm: float, _eps_c: float, _eps_c1: float, _eps_cu1: float
 ) -> float:
-    """Computes the compressive stress of concrete given
-    a strain eps_c under short term uniaxial compression
+    """Computes the compressive stress of concrete given a strain eps_c under
+    short term uniaxial compression.
 
     FprEN 1992-1-1, Eq. (5.6)
 
@@ -739,8 +732,7 @@ def sigma_c(
 
 
 def weight_c(concrete_type: str) -> float:
-    """
-    Returns the mean unit weight of concrete in kN/m3
+    """Returns the mean unit weight of concrete in kN/m3.
 
     FprEN 1992-1-1, 5.1.6-5
 
@@ -769,9 +761,8 @@ def weight_c(concrete_type: str) -> float:
 
 
 def alpha_c_th() -> float:
-    """
-    Returns the linear coefficient of thermal expansion in 1/Cº
-    for concrete
+    """Returns the linear coefficient of thermal expansion in 1/Cº for
+    concrete.
 
     FprEN 1992-1-1, 5.1.6-6
 
@@ -785,8 +776,8 @@ def alpha_c_th() -> float:
 def r_steel_stress_strain_params(
     ductility_class: str,
 ) -> t.Tuple[float, float]:
-    """Returns the properties that define the stress-strain diagram
-    for reinforced steel k and eps_uk
+    """Returns the properties that define the stress-strain diagram for
+    reinforced steel k and eps_uk.
 
     FprEN 1992-1-1, Table 5.5
 
@@ -815,8 +806,8 @@ def r_steel_stress_strain_params(
 
 
 def Es() -> float:
-    """Returns the value of the modulus of elasticity for
-    weldable reinforcing steel.
+    """Returns the value of the modulus of elasticity for weldable reinforcing
+    steel.
 
     FprEN 1992-1-1, 5.2.4-3
 
@@ -827,8 +818,8 @@ def Es() -> float:
 
 
 def alpha_s_th() -> float:
-    """Returns the linear coefficient of thermal expansion in 1/Cº
-    for weldable reinforced steel
+    """Returns the linear coefficient of thermal expansion in 1/Cº for weldable
+    reinforced steel.
 
     FprEN 1992-1-1, 5.2.4-5
 
@@ -840,8 +831,8 @@ def alpha_s_th() -> float:
 
 
 def weight_s() -> float:
-    """Returns the mean unit weight of reinforced steel
-    for the purposes of design in kN/m3
+    """Returns the mean unit weight of reinforced steel for the purposes of
+    design in kN/m3.
 
     FprEN 1992-1-1, 5.2.4-4
 
@@ -852,8 +843,7 @@ def weight_s() -> float:
 
 
 def fyd(fyk: float, gamma_S: float) -> float:
-    """Design value for the yielding stress for welding
-    reinforcing steel
+    """Design value for the yielding stress for welding reinforcing steel.
 
     FprEN 1992-1-1, Eq (5.11)
 
@@ -877,8 +867,7 @@ def fyd(fyk: float, gamma_S: float) -> float:
 
 
 def eps_ud(eps_uk: float, gamma_S: float) -> float:
-    """Design value for the ultimate limit strain
-    welding reinforcing steel
+    """Design value for the ultimate limit strain welding reinforcing steel.
 
     FprEN 1992-1-1, 5.2.4-2
 
@@ -905,8 +894,8 @@ def eps_ud(eps_uk: float, gamma_S: float) -> float:
 def sigma_s(
     eps: float, fy: float, k: float, eps_u: float, _Es: float = 200000
 ) -> float:
-    """Compute the stress for welded reinforcing steel
-    in MPa for a given strain
+    """Compute the stress for welded reinforcing steel in MPa for a given
+    strain.
 
     FprEN 1992-1-1, 5.2.4
 
@@ -923,7 +912,7 @@ def sigma_s(
             eps_ud: for the design ultimate strain
             eps_uk: for the characteristic ultimate strain
 
-    Keyword args:
+    Keyword Args:
         _Es (float): the modulus of elasticity for reinforcing steel
     Returns:
         float: stre nominal stress in MPa
@@ -965,8 +954,7 @@ def sigma_s(
 def p_steel_stress_strain_params(
     prestress_class: str, element: str
 ) -> t.Tuple[float, float]:
-    """Computes the stress-strain-diagram parameters
-    fp01k and fpk
+    """Computes the stress-strain-diagram parameters fp01k and fpk.
 
     FprEN 1992-1-1, 5.3.3
 
@@ -1023,7 +1011,7 @@ def p_steel_stress_strain_params(
 
 
 def fpd(fp01k: float, gamma_S: float) -> float:
-    """Computes the design value for the prestressing steel stress
+    """Computes the design value for the prestressing steel stress.
 
     FprEN 1992-1-1, 5.3.3
 
@@ -1048,8 +1036,7 @@ def fpd(fp01k: float, gamma_S: float) -> float:
 
 
 def Ep() -> float:
-    """Returns the modulus of elasticity for prestressing steel
-    in MPa
+    """Returns the modulus of elasticity for prestressing steel in MPa.
 
     Returns:
         float: modulus of elasticity in MPa
@@ -1064,8 +1051,7 @@ def sigma_p(
     eps_u: float = 0.035,
     _Ep: float = 200000,
 ) -> float:
-    """Computes the stress for prestressing steel as a
-    function of the strain
+    """Computes the stress for prestressing steel as a function of the strain.
 
     FprEN 1992-1-1, 5.3.3
 

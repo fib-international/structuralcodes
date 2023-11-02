@@ -1,8 +1,8 @@
-"""Functions from Section 9 of FprEN 1992-1-1:2023"""
+"""Functions from Section 9 of FprEN 1992-1-1:2023."""
 
 
 def Ec_eff(fcm: float, phi: float, kE: float = 9500) -> float:
-    """Returns de Effective modulus of elasticity from fcm and phi
+    """Returns de Effective modulus of elasticity from fcm and phi.
 
     FprEN 1992-1-1:2023, Eq. (9.1)
 
@@ -14,7 +14,8 @@ def Ec_eff(fcm: float, phi: float, kE: float = 9500) -> float:
         kE (float): Constant to account for the type of aggregate.
 
     Returns:
-        float: The effective modulus of elastiticy in MPa."""
+        float: The effective modulus of elastiticy in MPa.
+    """
     Ecm = kE * fcm ** (1 / 3)
     return 1.05 * Ecm / (1 + phi)
 
@@ -23,7 +24,7 @@ def As_min_y(
     NEd: float, b: float, h: float, fct_eff: float, fyk: float
 ) -> float:
     """Returns the minimum reinforcement to avoid yielding of steel. Box or T
-       sections are to be divided into rectangles
+    sections are to be divided into rectangles.
 
     FprEN 1992-1-1:2023, Eq. (9.4)
     Eq. (9.2) and (9.3) are particular cases of the general equation
@@ -62,8 +63,7 @@ def As_min_y(
 
 def kh(b: float, h: float) -> float:
     """Returns factor kh, which reduces the tensile strength of concrete to
-    account for imposed restrained deformations due
-     to shrinkage
+    account for imposed restrained deformations due to shrinkage.
 
     FprEN 1992-1-1:2023, Eq. (9.5)
 
@@ -72,14 +72,15 @@ def kh(b: float, h: float) -> float:
         h (float): height of the rectangle in meters
 
     Returns:
-        Factor kh which applies to the tensile resistance of concrete"""
+        Factor kh which applies to the tensile resistance of concrete
+    """
     return min(max(0.8 - 0.6 * (min(b, h) - 0.3), 0.5), 0.8)
 
 
 def wk_cal2(
     kw: float, k_1_r_: float, srm_cal_: float, epssm_epscm_: float
 ) -> float:
-    """Returns de calculated characteristic crack width
+    """Returns de calculated characteristic crack width.
 
     FprEN 1992-1-1:2023 Eq. (9.8)
 
@@ -98,7 +99,7 @@ def wk_cal2(
 
 def k_1_r(h: float, x: float, ay: float) -> float:
     """Returns k1/r factor to account for increase in crack width due to
-    curvature of the section in bending
+    curvature of the section in bending.
 
     FprEN 1992-1-1:2023 Eq. (9.9)
 
@@ -111,7 +112,8 @@ def k_1_r(h: float, x: float, ay: float) -> float:
         (e.g. meters)
 
     Returs:
-        Factor k1/r (non-dimensional)"""
+        Factor k1/r (non-dimensional)
+    """
     return (h - x) / (h - ay - x)
 
 
@@ -124,7 +126,7 @@ def epssm_epscm(
     Es: float,
 ) -> float:
     """Returns the mean strain difference between steel and concrete along
-    2 transfer lengths
+    2 transfer lengths.
 
     FprEN 1992-1-1:2023 Eq. (9.11)
 
@@ -139,7 +141,8 @@ def epssm_epscm(
         rho_eff (float): the effective reinforcement ratio in the tension zone
         alphae (float): the equivalence factor equal to Es/Ecm
         Es (float): is the modulus of elasticity of steel, normally taken
-            as 200 GPa"""
+            as 200 GPa
+    """
     return max(
         (sigma_s - kt * fct_eff / rho_eff * (1 + alphae * rho_eff)) / Es,
         (1 - kt) * sigma_s / Es,
@@ -148,7 +151,7 @@ def epssm_epscm(
 
 def kfl(h: float, xg: float, hceff: float) -> float:
     """Returns factor kfl which accounts for the distribution of stresses
-       before cracking
+    before cracking.
 
     FprEN 1992-1-1:2023 Eq. (9.17)
 
@@ -171,7 +174,7 @@ def srm_cal(
     h,
     x: float,
 ) -> float:
-    """Returns the mean crack spacing
+    """Returns the mean crack spacing.
 
     FprEN 1992-1-1:2023 Eq. (9.15)
 
@@ -209,8 +212,8 @@ def wk_cal(
     alphae: float,
     Es: float,
 ):
-    """returns the characteristic crack width, wk,cal, as well as auxiliary
-        variables, 1/r, srm,cal and epssm-epscm
+    """Returns the characteristic crack width, wk,cal, as well as auxiliary
+    variables, 1/r, srm,cal and epssm-epscm.
 
     Fpr EN1991-1-1:2023 Eq. (9.8), complemented with Eq. (9.11), Eq. (9.15),
         Eq. (9.17)

@@ -1,4 +1,4 @@
-""" EUROCODE 2 1992-1-1:2023 """
+"""EUROCODE 2 1992-1-1:2023."""
 import typing as t
 
 from ._section5_materials import (
