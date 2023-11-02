@@ -7,7 +7,21 @@ from .. import mc2010
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Determines the mean strength of concrete from its characteristic
-    value"""
+    value
+
+    EN 1992-1-1:2023 Table 5.1
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+        MPa.
+
+    Keyword Args:
+        delta_f (float): Assumed difference between mean and characteristic
+        strength in MPa.
+
+    Returns:
+        float: The mean compressive strength of concrete in MPa.
+    """
     return mc2010.fcm(fck, delta_f)
 
 
@@ -15,7 +29,7 @@ def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
     compressive strength
 
-    FprEN 1992-1-1, Table 5.1
+    EN 1992-1-1, Table 5.1
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -32,7 +46,7 @@ def Ecm(fcm1: float, kE: float = 9500) -> float:
     """Compute the secant modulus of elasticity of concrete from the
         characteristic compressive strength
 
-    FprEN 1992-1-1, Eq (5.1)
+    EN 1992-1-1, Eq (5.1)
 
     Args:
         fcm1 (float): The mean compressive strength in MPa.

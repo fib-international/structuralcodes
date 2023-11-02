@@ -1,4 +1,4 @@
-"""Functions from Section 9 of FprEN 1992-1-1:2023"""
+"""Functions from Section 9 of EN 1992-1-1:2023"""
 
 import math
 
@@ -8,9 +8,9 @@ from ._annexB_time_dependent import alpha_c
 
 
 def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
-    """Returns de Effective modulus of elasticity from fcm and phi
+    """Returns de effective modulus of elasticity from fcm and phi
 
-    FprEN 1992-1-1:2023, Eq. (9.1)
+    EN 1992-1-1:2023, Eq. (9.1)
 
     Args:
         fcm (float): The mean compressive strength in MPa.
@@ -27,11 +27,11 @@ def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
 
 def As_min_y(
     NEd: float, b: float, h: float, fct_eff: float, fyk: float
-) -> float:
+) -> tuple[float, float]:
     """Returns the minimum reinforcement to avoid yielding of steel. Box or T
        sections are to be divided into rectangles
 
-    FprEN 1992-1-1:2023, Eq. (9.4)
+    EN 1992-1-1:2023, Eq. (9.4)
     Eq. (9.2) and (9.3) are particular cases of the general equation
     Eq. (9.2) is valid for pure bending, hence NEd=0
     Eq. (9.3) is valid for pure tension. The general expression has an upper
@@ -71,7 +71,7 @@ def kh(b: float, h: float) -> float:
     account for imposed restrained deformations due
      to shrinkage
 
-    FprEN 1992-1-1:2023, Eq. (9.5)
+    EN 1992-1-1:2023, Eq. (9.5)
 
     Args:
         b (float): width of the rectangle in meters
@@ -87,7 +87,7 @@ def wk_cal2(
 ) -> float:
     """Returns de calculated characteristic crack width
 
-    FprEN 1992-1-1:2023 Eq. (9.8)
+    EN 1992-1-1:2023 Eq. (9.8)
 
     Args:
         kw: factor that converts the mean crack spacing to a characteristic
@@ -106,7 +106,7 @@ def k_1_r(h: float, x: float, ay: float) -> float:
     """Returns k1/r factor to account for increase in crack width due to
     curvature of the section in bending
 
-    FprEN 1992-1-1:2023 Eq. (9.9)
+    EN 1992-1-1:2023 Eq. (9.9)
 
     Args:
         h (float): height of the section in consistent units (e.g. meters)
@@ -132,10 +132,10 @@ def epssm_epscm(
     """Returns the mean strain difference between steel and concrete along
     2 transfer lengths
 
-    FprEN 1992-1-1:2023 Eq. (9.11)
+    EN 1992-1-1:2023 Eq. (9.11)
 
     Args:
-        sigmas (float): the stress in steel at the section of the crack
+        sigma_s (float): the stress in steel at the section of the crack
         kt (float): an integration factor to account for the variation in
             strain in steel and concrete it is to be taken as 0.6 for short
             term loading or instantaneous loading and equal to 0.4 for long
@@ -156,7 +156,7 @@ def kfl(h: float, xg: float, hceff: float) -> float:
     """Returns factor kfl which accounts for the distribution of stresses
        before cracking
 
-    FprEN 1992-1-1:2023 Eq. (9.17)
+    EN 1992-1-1:2023 Eq. (9.17)
 
     Args:
         h (float): height of the cross section
@@ -179,7 +179,7 @@ def srm_cal(
 ) -> float:
     """Returns the mean crack spacing
 
-    FprEN 1992-1-1:2023 Eq. (9.15)
+    EN 1992-1-1:2023 Eq. (9.15)
 
     Args:
         c (float): concrete cover of reinforcement to bar surface. Larger
@@ -214,11 +214,11 @@ def wk_cal(
     fct_eff: float,
     alphae: float,
     Es: float,
-):
+) -> tuple[float, float, float, float]:
     """returns the characteristic crack width, wk,cal, as well as auxiliary
         variables, 1/r, srm,cal and epssm-epscm
 
-    Fpr EN1991-1-1:2023 Eq. (9.8), complemented with Eq. (9.11), Eq. (9.15),
+    EN1992-1-1:2023 Eq. (9.8), complemented with Eq. (9.11), Eq. (9.15),
         Eq. (9.17)
 
     Args:
@@ -263,7 +263,7 @@ def delta_simpl(
 ) -> float:
     """Simplified calculation of the deflection for rectangular sections
 
-       Fpr EN1991-1-1:2023 Eq. (9.23)
+       EN1992-1-1:2023 Eq. (9.23)
 
     Args:
         delta_loads (float): linear elastic deflection due to loads
