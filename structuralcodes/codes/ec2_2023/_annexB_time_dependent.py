@@ -1,9 +1,9 @@
-"""Functions from Annex B of EN 1992-1-1:2022"""
+"""Functions from Annex B of EN 1992-1-1:2022."""
 
 
 def alpha_c(fcm_28: float) -> float:
     """Returns the coefficient to obtain the tangent modulus of elasticity
-       from the secant modulus of elasticity
+    from the secant modulus of elasticity.
 
     EN 1992-1-1, Table 5.1
 

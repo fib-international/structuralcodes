@@ -1,4 +1,4 @@
-"""Functions from Section 5 of FprEN 1992-1-1:2022"""
+"""Functions from Section 5 of FprEN 1992-1-1:2022."""
 
 import math
 
@@ -7,7 +7,7 @@ from .. import mc2010
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Determines the mean strength of concrete from its characteristic
-    value
+    value.
 
     EN 1992-1-1:2023 Table 5.1
 
@@ -27,7 +27,7 @@ def fcm(fck: float, delta_f: float = 8.0) -> float:
 
 def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
-    compressive strength
+    compressive strength.
 
     EN 1992-1-1, Table 5.1
 
@@ -44,7 +44,7 @@ def fctm(fck: float) -> float:
 
 def Ecm(fcm1: float, kE: float = 9500) -> float:
     """Compute the secant modulus of elasticity of concrete from the
-        characteristic compressive strength
+    characteristic compressive strength.
 
     EN 1992-1-1, Eq (5.1)
 
