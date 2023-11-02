@@ -1,4 +1,4 @@
-"""Collection of functions related to design codes"""
+"""Collection of functions related to design codes."""
 import types
 import typing as t
 
