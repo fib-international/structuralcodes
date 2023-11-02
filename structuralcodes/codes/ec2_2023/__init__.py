@@ -17,21 +17,21 @@ from ._section9_sls import (
 
 
 __all__ = [
-    "fcm",
-    "fctm",
-    "alpha_c",
-    "As_min_y",
-    "delta_simpl",
-    "Ec_eff",
-    "epssm_epscm",
-    "k_1_r",
-    "kfl",
-    "kh",
-    "srm_cal",
-    "wk_cal",
-    "wk_cal2",
+    'fcm',
+    'fctm',
+    'alpha_c',
+    'As_min_y',
+    'delta_simpl',
+    'Ec_eff',
+    'epssm_epscm',
+    'k_1_r',
+    'kfl',
+    'kh',
+    'srm_cal',
+    'wk_cal',
+    'wk_cal2',
 ]
 
-__title__: str = "EUROCODE 2 1992-1-1"
-__year__: str = "2023"
-__materials__: t.Tuple[str] = ("concrete",)
+__title__: str = 'EUROCODE 2 1992-1-1'
+__year__: str = '2023'
+__materials__: t.Tuple[str] = ('concrete',)
