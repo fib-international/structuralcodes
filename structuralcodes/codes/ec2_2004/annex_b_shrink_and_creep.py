@@ -1,5 +1,6 @@
-""" Calculation routine for shrinkage and creep from EUROCODE 1992-1-1:2004
-Annex B """
+"""Calculation routine for shrinkage and creep from EUROCODE 1992-1-1:2004
+Annex B.
+"""
 
 # Importing only required modules from the packages
 from math import e
@@ -27,12 +28,13 @@ def annex_B_creep(
         t0: the age of the concrete at the time (in days) of loading
         t: the age of the concrete at the time (in days) of evaluation
             (50 years default)
+
     Returns:
         phi(t, t0): the creep value for the load
+
     Raises:
         ValueError: checks if the cement class equals R, N or S.
     """
-
     # The cement class will decide the value of alpha_cement, ds1 and ds2.
     # The values are given in (B.9) and (B.12)
     alpha_cement_dict = {'R': 1, 'N': 0, 'S': -1}
@@ -52,11 +54,13 @@ def annex_B_creep(
 
 
 def calculate_beta_c(t0: float, t: float, beta_H: float) -> float:
-    """Calculates the factor beta_c as defined by Equation (B.7)
+    """Calculates the factor beta_c as defined by Equation (B.7).
+
     Args:
         t0 (float) the concrete age in days a the time of loading
         t (float) the concrete age at the evaluated time
         beta_H: parameter defined in (B.8)
+
     Return:
         beta_c (float): parameter defined by Equation (B.7)
     """
@@ -65,10 +69,12 @@ def calculate_beta_c(t0: float, t: float, beta_H: float) -> float:
 
 def calculate_t0_adjusted(t0: float, alpha_cement: float) -> float:
     """Calculates the adjusted age of the concrete according to Annex B (2)
-    Equation (B.9)
+    Equation (B.9).
+
     Args:
         t0 (float): the concrete age in days at the time of loading
         alpha_cement (float): exponent derived from the sement type
+
     Return:
         float: the adjusted age of the concrete
     """
@@ -76,9 +82,11 @@ def calculate_t0_adjusted(t0: float, alpha_cement: float) -> float:
 
 
 def calculate_beta_fcm(f_cm: float) -> float:
-    """Calculates beta_f_cm according to Equation (B.4)
+    """Calculates beta_f_cm according to Equation (B.4).
+
     Args:
         f_cm (float): the mean concrete strength
+
     Return:
         float: the factor defined in Equation (B.4)
     """
@@ -86,12 +94,14 @@ def calculate_beta_fcm(f_cm: float) -> float:
 
 
 def calculate_phi_RH(h_0: float, f_cm: float, RH: int) -> float:
-    """This function calculates phi_RH according to Annex B in
-    EUROCODE 1992-1-1:2004.
+    """This function calculates phi_RH according to Annex B in EUROCODE
+    1992-1-1:2004.
+
     Args:
         h_0 (float): the effective cross sectional thickness, Equation (B.6)
         f_cm (float): The mean concrete strength,
         RH (int): The relative humidity in percent
+
     Returns:
         phi_RH (float): the calculation parameter (B.3)
     """
@@ -111,14 +121,15 @@ def calculate_phi_RH(h_0: float, f_cm: float, RH: int) -> float:
 
 
 def calculate_beta_H(h_0: float, f_cm: float, RH: int) -> float:
-    """This function will calculate eps_cd_0 according to Annex B
-     in EUROCODE 1992-1-1:2004.
+    """This function will calculate eps_cd_0 according to Annex B in EUROCODE
+    1992-1-1:2004.
 
     Args:
         h_0 (float): The cement class, defaults to 'R'.
             Possible values: 'R', 'N', 'S',
         f_cm (float): The mean concrete strength,
         RH (int): Calculation parameter from equation (B.12).
+
     Returns:
         beta_H (float): the calculation parameters defined in (B.8)
     """
@@ -158,10 +169,10 @@ def annex_B_shrinkage(
         t_S (int): the number of days when shrinkage begins, default: 28 days,
         t (int): the concrete age at the time (in days) of evaluation,
             default: 50 years
+
     Returns:
         float: the shrinkage. Given as absolute, not in percent or ppm.
     """
-
     beta_ds = (t - t_S) / (t - t_S + 0.04 * h_0 ** (1 / 3))  # (3.10)
     beta_as = 1 - e ** (-0.2 * t**0.5)  # (3.13)
 
@@ -178,9 +189,7 @@ def annex_B_shrinkage(
     eps_cd = (
         beta_ds * k_h * calculate_eps_cd_0(cement_class, f_cm, RH)
     )  # (3.9)
-    eps_cs = eps_cd + eps_ca  # (3.8)
-
-    return eps_cs
+    return eps_cd + eps_ca  # (3.8)
 
 
 def calculate_beta_RH(RH: int, RH_0: int = 100) -> float:
@@ -210,7 +219,6 @@ def calculate_eps_cd_0(cement_class: str, f_cm: float, RH: int) -> float:
     Raises:
         ValueError: checks if the cement class equals R, N or S.
     """
-
     alpha_values = {
         'R': {'alpha_ds1': 6, 'alpha_ds2': 0.11},
         'N': {'alpha_ds1': 4, 'alpha_ds2': 0.12},
@@ -220,10 +228,9 @@ def calculate_eps_cd_0(cement_class: str, f_cm: float, RH: int) -> float:
     alpha_ds1 = alpha['alpha_ds1']
     alpha_ds2 = alpha['alpha_ds2']
 
-    eps_cd_0 = (
+    return (
         0.85
         * ((220 + 110 * alpha_ds1) * e ** (-alpha_ds2 * f_cm / 10))
         * 1e-6
         * calculate_beta_RH(RH)
     )  # (B.11)
-    return eps_cd_0
