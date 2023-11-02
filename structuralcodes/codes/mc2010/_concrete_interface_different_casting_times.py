@@ -1,9 +1,9 @@
-"Shear at the interface between concrete with different casting times"
+"""Shear at the interface between concrete with different casting times."""
 from math import pi, sin, cos
 
 
 def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
-    """Shear at the interface between concrete cast at different times
+    """Shear at the interface between concrete cast at different times.
 
     fib Model Code 2010, eq. (7.3-49)
 
@@ -14,8 +14,9 @@ def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
         z (float): The inner lever arm of the composed section in mm
         b_i (float): The width of the inerface in mm
 
-    return:
-        The shear force that should be used at the intersection"""
+    Return:
+    The shear force that should be used at the intersection
+    """
     return (beta * v_ed) / (z * b_i)
 
 
@@ -28,7 +29,7 @@ def tau_rdi_without_reinforcement(
     f_cd: float,
 ):
     """Shear resistance without reinforcement at the intesection with
-    different casting time
+    different casting time.
 
     fib Model Code 2010, eq. (7.3-50)
 
@@ -44,8 +45,8 @@ def tau_rdi_without_reinforcement(
 
     Return:
         The shear resistance without reinforcement at the intesection with
-    different casting time"""
-
+    different casting time
+    """
     v = min(0.55 * (30 / f_ck) ** (1 / 3), 0.55)
     return min((c_a * f_ctd) + (mu * sigma_n), 0.5 * v * f_cd)
 
@@ -64,7 +65,7 @@ def tau_rdi_with_reinforcement(
     f_cd: float,
 ):
     """Shear resistance with reinforcement or dowels at the intesection with
-    different casting time
+    different casting time.
 
     fib Model Code 2010, eq. (7.3-51)
 
@@ -90,13 +91,13 @@ def tau_rdi_with_reinforcement(
 
     Return:
         Shear resistance with reinforcement at intesection with
-        different casting time"""
+    different casting time
+    """
     v = min(0.55 * (30 / f_ck) ** (1 / 3), 0.55)
-    result = min(
+    return min(
         (c_r * f_ck ** (1 / 3))
         + (mu * sigma_n)
         + k1 * ro * f_yd * (mu * sin(alpha * pi / 180) + cos(alpha * pi / 180))
         + k2 * ro * (f_yd * f_cd) ** 0.5,
         beta_c * v * f_cd,
     )
-    return result

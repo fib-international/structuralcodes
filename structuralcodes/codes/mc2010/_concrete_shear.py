@@ -1,4 +1,4 @@
-"""A collection of shear formulas for concrete"""
+"""A collection of shear formulas for concrete."""
 import warnings
 from typing import Optional
 from math import pi, tan, sin
@@ -10,7 +10,7 @@ def epsilon_x(
     z: float,
     loads: dict,
 ) -> float:
-    """Calculate the longitudinal strain from a distance z
+    """Calculate the longitudinal strain from a distance z.
 
     fib Model Code 2010, eq. (7.3-16)
 
@@ -28,8 +28,8 @@ def epsilon_x(
             value in compression direction
 
     Returns:
-        float: The longitudinal strain"""
-
+    float: The longitudinal strain
+    """
     return max(
         (
             (1 / (2 * E_s * As))
@@ -44,7 +44,7 @@ def epsilon_x(
 
 
 def eta_fc(fck: float) -> float:
-    """Calculating eta_fc to determin the strength reduction factor
+    """Calculating eta_fc to determin the strength reduction factor.
 
     fib Model Code 2010, eq. (7.3-28)
 
@@ -54,17 +54,14 @@ def eta_fc(fck: float) -> float:
     Returns:
         float: eta_fc in the strength reduction factor
     """
-
     return min((30 / fck) ** (1 / 3), 1)
 
 
 def create_load_dict(
     Med: float, Ved: float, Ned: float, delta_e: float
 ) -> dict:
-    """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-
-    return dictionary
+    """Returns dictionary assosiated with loads."""
+    return {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
 
 
 def v_rd(
@@ -120,11 +117,10 @@ def v_rd(
     Returns:
         float: Design shear resistance
     """
-
     if not with_shear_reinforcment:
         if approx_lvl not in (1, 2):
             warnings.warn(
-                "Choosen approximation is not suited without reinforcment"
+                'Choosen approximation is not suited without reinforcment'
             )
 
         return v_rdc(
@@ -207,7 +203,7 @@ def v_rd(
             gamma_c,
         )
 
-    raise ValueError("invalid approx level")
+    raise ValueError('invalid approx level')
 
 
 def v_rdc(
@@ -248,7 +244,6 @@ def v_rdc(
     Returns:
         float: The design shear resistance attributed to the concrete
     """
-
     if approx_lvl == 1:
         return v_rdc_approx1(fck, z, bw, gamma_c)
 
@@ -268,7 +263,7 @@ def v_rdc(
             gamma_c,
         )
 
-    raise ValueError("Invalid approx level")
+    raise ValueError('Invalid approx level')
 
 
 def v_rdc_approx1(
@@ -277,7 +272,7 @@ def v_rdc_approx1(
     bw: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """Calculate shear resistance for concrete with approx level 1
+    """Calculate shear resistance for concrete with approx level 1.
 
     For members with no segnificant axal load, with fyk <= 600 Mpa,
     fck <= 70 Mpa and with maximum aggrigate size of no less then 10mm.
@@ -309,7 +304,7 @@ def v_rdc_approx2(
     loads: dict,
     gamma_c: float = 1.5,
 ) -> float:
-    """Calculate shear resistance for concrete with approx level 2
+    """Calculate shear resistance for concrete with approx level 2.
 
     In higher strength concrete and light-weight aggregate concretes,
     the fracture surface may go through the aggregate particles,
@@ -337,7 +332,6 @@ def v_rdc_approx2(
     Returns:
         float: Design shear resistance without shear reinforcement
     """
-
     if fck > 70:
         dg = 0
     fsqr = min(fck**0.5, 8)
@@ -359,7 +353,7 @@ def v_rdc_approx3(
     alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
-    """Calculate shear resistance for concrete with approx level 3
+    """Calculate shear resistance for concrete with approx level 3.
 
     The design shear resistance of a web or a slab without
     shear reinforcement.
@@ -387,7 +381,6 @@ def v_rdc_approx3(
     Returns:
         float: Design shear resistance without shear reinforcement
     """
-
     fsqr = min(fck**0.5, 8)
     epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
@@ -420,9 +413,10 @@ def v_rds(
     alpha: float = 90.0,
     gamma_s: float = 1.15,
 ) -> float:
-    """The shear resistance that shear reinforcement gives
+    """The shear resistance that shear reinforcement gives.
 
     fib Model Code 2010, Eq. (7.3-25) and (7.3-29)
+
     Args:
         asw (float): Area of shear reinforcement in mm
         sw (float): Senter distance between the shear reinforcement in mm
@@ -437,18 +431,16 @@ def v_rds(
     Returns:
         The design shear resistance provided by shear reinforcement
     """
-    if 45 < theta or theta < 20:
-        warnings.warn("Too high or too low compression field angel")
+    if theta > 45 or theta < 20:
+        warnings.warn('Too high or too low compression field angel')
     f_ywd = f_ywk / gamma_s
-    result = (
+    return (
         (asw / sw)
         * z
         * f_ywd
         * ((1 / tan(theta * pi / 180)) + (1 / tan(alpha * pi / 180)))
         * sin(alpha * pi / 180)
     )
-
-    return result
 
 
 def v_rd_max(
@@ -463,7 +455,7 @@ def v_rd_max(
     alpha: float = 90,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, when there is shear reinforcement
+    """The maximum allowed shear resistance, when there is shear reinforcement.
 
     fib Model Code 2010, eq. (7.3-24) and (7.3-26)
 
@@ -488,8 +480,8 @@ def v_rd_max(
 
     Returns:
         float: The maximum allowed shear resistance regardless of
-        approximation level"""
-
+    approximation level
+    """
     if approx_lvl == 1:
         return v_rd_max_approx1(fck, bw, theta, z, alpha, gamma_c)
 
@@ -501,7 +493,7 @@ def v_rd_max(
     if approx_lvl == 3:
         return v_rd_max_approx3(fck, bw, z, E_s, As, loads, alpha, gamma_c)
 
-    raise ValueError("invalid approx level")
+    raise ValueError('invalid approx level')
 
 
 def v_rd_max_approx1(
@@ -525,8 +517,8 @@ def v_rd_max_approx1(
         gamma_c (float): Concrete safety factor
 
     Returns:
-        float: Maximum allowed shear resistance for approximation level 1"""
-
+    float: Maximum allowed shear resistance for approximation level 1
+    """
     return (
         0.55
         * eta_fc(fck)
@@ -551,7 +543,7 @@ def v_rd_max_approx2(
     alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, with level 2 approximation
+    """The maximum allowed shear resistance, with level 2 approximation.
 
     fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41)
 
@@ -574,8 +566,8 @@ def v_rd_max_approx2(
         gamma_c (float): Concrete safety factor
 
     Returns:
-        float: Maximum allowed shear resistance for approximation level 2"""
-
+    float: Maximum allowed shear resistance for approximation level 2
+    """
     epsilonx = epsilon_x(E_s, As, z, loads)
     epsilon_1 = epsilonx + (epsilonx + 0.002) * (
         (1 / tan(theta * pi / 180)) ** 2
@@ -605,7 +597,7 @@ def v_rd_max_approx3(
     alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed shear resistance, with level 3 approximation
+    """The maximum allowed shear resistance, with level 3 approximation.
 
     fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41)
 
@@ -627,8 +619,8 @@ def v_rd_max_approx3(
         gamma_c (float): Concrete safety factor
 
     Returns:
-        float: Maximum allowed shear resistance for approximation level 3"""
-
+    float: Maximum allowed shear resistance for approximation level 3
+    """
     epsilonx = epsilon_x(E_s, As, z, loads)
     theta_min = 20 + 10000 * epsilonx
 
@@ -684,8 +676,8 @@ def v_rd_ct(
 
     Return:
         The maximum allowed shear force in a hollow core. Regardless of the
-        approximation level"""
-
+    approximation level
+    """
     if approx_lvl_h == 1:
         return v_rd_ct_approx1(f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0)
 
@@ -706,7 +698,7 @@ def v_rd_ct(
             f_p_lx_dx,
         )
 
-    raise ValueError("Invalid approx level")
+    raise ValueError('Invalid approx level')
 
 
 def v_rd_ct_approx1(
@@ -736,8 +728,8 @@ def v_rd_ct_approx1(
         l_bd0 (float): follows 7.13-5
 
     Return:
-        Vrd Appoximation 1 for hollow slabs"""
-
+    Vrd Appoximation 1 for hollow slabs
+    """
     alpha_l = l_x / (1.2 * l_bd0)
 
     return (
@@ -767,7 +759,7 @@ def v_rd_ct_approx2(
 
     fib Model Code 2010, eq. (7.3-45), (7.3-46) and (7.3-47)
 
-       Args:
+    Args:
            f_ctd (float): Design value of concrete axial tensile strength in
            MPa
            i_c (float): The second moment of area in mm^4
@@ -790,9 +782,9 @@ def v_rd_ct_approx2(
        sigma_cpy: The compressiv stress in the concrete at hight y and l_x
        tau_cpy: The shear stress due to prestress at hight y and l_x
 
-       Return:
-           The maximum shear force for level 2 approximation"""
-
+    Return:
+    The maximum shear force for level 2 approximation
+    """
     alpha_l = l_x / (1.2 * l_bd0)
     sigma_cpy = ((1 / A_c) * ((y_c - y) / i_c)) * f_p_lx
     tau_cpy = (
