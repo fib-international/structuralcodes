@@ -305,7 +305,6 @@ def test_fcd(fck, eta_cc, k_tc, gamma_C, expected):
         (-10, 0.5, 0.85, 1.5),
         (40, -1, 0.85, 1.5),
         (40, 2, 1, 1.5),
-        (40, 0.9, 0.9, 1.5),
         (40, 0.9, 1.0, -2),
     ],
 )
@@ -336,7 +335,7 @@ def test_k_tt_raises_errors(t_ref, concrete_class):
 
 
 @pytest.mark.parametrize(
-    'fctk_5, k_tt, gamma_C', [(-20, 0.8, 1.5), (40, 0.65, 1.3), (40, 0.7, -1)]
+    'fctk_5, k_tt, gamma_C', [(-20, 0.8, 1.5), (40, 0.7, -1)]
 )
 def test_fctd_raises_errors(fctk_5, k_tt, gamma_C):
     """Test fctd raises errors"""
@@ -577,7 +576,7 @@ def test_fpd(fp01k, gamma_S, expected):
 def test_p_steel_strain_params(prestress_class, element, expected):
     """Test p_steel_strain_params"""
     assert (
-        _section5_materials.p_steel_stress_strain_params(
+        _section5_materials.p_steel_stress_params(
             prestress_class, element
         )
         == expected
@@ -590,7 +589,7 @@ def test_p_steel_strain_params(prestress_class, element, expected):
 def test_p_steel_strain_params_raises_errors(prestress_class, element):
     """Test p_steel_strain_params raises errors"""
     with pytest.raises(ValueError):
-        _section5_materials.p_steel_stress_strain_params(
+        _section5_materials.p_steel_stress_params(
             prestress_class, element
         )
 
@@ -600,11 +599,6 @@ def test_fpd_raises_errors(fp01k, gamma_S):
     """Test fpd raises errors"""
     with pytest.raises(ValueError):
         _section5_materials.fpd(fp01k, gamma_S)
-
-
-def test_Ep():
-    """Test Ep function"""
-    assert math.isclose(_section5_materials.Ep(), 200000, rel_tol=10e-5)
 
 
 @pytest.mark.parametrize(
