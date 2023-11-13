@@ -2,9 +2,11 @@
 import abc
 import typing as t
 
+import numpy as np
 from numpy.typing import ArrayLike
 
 from ._generic import CompoundGeometry
+from ._marin_integration import marin_integration
 
 
 class SectionIntegrator(abc.ABC):
@@ -50,7 +52,7 @@ class MarinIntegrator(SectionIntegrator):
 
     def prepare_input(
         self, geo: CompoundGeometry, strain: ArrayLike
-    ) -> t.Tuple[ArrayLike, ArrayLike]:
+    ) -> t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Prepare general input to the integration.
 
         Calculate the stresses based on strains in a set of points.
@@ -59,17 +61,50 @@ class MarinIntegrator(SectionIntegrator):
             geo (CompoundGeometry): The geometry of the section.
             strain (ArrayLike): The strains and curvatures of the section.
         """
+        # This method should do the following tasks:
+        # - Split the compound geometry into parts according to materials.
+        # - For each material part, the part should furthermore be split
+        # according to constant, linear and parabolic stress distribution.
+        # - For each part collect coordinates y and z in separate np.ndarray
+        # iterables, and stress coefficients in a two-dimensional np.ndarray.
+        #
+        # The method should therefore return a tuple that collects the y, z,
+        # and stress coefficients for each part.
         raise NotImplementedError
 
     def integrate(
         self,
-        coordinates: ArrayLike,
-        stresses: ArrayLike,
-        x_exponent: t.Literal[0, 1],
-        y_exponent: t.Literal[0, 1],
-    ) -> float:
+        prepared_input: t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]],
+    ) -> t.Tuple[float, float, float]:
         """Integrate stresses over the geometry."""
-        raise NotImplementedError
+        # Set the stress resultants to zero
+        N, Mx, My = 0.0, 0.0, 0.0
+
+        # Loop through all parts of the section and add contributions
+        for y, z, stress_coeff in prepared_input:
+            # Find integration order from shape of stress coeff array
+            m, n = stress_coeff.shape
+
+            # Create stress coeff arrays for bending moments
+            stress_coeff_mx = np.zeros(stress_coeff.shape)
+            stress_coeff_mx[:, 1:] = stress_coeff[:, :-1]
+            stress_coeff_my = np.zeros(stress_coeff.shape)
+            stress_coeff_my[1:, :] = stress_coeff[:-1, :]
+
+            # Calculate area moments
+            area_moments = np.array(
+                [
+                    [marin_integration(y, z, j, k) for k in range(n)]
+                    for j in range(m)
+                ]
+            )
+
+            # Calculate contributions to stress resultants
+            N += sum(sum(stress_coeff * area_moments))
+            Mx += sum(sum(stress_coeff_mx * area_moments))
+            My += sum(sum(stress_coeff_my * area_moments))
+
+        return N, Mx, My
 
     def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike
@@ -78,12 +113,8 @@ class MarinIntegrator(SectionIntegrator):
         # Prepare the general input based on the geometry and the input strains
         prepared_input = self.prepare_input(geo, strain)
 
-        # Calculate the axial forces
-        N = self.integrate(*prepared_input, x_exponent=0, y_exponent=1)
-        Mx = self.integrate(*prepared_input, x_exponent=0, y_exponent=1)
-        My = self.integrate(*prepared_input, x_exponent=1, y_exponent=0)
-
-        return N, Mx, My
+        # Return the calculated response
+        return self.integrate(prepared_input)
 
 
 integrator_registry = {'Marin': MarinIntegrator}
