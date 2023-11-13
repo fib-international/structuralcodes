@@ -1,4 +1,8 @@
-"""General Utilities"""
+"""Integration of area moments using algorithms by Joaquin Marin.
+
+Marin, J.: Computing columns, footings and gates through moments of area.
+Computers and Structures, 18(2), pp. 343-349, 1984.
+"""
 import functools
 import math
 
