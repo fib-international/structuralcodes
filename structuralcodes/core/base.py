@@ -85,8 +85,11 @@ class ConstitutiveLaw(abc.ABC):
     def get_secant(self, eps: float) -> float:
         """Method to return the
         secant at a given strain level"""
-        sig = self.get_stress(eps)
-        return sig / eps
+        if eps != 0:
+            sig = self.get_stress(eps)
+            return sig / eps
+        else:
+            return self.get_tangent(eps)
 
 
 class Section(abc.ABC):
@@ -99,7 +102,7 @@ class Section(abc.ABC):
 
     def __init__(self, name: t.Optional[str] = None) -> None:
         self.id = self.section_counter
-        self._name = name if name is not None else "Section_{}".format(self.id)
+        self._name = name if name is not None else f"Section_{self.id}"
         self._increase_global_counter()
 
     @property

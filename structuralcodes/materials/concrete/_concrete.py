@@ -55,7 +55,7 @@ class Concrete(Material):
         return self._stress_strain
 
     @stress_strain.setter
-    def stressStrain(self, stress_strain: ConstitutiveLaw) -> None:
+    def stress_strain(self, stress_strain: ConstitutiveLaw) -> None:
         """Setter for constitutive law"""
         if 'concrete' in stress_strain.__materials__:
             self._stress_strain = stress_strain

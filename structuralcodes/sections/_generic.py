@@ -35,22 +35,34 @@ class Geometry:
 
     def __init__(
         self,
-        name: t.Optional[str] = None
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None
     ) -> None:
         """Initializes a geometry object
-        The name serves for filtering
+        The name and grouplabel serve for filtering
         in a compound object. By default it
-        creates a new name each time"""
+        creates a new name each time
+        
+        Arguments:
+            name (Optional: default None): the name to be given to the object
+            group_label (Optional: default None): a label for grouping several
+            objects"""
         if name is not None:
             self._name = name
         else:
             counter = Geometry.return_global_counter_and_increase()
             self._name = f"Geometry_{counter}"
+        self._group_label = group_label
 
     @property
     def name(self):
         """Returns the name of the Geometry"""
         return self._name
+    
+    @property
+    def group_label(self):
+        """Returns the group_label fo the Geometry"""
+        return self._group_label
 
     @classmethod
     def _increase_global_counter(cls):
@@ -82,7 +94,7 @@ class PointGeometry(Geometry):
         # I check if point is a shapely Point or an ArrayLike object
         if not isinstance(point, Point):
             # It is an ArrayLike object -> create the Point given the
-            # coordinates (coordinates can be a List, Tuple, np.array, ...)
+            # coordinates x and y (coordinates can be a List, Tuple, np.array, ...)
             coords = np.atleast_1d(point)
             num = len(coords)
             if num < 2:
@@ -285,7 +297,7 @@ class SurfaceGeometry:
     # mirror, translation, rotation, etc.
 
 
-class CompoundGeometry(SurfaceGeometry):
+class CompoundGeometry(Geometry):
     '''Class for a compound geometry
 
     it is basicaly a set of geometries, each one with its
@@ -293,7 +305,7 @@ class CompoundGeometry(SurfaceGeometry):
     '''
     def __init__(
         self,
-        geometries: t.List[SurfaceGeometry] | MultiPolygon,
+        geometries: t.List[Geometry] | MultiPolygon,
         materials: t.Optional[t.List[Material] | Material] = None
     ) -> None:
         '''Creates a compound geometry
@@ -359,7 +371,6 @@ def add_reinforcement(
     """Adds a reinforcement bar to the geometry
 
     Proposals:
-    1. Or we can rethink the structure and add:
         i. Geometry class (group_label -> to be use for filtering)
         ii. PointGeometry(Geometry) that is a point with a mat
         iii. SurfaceGeometry(Geometry) that is a polygon with a mat

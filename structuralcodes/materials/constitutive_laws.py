@@ -42,19 +42,19 @@ class ElasticPlastic(ConstitutiveLaw):
         self,
         E: float,
         fy: float,
-        Eh: t.Optional[float] = None,
+        Eh: float = 0.0,
         eps_su: t.Optional[float] = None,
         name: t.Optional[str] = None,
     ) -> None:
         """Initialize an Elastic-Plastic Material"""
         name = name if name is not None else "ElasticPlasticLaw"
         super().__init__(name=name)
-        self._E = E
-        self._fy = fy
-        if Eh is not None:
-            self._Eh = Eh
+        if E > 0:
+            self._E = E
         else:
-            self._Eh = 0.0
+            raise ValueError('Elastic modulus E must be greater than zero')
+        self._fy = fy
+        self._Eh = Eh
         self._eps_su = eps_su
         self._eps_sy = fy / E
 
@@ -71,7 +71,7 @@ class ElasticPlastic(ConstitutiveLaw):
         return sig
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
-        """Return the tanet for given strain"""
+        """Return the tangent for given strain"""
         tol = 1.0e-6
         if abs(eps) - self._eps_sy > tol:
             return self._Eh
@@ -130,7 +130,7 @@ class ParabolaRectangle(ConstitutiveLaw):
 class UserDefined(ConstitutiveLaw):
     """Class for a user defined constitutive law
     The curve is defined with positive and optionally negative
-    values. After the last value, the stress is mantained constant"""
+    values. After the last value, the stress goes to zero simulating the failure"""
 
     __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
 
