@@ -130,7 +130,8 @@ class ParabolaRectangle(ConstitutiveLaw):
 class UserDefined(ConstitutiveLaw):
     """Class for a user defined constitutive law
     The curve is defined with positive and optionally negative
-    values. After the last value, the stress goes to zero simulating the failure"""
+    values. After the last value, the stress goes to zero simulating failure
+    """
 
     __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
 

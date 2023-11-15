@@ -5,9 +5,11 @@ from math import cos, sin, pi
 import warnings
 import typing as t
 import numpy as np
+
 # import numpy.typing as npt
 from structuralcodes.core.base import Section
 from structuralcodes.materials.concrete import Concrete
+
 # For now this is just a trick! refactor later TODO!
 from structuralcodes.materials.constitutive_laws import ElasticPlastic
 
@@ -52,7 +54,7 @@ class StirrupsData:
 class ReinforcementData:
     """dataclass representing stirrups data for RectangularRC
     section.
-    diameter_corner (float): diameter of longitudinal bar in each corner of 
+    diameter_corner (float): diameter of longitudinal bar in each corner of
                             the section
     diameter_bottom (float): diameter of bars in bottom side (default = None)
     number_bottom (int): number of bars in bottom side (default = 0)
@@ -65,6 +67,7 @@ class ReinforcementData:
 
     if no diameter is provided for sides, it is assumed that same diameter
     of angle bars is mantained for all other sides."""
+
     diameter_corner: float
     diameter_bottom: t.Optional[float] = None
     number_bottom: int = 0
@@ -131,20 +134,21 @@ class RectangularRC(Section):
 
             RectangularRCSection.fromGeometry(Geometry(itPolygons,itMaterials))
 
-            
- """
+
+    """
 
     def __init__(
-            self,
-            width: float,
-            height: float,
-            cover: float,
-            reinforcement_data: ReinforcementData,
-            concrete: Concrete,
-            reinforcement: ElasticPlastic,
-            confined_concrete: t.Union[Concrete, str, None] = None,
-            stirrups_data: t.Optional[StirrupsData] = None,
-            name: t.Optional[str] = None) -> None:
+        self,
+        width: float,
+        height: float,
+        cover: float,
+        reinforcement_data: ReinforcementData,
+        concrete: Concrete,
+        reinforcement: ElasticPlastic,
+        confined_concrete: t.Union[Concrete, str, None] = None,
+        stirrups_data: t.Optional[StirrupsData] = None,
+        name: t.Optional[str] = None,
+    ) -> None:
         if name is None:
             name = 'RectangularRCSection'
         super().__init__(name)
@@ -161,15 +165,16 @@ class RectangularRC(Section):
             if isinstance(confined_concrete, str):
                 # provided a string, check if it auto
                 if (
-                    confined_concrete.lower() == 'automatic' or
-                    confined_concrete.lower() == 'auto'
+                    confined_concrete.lower() == 'automatic'
+                    or confined_concrete.lower() == 'auto'
                 ):
                     # TODO: compute automatic confinement
                     if stirrups_data is None:
                         raise ValueError(
                             'Asked for automatic confinement \
                             computation, but stirrups_data is None \
-                            \nPlease provide a proper stirrups_data')
+                            \nPlease provide a proper stirrups_data'
+                        )
                     self.confined_concrete = concrete
                 else:
                     raise ValueError(f'Value "{confined_concrete}" unknown')
@@ -225,8 +230,12 @@ class RectangularRC(Section):
 
         # TODO confinement
         x, y, A = discretize_rectangle(
-            -self.width / 2, -self.height / 2, self.width / 2, self.height / 2,
-            nx, ny
+            -self.width / 2,
+            -self.height / 2,
+            self.width / 2,
+            self.height / 2,
+            nx,
+            ny,
         )
 
         self.xc = np.array(x)
@@ -263,7 +272,7 @@ class RectangularRC(Section):
             raise ValueError('Too much tension applied to the section')
         if N < self.max_compression_force():
             raise ValueError('Too much compression is applied to the section')
-        
+
         # Find limit condition starting from contemporary failure
         # of steel and concrete and then perform a bisection method
         # for finding the NA position that equilibrates external N
@@ -271,19 +280,21 @@ class RectangularRC(Section):
         eps_cu = -0.0035
         p1 = (self.height / 2, -abs(eps_cu))
         p2 = (self.ymin, self.reinforcement._eps_su)
-        strain_c = p2[1] - (p2[1] - p1[1]) / (p2[0] - p1[0]) * (p2[0] - self.yc)
-        strain_s = p2[1] - (p2[1] - p1[1]) / (p2[0] - p1[0]) * (p2[0] - self.ys)
+        strain_c = p2[1] - (p2[1] - p1[1]) / (p2[0] - p1[0]) * (
+            p2[0] - self.yc
+        )
+        strain_s = p2[1] - (p2[1] - p1[1]) / (p2[0] - p1[0]) * (
+            p2[0] - self.ys
+        )
         chi = (p2[1] - p1[1]) / (p2[0] - p1[0])
         # Integrate internal axial force
         Nint = np.sum(
-            self.concrete._stress_strain.get_stress(strain_c)*self.Ac
-            ) + np.sum(
-            self.reinforcement.get_stress(strain_s)*self.As
-            )
-        
+            self.concrete._stress_strain.get_stress(strain_c) * self.Ac
+        ) + np.sum(self.reinforcement.get_stress(strain_s) * self.As)
+
         if Nint > N:
             # Too much tension, lowering NA
-            #print('Too much compression, lowering NA')
+            # print('Too much compression, lowering NA')
             chi_a = chi
             dN_a = Nint - N
 
@@ -291,13 +302,13 @@ class RectangularRC(Section):
             strain_c = p1[1] + chi_b * (self.yc - p1[0])
             strain_s = p1[1] + chi_b * (self.ys - p1[0])
             Nint = np.sum(
-                self.concrete._stress_strain.get_stress(strain_c)*self.Ac
-                ) + np.sum(
-                self.reinforcement.get_stress(strain_s)*self.As
-                )
+                self.concrete._stress_strain.get_stress(strain_c) * self.Ac
+            ) + np.sum(self.reinforcement.get_stress(strain_s) * self.As)
             dN_b = Nint - N
             if dN_a * dN_b > 0:
-                raise ValueError('Same sign on the interval, bisection will not work')
+                raise ValueError(
+                    'Same sign on the interval, bisection will not work'
+                )
             IT = 1
             ITMAX = 100
             while (abs(dN_b - dN_a) > 100) and (IT < ITMAX):
@@ -305,10 +316,8 @@ class RectangularRC(Section):
                 strain_c = p1[1] + chi_c * (self.yc - p1[0])
                 strain_s = p1[1] + chi_c * (self.ys - p1[0])
                 Nint = np.sum(
-                    self.concrete._stress_strain.get_stress(strain_c)*self.Ac
-                    ) + np.sum(
-                    self.reinforcement.get_stress(strain_s)*self.As
-                    )
+                    self.concrete._stress_strain.get_stress(strain_c) * self.Ac
+                ) + np.sum(self.reinforcement.get_stress(strain_s) * self.As)
                 dN_c = Nint - N
                 if dN_c * dN_a < 0:
                     chi_b = chi_c
@@ -319,7 +328,7 @@ class RectangularRC(Section):
                 IT += 1
         else:
             # Too much compression, rising NA
-            #print('Too much compression, rising NA')
+            # print('Too much compression, rising NA')
             chi_a = chi
             dN_a = Nint - N
 
@@ -327,14 +336,14 @@ class RectangularRC(Section):
             strain_c = p2[1] + chi_b * (self.yc - p2[0])
             strain_s = p2[1] + chi_b * (self.ys - p2[0])
             Nint = np.sum(
-                self.concrete._stress_strain.get_stress(strain_c)*self.Ac
-                ) + np.sum(
-                self.reinforcement.get_stress(strain_s)*self.As
-                )
+                self.concrete._stress_strain.get_stress(strain_c) * self.Ac
+            ) + np.sum(self.reinforcement.get_stress(strain_s) * self.As)
             dN_b = Nint - N
             print(f'chi_b = {chi_b}, dN_b = {dN_b}')
             if dN_a * dN_b > 0:
-                raise ValueError('Same sign on the interval, bisection will not work')
+                raise ValueError(
+                    'Same sign on the interval, bisection will not work'
+                )
             IT = 1
             ITMAX = 100
             while (abs(dN_b - dN_a) > 100) and (IT < ITMAX):
@@ -342,10 +351,8 @@ class RectangularRC(Section):
                 strain_c = p2[1] + chi_c * (self.yc - p2[0])
                 strain_s = p2[1] + chi_c * (self.ys - p2[0])
                 Nint = np.sum(
-                    self.concrete._stress_strain.get_stress(strain_c)*self.Ac
-                    ) + np.sum(
-                    self.reinforcement.get_stress(strain_s)*self.As
-                    )
+                    self.concrete._stress_strain.get_stress(strain_c) * self.Ac
+                ) + np.sum(self.reinforcement.get_stress(strain_s) * self.As)
                 dN_c = Nint - N
                 if dN_c * dN_a < 0:
                     chi_b = chi_c
@@ -354,7 +361,7 @@ class RectangularRC(Section):
                     chi_a = chi_c
                     dN_a = dN_c
                 IT += 1
-        #print(f'Found equilibrium after {IT} iterations')
+        # print(f'Found equilibrium after {IT} iterations')
 
         # For now I am saving these for plotting, will think if they are needed
         self.strain_c = strain_c
@@ -362,10 +369,10 @@ class RectangularRC(Section):
         self.stress_c = self.concrete._stress_strain.get_stress(self.strain_c)
         self.stress_s = self.reinforcement.get_stress(self.strain_s)
         return np.sum(
-            self.concrete._stress_strain.get_stress(strain_c)*self.yc*self.Ac
-            ) + np.sum(
-            self.reinforcement.get_stress(strain_s)*self.ys*self.As
-            )
+            self.concrete._stress_strain.get_stress(strain_c)
+            * self.yc
+            * self.Ac
+        ) + np.sum(self.reinforcement.get_stress(strain_s) * self.ys * self.As)
 
     def bending_strength_yp(self, N: float = 0) -> float:
         """Returns the beding strength in y+ direction for a given
@@ -383,8 +390,10 @@ class RectangularRC(Section):
         delta = 2 * (self.cover + self.stirrups_data.diameter / 2.0)
         hc = self.height - delta
         wc = self.width - delta
-        delta = self.reinforcement_data.diameter_corner + \
-            self.stirrups_data.diameter
+        delta = (
+            self.reinforcement_data.diameter_corner
+            + self.stirrups_data.diameter
+        )
         hcc = hc - delta
         wcc = wc - delta
         xmin = -wcc / 2.0
@@ -396,38 +405,50 @@ class RectangularRC(Section):
         self.d = [self.reinforcement_data.diameter_corner] * 4
         # bottom bars
         for i in range(self.reinforcement_data.number_bottom):
-            self.xs.append(xmin + (xmax - xmin) /
-                           (self.reinforcement_data.number_bottom + 1) *
-                           (i + 1))
+            self.xs.append(
+                xmin
+                + (xmax - xmin)
+                / (self.reinforcement_data.number_bottom + 1)
+                * (i + 1)
+            )
             self.ys.append(ymin)
             self.d.append(self.reinforcement_data.diameter_bottom)
         # top bars
         for i in range(self.reinforcement_data.number_top):
-            self.xs.append(xmin + (xmax - xmin) /
-                           (self.reinforcement_data.number_top + 1) *
-                           (i + 1))
+            self.xs.append(
+                xmin
+                + (xmax - xmin)
+                / (self.reinforcement_data.number_top + 1)
+                * (i + 1)
+            )
             self.ys.append(ymax)
             self.d.append(self.reinforcement_data.diameter_top)
         # left bars
         for i in range(self.reinforcement_data.number_left):
             self.xs.append(xmin)
-            self.ys.append(ymin + (ymax - ymin) /
-                           (self.reinforcement_data.number_left + 1) *
-                           (i + 1))
+            self.ys.append(
+                ymin
+                + (ymax - ymin)
+                / (self.reinforcement_data.number_left + 1)
+                * (i + 1)
+            )
             self.d.append(self.reinforcement_data.diameter_left)
         # right bars
         for i in range(self.reinforcement_data.number_right):
             self.xs.append(xmax)
-            self.ys.append(ymin + (ymax - ymin) /
-                           (self.reinforcement_data.number_right + 1) *
-                           (i + 1))
+            self.ys.append(
+                ymin
+                + (ymax - ymin)
+                / (self.reinforcement_data.number_right + 1)
+                * (i + 1)
+            )
             self.d.append(self.reinforcement_data.diameter_right)
 
         self.xs = np.array(self.xs)
         self.ys = np.array(self.ys)
         self.d = np.array(self.d)
         # compute Areas for each reinforcement
-        self.As = np.pi * (self.d ** 2) / 4
+        self.As = np.pi * (self.d**2) / 4
 
         self.xmin = xmin
         self.xmax = xmax

@@ -40,7 +40,7 @@ class GrossProperties:
     ei_yy: float = 0
 
     def __str__(self, fmt: str = ".3f") -> str:
-        """ Prints the gross concrete section properties.
+        """Prints the gross concrete section properties.
         TODO: optionally give a file for printing into?
 
         Arguments:
