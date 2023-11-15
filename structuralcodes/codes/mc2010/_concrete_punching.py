@@ -1,4 +1,4 @@
-"Covers punching in Model code 2010, 7.3.5.1 to 7.3.5.4"
+"""Covers punching in Model code 2010, 7.3.5.1 to 7.3.5.4."""
 import warnings
 from math import pi, sin, cos
 
@@ -14,8 +14,8 @@ def b_0(v_ed: float, v_prep_d_max: float) -> float:
         perpendiculerer to the basic control parameter (Figure 7.3-24)
 
     Return:
-        The shear-resisting control perimeter, b_0"""
-
+    The shear-resisting control perimeter, b_0
+    """
     return v_ed / v_prep_d_max
 
 
@@ -63,7 +63,7 @@ def m_ed(
         return v_ed * ((1 / 8) + e_u / (b_s))
     if corner:
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
-    raise ValueError("Placement is not defined, only one needs to be True")
+    raise ValueError('Placement is not defined, only one needs to be True')
 
 
 def psi_punching(
@@ -82,7 +82,7 @@ def psi_punching(
     m_rd: float,
     x_direction: bool,
 ) -> float:
-    """The rotation of the slab around the supported area
+    """The rotation of the slab around the supported area.
 
     fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77)
 
@@ -107,17 +107,14 @@ def psi_punching(
         in MPa
 
     Return:
-        psi for the chosen approx level in punching"""
-
+    psi for the chosen approx level in punching
+    """
     r_s = max(0.22 * l_x, 0.22 * l_y)
     if approx_lvl_p == 1:
         psi = 1.5 * r_s * f_yd / (d * e_s)
 
     elif approx_lvl_p == 2:
-        if x_direction is True:
-            r_s = 0.22 * l_x
-        else:
-            r_s = 0.22 * l_y
+        r_s = 0.22 * l_x if x_direction is True else 0.22 * l_y
         psi = (1.5 * r_s * f_yd / (d * e_s)) * (
             (m_ed(v_ed, e_u, l_x, l_y, inner, edge_par, edge_per, corner))
             / (m_rd)
@@ -147,7 +144,7 @@ def v_rdc_punching(
     v_prep_d_max: float,
     gamma_c: float = 1.5,
 ) -> float:
-    """Punching resistance from the concrete
+    """Punching resistance from the concrete.
 
     fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63)
 
@@ -178,8 +175,8 @@ def v_rdc_punching(
         gamma_c: Safety factor for concrete
 
     Return:
-        v_rdc for punching with the right approx level"""
-
+    v_rdc for punching with the right approx level
+    """
     k_dg = max(32 / (16 + dg), 0.75)
     k_psi = min(
         1
@@ -207,8 +204,7 @@ def v_rdc_punching(
         ),
         0.6,
     )
-    result = k_psi * b_0(v_ed, v_prep_d_max) * d_v * (f_ck**0.5) / gamma_c
-    return result
+    return k_psi * b_0(v_ed, v_prep_d_max) * d_v * (f_ck**0.5) / gamma_c
 
 
 def v_rds_punching(
@@ -235,7 +231,7 @@ def v_rds_punching(
     gamma_s: float,
 ):
     """The punching resistance from shear reinforcement
-     fib Model Code 2010, eq. (7.3-64) and (7.3-65)
+     fib Model Code 2010, eq. (7.3-64) and (7.3-65).
 
     Args:
         e_u (float): The ecentrisity of the result of shear forces
@@ -301,8 +297,7 @@ def v_rds_punching(
             """In order to ensure sufficent deformation capacity,
             consider increasing the amount of punching shear reinforcement"""
         )
-    result = a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
-    return result
+    return a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
 
 
 def v_rd_max_punching(
@@ -328,7 +323,7 @@ def v_rd_max_punching(
     stirrups_compression: bool,
     gamma_c: float = 1.5,
 ):
-    """Finds the maximum value you can have for v_rd_punching
+    """Finds the maximum value you can have for v_rd_punching.
 
     fib Model Code 2010, eq. (7.3-68) and (7.3-69)
 
@@ -361,10 +356,9 @@ def v_rd_max_punching(
         compression face, and bent on tension face
         gamma_c (float): Concrete reduction factor
 
-    Return
+    Return:
         The maximum allowed punching resistance
     """
-
     if d_head:
         k_sys = 2.8
     elif stirrups_compression:
@@ -399,12 +393,11 @@ def v_rd_max_punching(
         ),
         0.6,
     )
-    result = min(
+    return min(
         (k_sys * k_psi * b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5)
         / gamma_c,
         (b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5) / gamma_c,
     )
-    return result
 
 
 def v_rd_punching(
@@ -437,11 +430,11 @@ def v_rd_punching(
     gamma_c: float = 1.5,
     gamma_s: float = 1.15,
 ):
-    """The total resistance for punching, both Vrd,c and Vrd,s
+    """The total resistance for punching, both Vrd,c and Vrd,s.
 
      fib Model Code 2010, eq. (7.3-60)
 
-        Args:
+    Args:
         e_u (float): The ecentrisity of the result of shear forces
         with respect to the centroid (Figure 7.3-27b)
         b_u (float): The diamter of a circle with same surface as the
@@ -475,9 +468,9 @@ def v_rd_punching(
         perpendiculerer to the basic control parameter (Figure 7.3-24)
 
     Return: The maximum allowed punching resistance, regardless of
-    values from v_rdc and v_rds"""
-
-    result = min(
+    values from v_rdc and v_rds
+    """
+    return min(
         v_rdc_punching(
             l_x,
             l_y,
@@ -545,4 +538,3 @@ def v_rd_punching(
             gamma_c,
         ),
     )
-    return result

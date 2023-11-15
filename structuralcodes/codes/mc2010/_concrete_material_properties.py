@@ -1,4 +1,4 @@
-"""A collection of material properties for concrete"""
+"""A collection of material properties for concrete."""
 import math
 
 

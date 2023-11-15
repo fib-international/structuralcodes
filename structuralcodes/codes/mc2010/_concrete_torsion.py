@@ -1,4 +1,4 @@
-"Covers torsion in Model code 2010, 7.3.4"
+"""Covers torsion in Model code 2010, 7.3.4."""
 
 from math import pi, tan, sin, cos
 from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
@@ -7,14 +7,12 @@ from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
 def create_load_dict(
     Med: float, Ved: float, Ned: float, delta_e: float
 ) -> dict:
-    """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-
-    return dictionary
+    """Returns dictionary assosiated with loads."""
+    return {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
 
 
 def v_ed_ti(t_ed: float, a_k: float, z_i: float):
-    """Shear force due to torsion
+    """Shear force due to torsion.
 
     fib Model Code 2010, eq. (7.3-53)
 
@@ -24,8 +22,8 @@ def v_ed_ti(t_ed: float, a_k: float, z_i: float):
         a_k: Can be found in figure 7.3-18
 
     Returns:
-        The shear force that will occur due to torsion force."""
-
+    The shear force that will occur due to torsion force.
+    """
     return t_ed * z_i / (2 * a_k)
 
 
@@ -41,7 +39,7 @@ def t_rd_max(
     loads: dict,
     gamma_c: float = 1.5,
 ) -> float:
-    """The maximum allowed torsion
+    """The maximum allowed torsion.
 
     fib Model Code 2010, eq. (7.3-56)
 
@@ -91,7 +89,7 @@ def t_rd_max(
         k_epsilon = min(1 / (1.2 + 55 * epsilon_1), 0.65)
 
     k_c = eta_fc(f_ck) * k_epsilon
-    result = (
+    return (
         k_c
         * f_ck
         * t_ef
@@ -101,8 +99,6 @@ def t_rd_max(
         * cos(theta * pi / 180)
         / gamma_c
     )
-
-    return result
 
 
 def t_rd(  # pylint: disable=r0801
@@ -120,7 +116,7 @@ def t_rd(  # pylint: disable=r0801
     alpha: float = 90.0,
     gamma_c: float = 1.5,
 ) -> bool:
-    """Checks if the combination of torsion and shear is ok
+    """Checks if the combination of torsion and shear is ok.
 
     fib Model Code 2010, eq. (7.3-56)
 
@@ -149,8 +145,9 @@ def t_rd(  # pylint: disable=r0801
 
     Return:
         Returns a bool that is true if the criterion for torsion and
-        shear is fulfilled"""
-    check = bool(
+    shear is fulfilled
+    """
+    return bool(
         (
             t_ed
             / t_rd_max(
@@ -185,5 +182,3 @@ def t_rd(  # pylint: disable=r0801
         ** 2
         <= 1
     )
-
-    return check
