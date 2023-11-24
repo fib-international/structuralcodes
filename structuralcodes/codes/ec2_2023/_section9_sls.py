@@ -1,4 +1,4 @@
-"""Functions from Section 9 of EN 1992-1-1:2023"""
+"""Functions from Section 9 of EN 1992-1-1:2023."""
 
 import math
 from typing import Tuple
@@ -8,7 +8,7 @@ from ._annexB_time_dependent import alpha_c
 
 
 def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
-    """Returns de effective modulus of elasticity from fcm and phi
+    """Returns de effective modulus of elasticity from fcm and phi.
 
     EN 1992-1-1:2023, Eq. (9.1)
 
@@ -20,7 +20,8 @@ def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
         kE (float): Constant to account for the type of aggregate.
 
     Returns:
-        float: The effective modulus of elastiticy in MPa."""
+        float: The effective modulus of elastiticy in MPa.
+    """
     Ecm = kE * fcm_ ** (1 / 3)
     return alpha_c(fcm_) * Ecm / (1 + phi)
 
@@ -29,7 +30,7 @@ def As_min_y(
     NEd: float, b: float, h: float, fct_eff: float, fyk: float
 ) -> Tuple[float, float]:
     """Returns the minimum reinforcement to avoid yielding of steel. Box or T
-       sections are to be divided into rectangles
+    sections are to be divided into rectangles.
 
     EN 1992-1-1:2023, Eq. (9.4)
     Eq. (9.2) and (9.3) are particular cases of the general equation
@@ -68,8 +69,7 @@ def As_min_y(
 
 def kh(b: float, h: float) -> float:
     """Returns factor kh, which reduces the tensile strength of concrete to
-    account for imposed restrained deformations due
-     to shrinkage
+    account for imposed restrained deformations due to shrinkage.
 
     EN 1992-1-1:2023, Eq. (9.5)
 
@@ -87,7 +87,7 @@ def kh(b: float, h: float) -> float:
 def wk_cal2(
     kw: float, k_1_r_: float, srm_cal_: float, epssm_epscm_: float
 ) -> float:
-    """Returns de calculated characteristic crack width
+    """Returns de calculated characteristic crack width.
 
     EN 1992-1-1:2023 Eq. (9.8)
 
@@ -110,7 +110,7 @@ def wk_cal2(
 
 def k_1_r(h: float, x: float, ay: float) -> float:
     """Returns k1/r factor to account for increase in crack width due to
-    curvature of the section in bending
+    curvature of the section in bending.
 
     EN 1992-1-1:2023 Eq. (9.9)
 
@@ -137,7 +137,7 @@ def epssm_epscm(
     Es: float,
 ) -> float:
     """Returns the mean strain difference between steel and concrete along
-    2 transfer lengths
+    2 transfer lengths.
 
     EN 1992-1-1:2023 Eq. (9.11)
 
@@ -167,7 +167,7 @@ def epssm_epscm(
 
 def kfl(h: float, xg: float, hceff: float) -> float:
     """Returns factor kfl which accounts for the distribution of stresses
-       before cracking
+    before cracking.
 
     EN 1992-1-1:2023 Eq. (9.17)
 
@@ -194,7 +194,7 @@ def srm_cal(
     h,
     x: float,
 ) -> float:
-    """Returns the mean crack spacing
+    """Returns the mean crack spacing.
 
     EN 1992-1-1:2023 Eq. (9.15)
 
@@ -235,8 +235,8 @@ def wk_cal(
     alphae: float,
     Es: float,
 ) -> Tuple[float, float, float, float]:
-    """returns the characteristic crack width, wk,cal, as well as auxiliary
-        variables, 1/r, srm,cal and epssm-epscm
+    """Returns the characteristic crack width, wk,cal, as well as auxiliary
+    variables, 1/r, srm,cal and epssm-epscm.
 
     EN1992-1-1:2023 Eq. (9.8), complemented with Eq. (9.11), Eq. (9.15),
         Eq. (9.17)
@@ -285,9 +285,9 @@ def delta_simpl(
     As1: float,
     Mk: float,
 ) -> float:
-    """Simplified calculation of the deflection for rectangular sections
+    """Simplified calculation of the deflection for rectangular sections.
 
-       EN1992-1-1:2023 Eq. (9.23)
+    EN1992-1-1:2023 Eq. (9.23)
 
     Args:
         delta_loads (float): linear elastic deflection due to loads

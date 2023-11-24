@@ -1,4 +1,4 @@
-"""The concrete class for Model Code 2020 Concrete Material"""
+"""The concrete class for Model Code 2020 Concrete Material."""
 import typing as t
 import warnings
 
@@ -7,7 +7,7 @@ from ._concrete import Concrete
 
 
 class ConcreteMC2010(Concrete):
-    """Concrete implementation for MC 2010"""
+    """Concrete implementation for MC 2010."""
 
     _fcm: t.Optional[float] = None
     _fctm: t.Optional[float] = None
@@ -22,7 +22,7 @@ class ConcreteMC2010(Concrete):
         density: float = 2400.0,
         existing: bool = False,
     ):
-        """Initializes a new instance of Concrete for MC 2010
+        """Initializes a new instance of Concrete for MC 2010.
 
         Args:
             fck (float): Characteristic strength in MPa if concrete is not
@@ -34,7 +34,6 @@ class ConcreteMC2010(Concrete):
             existing (bool): The material is of an existing structure
                 (default: False)
         """
-
         if name is None:
             name = f'C{round(fck):d}'
         super().__init__(
@@ -61,7 +60,7 @@ class ConcreteMC2010(Concrete):
 
     @fcm.setter
     def fcm(self, value: float):
-        """Sets a user defined value for fcm
+        """Sets a user defined value for fcm.
 
         Args:
             value (float): the value of fcm in MPa
@@ -83,7 +82,7 @@ class ConcreteMC2010(Concrete):
 
     @property
     def fctm(self) -> float:
-        """Returns fctm in MPa
+        """Returns fctm in MPa.
 
         Returns:
             float: The mean tensile strength in MPa
@@ -94,7 +93,7 @@ class ConcreteMC2010(Concrete):
 
     @fctm.setter
     def fctm(self, value: float):
-        """Sets a user defined value for fctm
+        """Sets a user defined value for fctm.
 
         Args:
             value (float): the value of fctm in MPa
@@ -107,7 +106,7 @@ class ConcreteMC2010(Concrete):
 
     @property
     def fctkmin(self) -> float:
-        """Returns fctkmin in MPa
+        """Returns fctkmin in MPa.
 
         Returns:
             float: The lower bound tensile strength in MPa
@@ -119,7 +118,7 @@ class ConcreteMC2010(Concrete):
 
     @fctkmin.setter
     def fctkmin(self, value: float):
-        """Sets a user defined value for fctkmin
+        """Sets a user defined value for fctkmin.
 
         Args:
             value (float): the value of fctkmin in MPa
@@ -128,7 +127,7 @@ class ConcreteMC2010(Concrete):
 
     @property
     def fctkmax(self) -> float:
-        """Returns fctkmax in MPa
+        """Returns fctkmax in MPa.
 
         Returns:
             float: The upper bound tensile strength in MPa
@@ -140,7 +139,7 @@ class ConcreteMC2010(Concrete):
 
     @fctkmax.setter
     def fctkmax(self, value: float):
-        """Sets a user defined value for fctkmax
+        """Sets a user defined value for fctkmax.
 
         Args:
             value (float): the value of fctkmax in MPa
@@ -149,7 +148,7 @@ class ConcreteMC2010(Concrete):
 
     @property
     def Gf(self) -> float:
-        """Fracture energy of concrete
+        """Fracture energy of concrete.
 
         Returns:
             float: The fracture energy in N/m
@@ -160,7 +159,7 @@ class ConcreteMC2010(Concrete):
 
     @Gf.setter
     def Gf(self, value: float):
-        """Sets a user defined value for fracture energy Gf
+        """Sets a user defined value for fracture energy Gf.
 
         Args:
             value (float): the value of Gf in N/m
