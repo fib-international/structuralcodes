@@ -50,6 +50,8 @@ def Ecm(fcm1: float, kE: float = 9500) -> float:
 
     Args:
         fcm1 (float): The mean compressive strength in MPa.
+        KE is a parameter to account for the type of aggregate which is 
+        between 5000 and 13000 
 
     Returns:
         float: The secant modulus oe elasticity  in MPa.

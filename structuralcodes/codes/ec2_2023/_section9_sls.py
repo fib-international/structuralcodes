@@ -78,7 +78,9 @@ def kh(b: float, h: float) -> float:
         h (float): height of the rectangle in meters
 
     Returns:
-        Factor kh which applies to the tensile resistance of concrete"""
+        Factor kh which reduces the tensile strength of concrete
+        to     account for imposed restrained deformations due
+        to shrinkage"""
     return min(max(0.8 - 0.6 * (min(b, h) - 0.3), 0.5), 0.8)
 
 
@@ -98,6 +100,10 @@ def wk_cal2(
                   srm_cal
         epssm_epscm_: mean diference of strain between steel anc concrete - can
                      be determined using the function epssm_epscm
+
+    Returns:
+        the calculated characteristic crack width in in units consistent
+        with srm_cal
     """
     return kw * k_1_r_ * srm_cal_ * epssm_epscm_
 
@@ -112,12 +118,13 @@ def k_1_r(h: float, x: float, ay: float) -> float:
         h (float): height of the section in consistent units (e.g. meters)
         x (float): distance from most compressed fibre to neutra axis in
         consistent units (e.g. meters)
-        ay: cover to centre of tensioned reinforcement closest to most
+        ay (float): cover to centre of tensioned reinforcement closest to most
         tensioned face in consistent units
         (e.g. meters)
 
     Returs:
-        Factor k1/r (non-dimensional)"""
+        Factor k1/r (non-dimensional) which accounts for the increase in crack
+        width due to curvature of the section in bending"""
     return (h - x) / (h - ay - x)
 
 
@@ -145,7 +152,13 @@ def epssm_epscm(
         rho_eff (float): the effective reinforcement ratio in the tension zone
         alphae (float): the equivalence factor equal to Es/Ecm
         Es (float): is the modulus of elasticity of steel, normally taken
-            as 200 GPa"""
+            as 200 GPa
+
+    Returns:
+        The mean strain difference bewteen steel and concrete along
+        2 transfer lengths
+    """
+
     return max(
         (sigma_s - kt * fct_eff / rho_eff * (1 + alphae * rho_eff)) / Es,
         (1 - kt) * sigma_s / Es,
@@ -163,6 +176,10 @@ def kfl(h: float, xg: float, hceff: float) -> float:
         xg (float): distance from the compressed fibre to the centroid of the
             uncracked section
         hceff (float): height of the effective tension area
+
+    Returns:
+        Returns factor kfl which accounts for the distribution of stresses
+        before cracking
     """
     return max(0.5 * (1 + (h - xg - hceff) / (h - xg)), 0.5)
 
@@ -195,6 +212,9 @@ def srm_cal(
         h (float): height of the cross section
         x (float): depth of the neutral axis measured form the mots
             compressed fibre
+
+    Returns:
+        the mean crack spacing in units consistent with c and phi
     """
     return min(1.5 * c + kfl_ * kb / 7.2 * phi / rho_eff, 1.3 / kw * (h - x))
 
@@ -242,6 +262,10 @@ def wk_cal(
         fct_eff (float): effective tensile strength of concrete
         alphae (float): modular ratio Es/Ecm
         Es (float): modulus of elasticity of steel bars (normally Es=200 MPa)
+
+    Returns:
+        the characteristic crack width, wk,cal, in consistent units, as well as auxiliary
+        variables, 1/r, srm,cal and epssm-epscm
     """
     k_1_r_ = k_1_r(h, x, c + phi / 2)
     srm_cal_ = srm_cal(c, kfl(h, xg, hc_eff), kb, phi, rho_eff, kw, h, x)
@@ -277,6 +301,10 @@ def delta_simpl(
             beams or at the embedment for a cantilever
         Mk (float): characteristic moment at centre span for continuous
             beams or at the embedment for a cantilever
+
+    Returns:
+        the deflection of the beam in units consistent with delta_loads and
+        delta_shr
     """
     Mcr = fctm(fck1) * 1000 * b1 * h ** (2) / 6
     zeta = 1 - 0.5 * (Mcr / Mk) ** 2
