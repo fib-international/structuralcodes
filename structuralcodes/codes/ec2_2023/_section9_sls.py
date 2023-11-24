@@ -80,7 +80,8 @@ def kh(b: float, h: float) -> float:
     Returns:
         Factor kh which reduces the tensile strength of concrete
         to     account for imposed restrained deformations due
-        to shrinkage"""
+    to shrinkage
+    """
     return min(max(0.8 - 0.6 * (min(b, h) - 0.3), 0.5), 0.8)
 
 
@@ -124,7 +125,8 @@ def k_1_r(h: float, x: float, ay: float) -> float:
 
     Returs:
         Factor k1/r (non-dimensional) which accounts for the increase in crack
-        width due to curvature of the section in bending"""
+    width due to curvature of the section in bending
+    """
     return (h - x) / (h - ay - x)
 
 
@@ -158,7 +160,6 @@ def epssm_epscm(
         The mean strain difference bewteen steel and concrete along
         2 transfer lengths
     """
-
     return max(
         (sigma_s - kt * fct_eff / rho_eff * (1 + alphae * rho_eff)) / Es,
         (1 - kt) * sigma_s / Es,
@@ -264,7 +265,8 @@ def wk_cal(
         Es (float): modulus of elasticity of steel bars (normally Es=200 MPa)
 
     Returns:
-        the characteristic crack width, wk,cal, in consistent units, as well as auxiliary
+        the characteristic crack width, wk,cal, in consistent units, as well as
+        auxiliary
         variables, 1/r, srm,cal and epssm-epscm
     """
     k_1_r_ = k_1_r(h, x, c + phi / 2)
