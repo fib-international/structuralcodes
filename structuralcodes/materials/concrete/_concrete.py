@@ -10,7 +10,6 @@ class Concrete(Material):
 
     _fck: float
     _existing: bool
-    _stress_strain: ConstitutiveLaw
 
     def __init__(
         self,

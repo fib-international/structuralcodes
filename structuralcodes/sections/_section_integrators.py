@@ -5,7 +5,13 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
+from math import atan2
+
+from shapely.geometry.polygon import orient
+from shapely import MultiLineString, Polygon, MultiPolygon
+
 from ._generic import CompoundGeometry
+from ._geometry import create_line_point_angle
 from ._marin_integration import marin_integration
 
 
@@ -60,17 +66,81 @@ class MarinIntegrator(SectionIntegrator):
         Args:
             geo (CompoundGeometry): The geometry of the section.
             strain (ArrayLike): The strains and curvatures of the section.
+                                given in the format (ea, ky, kz) which are
+                                strain at 0,0
+                                curvature y axis
+                                curvature z axis
         """
         # This method should do the following tasks:
-        # - Split the compound geometry into parts according to materials.
-        # - For each material part, the part should furthermore be split
+        # - For each geo:
+        #   - ask constitutive law strain limits and coefficients
+        #   - For each material part, the part should furthermore be split
         # according to constant, linear and parabolic stress distribution.
-        # - For each part collect coordinates y and z in separate np.ndarray
+        #   - For each part collect coordinates y and z in separate np.ndarray
         # iterables, and stress coefficients in a two-dimensional np.ndarray.
         #
         # The method should therefore return a tuple that collects the y, z,
         # and stress coefficients for each part.
-        raise NotImplementedError
+        prepared_input = []
+        # 1. Rotate section in order to have neutral axis horizontal
+        angle = atan2(strain[2], strain[1])
+
+        rotated_geom = geo.rotate(angle)
+        # 2. Get y coordinate of neutral axis in this new CRS
+        strain_rotated = [strain[0], (strain[2] ** 2 + strain[1] ** 2) ** 0.5]
+
+        # 3. For each SurfaceGeometry on the CompoundGeometry:
+        for g in rotated_geom.geometries:
+            # 3a. get coefficients and strain limits from constitutive law
+            strains, coeffs = g.material.__marin__(strain_rotated)
+
+            # 3b. Subdivide the polygon at the different strain limits
+            for p in range(len(strains)):
+                # Create the two lines for selecting the needed part
+                y0 = (strain_rotated[0] - strains[p][0]) / strain_rotated[1]
+                y1 = (strain_rotated[0] - strains[p][1]) / strain_rotated[1]
+                if y0 > y1:
+                    y0, y1 = y1, y0
+                bbox = g.polygon.bounds
+                line0 = create_line_point_angle((0, y0), 0, bbox)
+                line1 = create_line_point_angle((0, y1), 0, bbox)
+                lines = MultiLineString((line0, line1))
+                # intersection
+                result = g.split_two_lines(lines=lines)
+                # Let's be sure to orient in the right way
+                result = orient(result, 1)
+
+                def get_input_polygon(polygon, coeffs):
+                    if not polygon.exterior.is_ccw:
+                        raise ValueError(
+                            'The exterior of a polygon should have vertices \
+                                         ordered ccw'
+                        )
+                    # Manage exterior part
+                    x, y = polygon.exterior.coords.xy
+                    x = np.array(x)
+                    y = np.array(y)
+                    prepared_input.append((x, y, coeffs))
+                    # Manage holes
+                    for i in polygon.interiors:
+                        if i.is_ccw:
+                            raise ValueError(
+                                'A inner hole should have cw coordinates'
+                            )
+                        x, y = i.coords.xy
+                        x = np.array(x)
+                        y = np.array(y)
+                        prepared_input.append((x, y, coeffs))
+
+                if isinstance(result, Polygon):
+                    # If the result is a single polygon
+                    get_input_polygon(result, coeffs[p])
+                elif isinstance(result, MultiPolygon):
+                    # If the result is a MultiPolygon
+                    for polygon in result.geoms:
+                        get_input_polygon(polygon, coeffs[p])
+        # TODO: do something also for reinforcement -> I add it to prepared_input???
+        return prepared_input
 
     def integrate(
         self,
@@ -82,6 +152,9 @@ class MarinIntegrator(SectionIntegrator):
 
         # Loop through all parts of the section and add contributions
         for y, z, stress_coeff in prepared_input:
+            print(y)
+            print(z)
+            print(stress_coeff)
             # Find integration order from shape of stress coeff array
             m, n = stress_coeff.shape
 

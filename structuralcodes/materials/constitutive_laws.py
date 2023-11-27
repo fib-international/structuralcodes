@@ -126,6 +126,36 @@ class ParabolaRectangle(ConstitutiveLaw):
         tangent[eps > 0] = 0.0
         return tangent
 
+    def __marin__(self, strain):
+        """Returns coefficients and strain limits for Marin
+        integration in a simply formatted way.
+        Args:
+            strain: (float, float) tuple defining the strain
+                profile: eps = strain[0] + strain[1]*y
+        Returns:
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        y_na = strain[0] / strain[1]
+        y_0 = (strain[0] - self._eps_0) / strain[1]
+        y_u = (strain[0] - self._eps_u) / strain[1]
+        # Parabolic part
+        strains.append((self._eps_0, 0))
+        y0na = y_0 - y_na
+        yna_y0na = y_na / y0na
+        a0 = -2 * self._fc * yna_y0na * (1 + yna_y0na / 2.0)
+        a1 = 2 * self._fc / y0na * (1 + yna_y0na)
+        a2 = -self._fc / y0na**2
+        coeff.append((a0, a1, a2))
+        # Constant part
+        strains.append((self._eps_u, self._eps_0))
+        coeff.append((self._fc,))
+        return strains, coeff
+
 
 class UserDefined(ConstitutiveLaw):
     """Class for a user defined constitutive law

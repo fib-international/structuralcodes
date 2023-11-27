@@ -2,6 +2,7 @@
 import abc
 import typing as t
 import warnings
+
 import structuralcodes.sections._section_results as s_res
 
 
@@ -9,6 +10,7 @@ class Material(abc.ABC):
     """Abstract base class for materials."""
 
     __materials__: t.Tuple[str] = ()
+    _stress_strain = None
 
     def __init__(self, density: float, name: t.Optional[str] = None) -> None:
         """Initializes an instance of a new material.
@@ -41,6 +43,11 @@ class Material(abc.ABC):
                 warnings.warn(str_warn)
                 continue
             setattr(self, '_' + key, value)
+
+    @property
+    def constitutive_law(self):
+        """Returns the ConstitutiveLaw of the object"""
+        return self._stress_strain
 
     @property
     def name(self):
@@ -81,6 +88,10 @@ class ConstitutiveLaw(abc.ABC):
     def get_tangent(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level"""
+
+    def __marin__(self):
+        """"""
+        raise NotImplementedError
 
     def get_secant(self, eps: float) -> float:
         """Method to return the

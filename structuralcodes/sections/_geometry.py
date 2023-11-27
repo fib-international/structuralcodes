@@ -13,8 +13,9 @@ from shapely.geometry import (
     MultiPolygon,
     MultiLineString,
 )
+from shapely import affinity
 from shapely.ops import split
-from structuralcodes.core.base import Material
+from structuralcodes.core.base import Material, ConstitutiveLaw
 
 
 # Useful classes and functions: where to put?????? (core?
@@ -119,8 +120,18 @@ class PointGeometry(Geometry):
                 warn_str += ' discarded'
                 warnings.warn(warn_str)
             point = Point(coords)
-        if not isinstance(material, Material):
-            raise TypeError('The material should be of Material class')
+        if not isinstance(material, Material) and not isinstance(
+            material, ConstitutiveLaw
+        ):
+            raise TypeError(
+                f'mat should be a valid structuralcodes.base.Material \
+                or structuralcodes.base.ConstitutiveLaw object. \
+                {repr(material)}'
+            )
+        # Pass a constitutive law to the PointGeometry
+        if isinstance(material, Material):
+            material = Material._stress_strain
+
         self._point = point
         self._diameter = diameter
         self._material = material
@@ -155,6 +166,46 @@ class PointGeometry(Geometry):
     def point(self) -> Point:
         '''Returns the shapely Point object'''
         return self._point
+
+    def _repr_svg_(self) -> str:
+        """Returns the svg representation"""
+        return str(self._point._repr_svg_())
+
+    def translate(self, dx: float = 0.0, dy: float = 0.0) -> PointGeometry:
+        """Returns a new PointGeometry that is translated by dx, dy
+
+        Args:
+            dx: Translation ammount in x direction
+            dy: Translation ammount in y direction
+        """
+        return PointGeometry(
+            point=affinity.translate(self._point, dx, dy),
+            diameter=self._diameter,
+            material=self._material,
+            name=self._name,
+            group_label=self._group_label,
+        )
+
+    def rotate(
+        self,
+        angle: float = 0.0,
+        point: tuple[float, float] = (0.0, 0.0),
+        use_radians: bool = True,
+    ) -> PointGeometry:
+        """Returns a new PointGeometry that is rotated by angle
+
+        Args:
+            angle: Angle in radians
+        """
+        return PointGeometry(
+            point=affinity.rotate(
+                self._point, angle, origin=point, use_radians=use_radians
+            ),
+            diameter=self._diameter,
+            material=self._material,
+            name=self._name,
+            group_label=self._group_label,
+        )
 
 
 def create_line_point_angle(
@@ -207,12 +258,18 @@ class SurfaceGeometry:
                 f'poly need to be a valid shapely.geometry.Polygon object. \
                 {repr(poly)}'
             )
-        if not isinstance(mat, Material):
+        if not isinstance(mat, Material) and not isinstance(
+            mat, ConstitutiveLaw
+        ):
             raise ValueError(
-                f'mat should be a valid structuralcodes.base.Material object. \
+                f'mat should be a valid structuralcodes.base.Material \
+                or structuralcodes.base.ConstitutiveLaw object. \
                 {repr(mat)}'
             )
         self.polygon = poly
+        # Pass a constitutive law to the SurfaceGeometry
+        if isinstance(mat, Material):
+            mat = mat._stress_strain
         self.material = mat
 
     @property
@@ -294,6 +351,50 @@ class SurfaceGeometry:
         # get the intersection
         return self.polygon.intersection(lines_polygon)
 
+    def __add__(self, other: Geometry) -> CompoundGeometry:
+        """Add operator "+" for geometries
+
+        Args:
+            other: the other geometry to add
+
+        Returns:
+            the Compound Geometry"""
+        return CompoundGeometry([self, other])
+
+    def _repr_svg_(self) -> str:
+        """Returns the svg representation"""
+        return str(self.polygon._repr_svg_())
+
+    def translate(self, dx: float = 0.0, dy: float = 0.0) -> SurfaceGeometry:
+        """Returns a new SurfaceGeometry that is translated by dx, dy
+
+        Args:
+            dx: Translation ammount in x direction
+            dy: Translation ammount in y direction
+        """
+        print(self.material)
+        return SurfaceGeometry(
+            poly=affinity.translate(self.polygon, dx, dy), mat=self.material
+        )
+
+    def rotate(
+        self,
+        angle: float = 0.0,
+        point: tuple[float, float] = (0.0, 0.0),
+        use_radians: bool = True,
+    ) -> SurfaceGeometry:
+        """Returns a new SurfaceGeometry that is rotated by angle
+
+        Args:
+            angle: Angle in radians
+        """
+        return SurfaceGeometry(
+            poly=affinity.rotate(
+                self.polygon, angle, origin=point, use_radians=use_radians
+            ),
+            mat=self.material,
+        )
+
     # here we can also add static methods like:
     # from_points
     # from_points_and_facets
@@ -346,18 +447,37 @@ class CompoundGeometry(Geometry):
         elif isinstance(geometries, list):
             # a list of SurfaceGeometry is provided
             checked_geometries = []
+            checked_point_geometries = []
             for geo in geometries:
                 if isinstance(geo, SurfaceGeometry):
                     checked_geometries.append(geo)
                 elif isinstance(geo, CompoundGeometry):
                     for g in geo.geometries:
                         checked_geometries.append(g)
+                    for pg in geo.point_geometries:
+                        checked_point_geometries.append(pg)
+                elif isinstance(geo, PointGeometry):
+                    # what to do for PointGeometries? Keep it in a different
+                    # array?
+                    checked_point_geometries.append(geo)
             self.geometries = checked_geometries
+            self.point_geometries = checked_point_geometries
+            # useful for representation in svg
+            geoms_representation = [g.polygon for g in checked_geometries]
+            geoms_representation += [
+                pg._point.buffer(pg._diameter / 2)
+                for pg in checked_point_geometries
+            ]
+            self.geom = MultiPolygon(geoms_representation)
 
     # we can add here static methods like
     # from_dxf
     # from_ascii
     # ...
+
+    def _repr_svg_(self) -> str:
+        """Returns the svg representation"""
+        return str(self.geom._repr_svg_())
 
     @property
     def area(self) -> float:
@@ -366,6 +486,38 @@ class CompoundGeometry(Geometry):
         for geo in self.geometries:
             area += geo.area
         return area
+
+    def translate(self, dx: float = 0.0, dy: float = 0.0) -> CompoundGeometry:
+        """Returns a new CompountGeometry that is translated by dx, dy
+
+        Args:
+            dx: Translation ammount in x direction
+            dy: Translation ammount in y direction
+        """
+        processed_geoms = []
+        for g in self.geometries:
+            processed_geoms.append(g.translate(dx, dy))
+        for pg in self.point_geometries:
+            processed_geoms.append(pg.translate(dx, dy))
+        return CompoundGeometry(geometries=processed_geoms)
+
+    def rotate(
+        self,
+        angle: float = 0.0,
+        point: tuple[float, float] = (0.0, 0.0),
+        use_radians: bool = True,
+    ) -> CompoundGeometry:
+        """Returns a new CompountGeometry that is rotate by angle
+
+        Args:
+            angle: Angle in radians
+        """
+        processed_geoms = []
+        for g in self.geometries:
+            processed_geoms.append(g.rotate(angle, point, use_radians))
+        for pg in self.point_geometries:
+            processed_geoms.append(pg.rotate(angle, point, use_radians))
+        return CompoundGeometry(geometries=processed_geoms)
 
     # Add split method that call the split for each geometry
 
@@ -393,4 +545,5 @@ def add_reinforcement(
     bar = Polygon(xxxx)
     return geo + bar
     """
-    raise NotImplementedError
+    bar = PointGeometry(Point(coords), diameter, material)
+    return CompoundGeometry([geo, bar])

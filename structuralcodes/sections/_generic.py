@@ -21,6 +21,7 @@ class GenericSection(Section):
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
+        self.geometry = geometry
         self.section_analyzer = GenericSectionCalculator(self)
         self.gross_properties = (
             self.section_analyzer._calculate_gross_section_properties()
@@ -47,8 +48,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         # It will use the algorithms for generic sections
         gp = s_res.GrossProperties()
-        # gp.area = ...
-        # ...
+        # Here compute area, centroid and other stuff from gross properties
+        # 1. Computation of area
+        gp.area = self.section.geometry.area
         return gp
 
     def calculate_bending_strength(
