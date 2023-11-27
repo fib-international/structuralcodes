@@ -199,8 +199,6 @@ class MarinIntegrator(SectionIntegrator):
                 My += sum(stress_coeff * y)
         
         # Rotate back to section CRS
-        print(angle)
-
         T = np.array([[cos(angle), sin(angle)],[-sin(angle), cos(angle)]])
         M = T @ np.array([[Mx],[My]])
 
