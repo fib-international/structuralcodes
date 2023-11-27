@@ -91,6 +91,8 @@ class UltimateBendingMomentResult:
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
-    m: float = 0  # the ultimate moment for given theta and n
-    chi: float = 0  # the curvature corresponding to the ultimate moment
-    eps_a: float = 0  # the axial strain at the centroid corresponding to Mult
+    m_x: float = 0  # the ultimate moment for given theta and n
+    m_y: float = 0  # the ultimate moment for given theta and n
+    chi_x: float = 0  # the curvature corresponding to the ultimate moment
+    chi_y: float = 0  # the curvature corresponding to the ultimate moment
+    eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult

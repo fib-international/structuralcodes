@@ -112,6 +112,8 @@ class MarinIntegrator(SectionIntegrator):
 
                 def get_input_polygon(polygon, coeffs):
                     # Let's be sure to orient in the right way
+                    if polygon.is_empty:
+                        return
                     polygon = orient(polygon, 1)
                     if not polygon.exterior.is_ccw:
                         raise ValueError(
@@ -197,12 +199,12 @@ class MarinIntegrator(SectionIntegrator):
                 N += sum(stress_coeff)
                 Mx += sum(stress_coeff * z)
                 My += sum(stress_coeff * y)
-        
-        # Rotate back to section CRS
-        T = np.array([[cos(angle), sin(angle)],[-sin(angle), cos(angle)]])
-        M = T @ np.array([[Mx],[My]])
 
-        return N, M[0,0], M[1,0]
+        # Rotate back to section CRS
+        T = np.array([[cos(angle), sin(angle)], [-sin(angle), cos(angle)]])
+        M = T @ np.array([[Mx], [My]])
+
+        return N, M[0, 0], M[1, 0]
 
     def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike

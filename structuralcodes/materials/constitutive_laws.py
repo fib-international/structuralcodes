@@ -66,8 +66,8 @@ class ElasticPlastic(ConstitutiveLaw):
         sig[sig < -self._fy] = eps[sig < -self._fy] * self._Eh - delta_sig
         sig[sig > self._fy] = eps[sig > self._fy] * self._Eh + delta_sig
         if self._eps_su is not None:
-            sig[eps > self._eps_su] = 0
-            sig[eps < -self._eps_su] = 0  # pylint: disable=E1130
+            sig[eps > (self._eps_su * 1.01)] = 0
+            sig[eps < (-self._eps_su * 1.01)] = 0  # pylint: disable=E1130
         return sig
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
@@ -76,6 +76,10 @@ class ElasticPlastic(ConstitutiveLaw):
         if abs(eps) - self._eps_sy > tol:
             return self._Eh
         return self._E
+
+    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        return (self._eps_su, -self._eps_su)
 
 
 class ParabolaRectangle(ConstitutiveLaw):
@@ -156,6 +160,10 @@ class ParabolaRectangle(ConstitutiveLaw):
         strains.append((self._eps_u, self._eps_0))
         coeff.append((self._fc,))
         return strains, coeff
+
+    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        return (100, self._eps_u)
 
 
 class UserDefined(ConstitutiveLaw):

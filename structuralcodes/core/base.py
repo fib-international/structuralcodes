@@ -92,6 +92,12 @@ class ConstitutiveLaw(abc.ABC):
         tangent at a given strain level.
         """
 
+    @abc.abstractmethod
+    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+        """Each constitutive law should provide a method to return the
+        ultimate strain (positive and negative).
+        """
+
     def __marin__(self):
         """Function for getting the strain limits and coefficients
         for marin integration.
