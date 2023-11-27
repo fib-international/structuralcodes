@@ -5,7 +5,7 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from math import atan2
+from math import atan2, cos, sin
 
 from shapely.geometry.polygon import orient
 from shapely import MultiLineString, Polygon, MultiPolygon
@@ -158,10 +158,11 @@ class MarinIntegrator(SectionIntegrator):
             F.append(pg.material.get_stress(strain)[0] * A)
         prepared_input.append((1, np.array(x), np.array(y), np.array(F)))
 
-        return prepared_input
+        return angle, prepared_input
 
     def integrate(
         self,
+        angle: float,
         prepared_input: t.List[
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
@@ -196,18 +197,24 @@ class MarinIntegrator(SectionIntegrator):
                 N += sum(stress_coeff)
                 Mx += sum(stress_coeff * z)
                 My += sum(stress_coeff * y)
+        
+        # Rotate back to section CRS
+        print(angle)
 
-        return N, Mx, My
+        T = np.array([[cos(angle), sin(angle)],[-sin(angle), cos(angle)]])
+        M = T @ np.array([[Mx],[My]])
+
+        return N, M[0,0], M[1,0]
 
     def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike
     ):
         """Integrate the strain response with the Marin algorithm."""
         # Prepare the general input based on the geometry and the input strains
-        prepared_input = self.prepare_input(geo, strain)
+        angle, prepared_input = self.prepare_input(geo, strain)
 
         # Return the calculated response
-        return self.integrate(prepared_input)
+        return self.integrate(angle, prepared_input)
 
 
 integrator_registry = {'Marin': MarinIntegrator}
