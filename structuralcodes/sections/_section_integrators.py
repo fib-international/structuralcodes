@@ -109,10 +109,10 @@ class MarinIntegrator(SectionIntegrator):
                 lines = MultiLineString((line0, line1))
                 # intersection
                 result = g.split_two_lines(lines=lines)
-                # Let's be sure to orient in the right way
-                result = orient(result, 1)
 
                 def get_input_polygon(polygon, coeffs):
+                    # Let's be sure to orient in the right way
+                    polygon = orient(polygon, 1)
                     if not polygon.exterior.is_ccw:
                         raise ValueError(
                             'The exterior of a polygon should have vertices \
