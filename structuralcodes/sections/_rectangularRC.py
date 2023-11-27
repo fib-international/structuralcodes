@@ -1,4 +1,4 @@
-"""Rectangular RC cross section"""
+"""Rectangular RC cross section."""
 from dataclasses import dataclass, field
 from math import cos, sin, pi
 
@@ -13,6 +13,8 @@ from structuralcodes.materials.concrete import Concrete
 # For now this is just a trick! refactor later TODO!
 from structuralcodes.materials.constitutive_laws import ElasticPlastic
 
+# TODO: this must be refactored completely!
+
 
 @dataclass(frozen=True)
 class StirrupsData:
@@ -22,7 +24,8 @@ class StirrupsData:
     spacing: spacing between consecutive stirrups
     number_legs_x: number of legs parallel to x local axis
     number_legs_y: number of legs parallel to y local axis
-    alfa: angle between stirrups and longitudinal axis of beam (rad)"""
+    alfa: angle between stirrups and longitudinal axis of beam (rad).
+    """
 
     diameter: float
     spacing: float
@@ -37,15 +40,15 @@ class StirrupsData:
             # Warning: I assume that this are given in degrees
             radians = (self.alfa * pi) / 180
             warnings.warn(
-                "StirrupsData: alfa should be given in radians. "
-                + f"Since the value alfa={self.alfa} has been "
-                + "provided it is assumed that is given in degrees."
-                + f"Converted to {radians:.2f} radians."
+                'StirrupsData: alfa should be given in radians. '
+                + f'Since the value alfa={self.alfa} has been '
+                + 'provided it is assumed that is given in degrees.'
+                + f'Converted to {radians:.2f} radians.'
             )
             object.__setattr__(self, 'alfa', radians)
         sin_alfa = sin(self.alfa)
         if sin_alfa == 0:
-            raise ValueError("StirrupsData: the sin of alfa cannot be zero.")
+            raise ValueError('StirrupsData: the sin of alfa cannot be zero.')
         object.__setattr__(self, 'sin_alfa', sin_alfa)
         object.__setattr__(self, 'ctg_alfa', cos(self.alfa) / self.sin_alfa)
 
@@ -63,10 +66,11 @@ class ReinforcementData:
     diameter_left (float): diameter of bars in left side (default = None)
     number_left (int): number of bars in left side (default = 0)
     diameter_right (float): diameter of bars in right side (default = None)
-    number_right (int): number of bars in right side (default = 0)
+    number_right (int): number of bars in right side (default = 0).
 
     if no diameter is provided for sides, it is assumed that same diameter
-    of angle bars is mantained for all other sides."""
+    of angle bars is mantained for all other sides.
+    """
 
     diameter_corner: float
     diameter_bottom: t.Optional[float] = None
@@ -92,7 +96,7 @@ class ReinforcementData:
 class RectangularRC(Section):
     """Class for RC rectangular cross section.
     The class assumes width and height respectively
-    along local x and y axes
+    along local x and y axes.
 
     Input parameters:
     width: width of the section
@@ -201,7 +205,7 @@ class RectangularRC(Section):
     @property
     def area(self) -> float:
         """Returns Area of the cross section.
-        Only the gross area of concrete is computed
+        Only the gross area of concrete is computed.
 
         Returns:
             float: The area of concrete section.
@@ -209,11 +213,11 @@ class RectangularRC(Section):
         return self.width * self.height
 
     def _discretize_fibers(self, nx: int, ny: int):
-        """Function for creating a vector of all fibers of concrete"""
+        """Function for creating a vector of all fibers of concrete."""
 
         def discretize_rectangle(x1, y1, x2, y2, nx, ny):
             if x2 < x1 or y2 < y1:
-                raise ValueError("x2 and y2 cannot be lower than x1 and y1")
+                raise ValueError('x2 and y2 cannot be lower than x1 and y1')
             w = x2 - x1
             h = y2 - y1
             dx = w / nx
@@ -244,7 +248,8 @@ class RectangularRC(Section):
 
     def max_compression_force(self):
         """Compute maximum compression force that can be
-        taken by the section"""
+        taken by the section.
+        """
         N = 0.0
         # Contribution from concrete
         # We need fcd actually: TODO
@@ -257,20 +262,23 @@ class RectangularRC(Section):
 
     def max_tension_force(self):
         """Compute maximum tensile force that can be
-        taken by the section"""
+        taken by the section.
+        """
         return np.sum(self.As * self.reinforcement._fy)
 
     def bending_strength_xp(self, N: float = 0) -> float:
         """Returns the beding strength in x+ direction for a given
-        value of axial force (+: tension, -: compression)"""
+        value of axial force (+: tension, -: compression).
+        """
         return 0.0
 
     def bending_strength_xn(self, N: float = 0) -> float:
         """Returns the beding strength in x- direction for a given
-        value of axial force (+: tension, -: compression)"""
-        if N > self.max_tension_force():
+        value of axial force (+: tension, -: compression).
+        """
+        if self.max_tension_force() < N:
             raise ValueError('Too much tension applied to the section')
-        if N < self.max_compression_force():
+        if self.max_compression_force() > N:
             raise ValueError('Too much compression is applied to the section')
 
         # Find limit condition starting from contemporary failure
@@ -376,17 +384,20 @@ class RectangularRC(Section):
 
     def bending_strength_yp(self, N: float = 0) -> float:
         """Returns the beding strength in y+ direction for a given
-        value of axial force (+: tension, -: compression)"""
+        value of axial force (+: tension, -: compression).
+        """
         return 0.0
 
     def bending_strength_yn(self, N: float = 0) -> float:
         """Returns the beding strength in y- direction for a given
-        value of axial force (+: tension, -: compression)"""
+        value of axial force (+: tension, -: compression).
+        """
         return 0.0
 
     def _arrange_reinforcement_in_section(self):
-        """the method creates the arrays for reinforcements
-        starting from reinforcement_data"""
+        """The method creates the arrays for reinforcements
+        starting from reinforcement_data.
+        """
         delta = 2 * (self.cover + self.stirrups_data.diameter / 2.0)
         hc = self.height - delta
         wc = self.width - delta
@@ -459,7 +470,7 @@ class RectangularRC(Section):
 def _uniaxial_bending_strength_rectangular_RC():
     """Internal function for computing the uniaxial
     bending strength of a rectangular section about
-    local x axis stretchnig bottom fibers
+    local x axis stretchnig bottom fibers.
 
     Input:
         xs (ArrayLike): x position of reinforcement
@@ -467,5 +478,6 @@ def _uniaxial_bending_strength_rectangular_RC():
         As (ArrayLike): area of each reinforcement
 
     Returns:
-        float: Bending Strength"""
+    float: Bending Strength
+    """
     return 0.0

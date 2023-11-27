@@ -1,4 +1,4 @@
-''' Results '''
+"""Results."""
 # import typing as t
 from dataclasses import dataclass
 
@@ -39,13 +39,13 @@ class GrossProperties:
     ei_xx: float = 0
     ei_yy: float = 0
 
-    def __str__(self, fmt: str = ".3f") -> str:
+    def __str__(self, fmt: str = '.3f') -> str:
         """Prints the gross concrete section properties.
         TODO: optionally give a file for printing into?
 
         Arguments:
-         fmt: Number format"""
-
+        fmt: Number format
+        """
         output_string = 'Gross Concrete Section Properties:\n'
         output_string += f'Total area: {self.area:{fmt}}'
         # etc...
@@ -68,9 +68,10 @@ class CrackedProperties:
 
 @dataclass
 class MomentCurvatureResults:
-    '''class for storing moment curvature results
+    """class for storing moment curvature results
     the analysis will be done in general for a given inclination
-    of n.a.'''
+    of n.a.
+    """
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
@@ -84,8 +85,9 @@ class MomentCurvatureResults:
 
 @dataclass
 class UltimateBendingMomentResult:
-    '''class for storing the ultimate bending moment computation
-    for a given inclination of n.a. and axial load'''
+    """class for storing the ultimate bending moment computation
+    for a given inclination of n.a. and axial load.
+    """
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis

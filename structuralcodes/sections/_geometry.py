@@ -1,4 +1,4 @@
-""""Generic class section implemenetation"""
+""""Generic class section implemenetation."""
 from __future__ import annotations
 
 import typing as t
@@ -31,7 +31,7 @@ from structuralcodes.core.base import Material, ConstitutiveLaw
 
 
 class Geometry:
-    """Base class for a geometry object"""
+    """Base class for a geometry object."""
 
     section_counter: t.ClassVar[int] = 0
 
@@ -41,48 +41,50 @@ class Geometry:
         """Initializes a geometry object
         The name and grouplabel serve for filtering
         in a compound object. By default it
-        creates a new name each time
+        creates a new name each time.
 
         Arguments:
             name (Optional: default None): the name to be given to the object
             group_label (Optional: default None): a label for grouping several
-            objects"""
+        objects
+        """
         if name is not None:
             self._name = name
         else:
             counter = Geometry.return_global_counter_and_increase()
-            self._name = f"Geometry_{counter}"
+            self._name = f'Geometry_{counter}'
         self._group_label = group_label
 
     @property
     def name(self):
-        """Returns the name of the Geometry"""
+        """Returns the name of the Geometry."""
         return self._name
 
     @property
     def group_label(self):
-        """Returns the group_label fo the Geometry"""
+        """Returns the group_label fo the Geometry."""
         return self._group_label
 
     @classmethod
     def _increase_global_counter(cls):
-        '''Increases the global counter by one'''
+        """Increases the global counter by one."""
         cls.section_counter += 1
 
     @classmethod
     def return_global_counter_and_increase(cls):
-        '''Returns the current counter and increases it by one'''
+        """Returns the current counter and increases it by one."""
         counter = cls.section_counter
         cls._increase_global_counter()
         return counter
 
 
 class PointGeometry(Geometry):
-    '''Class for a point geometry with material.
+    """Class for a point geometry with material.
 
     Basically it is a wrapper for shapely Point
     including the material (and other parameters that
-    may be needed)'''
+    may be needed)
+    """
 
     def __init__(
         self,
@@ -95,7 +97,7 @@ class PointGeometry(Geometry):
         """Initializes a PointGeometry object
         The name and grouplabel serve for filtering
         in a compound object. By default it
-        creates a new name each time
+        creates a new name each time.
 
         Arguments:
             point: a couple of coordinates or e shapely Point object
@@ -103,7 +105,8 @@ class PointGeometry(Geometry):
             material: the material for the point
             name (Optional: default None): the name to be given to the object
             group_label (Optional: default None): a label for grouping several
-            objects"""
+        objects
+        """
         super().__init__(name, group_label)
         # I check if point is a shapely Point or an ArrayLike object
         if not isinstance(point, Point):
@@ -139,40 +142,40 @@ class PointGeometry(Geometry):
 
     @property
     def diameter(self) -> float:
-        '''Returns the point diameter'''
+        """Returns the point diameter."""
         return self._diameter
 
     @property
     def area(self) -> float:
-        '''Returns the point area'''
+        """Returns the point area."""
         return self._area
 
     @property
     def material(self) -> Material:
-        '''Returns the point material'''
+        """Returns the point material."""
         return self._material
 
     @property
     def x(self) -> float:
-        '''Returns the x coordinate of the point'''
+        """Returns the x coordinate of the point."""
         return self._point.x
 
     @property
     def y(self) -> float:
-        '''Returns the y coordinate of the point'''
+        """Returns the y coordinate of the point."""
         return self._point.y
 
     @property
     def point(self) -> Point:
-        '''Returns the shapely Point object'''
+        """Returns the shapely Point object."""
         return self._point
 
     def _repr_svg_(self) -> str:
-        """Returns the svg representation"""
+        """Returns the svg representation."""
         return str(self._point._repr_svg_())
 
     def translate(self, dx: float = 0.0, dy: float = 0.0) -> PointGeometry:
-        """Returns a new PointGeometry that is translated by dx, dy
+        """Returns a new PointGeometry that is translated by dx, dy.
 
         Args:
             dx: Translation ammount in x direction
@@ -192,7 +195,7 @@ class PointGeometry(Geometry):
         point: tuple[float, float] = (0.0, 0.0),
         use_radians: bool = True,
     ) -> PointGeometry:
-        """Returns a new PointGeometry that is rotated by angle
+        """Returns a new PointGeometry that is rotated by angle.
 
         Args:
             angle: Angle in radians
@@ -213,8 +216,9 @@ def create_line_point_angle(
     theta: float,
     bbox: t.Tuple[float, float, float, float],
 ) -> LineString:
-    '''Creates a line from point and angle within the bounding
-    box'''
+    """Creates a line from point and angle within the bounding
+    box.
+    """
     # create a unit vector defining the line
     v = (np.cos(theta), np.sin(theta))
 
@@ -239,14 +243,15 @@ def create_line_point_angle(
 
 
 class SurfaceGeometry:
-    '''Class for a surface geometry with material.
+    """Class for a surface geometry with material.
 
     Basically it is a wrapper for shapely polygon
     including the material (and other parameters needed)
-    As a shapely polygon it can contain one or more holes'''
+    As a shapely polygon it can contain one or more holes
+    """
 
     def __init__(self, poly: Polygon, mat: Material) -> None:
-        """Initializes a SurfaceGeometry object
+        """Initializes a SurfaceGeometry object.
 
         Args:
             polly (shapely.Polygon): Shapely polygon
@@ -274,24 +279,26 @@ class SurfaceGeometry:
 
     @property
     def area(self) -> float:
-        """Returns the area of the geometry
+        """Returns the area of the geometry.
 
         Returns:
-            float: area of the geometry"""
+        float: area of the geometry
+        """
         return self.polygon.area
 
     @property
     def centroid(self) -> t.Tuple[float, float]:
-        """Returns the centroid of the geometry
+        """Returns the centroid of the geometry.
 
         Returns:
-            (float, float): x and y coordinates of centroid"""
+        (float, float): x and y coordinates of centroid
+        """
         return self.polygon.centroid.coords[0]
 
     def split(
         self, line: t.Union[LineString, t.Tuple[t.Tuple[float, float], float]]
     ) -> t.Tuple[t.List[SurfaceGeometry], t.List[SurfaceGeometry]]:
-        """Splits the geometry using a line
+        """Splits the geometry using a line.
 
         Args:
             line: can be a LineString shapely object, or a tuple
@@ -301,7 +308,6 @@ class SurfaceGeometry:
         Returns:
             (above_polygons, below_polygons)
         """
-
         if not isinstance(line, LineString):
             point = line[0]
             theta = line[1]
@@ -339,7 +345,7 @@ class SurfaceGeometry:
     def split_two_lines(
         self, lines: t.Union[t.Tuple[LineString, LineString], MultiLineString]
     ) -> Polygon:
-        '''Docstrings'''
+        """Docstrings."""
         if isinstance(lines, MultiLineString):
             multi_line = lines
         elif isinstance(lines, tuple):
@@ -352,21 +358,22 @@ class SurfaceGeometry:
         return self.polygon.intersection(lines_polygon)
 
     def __add__(self, other: Geometry) -> CompoundGeometry:
-        """Add operator "+" for geometries
+        """Add operator "+" for geometries.
 
         Args:
             other: the other geometry to add
 
         Returns:
-            the Compound Geometry"""
+        the Compound Geometry
+        """
         return CompoundGeometry([self, other])
 
     def _repr_svg_(self) -> str:
-        """Returns the svg representation"""
+        """Returns the svg representation."""
         return str(self.polygon._repr_svg_())
 
     def translate(self, dx: float = 0.0, dy: float = 0.0) -> SurfaceGeometry:
-        """Returns a new SurfaceGeometry that is translated by dx, dy
+        """Returns a new SurfaceGeometry that is translated by dx, dy.
 
         Args:
             dx: Translation ammount in x direction
@@ -383,7 +390,7 @@ class SurfaceGeometry:
         point: tuple[float, float] = (0.0, 0.0),
         use_radians: bool = True,
     ) -> SurfaceGeometry:
-        """Returns a new SurfaceGeometry that is rotated by angle
+        """Returns a new SurfaceGeometry that is rotated by angle.
 
         Args:
             angle: Angle in radians
@@ -407,18 +414,18 @@ class SurfaceGeometry:
 
 
 class CompoundGeometry(Geometry):
-    '''Class for a compound geometry
+    """Class for a compound geometry.
 
     it is basicaly a set of geometries, each one with its
     own materials and properties.
-    '''
+    """
 
     def __init__(
         self,
         geometries: t.List[Geometry] | MultiPolygon,
         materials: t.Optional[t.List[Material] | Material] = None,
     ) -> None:
-        '''Creates a compound geometry
+        """Creates a compound geometry.
 
         Args:
             geometries: a list of SurfaceGeometry objects or a shapely
@@ -428,23 +435,28 @@ class CompoundGeometry(Geometry):
                         to all polygons) or a list of materials. In this
                         case the number of polygons should match the number
                         of materials
-        '''
-
+        """
+        checked_geometries = []
         if isinstance(geometries, MultiPolygon):
             # a MultiPolygon is provided
             if isinstance(materials, Material):
-                # one material is provided. Applied to all polygons
-                pass
+                for g in geometries.geoms:
+                    checked_geometries.append(SurfaceGeometry(g, materials))
+                self.geometries = checked_geometries
             elif isinstance(materials, list):
                 # the list of materials is provided, one for each polygon
-                pass
-            raise NotImplementedError
-            # x = np.asarray(x, dtype=np.float64)
-            # y = np.asarray(y, dtype=np.float64)
-            # if x.shape != y.shape:
-            #     raise ValueError("x and y must be array-like with the
-            # same shape")
-        elif isinstance(geometries, list):
+                if len(geometries) != len(materials):
+                    raise ValueError(
+                        'geometries and materials should have the same length'
+                    )
+                for g, m in zip(geometries, materials):
+                    checked_geometries.append(SurfaceGeometry(g, m))
+                self.geometries = checked_geometries
+            # useful for representation in svg
+            geoms_representation = [g.polygon for g in checked_geometries]
+            self.geom = MultiPolygon(geoms_representation)
+            return
+        if isinstance(geometries, list):
             # a list of SurfaceGeometry is provided
             checked_geometries = []
             checked_point_geometries = []
@@ -476,19 +488,19 @@ class CompoundGeometry(Geometry):
     # ...
 
     def _repr_svg_(self) -> str:
-        """Returns the svg representation"""
+        """Returns the svg representation."""
         return str(self.geom._repr_svg_())
 
     @property
     def area(self) -> float:
-        """Return the area of the compund geometry"""
+        """Return the area of the compund geometry."""
         area = 0
         for geo in self.geometries:
             area += geo.area
         return area
 
     def translate(self, dx: float = 0.0, dy: float = 0.0) -> CompoundGeometry:
-        """Returns a new CompountGeometry that is translated by dx, dy
+        """Returns a new CompountGeometry that is translated by dx, dy.
 
         Args:
             dx: Translation ammount in x direction
@@ -507,7 +519,7 @@ class CompoundGeometry(Geometry):
         point: tuple[float, float] = (0.0, 0.0),
         use_radians: bool = True,
     ) -> CompoundGeometry:
-        """Returns a new CompountGeometry that is rotate by angle
+        """Returns a new CompountGeometry that is rotate by angle.
 
         Args:
             angle: Angle in radians
@@ -530,7 +542,7 @@ def add_reinforcement(
     diameter: float,
     material: Material,
 ) -> CompoundGeometry:
-    """Adds a reinforcement bar to the geometry
+    """Adds a reinforcement bar to the geometry.
 
     Proposals:
         i. Geometry class (group_label -> to be use for filtering)

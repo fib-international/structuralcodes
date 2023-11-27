@@ -46,7 +46,7 @@ class Material(abc.ABC):
 
     @property
     def constitutive_law(self):
-        """Returns the ConstitutiveLaw of the object"""
+        """Returns the ConstitutiveLaw of the object."""
         return self._stress_strain
 
     @property
@@ -66,13 +66,14 @@ class ConstitutiveLaw(abc.ABC):
     constitutive_law_counter: t.ClassVar[int] = 0
 
     def __init__(self, name: t.Optional[str] = None) -> None:
+        """Initialize a ConstitutiveLaw object."""
         self.id = self.constitutive_law_counter
-        self._name = name if name is not None else f"ConstitutiveLaw_{self.id}"
+        self._name = name if name is not None else f'ConstitutiveLaw_{self.id}'
         self._increase_global_counter()
 
     @property
     def name(self):
-        """Returns the name of the constitutive law"""
+        """Returns the name of the constitutive law."""
         return self._name
 
     @classmethod
@@ -82,43 +83,48 @@ class ConstitutiveLaw(abc.ABC):
     @abc.abstractmethod
     def get_stress(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
-        stress given the strain level"""
+        stress given the strain level.
+        """
 
     @abc.abstractmethod
     def get_tangent(self, eps: float) -> float:
         """Each constitutive law should provide a method to return the
-        tangent at a given strain level"""
+        tangent at a given strain level.
+        """
 
     def __marin__(self):
-        """"""
+        """Function for getting the strain limits and coefficients
+        for marin integration.
+        """
         raise NotImplementedError
 
     def get_secant(self, eps: float) -> float:
         """Method to return the
-        secant at a given strain level"""
+        secant at a given strain level.
+        """
         if eps != 0:
             sig = self.get_stress(eps)
             return sig / eps
-        else:
-            return self.get_tangent(eps)
+        return self.get_tangent(eps)
 
 
 class Section(abc.ABC):
     """Abstract base class for a cross secion.
     The section is defined by local axes y and z (mapped to x and y cartesian
-    plane respectively)
+    plane respectively).
     """
 
     section_counter: t.ClassVar[int] = 0
 
     def __init__(self, name: t.Optional[str] = None) -> None:
+        """Initialize a Section object."""
         self.id = self.section_counter
-        self._name = name if name is not None else f"Section_{self.id}"
+        self._name = name if name is not None else f'Section_{self.id}'
         self._increase_global_counter()
 
     @property
     def name(self):
-        """Returns the name of the section"""
+        """Returns the name of the section."""
         return self._name
 
     @classmethod
@@ -127,29 +133,32 @@ class Section(abc.ABC):
 
 
 class SectionCalculator(abc.ABC):
-    '''Abstract class for SectionCalculators
-    defining the interface'''
+    """Abstract class for SectionCalculators
+    defining the interface.
+    """
 
     def __init__(self, section: Section) -> None:
-        '''Initialization of SectionCalculator object, providing
-        a Section object'''
+        """Initialization of SectionCalculator object, providing
+        a Section object.
+        """
         self.section = section
 
     @abc.abstractmethod
     def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
         """Calculates the gross section properties of the section
         This function is private and called when the section is created
-        It stores the result into the result object
+        It stores the result into the result object.
 
         Returns:
-        gross_section_properties (GrossSection)"""
+        gross_section_properties (GrossSection)
+        """
 
     @abc.abstractmethod
     def calculate_bending_strength(
         self, theta=0, n=0
     ) -> s_res.UltimateBendingMomentResult:
         """Calculates the bending strength for given inclination of n.a.
-        and axial load
+        and axial load.
 
         Input:
         theta (float, default = 0): inclination of n.a. respect to y axis
@@ -157,14 +166,15 @@ class SectionCalculator(abc.ABC):
         -: compression)
 
         Return:
-        ultimate_bending_moment_result (UltimateBendingMomentResult)"""
+        ultimate_bending_moment_result (UltimateBendingMomentResult)
+        """
 
     @abc.abstractmethod
     def calculate_moment_curvature(
         self, theta=0, n=0
     ) -> s_res.MomentCurvatureResults:
         """Calculates the moment-curvature relation for given inclination of
-        n.a. and axial load
+        n.a. and axial load.
 
         Input:
         theta (float, default = 0): inclination of n.a. respect to y axis

@@ -49,7 +49,9 @@ class SectionIntegrator(abc.ABC):
     def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike
     ):
-        """Integrate over the geometry to obtain the response due to strains."""
+        """Integrate over the geometry to obtain the response due
+        to strains.
+        """
         raise NotImplementedError
 
 
@@ -120,7 +122,9 @@ class MarinIntegrator(SectionIntegrator):
                     x, y = polygon.exterior.coords.xy
                     x = np.array(x)
                     y = np.array(y)
-                    prepared_input.append((x, y, coeffs))
+                    prepared_input.append(
+                        (0, np.array(x), np.array(y), np.array(coeffs))
+                    )
                     # Manage holes
                     for i in polygon.interiors:
                         if i.is_ccw:
@@ -128,9 +132,9 @@ class MarinIntegrator(SectionIntegrator):
                                 'A inner hole should have cw coordinates'
                             )
                         x, y = i.coords.xy
-                        x = np.array(x)
-                        y = np.array(y)
-                        prepared_input.append((x, y, coeffs))
+                        prepared_input.append(
+                            (0, np.array(x), np.array(y), np.array(coeffs))
+                        )
 
                 if isinstance(result, Polygon):
                     # If the result is a single polygon
@@ -139,43 +143,59 @@ class MarinIntegrator(SectionIntegrator):
                     # If the result is a MultiPolygon
                     for polygon in result.geoms:
                         get_input_polygon(polygon, coeffs[p])
-        # TODO: do something also for reinforcement -> I add it to prepared_input???
+        # Tentative proposal for managing reinforcement (PointGeometry)
+        x = []
+        y = []
+        F = []
+        for pg in rotated_geom.point_geometries:
+            xp, yp = pg._point.coords.xy
+            xp = xp[0]
+            yp = yp[0]
+            A = pg.area
+            strain = strain_rotated[0] - strain_rotated[1] * yp
+            x.append(xp)
+            y.append(yp)
+            F.append(pg.material.get_stress(strain)[0] * A)
+        prepared_input.append((1, np.array(x), np.array(y), np.array(F)))
+
         return prepared_input
 
     def integrate(
         self,
-        prepared_input: t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]],
+        prepared_input: t.List[
+            t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
+        ],
     ) -> t.Tuple[float, float, float]:
         """Integrate stresses over the geometry."""
         # Set the stress resultants to zero
         N, Mx, My = 0.0, 0.0, 0.0
 
         # Loop through all parts of the section and add contributions
-        for y, z, stress_coeff in prepared_input:
-            print(y)
-            print(z)
-            print(stress_coeff)
-            # Find integration order from shape of stress coeff array
-            m, n = stress_coeff.shape
+        for i, y, z, stress_coeff in prepared_input:
+            if i == 0:
+                # Find integration order from shape of stress coeff array
+                n = stress_coeff.shape[0]
 
-            # Create stress coeff arrays for bending moments
-            stress_coeff_mx = np.zeros(stress_coeff.shape)
-            stress_coeff_mx[:, 1:] = stress_coeff[:, :-1]
-            stress_coeff_my = np.zeros(stress_coeff.shape)
-            stress_coeff_my[1:, :] = stress_coeff[:-1, :]
+                # Calculate area moments
+                area_moments_N = np.array(
+                    [marin_integration(y, z, 0, k) for k in range(n)]
+                )
+                area_moments_Mx = np.array(
+                    [marin_integration(y, z, 0, k + 1) for k in range(n)]
+                )
+                area_moments_My = np.array(
+                    [marin_integration(y, z, 1, k) for k in range(n)]
+                )
 
-            # Calculate area moments
-            area_moments = np.array(
-                [
-                    [marin_integration(y, z, j, k) for k in range(n)]
-                    for j in range(m)
-                ]
-            )
-
-            # Calculate contributions to stress resultants
-            N += sum(sum(stress_coeff * area_moments))
-            Mx += sum(sum(stress_coeff_mx * area_moments))
-            My += sum(sum(stress_coeff_my * area_moments))
+                # Calculate contributions to stress resultants
+                N += sum(stress_coeff * area_moments_N)
+                Mx += sum(stress_coeff * area_moments_Mx)
+                My += sum(stress_coeff * area_moments_My)
+            elif i == 1:
+                # Reinforcement
+                N += sum(stress_coeff)
+                Mx += sum(stress_coeff * z)
+                My += sum(stress_coeff * y)
 
         return N, Mx, My
 
