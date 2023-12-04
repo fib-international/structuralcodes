@@ -13,7 +13,7 @@ from structuralcodes.sections._geometry import (
 )
 from structuralcodes.core.base import Section, SectionCalculator
 import structuralcodes.sections._section_results as s_res
-from ._section_integrators import MarinIntegrator
+from ._section_integrators import integrator_factory
 
 
 class GenericSection(Section):
@@ -62,7 +62,7 @@ class GenericSectionCalculator(SectionCalculator):
         return gp
 
     def calculate_bending_strength(
-        self, theta=0, n=0
+        self, theta=0, n=0, **kwargs
     ) -> s_res.UltimateBendingMomentResult:
         """Calculates the bending strength for given inclination of n.a.
         and axial load.
@@ -75,6 +75,9 @@ class GenericSectionCalculator(SectionCalculator):
         Return:
         ultimate_bending_moment_result (UltimateBendingMomentResult)
         """
+        # Select the integrator if specified
+        integr = integrator_factory(kwargs.get('integrator', 'Fiber'))()
+
         ITMAX = 100
         # Compute the bending strength with the bisection algorithm
         # 1. Rotate the section of angle theta
@@ -114,9 +117,7 @@ class GenericSectionCalculator(SectionCalculator):
         y_p, y_n = y_p_min, y_n_min
         eps_p, eps_n = eps_p_min, eps_n_min
         # Integrate this strain profile
-        # TODO: specify own integrator
-        integr = MarinIntegrator()
-        n_int, _, _ = integr.integrate_strain_response_on_geometry(
+        n_int, _, _, tri = integr.integrate_strain_response_on_geometry(
             rotated_geom, strain
         )
         # print('n_int=',n_int)
@@ -128,16 +129,16 @@ class GenericSectionCalculator(SectionCalculator):
             chi_b = 1e-13
             eps_0 = eps_p + chi_b * y_p
             # print('Too much compression')
-            n_int, _, _ = integr.integrate_strain_response_on_geometry(
-                rotated_geom, [eps_0, chi_b, 0]
+            n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
+                rotated_geom, [eps_0, chi_b, 0], tri=tri
             )
             dn_b = n_int - n
             it = 1
             while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
                 chi_c = (chi_a + chi_b) / 2.0
                 eps_0 = eps_p + chi_c * y_p
-                n_int, _, _ = integr.integrate_strain_response_on_geometry(
-                    rotated_geom, [eps_0, chi_c, 0]
+                n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
+                    rotated_geom, [eps_0, chi_c, 0], tri=tri
                 )
                 dn_c = n_int - n
                 if dn_c * dn_a < 0:
@@ -152,16 +153,16 @@ class GenericSectionCalculator(SectionCalculator):
             chi_b = 1e-13
             eps_0 = eps_n + chi_b * y_n
             # print('Too much tension')
-            n_int, _, _ = integr.integrate_strain_response_on_geometry(
-                rotated_geom, [eps_0, chi_b, 0]
+            n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
+                rotated_geom, [eps_0, chi_b, 0], tri=tri
             )
             dn_b = n_int - n
             it = 1
             while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
                 chi_c = (chi_a + chi_b) / 2.0
                 eps_0 = eps_n + chi_c * y_n
-                n_int, _, _ = integr.integrate_strain_response_on_geometry(
-                    rotated_geom, [eps_0, chi_c, 0]
+                n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
+                    rotated_geom, [eps_0, chi_c, 0], tri=tri
                 )
                 dn_c = n_int - n
                 if dn_c * dn_a < 0:
@@ -178,8 +179,8 @@ class GenericSectionCalculator(SectionCalculator):
         # Found equilibrium
         # print(f'Found equilibrium (after {it} iterations)')
         strain = [eps_0, chi_c, 0]
-        N, Mx, My = integr.integrate_strain_response_on_geometry(
-            rotated_geom, strain
+        N, Mx, My, _ = integr.integrate_strain_response_on_geometry(
+            geo=rotated_geom, strain=strain, tri=tri
         )
         # Check if n and N are sufficiently near
         # print('check: ',n,N)
@@ -191,7 +192,7 @@ class GenericSectionCalculator(SectionCalculator):
         # Create result object
         res = s_res.UltimateBendingMomentResult()
         res.theta = theta
-        res.n = n
+        res.n = N
         res.chi_x = chi_c
         res.chi_y = 0
         res.eps_a = eps_0
