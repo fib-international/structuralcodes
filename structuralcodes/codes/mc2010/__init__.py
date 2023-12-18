@@ -1,4 +1,4 @@
-"""The fib Model Code 2010"""
+"""The fib Model Code 2010."""
 import typing as t
 from ._concrete_material_properties import fcm, fctm, fctkmin, fctkmax, Gf
 

@@ -8,7 +8,7 @@ deps:  ## Install dependencies
 	python -m pip install --upgrade wheel
 	python -m pip install -r requirements.txt
 	python -m pip install --upgrade black
-	python -m pip install --upgrade flake8 mccabe pylint
+	python -m pip install ruff==0.0.291
 	python -m pip install --upgrade flit
 	python -m pip install --upgrade pytest pytest-cov
 
@@ -17,8 +17,7 @@ form:  ## Code formatting
 	python -m black tests
 
 lint:  ## Linting and static type checking
-	python -m flake8 $(PACKAGE_NAME)
-	python -m pylint $(PACKAGE_NAME)
+	python -m ruff $(PACKAGE_NAME)
 
 test:  ## Run tests and output reports
 	python -m pytest --junitxml=junit/test-results.xml --cov=$(PACKAGE_NAME) --cov-report=term-missing --cov-report=xml
