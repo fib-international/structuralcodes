@@ -93,8 +93,8 @@ def wk_cal2(
     EN 1992-1-1:2023 Eq. (9.8)
 
     Args:
-        kw (float): factor that converts the mean crack spacing to a characteristic
-        value
+        kw (float): factor that converts the mean crack spacing to a
+        characteristic value
         k_1_r_ (float): factor accounting for the effect of curvature on crack
                 width - can be determined using the function k_1_r
         srm_cal_ (float): mean crack spacing - can be determines using the
