@@ -3,11 +3,13 @@ import typing as t
 from structuralcodes.codes import _use_design_code
 from ._concrete import Concrete
 from ._concreteMC2010 import ConcreteMC2010
+from ._concreteEC2_2023 import ConcreteEC2_2023
 
 __all__ = [
     'create_concrete',
     'Concrete',
     'ConcreteMC2010',
+    'ConcreteEC2_2023',
 ]
 
 
