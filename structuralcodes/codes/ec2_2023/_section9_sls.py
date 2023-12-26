@@ -78,9 +78,9 @@ def kh(b: float, h: float) -> float:
         h (float): height of the rectangle in meters
 
     Returns:
-        Factor kh which reduces the tensile strength of concrete
-        to     account for imposed restrained deformations due
-    to shrinkage
+        float: Factor kh which reduces the tensile strength of concrete
+        to account for imposed restrained deformations due
+        to shrinkage
     """
     return min(max(0.8 - 0.6 * (min(b, h) - 0.3), 0.5), 0.8)
 
@@ -93,17 +93,17 @@ def wk_cal2(
     EN 1992-1-1:2023 Eq. (9.8)
 
     Args:
-        kw: factor that converts the mean crack spacing to a characteristic
+        kw (float): factor that converts the mean crack spacing to a characteristic
         value
-        k_1_r_: factor accounting for the effect of curvature on cracl width -
-                can be determined using the function k_1_r
-        srm_cal_: mean crack spacing - can be determines using the function
-                  srm_cal
-        epssm_epscm_: mean diference of strain between steel anc concrete - can
-                     be determined using the function epssm_epscm
+        k_1_r_ (float): factor accounting for the effect of curvature on crack
+                width - can be determined using the function k_1_r
+        srm_cal_ (float): mean crack spacing - can be determines using the
+                function srm_cal
+        epssm_epscm_ (float): mean diference of strain between steel anc
+                concrete - can be determined using the function epssm_epscm
 
     Returns:
-        the calculated characteristic crack width in in units consistent
+        float: the calculated characteristic crack width in in units consistent
         with srm_cal
     """
     return kw * k_1_r_ * srm_cal_ * epssm_epscm_
@@ -124,8 +124,8 @@ def k_1_r(h: float, x: float, ay: float) -> float:
         (e.g. meters)
 
     Returs:
-        Factor k1/r (non-dimensional) which accounts for the increase in crack
-    width due to curvature of the section in bending
+        float: Factor k1/r (non-dimensional) which accounts for the increase in
+        crack width due to curvature of the section in bending
     """
     return (h - x) / (h - ay - x)
 
@@ -157,7 +157,7 @@ def epssm_epscm(
             as 200 GPa
 
     Returns:
-        The mean strain difference bewteen steel and concrete along
+        float: The mean strain difference bewteen steel and concrete along
         2 transfer lengths
     """
     return max(
@@ -179,8 +179,8 @@ def kfl(h: float, xg: float, hceff: float) -> float:
         hceff (float): height of the effective tension area
 
     Returns:
-        Returns factor kfl which accounts for the distribution of stresses
-        before cracking
+        float: Returns factor kfl which accounts for the distribution of
+        stresses before cracking
     """
     return max(0.5 * (1 + (h - xg - hceff) / (h - xg)), 0.5)
 
@@ -215,7 +215,7 @@ def srm_cal(
             compressed fibre
 
     Returns:
-        the mean crack spacing in units consistent with c and phi
+        float: the mean crack spacing in units consistent with c and phi
     """
     return min(1.5 * c + kfl_ * kb / 7.2 * phi / rho_eff, 1.3 / kw * (h - x))
 
@@ -265,9 +265,9 @@ def wk_cal(
         Es (float): modulus of elasticity of steel bars (normally Es=200 MPa)
 
     Returns:
-        the characteristic crack width, wk,cal, in consistent units, as well as
-        auxiliary
-        variables, 1/r, srm,cal and epssm-epscm
+        Tuple[float, float, float, float]: the characteristic
+        crack width, wk,cal, in consistent units, as
+        well as auxiliary variables, 1/r, srm,cal and epssm-epscm
     """
     k_1_r_ = k_1_r(h, x, c + phi / 2)
     srm_cal_ = srm_cal(c, kfl(h, xg, hc_eff), kb, phi, rho_eff, kw, h, x)
@@ -305,8 +305,8 @@ def delta_simpl(
             beams or at the embedment for a cantilever
 
     Returns:
-        the deflection of the beam in units consistent with delta_loads and
-        delta_shr
+        float: the deflection of the beam in units consistent with delta_loads
+        and delta_shr
     """
     Mcr = fctm(fck1) * 1000 * b1 * h ** (2) / 6
     zeta = 1 - 0.5 * (Mcr / Mk) ** 2
