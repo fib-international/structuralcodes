@@ -29,6 +29,11 @@ class Elastic(ConstitutiveLaw):
         """Return the tangent."""
         return self._E
 
+    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        # There is no real strain limit, so set it to very large values
+        return (100, -100)
+
 
 class ElasticPlastic(ConstitutiveLaw):
     """Class for elastic-plastic Constitutive Law."""
@@ -169,15 +174,36 @@ class ParabolaRectangle(ConstitutiveLaw):
 class UserDefined(ConstitutiveLaw):
     """Class for a user defined constitutive law
     The curve is defined with positive and optionally negative
-    values. After the last value, the stress goes to zero simulating failure.
+    values. After the last value, the stress can go to zero to simulate
+    failure (default), or be mantained constante, or the last tanget or
+    secant values may be mantained indefinetely. The flag parameter
+    controls this behavior.
     """
 
     __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
 
     def __init__(
-        self, x: ArrayLike, y: ArrayLike, name: t.Optional[str] = None
+        self,
+        x: ArrayLike,
+        y: ArrayLike,
+        name: t.Optional[str] = None,
+        flag: int = 0,
     ) -> None:
-        """Initialize a UserDefined constitutive law."""
+        """
+        Initialize a UserDefined constitutive law.
+        
+        Arguments:
+            x, y: two arrayLike objects containing data for strain and stress
+                    (must be of same length)
+            name: (Optional) a name for the constitutive law
+            flag: (Optional) a flag specifying the behavior after the last
+                point.
+                Admissible values:
+                    0 (default): stress drops to zero after ultimate strain
+                    1: stress is mantained constant
+                    2: last tangent is used
+                    3: last secant is used
+        """
         name = name if name is not None else 'UserDefinedLaw'
         super().__init__(name=name)
         x = np.atleast_1d(np.asarray(x))
@@ -192,6 +218,34 @@ class UserDefined(ConstitutiveLaw):
             # User gave both positive and negative parts
             self._x = x
             self._y = y
+        # Define what happens after last strain
+        if flag not in (0, 1, 2, 3):
+            raise ValueError('Flag can assume values 0, 1, 2 or 3.')
+        self._ultimate_strain_p = self._x[-1]
+        self._ultimate_strain_n = self._x[0]
+        if flag in (1, 2, 3):
+            x = np.insert(self._x, 0, self._x[0] * 100)
+            x = np.append(x, self._x[-1] * 100)
+            if flag == 1:
+                y = np.insert(self._y, 0, self._y[0])
+                y = np.append(y, self._y[-1])
+            elif flag == 2:
+                tangent_p = (self._y[-1] - self._y[-2]) / (
+                    self._x[-1] - self._x[-2]
+                )
+                tangent_n = (self._y[1] - self._y[0]) / (
+                    self._x[1] - self._x[0]
+                )
+                print(tangent_p, tangent_n)
+                y = np.insert(self._y, 0, x[0] * tangent_n)
+                y = np.append(y, x[-1] * tangent_p)
+            elif flag == 3:
+                secant_p = self._y[-1] / self._x[-1]
+                secant_n = self._y[0] / self._x[0]
+                y = np.insert(self._y, 0, x[0] * secant_n)
+                y = np.append(y, x[-1] * secant_p)
+            self._x = x
+            self._y = y
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
@@ -202,3 +256,7 @@ class UserDefined(ConstitutiveLaw):
         """Return the tangent given strain."""
         # this function is still TO DO
         raise NotImplementedError
+
+    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        return (self._ultimate_strain_p, self._ultimate_strain_n)

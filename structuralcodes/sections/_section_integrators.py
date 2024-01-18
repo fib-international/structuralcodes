@@ -52,7 +52,7 @@ class SectionIntegrator(abc.ABC):
 
     @abc.abstractmethod
     def integrate_strain_response_on_geometry(
-        self, geo: CompoundGeometry, strain: ArrayLike
+        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
         """Integrate over the geometry to obtain the response due
         to strains.
@@ -212,7 +212,7 @@ class MarinIntegrator(SectionIntegrator):
         return N, M[0, 0], M[1, 0]
 
     def integrate_strain_response_on_geometry(
-        self, geo: CompoundGeometry, strain: ArrayLike
+        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
         """Integrate the strain response with the Marin algorithm."""
         # Prepare the general input based on the geometry and the input strains
@@ -291,7 +291,7 @@ class FiberIntegrator(SectionIntegrator):
         triangulated_data = kwargs.get('tri', None)
         if triangulated_data is None:
             # No triangulation is provided, triangulate the section
-            # Fiber integrator for generic section uses delaunay triangulation 
+            # Fiber integrator for generic section uses delaunay triangulation
             # for discretizing in fibers
             triangulated_data = []
             mesh_size = kwargs.get('mesh_size', 0.01)
@@ -331,15 +331,18 @@ class FiberIntegrator(SectionIntegrator):
                     # compute area
                     a = (
                         mesh['vertices'][tr[0]][0] * mesh['vertices'][tr[1]][1]
-                        - mesh['vertices'][tr[0]][1] * mesh['vertices'][tr[1]][0]
+                        - mesh['vertices'][tr[0]][1]
+                        * mesh['vertices'][tr[1]][0]
                     )
                     a += (
-                        mesh['vertices'][t[1]][0] * mesh['vertices'][t[2]][1]
-                        - mesh['vertices'][t[1]][1] * mesh['vertices'][t[2]][0]
+                        mesh['vertices'][tr[1]][0] * mesh['vertices'][tr[2]][1]
+                        - mesh['vertices'][tr[1]][1]
+                        * mesh['vertices'][tr[2]][0]
                     )
                     a += (
-                        mesh['vertices'][t[2]][0] * mesh['vertices'][t[0]][1]
-                        - mesh['vertices'][t[2]][1] * mesh['vertices'][t[0]][0]
+                        mesh['vertices'][tr[2]][0] * mesh['vertices'][tr[0]][1]
+                        - mesh['vertices'][tr[2]][1]
+                        * mesh['vertices'][tr[0]][0]
                     )
                     a = abs(a) * 0.5
                     area.append(a)

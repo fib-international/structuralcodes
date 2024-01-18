@@ -76,7 +76,7 @@ class GenericSectionCalculator(SectionCalculator):
         ultimate_bending_moment_result (UltimateBendingMomentResult)
         """
         # Select the integrator if specified
-        integr = integrator_factory(kwargs.get('integrator', 'Fiber'))()
+        integr = integrator_factory(kwargs.get('integrator', 'Marin'))()
 
         ITMAX = 100
         # Compute the bending strength with the bisection algorithm
@@ -100,7 +100,7 @@ class GenericSectionCalculator(SectionCalculator):
                         y_n = other_g.polygon.bounds[3]
                     elif isinstance(other_g, PointGeometry):
                         y_n = other_g._point.coords[0][1]
-                    if y_p == y_n:
+                    if y_p >= y_n:
                         continue
                     chi = -(eps_p - eps_n) / (y_p - y_n)
                     # print(y_p,eps_p,y_n,eps_n,chi)
@@ -118,12 +118,14 @@ class GenericSectionCalculator(SectionCalculator):
         eps_p, eps_n = eps_p_min, eps_n_min
         # Integrate this strain profile
         n_int, _, _, tri = integr.integrate_strain_response_on_geometry(
-            rotated_geom, strain
+            rotated_geom, strain, **kwargs
         )
         # print('n_int=',n_int)
         # 3. Check if we have equilibrium
         chi_a = chi_min
         dn_a = n_int - n
+        it = 1
+        chi_c = 0
         if n_int < n:
             # Too much compression, raise NA
             chi_b = 1e-13
@@ -133,7 +135,6 @@ class GenericSectionCalculator(SectionCalculator):
                 rotated_geom, [eps_0, chi_b, 0], tri=tri
             )
             dn_b = n_int - n
-            it = 1
             while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
                 chi_c = (chi_a + chi_b) / 2.0
                 eps_0 = eps_p + chi_c * y_p
@@ -148,7 +149,7 @@ class GenericSectionCalculator(SectionCalculator):
                     chi_a = chi_c
                     dn_a = dn_c
                 it += 1
-        if n_int > n:
+        elif n_int > n:
             # Too much tension, lower NA
             chi_b = 1e-13
             eps_0 = eps_n + chi_b * y_n
@@ -157,7 +158,6 @@ class GenericSectionCalculator(SectionCalculator):
                 rotated_geom, [eps_0, chi_b, 0], tri=tri
             )
             dn_b = n_int - n
-            it = 1
             while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
                 chi_c = (chi_a + chi_b) / 2.0
                 eps_0 = eps_n + chi_c * y_n
@@ -219,7 +219,9 @@ class GenericSectionCalculator(SectionCalculator):
         """
         # For now it returns an empty response. The proper algorithms for
         # generic section will be here
-        return s_res.MomentCurvatureResults()
+        res = s_res.MomentCurvatureResults()
+        raise NotImplementedError
+        return res
 
 
 # Use examples:

@@ -12,7 +12,12 @@ from structuralcodes.materials.constitutive_laws import UserDefined
 
 @pytest.mark.parametrize(
     'E, strain, expected',
-    [(210000, 0.003, 210000 * 0.003), (200000, 0.002, 200000 * 0.002)],
+    [
+        (210000, 0.003, 210000 * 0.003),
+        (200000, 0.002, 200000 * 0.002),
+        (200000, -0.002, -200000 * 0.002),
+        (200000, -0.01, -200000 * 0.01),
+    ],
 )
 def test_elastic_floats(E, strain, expected):
     """Test the elastic material"""
@@ -43,7 +48,7 @@ def test_elastic_numpy():
 def test_elasticplastic_floats(E, fy, strain, expected):
     """Test the elasticPlastic material"""
 
-    assert math.isclose(ElasticPlastic(E, fy).get_stress(strain), expected)
+    assert math.isclose(ElasticPlastic(E, fy).get_stress(strain)[0], expected)
 
 
 @pytest.mark.parametrize(
@@ -65,7 +70,7 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, expected):
     """Test the parabola-rectangle material"""
 
     assert math.isclose(
-        ParabolaRectangle(fc, eps_0, eps_u).get_stress(strain), expected
+        ParabolaRectangle(fc, eps_0, eps_u).get_stress(strain)[0], expected
     )
 
 
@@ -89,4 +94,4 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, expected):
 def test_user_defined_floats(x, y, strain, expected):
     """Test the parabola-rectangle material"""
 
-    assert math.isclose(UserDefined(x, y).get_stress(strain), expected)
+    assert math.isclose(UserDefined(x, y).get_stress(strain)[0], expected)

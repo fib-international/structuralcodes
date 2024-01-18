@@ -254,7 +254,7 @@ class SurfaceGeometry:
         """Initializes a SurfaceGeometry object.
 
         Args:
-            polly (shapely.Polygon): Shapely polygon
+            poly (shapely.Polygon): Shapely polygon
             mat (Material): A Material class applied to the geometry
         """
         # Check if inputs are of the correct type, otherwise return error
@@ -379,7 +379,6 @@ class SurfaceGeometry:
             dx: Translation ammount in x direction
             dy: Translation ammount in y direction
         """
-        print(self.material)
         return SurfaceGeometry(
             poly=affinity.translate(self.polygon, dx, dy), mat=self.material
         )

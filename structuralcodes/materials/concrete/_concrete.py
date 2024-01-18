@@ -28,7 +28,7 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
-        self._stress_strain = ParabolaRectangle(
+        self._constitutive_law = ParabolaRectangle(
             self._fck, name=name + '_ConstLaw'
         )
 
@@ -50,15 +50,15 @@ class Concrete(Material):
         """
 
     @property
-    def stress_strain(self) -> ConstitutiveLaw:
+    def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the constitutive law object."""
-        return self._stress_strain
+        return self._constitutive_law
 
-    @stress_strain.setter
-    def stress_strain(self, stress_strain: ConstitutiveLaw) -> None:
+    @constitutive_law.setter
+    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
         """Setter for constitutive law."""
-        if 'concrete' in stress_strain.__materials__:
-            self._stress_strain = stress_strain
+        if 'concrete' in constitutive_law.__materials__:
+            self._constitutive_law = constitutive_law
         else:
             raise ValueError(
                 'The constitutive law selected is not suitable '
