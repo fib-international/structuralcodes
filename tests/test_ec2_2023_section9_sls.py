@@ -8,12 +8,26 @@ from structuralcodes.codes.ec2_2023 import _section9_sls
 
 @pytest.mark.parametrize(
     'test_input1, test_input2, expected',
-    [(33, 1.5, 12188.63), (33, 2, 10157.19), (33, 2.5, 8706.16)],
+    [
+        (33, 1.5, 13929.86),
+        (33, 2, 11608.22),
+        (33, 2.5, 9949.9),
+        (43, 1.5, 14829.57),
+        (43, 2, 12357.98),
+        (43, 2.5, 10592.55),
+        (53, 1.5, 15507.43),
+        (53, 2, 12922.86),
+        (53, 2.5, 11076.74),
+        (68, 2, 13540.73),
+        (68, 2, 13540.73),
+        (68, 2, 13540.73),
+        (68, 2, 13540.73),
+    ],
 )
 def test_Ec_eff(test_input1, test_input2, expected):
     """Test the Ec_eff function."""
     assert math.isclose(
-        _section9_sls.Ec_eff(test_input1, test_input2), expected, rel_tol=0.05
+        _section9_sls.Ec_eff(test_input1, test_input2), expected, rel_tol=0.01
     )
 
 
@@ -396,3 +410,52 @@ def test_wk_cal(
     assert math.isclose(k_1_r_, expected2, rel_tol=0.01)
     assert math.isclose(srm_cal_, expected3, rel_tol=0.01)
     assert math.isclose(epssm_epscm_, expected4, rel_tol=0.01)
+
+
+@pytest.mark.parametrize(
+    'test_input1, test_input2,test_input3,test_input4,'
+    + 'test_input5, test_input6, test_input7, test_input8,'
+    + 'test_input9, expected',
+    [
+        (9.42, 5.32, 25, 2, 1, 0.62, 0.57, 49.1, 651.87, 24.45),
+        (0.71, 0, 25, 2, 1, 0.3, 0.25, 49.1, 47.65, 0.82),
+        (4, 1.85, 25, 2, 1, 0.55, 0.5, 49.1, 571.82, 9.1),
+        (2.83, 1.77, 35, 2.5, 1, 0.62, 0.57, 11.2, 148.7, 4.6),
+        (0.16, 0, 35, 2.5, 1, 0.2, 0.15, 11.2, 6.52, 0.16),
+        (1.38, 0.75, 35, 2.5, 1, 1.05, 1, 11.2, 260.87, 2.13),
+        (4.88, 3.06, 45, 2, 1, 0.62, 0.57, 31.4159265358979, 417.09, 17.54),
+        (0.27, 0, 45, 2, 1, 0.2, 0.15, 31.4159265358979, 18.29, 0.27),
+        (2.38, 1.29, 45, 2, 1, 1.05, 1, 31.4159265358979, 731.74, 8.15),
+        (6.3, 3.39, 25, 2.5, 1, 0.62, 0.57, 20.1, 266.86, 23.54),
+        (0.35, 0, 25, 2.5, 1, 0.2, 0.15, 20.1, 11.7, 0.35),
+        (3.07, 1.43, 25, 2.5, 1, 1.05, 1, 20.1, 468.17, 4.51),
+    ],
+)
+def test_delta_simpl(
+    test_input1,
+    test_input2,
+    test_input3,
+    test_input4,
+    test_input5,
+    test_input6,
+    test_input7,
+    test_input8,
+    test_input9,
+    expected,
+):
+    """Test the deslta_simpl function."""
+    assert math.isclose(
+        _section9_sls.delta_simpl(
+            test_input1,
+            test_input2,
+            test_input3,
+            test_input4,
+            test_input5,
+            test_input6,
+            test_input7,
+            test_input8,
+            test_input9,
+        ),
+        expected,
+        rel_tol=0.01,
+    )
