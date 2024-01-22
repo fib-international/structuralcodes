@@ -250,7 +250,9 @@ class SurfaceGeometry:
     As a shapely polygon it can contain one or more holes
     """
 
-    def __init__(self, poly: Polygon, mat: Material) -> None:
+    def __init__(
+        self, poly: Polygon, mat: t.Union[Material, ConstitutiveLaw]
+    ) -> None:
         """Initializes a SurfaceGeometry object.
 
         Args:
@@ -274,7 +276,7 @@ class SurfaceGeometry:
         self.polygon = poly
         # Pass a constitutive law to the SurfaceGeometry
         if isinstance(mat, Material):
-            mat = mat._stress_strain
+            mat = mat._constitutive_law
         self.material = mat
 
     @property
@@ -412,6 +414,47 @@ class SurfaceGeometry:
     # mirror, translation, rotation, etc.
 
 
+def _process_geometries_multipolygon(
+    geometries: MultiPolygon,
+    materials: t.Optional[t.List[Material] | Material],
+) -> list:
+    """Process geometries for initialization."""
+    checked_geometries = []
+    # a MultiPolygon is provided
+    if isinstance(materials, Material):
+        for g in geometries.geoms:
+            checked_geometries.append(SurfaceGeometry(g, materials))
+    elif isinstance(materials, list):
+        # the list of materials is provided, one for each polygon
+        if len(geometries) != len(materials):
+            raise ValueError(
+                'geometries and materials should have the same length'
+            )
+        for g, m in zip(geometries, materials):
+            checked_geometries.append(SurfaceGeometry(g, m))
+    return checked_geometries
+
+
+def _process_geometries_list(
+    geometries: t.List[Geometry],
+) -> t.Tuple[list, list]:
+    """Process geometries for initialization."""
+    # a list of SurfaceGeometry is provided
+    checked_geometries = []
+    checked_point_geometries = []
+    for geo in geometries:
+        if isinstance(geo, SurfaceGeometry):
+            checked_geometries.append(geo)
+        elif isinstance(geo, CompoundGeometry):
+            for g in geo.geometries:
+                checked_geometries.append(g)
+            for pg in geo.point_geometries:
+                checked_point_geometries.append(pg)
+        elif isinstance(geo, PointGeometry):
+            checked_point_geometries.append(geo)
+    return (checked_geometries, checked_point_geometries)
+
+
 class CompoundGeometry(Geometry):
     """Class for a compound geometry.
 
@@ -426,58 +469,34 @@ class CompoundGeometry(Geometry):
     ) -> None:
         """Creates a compound geometry.
 
-        Args:
-            geometries: a list of SurfaceGeometry objects or a shapely
-                        MultiPolygon object (in this case also a list of
-                        materials should be given)
-            materials (optional, default = None): a material (applied
-                        to all polygons) or a list of materials. In this
-                        case the number of polygons should match the number
-                        of materials
+        Arguments:
+        geometries: a list of SurfaceGeometry objects or a shapely
+            MultiPolygon object (in this case also a list of
+            materials should be given)
+        materials (optional, default = None): a material (applied
+            to all polygons) or a list of materials. In this
+            case the number of polygons should match the number
+            of materials
         """
-        checked_geometries = []
         if isinstance(geometries, MultiPolygon):
             # a MultiPolygon is provided
-            if isinstance(materials, Material):
-                for g in geometries.geoms:
-                    checked_geometries.append(SurfaceGeometry(g, materials))
-                self.geometries = checked_geometries
-            elif isinstance(materials, list):
-                # the list of materials is provided, one for each polygon
-                if len(geometries) != len(materials):
-                    raise ValueError(
-                        'geometries and materials should have the same length'
-                    )
-                for g, m in zip(geometries, materials):
-                    checked_geometries.append(SurfaceGeometry(g, m))
-                self.geometries = checked_geometries
+            self.geometries = _process_geometries_multipolygon(
+                geometries, materials
+            )
+            self.point_geometries = []
             # useful for representation in svg
-            geoms_representation = [g.polygon for g in checked_geometries]
+            geoms_representation = [g.polygon for g in self.geometries]
             self.geom = MultiPolygon(geoms_representation)
             return
         if isinstance(geometries, list):
-            # a list of SurfaceGeometry is provided
-            checked_geometries = []
-            checked_point_geometries = []
-            for geo in geometries:
-                if isinstance(geo, SurfaceGeometry):
-                    checked_geometries.append(geo)
-                elif isinstance(geo, CompoundGeometry):
-                    for g in geo.geometries:
-                        checked_geometries.append(g)
-                    for pg in geo.point_geometries:
-                        checked_point_geometries.append(pg)
-                elif isinstance(geo, PointGeometry):
-                    # what to do for PointGeometries? Keep it in a different
-                    # array?
-                    checked_point_geometries.append(geo)
-            self.geometries = checked_geometries
-            self.point_geometries = checked_point_geometries
+            self.geometries, self.point_geometries = _process_geometries_list(
+                geometries
+            )
             # useful for representation in svg
-            geoms_representation = [g.polygon for g in checked_geometries]
+            geoms_representation = [g.polygon for g in self.geometries]
             geoms_representation += [
                 pg._point.buffer(pg._diameter / 2)
-                for pg in checked_point_geometries
+                for pg in self.point_geometries
             ]
             self.geom = MultiPolygon(geoms_representation)
 

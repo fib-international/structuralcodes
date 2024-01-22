@@ -40,21 +40,22 @@ class GrossProperties:
     ei_yy: float = 0
 
     def __format__(self, spec: str) -> str:
-        """Defines the format for returning the string representation
+        """Defines the format for returning the string representation.
 
         Arguments:
-        spec: the string specifying the format"""
+        spec: the string specifying the format
+        """
         output_string = 'Gross Concrete Section Properties:\n'
         output_string += f'Total area: {self.area:{spec}}'
         # etc. all other characteristics
         return output_string
 
     def __str__(self) -> str:
-        """
+        """Returns the informal string representation.
         Returns the informal string representation of the gross concrete
         section properties.
         """
-        return f"{self}"
+        return f'{self}'
 
 
 @dataclass

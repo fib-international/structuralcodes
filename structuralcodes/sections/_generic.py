@@ -23,12 +23,13 @@ class GenericSection(Section):
         self,
         geometry: SurfaceGeometry | CompoundGeometry,
         name: t.Optional[str] = None,
+        **kwargs,
     ) -> None:
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
         self.geometry = geometry
-        self.section_analyzer = GenericSectionCalculator(self)
+        self.section_analyzer = GenericSectionCalculator(self, **kwargs)
         self.gross_properties = (
             self.section_analyzer._calculate_gross_section_properties()
         )
@@ -39,12 +40,18 @@ class GenericSectionCalculator(SectionCalculator):
     Code checks.
     """
 
-    def __init__(self, sec: GenericSection) -> None:
+    def __init__(
+        self, sec: GenericSection, integrator: str = 'Marin', **kwargs
+    ) -> None:
         """Initialize the GenericSectionCalculator
         Input:
         section (SectionCalculator): the section object.
         """
         super().__init__(section=sec)
+        # Select the integrator if specified
+        self.integrator = integrator_factory(integrator)()
+        # Mesh size used for Fibre integrator
+        self.mesh_size = kwargs.get('mesh_size', 0.001)
 
     def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
         """Calculates the gross section properties of the GenericSection
@@ -61,41 +68,29 @@ class GenericSectionCalculator(SectionCalculator):
         gp.area = self.section.geometry.area
         return gp
 
-    def calculate_bending_strength(
-        self, theta=0, n=0, **kwargs
-    ) -> s_res.UltimateBendingMomentResult:
-        """Calculates the bending strength for given inclination of n.a.
-        and axial load.
-
-        Input:
-        theta (float, default = 0): inclination of n.a. respect to y axis
-        n (float, default = 0): axial load applied to the section
-        (+: tension, -: compression)
-
-        Return:
-        ultimate_bending_moment_result (UltimateBendingMomentResult)
+    def get_balanced_failure_strain(
+        self, geom: CompoundGeometry, yielding: bool = False
+    ) -> [float, float, float]:
+        """Returns the strain profile corresponding to balanced failure.
+        This is found from all ultimate strains for all materials, checking
+        the minimum value of curvature.
+        It returns a tuple with:
+        1. Value of y coordinate for negative failure
+        2. Value of y coordinate for positive failure
+        3. Strain profile as a list with three values: axial strain, curvature
+           y*, curvature z* (assumed zero since in the rotated frame y*z* it is
+           a case of uniaxial bending).
         """
-        # Select the integrator if specified
-        integr = integrator_factory(kwargs.get('integrator', 'Marin'))()
-
-        ITMAX = 100
-        # Compute the bending strength with the bisection algorithm
-        # 1. Rotate the section of angle theta
-        rotated_geom = self.section.geometry.rotate(theta)
-        # 2. Start with a balanced failure: this is found from all ultimate
-        # strains for all materials, checking the minimum curvature value
         chi_min = 1e10
-        for g in rotated_geom.geometries + rotated_geom.point_geometries:
-            for other_g in (
-                rotated_geom.geometries + rotated_geom.point_geometries
-            ):
+        for g in geom.geometries + geom.point_geometries:
+            for other_g in geom.geometries + geom.point_geometries:
                 if g != other_g:
-                    eps_p = g.material.get_ultimate_strain()[0]
+                    eps_p = g.material.get_ultimate_strain(yielding)[0]
                     if isinstance(g, SurfaceGeometry):
                         y_p = g.polygon.bounds[1]
                     elif isinstance(g, PointGeometry):
                         y_p = g._point.coords[0][1]
-                    eps_n = other_g.material.get_ultimate_strain()[1]
+                    eps_n = other_g.material.get_ultimate_strain(yielding)[1]
                     if isinstance(other_g, SurfaceGeometry):
                         y_n = other_g.polygon.bounds[3]
                     elif isinstance(other_g, PointGeometry):
@@ -109,81 +104,128 @@ class GenericSectionCalculator(SectionCalculator):
                         eps_0 = eps_n + chi_min * y_n
                         y_n_min = y_n
                         y_p_min = y_p
-                        eps_p_min = eps_p
-                        eps_n_min = eps_n
-
-        strain = [eps_0, chi_min, 0]
-        # print('strain:',strain)
         y_p, y_n = y_p_min, y_n_min
-        eps_p, eps_n = eps_p_min, eps_n_min
-        # Integrate this strain profile
-        n_int, _, _, tri = integr.integrate_strain_response_on_geometry(
-            rotated_geom, strain, **kwargs
-        )
-        # print('n_int=',n_int)
-        # 3. Check if we have equilibrium
-        chi_a = chi_min
+        strain = [eps_0, chi_min, 0]
+        return (y_n, y_p, strain)
+
+    def find_equilibrium_fixed_pivot(
+        self, geom: CompoundGeometry, n: float, yielding: bool = False
+    ) -> [float, float, float]:
+        """Find the equilibrium changing curvature fixed a pivot.
+        The algorithm uses bisection algorithm between curvature
+        of balanced failure and 0. Selected the pivot point as
+        the top or the bottom one, the neutral axis is lowered or
+        raised respectively.
+
+        Arguments:
+        geom: (CompoundGeometry) A geometry in the rotated reference system
+        n: (float) value of external axial force needed to be equilibrated
+
+        Returns:
+        strain: list of 3 floats. Axial strain at (0,0) curvatures of y* and z*
+            axes. Note that being uniaxial bending, curvature along z* is 0.0
+        """
+        # Number of maximum iteration for the bisection algorithm
+        ITMAX = 100
+        # 1. Start with a balanced failure: this is found from all ultimate
+        # strains for all materials, checking the minimum curvature value
+        y_n, y_p, strain = self.get_balanced_failure_strain(geom, yielding)
+        eps_p = strain[0] - strain[1] * y_p
+        eps_n = strain[0] - strain[1] * y_n
+        # Integrate this strain profile corresponding to balanced failure
+        (
+            n_int,
+            _,
+            _,
+            tri,
+        ) = self.integrator.integrate_strain_response_on_geometry(geom, strain)
+        # Check if there is equilibrium with this strain distribution
+        chi_a = strain[1]
         dn_a = n_int - n
-        it = 1
-        chi_c = 0
+        chi_b = 1e-13
         if n_int < n:
-            # Too much compression, raise NA
-            chi_b = 1e-13
-            eps_0 = eps_p + chi_b * y_p
-            # print('Too much compression')
-            n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
-                rotated_geom, [eps_0, chi_b, 0], tri=tri
-            )
-            dn_b = n_int - n
-            while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
-                chi_c = (chi_a + chi_b) / 2.0
-                eps_0 = eps_p + chi_c * y_p
-                n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
-                    rotated_geom, [eps_0, chi_c, 0], tri=tri
-                )
-                dn_c = n_int - n
-                if dn_c * dn_a < 0:
-                    chi_b = chi_c
-                    dn_b = dn_c
-                else:
-                    chi_a = chi_c
-                    dn_a = dn_c
-                it += 1
-        elif n_int > n:
+            pivot = y_p
+            strain_pivot = eps_p
+        else:
             # Too much tension, lower NA
-            chi_b = 1e-13
-            eps_0 = eps_n + chi_b * y_n
-            # print('Too much tension')
-            n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
-                rotated_geom, [eps_0, chi_b, 0], tri=tri
+            pivot = y_n
+            strain_pivot = eps_n
+        eps_0 = strain_pivot + chi_b * pivot
+        n_int, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
+            geom, [eps_0, chi_b, 0], tri=tri
+        )
+        dn_b = n_int - n
+        it = 0
+        while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
+            chi_c = (chi_a + chi_b) / 2.0
+            eps_0 = strain_pivot + chi_c * pivot
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [eps_0, chi_c, 0], tri=tri
             )
-            dn_b = n_int - n
-            while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
-                chi_c = (chi_a + chi_b) / 2.0
-                eps_0 = eps_n + chi_c * y_n
-                n_int, _, _, _ = integr.integrate_strain_response_on_geometry(
-                    rotated_geom, [eps_0, chi_c, 0], tri=tri
-                )
-                dn_c = n_int - n
-                if dn_c * dn_a < 0:
-                    chi_b = chi_c
-                    dn_b = dn_c
-                else:
-                    chi_a = chi_c
-                    dn_a = dn_c
-                it += 1
+            dn_c = n_int - n
+            if dn_c * dn_a < 0:
+                chi_b = chi_c
+                dn_b = dn_c
+            else:
+                chi_a = chi_c
+                dn_a = dn_c
+            it += 1
         if it >= ITMAX:
             s = f'Last iteration reached a unbalance of {dn_c}'
-            raise ValueError(f'Maximum number of iterations reached\n{s}')
-
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
-        # print(f'Found equilibrium (after {it} iterations)')
-        strain = [eps_0, chi_c, 0]
-        N, Mx, My, _ = integr.integrate_strain_response_on_geometry(
-            geo=rotated_geom, strain=strain, tri=tri
+        # save the triangulation data
+        self.tri = tri
+        # Return the strain distribution
+        return [eps_0, chi_c, 0]
+
+    def find_equilibrium_fixed_cruvature(
+        self, geom: CompoundGeometry, n: float, curv: float, x: float
+    ):
+        """Find strain profile with equilibrium with fixed curvature.
+        Given curvature and external axial force, find the strain profile
+        that makes internal and external axial force in equilibrium.
+
+        Arguments:
+        geom: (CompounGeometry) the geometry
+        n: (float) the external axial load
+        curv: (float) the value of curvature
+        x: (float) a first attempt for neutral axis position
+        """
+        # Useful for Moment Curvature Analysis
+        raise NotImplementedError(
+            f'find_equilibrium_fixed_crvature {geom}, {n}, {curv} {x}'
         )
-        # Check if n and N are sufficiently near
-        # print('check: ',n,N)
+
+    def calculate_bending_strength(
+        self, theta=0, n=0
+    ) -> s_res.UltimateBendingMomentResult:
+        """Calculates the bending strength for given inclination of n.a.
+        and axial load.
+
+        Arguments:
+        theta (float, default = 0): inclination of n.a. respect to y axis
+        n (float, default = 0): axial load applied to the section
+        (+: tension, -: compression)
+
+        Return:
+        ultimate_bending_moment_result (UltimateBendingMomentResult)
+        """
+        # Compute the bending strength with the bisection algorithm
+        # Rotate the section of angle theta
+        rotated_geom = self.section.geometry.rotate(theta)
+        # Find the strain distribution corresponding to failure and equilibrium
+        # with external axial force
+        strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
+        # Compute the internal forces with this strain distribution
+        N, Mx, My, _ = self.integrator.integrate_strain_response_on_geometry(
+            geo=rotated_geom, strain=strain, tri=self.tri
+        )
 
         # Rotate back to section CRS
         T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])
@@ -193,9 +235,9 @@ class GenericSectionCalculator(SectionCalculator):
         res = s_res.UltimateBendingMomentResult()
         res.theta = theta
         res.n = N
-        res.chi_x = chi_c
-        res.chi_y = 0
-        res.eps_a = eps_0
+        res.chi_x = strain[1]
+        res.chi_y = strain[2]
+        res.eps_a = strain[0]
         res.m_x = M[0, 0]
         res.m_y = M[1, 0]
 
@@ -207,20 +249,44 @@ class GenericSectionCalculator(SectionCalculator):
         """Calculates the moment-curvature relation for given inclination of
         n.a. and axial load.
 
-        Input:
+        Arguments:
         theta (float, default = 0): inclination of n.a. respect to y axis
         n (float, default = 0): axial load applied to the section
             (+: tension, -: compression)
-        chi_incr (float, default = 1e-8): the curvature increment for the
-            analysis
 
         Return:
         moment_curvature_result (MomentCurvatureResults)
         """
-        # For now it returns an empty response. The proper algorithms for
-        # generic section will be here
+        # Create an empty response object
         res = s_res.MomentCurvatureResults()
-        raise NotImplementedError
+        return NotImplementedError(f'calculate moment curvature {theta}, {n}')
+        # Rotate the section of angle theta
+        rotated_geom = self.section.geometry.rotate(theta)
+        # Find ultimate curvature from the strain distribution corresponding
+        # to failure and equilibrium with external axial force
+        strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
+        chi_ultimate = strain[1]
+        # Find the yielding curvature
+        strain = self.find_equilibrium_fixed_pivot(rotated_geom, n, True)
+        chi_yield = strain[1]
+        # Define the array of curvatures
+        chi = np.concatenate(
+            (
+                np.linspace(0, chi_yield, 10, endpoint=False),
+                np.linspace(chi_yield, chi_ultimate, 100),
+            )
+        )
+
+        # Previous position of neutral axes
+        x = 0
+        # For each value of curvature
+        for ch in chi:
+            print('chi = ', ch)
+            # find the new position of neutral axis for mantaining equilibrium
+            print('current value of neutral axis: ', x)
+            # store the information in the results object for the current
+            # value of curvature
+
         return res
 
 

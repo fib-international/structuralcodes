@@ -25,8 +25,9 @@ class Elastic(ConstitutiveLaw):
         eps = np.asarray(eps)
         return self._E * eps
 
-    def get_tangent(self, eps: ArrayLike) -> float:
+    def get_tangent(self, *args) -> float:
         """Return the tangent."""
+        del args
         return self._E
 
     def get_ultimate_strain(self) -> t.Tuple[float, float]:
@@ -82,13 +83,20 @@ class ElasticPlastic(ConstitutiveLaw):
             return self._Eh
         return self._E
 
-    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
         """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (self._eps_sy, -self._eps_sy)
         return (self._eps_su, -self._eps_su)
 
 
 class ParabolaRectangle(ConstitutiveLaw):
-    """Class for parabola rectangle constitutive law."""
+    """Class for parabola rectangle constitutive law.
+    The stresses and strains are assumed negative in compression and positive
+    in tension.
+    """
 
     __materials__: t.Tuple[str] = ('concrete',)
 
@@ -100,7 +108,18 @@ class ParabolaRectangle(ConstitutiveLaw):
         n: float = 2.0,
         name: t.Optional[str] = None,
     ) -> None:
-        """Initialize an Elastic-Plastic Material."""
+        """Initialize an Elastic-Plastic Material.
+
+        Arguments:
+        fc: (float) the strength of concrete in compression
+        eps_0: (float) peak strain of concrete in compression
+               optional, default value = -0.002
+        eps_u: (float) ultimate strain of concrete in compression
+               optional, default value = -0.0035
+        n: (float) exponent for the pre-peak branch
+           optional, default value = 2
+        name: (str) a name for the constitutive law, optional
+        """
         name = name if name is not None else 'ParabolaRectangleLaw'
         super().__init__(name=name)
         self._fc = -abs(fc)
@@ -166,8 +185,12 @@ class ParabolaRectangle(ConstitutiveLaw):
         coeff.append((self._fc,))
         return strains, coeff
 
-    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
         """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (100, self._eps_0)
         return (100, self._eps_u)
 
 
@@ -189,9 +212,8 @@ class UserDefined(ConstitutiveLaw):
         name: t.Optional[str] = None,
         flag: int = 0,
     ) -> None:
-        """
-        Initialize a UserDefined constitutive law.
-        
+        """Initialize a UserDefined constitutive law.
+
         Arguments:
             x, y: two arrayLike objects containing data for strain and stress
                     (must be of same length)

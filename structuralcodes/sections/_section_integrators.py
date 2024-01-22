@@ -99,7 +99,17 @@ class MarinIntegrator(SectionIntegrator):
         # 3. For each SurfaceGeometry on the CompoundGeometry:
         for g in rotated_geom.geometries:
             # 3a. get coefficients and strain limits from constitutive law
-            strains, coeffs = g.material.__marin__(strain_rotated)
+            if hasattr(g.material, '__marin__'):
+                strains, coeffs = g.material.__marin__(strain_rotated)
+            else:
+                raise AttributeError(
+                    f'The material object {g.material} of geometry {g} does \
+                    not have implement the __marin__ function. \
+                    Please implement the function or use another integrator, \
+                    like '
+                    'Fibre'
+                    ''
+                )
 
             # 3b. Subdivide the polygon at the different strain limits
             for p in range(len(strains)):
@@ -215,6 +225,7 @@ class MarinIntegrator(SectionIntegrator):
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
         """Integrate the strain response with the Marin algorithm."""
+        del kwargs
         # Prepare the general input based on the geometry and the input strains
         angle, prepared_input = self.prepare_input(geo, strain)
 
