@@ -1,6 +1,7 @@
 """Results."""
 # import typing as t
 from dataclasses import dataclass
+from numpy.typing import ArrayLike
 
 
 @dataclass
@@ -81,9 +82,10 @@ class MomentCurvatureResults:
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
-    chi: float = 0  # the curvatures
-    eps_axial: float = 0  # the axial strain (at csection entroid)
-    m: float = 0  # the moment
+    chi: ArrayLike = None  # the curvatures
+    eps_axial: ArrayLike = 0  # the axial strain (at section 0,0)
+    my: ArrayLike = None  # the moment
+    mz: ArrayLike = None  # the moment
 
     # The strains can be reconstructed at each step from chi and eps_axial
     # The stresses can be recomputed if needed on the fly? Or storing them?

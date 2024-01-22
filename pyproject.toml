@@ -25,8 +25,8 @@ source = "https://github.com/fib-international/structuralcodes"
 [tool.black]
 line-length = 79
 skip-string-normalization = "True"
-#check = "True"
-#diff = "True"
+check = "True"
+diff = "True"
 
 [tool.ruff]
 line-length = 79

@@ -52,6 +52,8 @@ class GenericSectionCalculator(SectionCalculator):
         self.integrator = integrator_factory(integrator)()
         # Mesh size used for Fibre integrator
         self.mesh_size = kwargs.get('mesh_size', 0.001)
+        # triangulated_data used for Fibre integrator
+        self.triangulated_data = None
 
     def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
         """Calculates the gross section properties of the GenericSection
@@ -139,6 +141,7 @@ class GenericSectionCalculator(SectionCalculator):
             _,
             tri,
         ) = self.integrator.integrate_strain_response_on_geometry(geom, strain)
+        self.triangulated_data = tri
         # Check if there is equilibrium with this strain distribution
         chi_a = strain[1]
         dn_a = n_int - n
@@ -152,7 +155,7 @@ class GenericSectionCalculator(SectionCalculator):
             strain_pivot = eps_n
         eps_0 = strain_pivot + chi_b * pivot
         n_int, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
-            geom, [eps_0, chi_b, 0], tri=tri
+            geom, [eps_0, chi_b, 0], tri=self.triangulated_data
         )
         dn_b = n_int - n
         it = 0
@@ -165,7 +168,7 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [eps_0, chi_c, 0], tri=tri
+                geom, [eps_0, chi_c, 0], tri=self.triangulated_data
             )
             dn_c = n_int - n
             if dn_c * dn_a < 0:
@@ -180,9 +183,45 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
         # save the triangulation data
-        self.tri = tri
+        if self.triangulated_data is None:
+            self.triangulated_data = tri
         # Return the strain distribution
         return [eps_0, chi_c, 0]
+
+    def _prefind_range_curvature_equilibrium(
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv: float,
+        x_a: float,
+        dn_a: float,
+    ):
+        # With the following algorithm we find quickly a position of NA that
+        # guarantees that the is at least one zero in the function dn vs. curv
+        # in order to apply bisection algorithm
+        ITMAX = 100
+        sign = -1 if dn_a > 0 else 1
+        found = False
+        it = 0
+        while not found and it < ITMAX:
+            x_b = x_a + sign * (10 * it**2)
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [curv * x_b, curv, 0], tri=self.triangulated_data
+            )
+            dn_b = n_int - n
+            if dn_a * dn_b < 0:
+                found = True
+            it += 1
+        if it >= ITMAX and not found:
+            s = f'Last iteration reached a unbalance of: \
+                dn_a = {dn_a} dn_b = {dn_b})'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+        return (x_b, dn_b)
 
     def find_equilibrium_fixed_cruvature(
         self, geom: CompoundGeometry, n: float, curv: float, x: float
@@ -198,9 +237,51 @@ class GenericSectionCalculator(SectionCalculator):
         x: (float) a first attempt for neutral axis position
         """
         # Useful for Moment Curvature Analysis
-        raise NotImplementedError(
-            f'find_equilibrium_fixed_crvature {geom}, {n}, {curv} {x}'
+        # Number of maximum iteration for the bisection algorithm
+        ITMAX = 100
+        # Start from previous position of N.A.
+        eps_0 = curv * x
+        # find internal axial force by integration
+        (
+            n_int,
+            _,
+            _,
+            tri,
+        ) = self.integrator.integrate_strain_response_on_geometry(
+            geom, [eps_0, curv, 0], tri=self.triangulated_data
         )
+        if self.triangulated_data is None:
+            self.triangulated_data = tri
+        dn_a = n_int - n
+        x_a = x
+        x_b, dn_b = self._prefind_range_curvature_equilibrium(
+            geom, n, curv, x_a, dn_a
+        )
+        # Found a range within there is the solution, apply bisection
+        it = 0
+        while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
+            x_c = (x_a + x_b) / 2
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [curv * x_c, curv, 0], tri=self.triangulated_data
+            )
+            dn_c = n_int - n
+            if dn_a * dn_c < 0:
+                dn_b = dn_c
+                x_b = x_c
+            else:
+                dn_a = dn_c
+                x_a = x_c
+            it += 1
+        if it >= ITMAX:
+            s = f'Last iteration reached a unbalance of: \
+                dn_c = {dn_c}'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+        return (x_c, [curv * x_c, curv, 0])
 
     def calculate_bending_strength(
         self, theta=0, n=0
@@ -224,7 +305,7 @@ class GenericSectionCalculator(SectionCalculator):
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
         # Compute the internal forces with this strain distribution
         N, Mx, My, _ = self.integrator.integrate_strain_response_on_geometry(
-            geo=rotated_geom, strain=strain, tri=self.tri
+            geo=rotated_geom, strain=strain, tri=self.triangulated_data
         )
 
         # Rotate back to section CRS
@@ -259,7 +340,7 @@ class GenericSectionCalculator(SectionCalculator):
         """
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
-        return NotImplementedError(f'calculate moment curvature {theta}, {n}')
+        res.n = n
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(theta)
         # Find ultimate curvature from the strain distribution corresponding
@@ -272,20 +353,42 @@ class GenericSectionCalculator(SectionCalculator):
         # Define the array of curvatures
         chi = np.concatenate(
             (
-                np.linspace(0, chi_yield, 10, endpoint=False),
+                np.linspace(1e-13, chi_yield, 10, endpoint=False),
                 np.linspace(chi_yield, chi_ultimate, 100),
             )
         )
-
+        # prepare results
+        eps_a = np.zeros_like(chi)
+        my = np.zeros_like(chi)
+        mz = np.zeros_like(chi)
         # Previous position of neutral axes
         x = 0
         # For each value of curvature
-        for ch in chi:
-            print('chi = ', ch)
+        for i, curv in enumerate(chi):
             # find the new position of neutral axis for mantaining equilibrium
-            print('current value of neutral axis: ', x)
             # store the information in the results object for the current
             # value of curvature
+            x, strain = self.find_equilibrium_fixed_cruvature(
+                rotated_geom, n, curv, x
+            )
+            (
+                _,
+                Mx,
+                My,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geo=rotated_geom, strain=strain, tri=self.triangulated_data
+            )
+            # Rotate back to section CRS
+            T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])
+            M = T @ np.array([[Mx], [My]])
+            eps_a[i] = strain[0]
+            my[i] = M[0, 0]
+            mz[i] = M[1, 0]
+        res.chi = chi
+        res.eps_axial = eps_a
+        res.my = my
+        res.mz = mz
 
         return res
 
