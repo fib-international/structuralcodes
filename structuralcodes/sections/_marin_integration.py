@@ -5,6 +5,7 @@ Computers and Structures, 18(2), pp. 343-349, 1984.
 """
 import functools
 import math
+import typing as t
 
 
 @functools.lru_cache
@@ -13,7 +14,9 @@ def _coeff(m, n, j, k):
     return math.comb(j + k, j) * math.comb(m + n - j - k, n - k)
 
 
-def marin_integration(y: list[float], z: list[float], m: int, n: int) -> float:
+def marin_integration(
+    y: t.List[float], z: t.List[float], m: int, n: int
+) -> float:
     """Marin's algorithm for integrating a polynomial over a closed polygon.
 
     The order of the polygon vertices is significant. If the points are in
