@@ -7,7 +7,7 @@ import functools
 import math
 
 
-@functools.cache
+@functools.lru_cache
 def _coeff(m, n, j, k):
     """Calculate the binomial coefficient used in Marin integration."""
     return math.comb(j + k, j) * math.comb(m + n - j - k, n - k)
