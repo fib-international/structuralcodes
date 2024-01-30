@@ -1,4 +1,5 @@
 """Main entry point for sections."""
+
 from ._generic import GenericSection, GenericSectionCalculator
 from ._geometry import (
     Geometry,

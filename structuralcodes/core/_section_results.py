@@ -1,4 +1,5 @@
 """Results."""
+
 # import typing as t
 from dataclasses import dataclass
 from numpy.typing import ArrayLike

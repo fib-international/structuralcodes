@@ -1,4 +1,5 @@
 """Classes for integrating the response of sections."""
+
 import abc
 import typing as t
 

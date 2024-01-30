@@ -1,4 +1,5 @@
 """Tests for the Marin integration."""
+
 import math
 
 import numpy as np

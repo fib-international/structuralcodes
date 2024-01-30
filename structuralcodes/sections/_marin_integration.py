@@ -3,6 +3,7 @@
 Marin, J.: Computing columns, footings and gates through moments of area.
 Computers and Structures, 18(2), pp. 343-349, 1984.
 """
+
 import functools
 import math
 import typing as t
