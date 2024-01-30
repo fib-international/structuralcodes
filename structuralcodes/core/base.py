@@ -3,7 +3,7 @@ import abc
 import typing as t
 import warnings
 
-import structuralcodes.sections._section_results as s_res
+import structuralcodes.core._section_results as s_res
 
 
 class Material(abc.ABC):
@@ -162,7 +162,7 @@ class SectionCalculator(abc.ABC):
     @abc.abstractmethod
     def calculate_bending_strength(
         self, theta=0, n=0
-    ) -> s_res.UltimateBendingMomentResult:
+    ) -> s_res.UltimateBendingMomentResults:
         """Calculates the bending strength for given inclination of n.a.
         and axial load.
 

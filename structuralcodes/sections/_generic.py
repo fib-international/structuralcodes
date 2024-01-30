@@ -12,7 +12,7 @@ from structuralcodes.sections._geometry import (
     CompoundGeometry,
 )
 from structuralcodes.core.base import Section, SectionCalculator
-import structuralcodes.sections._section_results as s_res
+import structuralcodes.core._section_results as s_res
 from ._section_integrators import integrator_factory
 
 
@@ -285,7 +285,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def calculate_bending_strength(
         self, theta=0, n=0
-    ) -> s_res.UltimateBendingMomentResult:
+    ) -> s_res.UltimateBendingMomentResults:
         """Calculates the bending strength for given inclination of n.a.
         and axial load.
 
@@ -313,7 +313,7 @@ class GenericSectionCalculator(SectionCalculator):
         M = T @ np.array([[Mx], [My]])
 
         # Create result object
-        res = s_res.UltimateBendingMomentResult()
+        res = s_res.UltimateBendingMomentResults()
         res.theta = theta
         res.n = N
         res.chi_x = strain[1]

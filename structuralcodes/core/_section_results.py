@@ -92,7 +92,7 @@ class MomentCurvatureResults:
 
 
 @dataclass
-class UltimateBendingMomentResult:
+class UltimateBendingMomentResults:
     """class for storing the ultimate bending moment computation
     for a given inclination of n.a. and axial load.
     """
