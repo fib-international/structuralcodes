@@ -1,4 +1,5 @@
 """Tests for _AnnexB_TimeDependent module"""
+
 import math
 
 import pytest

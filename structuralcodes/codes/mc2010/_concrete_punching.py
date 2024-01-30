@@ -1,4 +1,5 @@
 """Covers punching in Model code 2010, 7.3.5.1 to 7.3.5.4."""
+
 import warnings
 from math import pi, sin, cos
 
@@ -394,8 +395,7 @@ def v_rd_max_punching(
         0.6,
     )
     return min(
-        (k_sys * k_psi * b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5)
-        / gamma_c,
+        (k_sys * k_psi * b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5) / gamma_c,
         (b_0(v_ed, v_prep_d_max) * d_v * f_ck**0.5) / gamma_c,
     )
 

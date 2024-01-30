@@ -1,4 +1,5 @@
 """Test for the function of _concrete_torsion"""
+
 import math
 
 import pytest

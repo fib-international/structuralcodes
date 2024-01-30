@@ -1,4 +1,5 @@
 """ Tests for EUROCODE 2-1-2:2004 Annex B and chapter 3"""
+
 import pytest
 from structuralcodes.codes.ec2_2004 import annex_b_shrink_and_creep
 
