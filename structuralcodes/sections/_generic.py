@@ -22,7 +22,7 @@ class GenericSection(Section):
 
     def __init__(
         self,
-        geometry: SurfaceGeometry | CompoundGeometry,
+        geometry: t.Union[SurfaceGeometry, CompoundGeometry],
         name: t.Optional[str] = None,
         **kwargs,
     ) -> None:

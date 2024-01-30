@@ -417,7 +417,7 @@ class SurfaceGeometry:
 
 def _process_geometries_multipolygon(
     geometries: MultiPolygon,
-    materials: t.Optional[t.List[Material] | Material],
+    materials: t.Optional[t.Union[t.List[Material], Material]],
 ) -> list:
     """Process geometries for initialization."""
     checked_geometries = []
@@ -465,8 +465,8 @@ class CompoundGeometry(Geometry):
 
     def __init__(
         self,
-        geometries: t.List[Geometry] | MultiPolygon,
-        materials: t.Optional[t.List[Material] | Material] = None,
+        geometries: t.Union[t.List[Geometry], MultiPolygon],
+        materials: t.Optional[t.Union[t.List[Material], Material]] = None,
     ) -> None:
         """Creates a compound geometry.
 

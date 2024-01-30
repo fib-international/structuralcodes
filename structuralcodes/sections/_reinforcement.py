@@ -14,7 +14,7 @@ from structuralcodes.core.base import Material, ConstitutiveLaw
 
 
 def add_reinforcement(
-    geo: SurfaceGeometry | CompoundGeometry,
+    geo: t.Union[SurfaceGeometry, CompoundGeometry],
     coords: t.Tuple[float, float],
     diameter: float,
     material: t.Union[Material, ConstitutiveLaw],
@@ -39,7 +39,7 @@ def add_reinforcement(
 
 
 def add_reinforcement_line(
-    geo: SurfaceGeometry | CompoundGeometry,
+    geo: t.Union[SurfaceGeometry, CompoundGeometry],
     coords_i: t.Tuple[float, float],
     coords_j: t.Tuple[float, float],
     diameter: float,
