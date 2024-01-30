@@ -224,7 +224,7 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return (x_b, dn_b)
 
-    def find_equilibrium_fixed_cruvature(
+    def find_equilibrium_fixed_curvature(
         self, geom: CompoundGeometry, n: float, curv: float, x: float
     ):
         """Find strain profile with equilibrium with fixed curvature.
@@ -369,7 +369,7 @@ class GenericSectionCalculator(SectionCalculator):
             # find the new position of neutral axis for mantaining equilibrium
             # store the information in the results object for the current
             # value of curvature
-            x, strain = self.find_equilibrium_fixed_cruvature(
+            x, strain = self.find_equilibrium_fixed_curvature(
                 rotated_geom, n, curv, x
             )
             (
