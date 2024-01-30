@@ -1,4 +1,5 @@
 """Shear at the interface between concrete with different casting times."""
+
 from math import pi, sin, cos
 
 

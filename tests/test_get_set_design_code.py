@@ -1,4 +1,5 @@
 """Tests for getting and setting design codes"""
+
 import types
 
 import pytest

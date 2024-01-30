@@ -1,4 +1,5 @@
 """Collection of functions related to design codes."""
+
 import types
 import typing as t
 

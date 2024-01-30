@@ -1,4 +1,5 @@
 """Tests for the _section9_sls module"""
+
 import math
 
 import pytest

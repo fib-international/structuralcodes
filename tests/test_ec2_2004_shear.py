@@ -1,4 +1,5 @@
 """Test for the ec2.shear module"""
+
 import math
 import pytest
 

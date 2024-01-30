@@ -1,4 +1,5 @@
 """Test for the function of _interface_different_casting_time"""
+
 import math
 
 import pytest
