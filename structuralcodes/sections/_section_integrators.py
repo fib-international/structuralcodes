@@ -13,7 +13,7 @@ from shapely import MultiLineString, Polygon, MultiPolygon
 
 import triangle
 
-from ._geometry import (
+from structuralcodes.geometry import (
     create_line_point_angle,
     CompoundGeometry,
     SurfaceGeometry,

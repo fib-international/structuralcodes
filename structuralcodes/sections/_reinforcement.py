@@ -5,7 +5,11 @@ import typing as t
 import numpy as np
 from shapely import Point
 
-from ._geometry import SurfaceGeometry, CompoundGeometry, PointGeometry
+from structuralcodes.geometry import (
+    SurfaceGeometry,
+    CompoundGeometry,
+    PointGeometry,
+)
 from structuralcodes.core.base import Material, ConstitutiveLaw
 
 

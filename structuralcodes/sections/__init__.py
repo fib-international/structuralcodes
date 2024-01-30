@@ -1,12 +1,6 @@
 """Main entry point for sections."""
 
 from ._generic import GenericSection, GenericSectionCalculator
-from ._geometry import (
-    Geometry,
-    PointGeometry,
-    SurfaceGeometry,
-    CompoundGeometry,
-)
 from ._reinforcement import add_reinforcement, add_reinforcement_line
 from ._section_integrators import (
     SectionIntegrator,
@@ -18,10 +12,6 @@ from ._section_integrators import (
 __all__ = [
     'GenericSection',
     'GenericSectionCalculator',
-    'Geometry',
-    'PointGeometry',
-    'SurfaceGeometry',
-    'CompoundGeometry',
     'add_reinforcement',
     'add_reinforcement_line',
     'SectionIntegrator',

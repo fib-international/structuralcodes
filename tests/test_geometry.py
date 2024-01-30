@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 
-from structuralcodes.sections._geometry import PointGeometry
+from structuralcodes.geometry import PointGeometry
 from structuralcodes.materials.concrete import ConcreteMC2010
 
 

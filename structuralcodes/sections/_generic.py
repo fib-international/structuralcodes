@@ -7,7 +7,7 @@ import typing as t
 from math import sin, cos
 import numpy as np
 
-from structuralcodes.sections._geometry import (
+from structuralcodes.geometry import (
     PointGeometry,
     SurfaceGeometry,
     CompoundGeometry,
