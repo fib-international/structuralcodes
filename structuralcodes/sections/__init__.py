@@ -7,7 +7,7 @@ from ._geometry import (
     SurfaceGeometry,
     CompoundGeometry,
 )
-from ._geometry import add_reinforcement, add_reinforcement_line
+from ._reinforcement import add_reinforcement, add_reinforcement_line
 from ._section_integrators import (
     SectionIntegrator,
     MarinIntegrator,
