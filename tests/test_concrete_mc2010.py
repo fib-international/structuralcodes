@@ -1,4 +1,5 @@
 """Tests for the concrete mc2010"""
+
 import math
 
 import pytest

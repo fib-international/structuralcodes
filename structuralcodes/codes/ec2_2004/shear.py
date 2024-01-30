@@ -1,4 +1,5 @@
 """Design rules according to EN 1992-1-1 regarding shear."""
+
 import math
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

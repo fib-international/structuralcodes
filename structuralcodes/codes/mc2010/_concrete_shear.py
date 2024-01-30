@@ -1,4 +1,5 @@
 """A collection of shear formulas for concrete."""
+
 import warnings
 from typing import Optional
 from math import pi, tan, sin
