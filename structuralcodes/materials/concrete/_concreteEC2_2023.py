@@ -11,14 +11,14 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
     """Concrete implementation for EC2 2023 Concrete."""
 
     # Inherent concrete properties
-    _kE = t.Optional[float] = None  # noqa: N815
-    _concrete_dev_class = t.Optional[str] = None
-    _gamma_C = t.Optional[float] = None  # noqa: N815
+    _kE: t.Optional[float] = None  # noqa: N815
+    _concrete_dev_class: t.Optional[str] = None
+    _gamma_C: t.Optional[float] = None  # noqa: N815
 
     # Computed attributes
-    _fcm = t.Optional[float] = None
-    _fctm = t.Optional[float] = None
-    _Ecm = t.Optional[float] = None
+    _fcm: t.Optional[float] = None
+    _fctm: t.Optional[float] = None
+    _Ecm: t.Optional[float] = None
 
     # TODO: do we agree with the optional keyword arguments here?
     def __init__(
