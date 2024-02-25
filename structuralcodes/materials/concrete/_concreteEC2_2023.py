@@ -7,7 +7,7 @@ from ._concrete import Concrete
 
 # TODO: complete the documentation and discuss if properties/functions
 # are considered proper for the framework
-class ConcreteEC22023(Concrete):
+class ConcreteEC2_2023(Concrete):  # noqa: N801
     """Concrete implementation for EC2 2023 Concrete."""
 
     # Inherent concrete properties
