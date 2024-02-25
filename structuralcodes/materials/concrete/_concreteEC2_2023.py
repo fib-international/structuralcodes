@@ -1,4 +1,5 @@
 """The concrete class for EC2 2023 Concrete Material."""
+
 import typing as t
 
 from structuralcodes.codes import ec2_2023
