@@ -1,4 +1,5 @@
 """Tests for _section5_materials module"""
+
 import math
 
 import pytest

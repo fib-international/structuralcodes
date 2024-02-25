@@ -1,4 +1,5 @@
 """The concrete class for Model Code 2020 Concrete Material."""
+
 import typing as t
 import warnings
 
