@@ -14,7 +14,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.core.base import Section, SectionCalculator
 import structuralcodes.core._section_results as s_res
-from ._section_integrators import integrator_factory
+from .section_integrators import integrator_factory
 
 
 class GenericSection(Section):

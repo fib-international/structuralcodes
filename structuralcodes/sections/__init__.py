@@ -2,10 +2,11 @@
 
 from ._generic import GenericSection, GenericSectionCalculator
 from ._reinforcement import add_reinforcement, add_reinforcement_line
-from ._section_integrators import (
+from .section_integrators import (
     SectionIntegrator,
     MarinIntegrator,
     FiberIntegrator,
+    integrator_factory,
 )
 
 
@@ -17,4 +18,5 @@ __all__ = [
     'SectionIntegrator',
     'FiberIntegrator',
     'MarinIntegrator',
+    'integrator_factory',
 ]
