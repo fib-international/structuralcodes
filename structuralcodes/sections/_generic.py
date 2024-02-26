@@ -73,7 +73,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def get_balanced_failure_strain(
         self, geom: CompoundGeometry, yielding: bool = False
-    ) -> [float, float, float]:
+    ) -> t.Tuple[float, float, float]:
         """Returns the strain profile corresponding to balanced failure.
         This is found from all ultimate strains for all materials, checking
         the minimum value of curvature.
@@ -113,7 +113,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def find_equilibrium_fixed_pivot(
         self, geom: CompoundGeometry, n: float, yielding: bool = False
-    ) -> [float, float, float]:
+    ) -> t.Tuple[float, float, float]:
         """Find the equilibrium changing curvature fixed a pivot.
         The algorithm uses bisection algorithm between curvature
         of balanced failure and 0. Selected the pivot point as
