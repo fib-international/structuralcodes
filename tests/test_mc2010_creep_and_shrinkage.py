@@ -128,7 +128,7 @@ def test_t_T(t0, T_cur, dt, expected):
     except ValueError:
         with pytest.raises(ValueError) as exc_info:
             assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value).startswith("Length of T_cur") or str(
+        assert str(exc_info.value).startswith("Dimensions of T_cur") or str(
             exc_info.value
         ).startswith("Curing time")
 
