@@ -134,7 +134,7 @@ class PointGeometry(Geometry):
             )
         # Pass a constitutive law to the PointGeometry
         if isinstance(material, Material):
-            material = Material._stress_strain
+            material = material.constitutive_law
 
         self._point = point
         self._diameter = diameter
