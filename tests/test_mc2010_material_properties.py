@@ -1,4 +1,5 @@
 """Tests for the _concrete_material_properties module"""
+
 import math
 import numpy as np
 

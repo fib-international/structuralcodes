@@ -1,11 +1,15 @@
-"""Collection of functions related to design codes"""
+"""Collection of functions related to design codes."""
+
 import types
 import typing as t
 
 from . import mc2010
 
+from . import ec2_2023
+
 __all__ = [
     'mc2010',
+    'ec2_2023',
     'set_design_code',
     'get_design_codes',
     'set_national_annex',

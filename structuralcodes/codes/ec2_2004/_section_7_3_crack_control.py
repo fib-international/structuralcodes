@@ -1,5 +1,7 @@
 """Collection of functions from EUROCODE 1992-1-1:2004
-Chapter 7.3 - Crack control"""
+Chapter 7.3 - Crack control.
+"""
+
 import math
 import typing as t
 
@@ -62,7 +64,7 @@ def As_min(
     A_ct: float, sigma_s: float, fct_eff: float, _k: float, kc: float
 ) -> float:
     """Computes the minimum area of reinforcing steel within the tensile zone
-    for control of cracking areas
+    for control of cracking areas.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.1)
 
@@ -117,7 +119,7 @@ def k(h: float) -> float:
     non-uniform self-equilibrating stresses, which lead to a
     reduction of restraint forces.
     k=1 for webs w<=300mm or flanges widths less than 300mm
-    k=0.65 for webs w>=800mm or flanges with widths greater than 800mm
+    k=0.65 for webs w>=800mm or flanges with widths greater than 800mm.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.1)
 
@@ -243,7 +245,6 @@ def xi1(xi: float, phi_p: float, phi_s: float) -> float:
         ValueError: if diameters phi_s or phi_p are lower than 0.
             If ratio of bond strength xi is less than 0.15 or larger than 0.8.
     """
-
     if phi_p <= 0:
         raise ValueError(f'phi_p={phi_p} cannot be less than 0')
     if phi_s < 0:
@@ -302,7 +303,7 @@ def As_min_p(
     delta_s: float,
 ) -> float:
     """Computes the minimum area of reinforcing steel within the tensile zone
-    for control of cracking areas in addition with bonded tendons
+    for control of cracking areas in addition with bonded tendons.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.1)
 
@@ -385,7 +386,7 @@ def As_min_2(
     kc: t.Optional[float] = None,
 ) -> t.Tuple[float, float]:
     """Computes the minimum area of reinforcing steel within the tensile zone
-    for control of cracking areas
+    for control of cracking areas.
 
     EUROCODE 2 1992-1-1:2004, Table (7.2N), Table (7.3N)
 
@@ -532,7 +533,7 @@ def alpha_e(Es: float, Ecm: float) -> float:
 
 
 def rho_p_eff(As: float, _xi1: float, Ap: float, Ac_eff: float) -> float:
-    """Effective bond ratio between areas
+    """Effective bond ratio between areas.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.10)
 
@@ -565,7 +566,7 @@ def rho_p_eff(As: float, _xi1: float, Ap: float, Ac_eff: float) -> float:
 
 def kt(load_type: str) -> float:
     """Returns the kt factor dependent on the load duration for
-    the crack width calculation
+    the crack width calculation.
 
     Args:
         load_type (str): the load type:
@@ -680,7 +681,7 @@ def w_spacing(c: float, phi: float) -> float:
 
 def phi_eq(n1: int, n2: int, phi1: float, phi2: float) -> float:
     """Computes the equivalent diameter. For a section with n1 bars of
-    diameter phi1 and n2 bars of diameter phi2
+    diameter phi1 and n2 bars of diameter phi2.
 
     EUROCODE 2 1992-1-1:2004, Sect. (7.12)
 
@@ -718,7 +719,7 @@ def phi_eq(n1: int, n2: int, phi1: float, phi2: float) -> float:
 
 def k1(bond_type: str) -> float:
     """Get the k1 coefficient which takes account of the bond properties
-    of the bounded reinforcement
+    of the bounded reinforcement.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.11-k1)
 
@@ -749,8 +750,7 @@ def k1(bond_type: str) -> float:
 
 
 def k2(eps_r: float) -> float:
-    """Computes a coefficient which takes into account of the
-    distribution of strain:
+    """Computes a coeff. which takes into account the distribution of strain.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.13)
 
@@ -773,7 +773,7 @@ def k2(eps_r: float) -> float:
 
 
 def k3():
-    """Returns the k3 coefficient for computing sr_max
+    """Returns the k3 coefficient for computing sr_max.
 
     Returns:
         float: value for the coefficient
@@ -782,7 +782,7 @@ def k3():
 
 
 def k4():
-    """Returns the k4 coefficient for computing sr_max
+    """Returns the k4 coefficient for computing sr_max.
 
     Returns:
         float: value for the coefficient
@@ -912,7 +912,7 @@ def sr_max_theta(sr_max_y: float, sr_max_z: float, theta: float) -> float:
 
 
 def wk(sr_max: float, _eps_sm_eps_cm: float) -> float:
-    """Computes the crack width
+    """Computes the crack width.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.8)
 

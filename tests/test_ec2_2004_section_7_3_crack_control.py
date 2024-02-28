@@ -1,4 +1,5 @@
 """Tests for EUROCODE 2-1-1:2004 Chapter 7.3 Crack Control"""
+
 import math
 
 import pytest
