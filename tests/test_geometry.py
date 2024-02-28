@@ -1,4 +1,4 @@
-"""Tests for the Marin integration."""
+"""Tests for the Geometry."""
 
 import math
 
@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from structuralcodes.geometry import (
+    Geometry,
     PointGeometry,
     SurfaceGeometry,
     create_line_point_angle,
@@ -28,6 +29,7 @@ from shapely.testing import assert_geometries_equal
 def test_point_geometry():
     """Test creating a PointGeometry object."""
 
+    Geometry.section_counter = 0
     # Create a consitutive law to use
     steel = ElasticPlastic(210000, 450)
 
