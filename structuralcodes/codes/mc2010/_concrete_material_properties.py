@@ -1,6 +1,25 @@
 """A collection of material properties for concrete."""
 
 import math
+import numpy as np
+import numpy.typing as npt
+
+# Values from Table 5.1-6.
+ALPHA_E = {
+    'basalt': 1.2,
+    'quartzite': 1.0,
+    'limestone': 0.9,
+    'sandstone': 0.7,
+}
+# Values for normal strength concrete, from Table 5.1-9.
+S_CEM = {
+    '32.5 R': 0.25,
+    '42.5 N': 0.25,
+    '42.5 R': 0.2,
+    '52.5 N': 0.2,
+    '52.5 R': 0.2,
+    '32.5 N': 0.38,
+}
 
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
@@ -82,3 +101,88 @@ def Gf(fck: float) -> float:
         float: The tensile fracture energy in N/m.
     """
     return 73 * fcm(fck) ** 0.18
+
+
+def E_ci(
+    _fcm: float, agg_type: str = 'quartzite', EC0: float = 21500
+) -> float:
+    """Calculate the modulus of elasticity for normal weight concrete at 28
+    days.
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-21.
+
+    Args:
+        _fcm (float): The mean value of the compressive strength of the
+            concrete in MPa.
+
+    Keyword Args:
+        agg_type (str): Type of coarse grain aggregate used in the concrete.
+            Choices are: 'basalt', 'quartzite', 'limestone', 'sandstone'.
+        EC0 (float): Initial value of modulus of elasticity in MPa.
+
+    Returns:
+        float: The modulus of elasticity for normal weight concrete
+            at 28 days in MPa.
+    """
+    return EC0 * ALPHA_E[agg_type.lower()] * (_fcm / 10) ** (1 / 3)
+
+
+def beta_cc(time: npt.ArrayLike, _fcm: float, cem_class: str) -> np.ndarray:
+    """Calculate multiplication factor beta_cc, used to determine the
+        modulus of elasticity at an arbitrary time.
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-51.
+
+    Args:
+        time (numpy.typing.ArrayLike): The time in days at which the modulus
+            of elasticity is to be determined.
+        _fcm The mean compressive strength of the concrete in
+            MPa.
+        cem_class (str): The cement strength class that is used.
+            The choices are:
+                '32.5 N',
+                '32.5 R', '42.5 N',
+                '42.5 R', '52.5 N', '52.5 R'.
+
+    Returns:
+        numpy.ndarray: Multiplication factor beta_cc.
+    """
+    if _fcm > 60:
+        return np.exp(0.2 * (1 - np.sqrt(28 / time)))
+    return np.exp(S_CEM[cem_class.upper()] * (1 - np.sqrt(28 / time)))
+
+
+def beta_e(_beta_cc: npt.ArrayLike) -> np.ndarray:
+    """Calculate multiplication factor beta_e, used to determine the
+        modulus of elasticity at an arbitrary time.
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-57.
+
+    Args:
+        _beta_cc (numpy.typing.ArrayLike): multiplication factor as defined in
+            the fib Model Code 2010 (2013), Eq. 5.1-51.
+
+    Returns:
+        numpy.ndarray: Multiplication factor beta_e.
+    """
+    return np.sqrt(_beta_cc)
+
+
+def E_ci_t(_beta_e: npt.ArrayLike, _E_ci: float) -> np.ndarray:
+    """Calculate the modulus of elasticity for normal weight concrete
+        at time 'time' (not 28 days).
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-56.
+
+    Args:
+        _beta_e (numpy.typing.ArrayLike): Multiplication factor to determine
+            the modulus of elasticity at an arbitrary time, as defined in fib
+            Model Code 2010 (2013), Eq. 5.1-51.
+        _E_ci (float): Modulus of elasticity of normal weight concrete at 28
+            days, as defined in fib Model Code 2010 (2013), Eq. 5.1-21.
+
+    Returns:
+        numpy.ndarray: The modulus of elasticity for normal weight concrete at
+            time 'time' (not 28 days) in MPa.
+    """
+    return _beta_e * _E_ci
