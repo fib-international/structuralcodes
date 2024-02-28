@@ -175,3 +175,59 @@ def test_eps_c1(test_input, expect):
         expect,
         rel_tol=2e-2,
     )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
+        (12, 3.5e-3),
+        (16, 3.5e-3),
+        (20, 3.5e-3),
+        (25, 3.5e-3),
+        (30, 3.5e-3),
+        (35, 3.5e-3),
+        (40, 3.5e-3),
+        (45, 3.5e-3),
+        (50, 3.5e-3),
+        (55, 3.2e-3),
+        (60, 3.0e-3),
+        (70, 2.8e-3),
+        (80, 2.8e-3),
+        (90, 2.8e-3),
+    ],
+)
+def test_eps_cu1(test_input, expect):
+    """Test the eps_cu1 function."""
+    assert math.isclose(
+        _concrete_material_properties.eps_cu1(test_input),
+        expect,
+        rel_tol=2e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
+        (12, 2.0e-3),
+        (16, 2.0e-3),
+        (20, 2.0e-3),
+        (25, 2.0e-3),
+        (30, 2.0e-3),
+        (35, 2.0e-3),
+        (40, 2.0e-3),
+        (45, 2.0e-3),
+        (50, 2.0e-3),
+        (55, 2.2e-3),
+        (60, 2.3e-3),
+        (70, 2.4e-3),
+        (80, 2.5e-3),
+        (90, 2.6e-3),
+    ],
+)
+def test_eps_c2(test_input, expect):
+    """Test the eps_c2 function."""
+    assert math.isclose(
+        _concrete_material_properties.eps_c2(test_input),
+        expect,
+        rel_tol=7e-3,
+    )

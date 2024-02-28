@@ -70,3 +70,31 @@ def eps_c1(_fcm: float) -> float:
         _fcm (float): The mean compressive strength of concrete.
     """
     return min(0.7 * math.pow(_fcm, 0.31), 2.8) / 1000
+
+
+def eps_cu1(fck: float) -> float:
+    """The ultimate strain for the Sargin constitutive law.
+
+    EN 1992-1-1:2004, Table 3.1.
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete.
+    """
+    return (
+        3.5 / 1000
+        if fck < 50
+        else (2.8 + 27 * ((98 - fcm(fck)) / 100) ** 4) / 1000
+    )
+
+
+def eps_c2(fck: float) -> float:
+    """The strain at maximum compressive stress of concrete for the
+    parabolic-rectangular law.
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete.
+
+    """
+    return (
+        2.0 / 1000 if fck < 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
+    )

@@ -9,6 +9,8 @@ from ._concrete_material_properties import (
     fctk_95,
     Ecm,
     eps_c1,
+    eps_cu1,
+    eps_c2,
 )
 from ._section_7_3_crack_control import (
     As_min,
@@ -68,6 +70,8 @@ __all__ = [
     'fctk_95',
     'Ecm',
     'eps_c1',
+    'eps_cu1',
+    'eps_c2',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1'
