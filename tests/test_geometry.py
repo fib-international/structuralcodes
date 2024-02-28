@@ -178,6 +178,29 @@ def test_compound_geometry():
     geo = add_reinforcement(geo, (40, 360), 20, steel)
     geo = add_reinforcement(geo, (160, 360), 20, steel)
     # Add a line of reinforcement
+    geo2 = add_reinforcement_line(geo, (40, 40), (160, 40), 20, steel, n=4)
+    assert len(geo2.geometries) == 1
+    assert len(geo2.point_geometries) == 6
+
+    # it is possible to add also a line specifying the spacing
+    geo2 = add_reinforcement_line(geo, (40, 40), (160, 40), 20, steel, s=30)
+    assert len(geo2.geometries) == 1
+    assert len(geo2.point_geometries) == 7
+
+    # it is possible to add also a line specifying the spacing and the number
+    geo2 = add_reinforcement_line(
+        geo, (40, 40), (160, 40), 20, steel, n=3, s=30
+    )
+    assert len(geo2.geometries) == 1
+    assert len(geo2.point_geometries) == 5
+
+    # it is possible to add also to skip the first and/or last bar
+    geo2 = add_reinforcement_line(
+        geo, (40, 40), (160, 40), 20, steel, n=3, s=30, first=False, last=False
+    )
+    assert len(geo2.geometries) == 1
+    assert len(geo2.point_geometries) == 3
+
     geo = add_reinforcement_line(geo, (40, 40), (160, 40), 20, steel, n=4)
     assert len(geo.geometries) == 1
     assert len(geo.point_geometries) == 6
