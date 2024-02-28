@@ -5,20 +5,20 @@ import numpy as np
 import numpy.typing as npt
 
 # Values from Table 5.1-6.
-_alpha_E = {
-    "basalt": 1.2,
-    "quartzite": 1.0,
-    "limestone": 0.9,
-    "sandstone": 0.7,
+ALPHA_E = {
+    'basalt': 1.2,
+    'quartzite': 1.0,
+    'limestone': 0.9,
+    'sandstone': 0.7,
 }
 # Values for normal strength concrete, from Table 5.1-9.
-_s = {
-    "32.5 R": 0.25,
-    "42.5 N": 0.25,
-    "42.5 R": 0.2,
-    "52.5 N": 0.2,
-    "52.5 R": 0.2,
-    "32.5 N": 0.38,
+S_CEM = {
+    '32.5 R': 0.25,
+    '42.5 N': 0.25,
+    '42.5 R': 0.2,
+    '52.5 N': 0.2,
+    '52.5 R': 0.2,
+    '32.5 N': 0.38,
 }
 
 
@@ -106,8 +106,8 @@ def Gf(fck: float) -> float:
 def E_ci(
     _fcm: float, agg_type: str = 'quartzite', EC0: float = 21500
 ) -> float:
-    """Calculate the modulus of elasticity for normal weight concrete
-        at 28 days.
+    """Calculate the modulus of elasticity for normal weight concrete at 28
+    days.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-21.
 
@@ -115,7 +115,7 @@ def E_ci(
         _fcm (float): The mean value of the compressive strength of the
             concrete in MPa.
 
-    Keyword args:
+    Keyword Args:
         agg_type (str): Type of coarse grain aggregate used in the concrete.
             Choices are: 'basalt', 'quartzite', 'limestone', 'sandstone'.
         EC0 (float): Initial value of modulus of elasticity in MPa.
@@ -124,8 +124,7 @@ def E_ci(
         float: The modulus of elasticity for normal weight concrete
             at 28 days in MPa.
     """
-
-    return EC0 * _alpha_E[agg_type.lower()] * (_fcm / 10) ** (1 / 3)
+    return EC0 * ALPHA_E[agg_type.lower()] * (_fcm / 10) ** (1 / 3)
 
 
 def beta_cc(time: npt.ArrayLike, _fcm: float, cem_class: str) -> np.ndarray:
@@ -150,7 +149,7 @@ def beta_cc(time: npt.ArrayLike, _fcm: float, cem_class: str) -> np.ndarray:
     """
     if _fcm > 60:
         return np.exp(0.2 * (1 - np.sqrt(28 / time)))
-    return np.exp(_s[cem_class.upper()] * (1 - np.sqrt(28 / time)))
+    return np.exp(S_CEM[cem_class.upper()] * (1 - np.sqrt(28 / time)))
 
 
 def beta_e(_beta_cc: npt.ArrayLike) -> np.ndarray:

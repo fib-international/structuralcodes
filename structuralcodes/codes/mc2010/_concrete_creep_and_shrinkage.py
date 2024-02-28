@@ -1,8 +1,8 @@
-"""Creep and shrinkage models MC2010 for concrete
+"""Creep and shrinkage models MC2010 for concrete.
 
 [1] fib Model Code for Concrete Structures 2010 (2013).
 
-TODO:
+Todo:
  - Add the light-weight aggregate formulas
  - Include the additional creep and shrinkage terms for other temperatures
    (see 5.1.10.7 of [1])
@@ -12,51 +12,44 @@ import warnings
 import numpy as np
 import numpy.typing as npt
 
-# from structuralcodes.codes.mc2010._concrete_material_properties import (
-#     # _check_agg_types,
-#     # _get_Ecmod_coeffs,
-#     E_ci,
-#     E_ci_t,
-#     # _check_cem_strength_class,
-# )
 
 _alpha = {
-    "32.5 R": 0,
-    "42.5 N": 0,
-    "42.5 R": 1,
-    "52.5 N": 1,
-    "52.5 R": 1,
-    "32.5 N": -1,
+    '32.5 R': 0,
+    '42.5 N': 0,
+    '42.5 R': 1,
+    '52.5 N': 1,
+    '52.5 R': 1,
+    '32.5 N': -1,
 }
 _alpha_as = {
-    "32.5 R": 700,
-    "42.5 N": 700,
-    "42.5 R": 600,
-    "52.5 N": 600,
-    "52.5 R": 600,
-    "32.5 N": 800,
+    '32.5 R': 700,
+    '42.5 N': 700,
+    '42.5 R': 600,
+    '52.5 N': 600,
+    '52.5 R': 600,
+    '32.5 N': 800,
 }
 _alpha_ds1 = {
-    "32.5 R": 4,
-    "42.5 N": 4,
-    "42.5 R": 6,
-    "52.5 N": 6,
-    "52.5 R": 6,
-    "32.5 N": 3,
+    '32.5 R': 4,
+    '42.5 N': 4,
+    '42.5 R': 6,
+    '52.5 N': 6,
+    '52.5 R': 6,
+    '32.5 N': 3,
 }
 _alpha_ds2 = {
-    "32.5 R": 0.012,
-    "42.5 N": 0.012,
-    "42.5 R": 0.012,
-    "52.5 N": 0.012,
-    "52.5 R": 0.012,
-    "32.5 N": 0.013,
+    '32.5 R': 0.012,
+    '42.5 N': 0.012,
+    '42.5 R': 0.012,
+    '52.5 N': 0.012,
+    '52.5 R': 0.012,
+    '32.5 N': 0.013,
 }
 
 
 def _check_fcm(fcm: float) -> None:
-    """Check if the mean compressive strength is in the range of
-        applicability of the creep and shrinkage models:
+    """Check if the mean compressive strength is in the range of applicability
+    of the creep and shrinkage models.
 
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
@@ -70,18 +63,18 @@ def _check_fcm(fcm: float) -> None:
     """
     if fcm < 20 or fcm > 130:
         raise ValueError(
-            "The specified mean compressive strength is "
-            "outside of the range of applicability for the creep and "
-            "shrinkage laws given in the fib Model Code 2010. The mean"
-            " compressive strength has to be within the range of "
-            "20-130 MPa. Current compressive strength is"
-            f": {fcm} MPa."
+            'The specified mean compressive strength is '
+            'outside of the range of applicability for the creep and '
+            'shrinkage laws given in the fib Model Code 2010. The mean'
+            ' compressive strength has to be within the range of '
+            '20-130 MPa. Current compressive strength is'
+            f': {fcm} MPa.'
         )
 
 
 def _check_initial_stress(sigma: float, fcm: float) -> None:
-    """Check if the initial compressive stress (based on load at t0)
-        is within the range of applicability.
+    """Check if the initial compressive stress (based on load at t0) is within
+    the range of applicability.
 
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
@@ -98,24 +91,24 @@ def _check_initial_stress(sigma: float, fcm: float) -> None:
     """
     if abs(sigma) > 0.6 * fcm:
         raise ValueError(
-            "The stress level exceeds the range of application."
-            "Maximum allowable stress is 0.6*fcm. Current stress level "
-            f"is {round(abs(sigma)/fcm, 3)}*fcm."
+            'The stress level exceeds the range of application.'
+            'Maximum allowable stress is 0.6*fcm. Current stress level '
+            f'is {round(abs(sigma)/fcm, 3)}*fcm.'
         )
     if abs(sigma) > 0.4 * fcm:
         warnings.warn(
-            "Initial stress is too high to consider the "
-            "concrete as an aging linear visco-elastic material: "
-            f"sigma = {round(abs(sigma)/fcm,3)}*fcm > 0.4*fcm. Nonlinear"
-            " creep calculations are performed according to subclause "
-            "5.1.9.4.3 (d) of the fib Model Code 2010 to account for "
-            "large compressive stresses."
+            'Initial stress is too high to consider the '
+            'concrete as an aging linear visco-elastic material: '
+            f'sigma = {round(abs(sigma)/fcm,3)}*fcm > 0.4*fcm. Nonlinear'
+            ' creep calculations are performed according to subclause '
+            '5.1.9.4.3 (d) of the fib Model Code 2010 to account for '
+            'large compressive stresses.'
         )
 
 
 def _check_age_at_loading(t0: float) -> None:
-    """Check if the age of the concrete is greater than the minimum
-        concrete age.
+    """Check if the age of the concrete is greater than the minimum concrete
+    age.
 
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
@@ -128,17 +121,17 @@ def _check_age_at_loading(t0: float) -> None:
     """
     if t0 < 1:
         raise ValueError(
-            "The load is applied too soon to the concrete"
-            " in order to calculate the creep and shrinkage behaviour "
-            "according to the fib Model Code 2010. The minimum age of the "
-            "concrete is 1 day, whereas according to the input the load is"
-            f" applied after {t0} day."
+            'The load is applied too soon to the concrete'
+            ' in order to calculate the creep and shrinkage behaviour '
+            'according to the fib Model Code 2010. The minimum age of the '
+            'concrete is 1 day, whereas according to the input the load is'
+            f' applied after {t0} day.'
         )
 
 
 def _check_RH(rh: float) -> None:
     """Check if the given relative humidity is within the range of
-        applicability.
+    applicability.
 
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
@@ -152,11 +145,11 @@ def _check_RH(rh: float) -> None:
     """
     if (rh < 0.4 or rh > 1) and (rh < 40 or rh > 100):
         raise ValueError(
-            "The specified relative humidity is outside "
-            "of the range of applicability to calculate the creep and "
-            "shrinkage according to the fib Model Code 2010. The "
-            "relative humidity has to be within the range of 0.4-1.0 or "
-            f"40-100%. Currently rh={rh}."
+            'The specified relative humidity is outside '
+            'of the range of applicability to calculate the creep and '
+            'shrinkage according to the fib Model Code 2010. The '
+            'relative humidity has to be within the range of 0.4-1.0 or '
+            f'40-100%. Currently rh={rh}.'
         )
 
 
@@ -175,12 +168,12 @@ def _check_env_temp(T: float) -> None:
     """
     if T < 5 or T > 30:
         warnings.warn(
-            "The given environmental temperature is outside"
-            " of the applicable range of 5-30 degrees Celcius for the"
-            " creep and shrinkage calculations according to the fib Model "
-            f"Code 2010, T={T} degrees Celcius. Creep and shrinkage will"
-            " be calculated according to subclause 5.1.10 of the fib Model"
-            " Code 2010."
+            'The given environmental temperature is outside'
+            ' of the applicable range of 5-30 degrees Celcius for the'
+            ' creep and shrinkage calculations according to the fib Model '
+            f'Code 2010, T={T} degrees Celcius. Creep and shrinkage will'
+            ' be calculated according to subclause 5.1.10 of the fib Model'
+            ' Code 2010.'
         )
 
 
@@ -198,7 +191,7 @@ def t_T(
         T_cur (np.typing.ArrayLike): The temperature of the environment during
             curing in degrees Celcius.
 
-    Keyword args:
+    Keyword Args:
         dt (np.typing.ArrayLike): Number of days at which T_cur prevails.
             Required when providing a list for T_cur.
 
@@ -209,18 +202,15 @@ def t_T(
     _check_age_at_loading(t0)
     if dt is None:
         dt = t0
-        # T_dt = T_cur
     else:
         T_cur = np.asarray(T_cur)
         dt = np.asarray(dt)
         if T_cur.size != dt.size:
-            raise ValueError(
-                "Dimensions of of T_cur and dt do not match."
-            )
+            raise ValueError('Dimensions of T_cur and dt do not match.')
         if np.sum(dt) != t0:
             raise ValueError(
-                f"Curing time {np.sum(dt)} and time of loading {t0} do not"
-                " match."
+                f'Curing time {np.sum(dt)} and time of loading {t0} do not'
+                ' match.'
             )
     return np.sum(dt * np.exp(13.65 - (4000 / (273 + T_cur))))
 
@@ -239,6 +229,7 @@ def t0_adj(_tT: float, cem_class: str) -> float:
                 '32.5 N',
                 '32.5 R', '42.5 N',
                 '42.5 R', '52.5 N', '52.5 R'.
+
     Returns:
         float: The temperature corrected age of the concrete in days at
             loading, accounting for the effect of the cement type.
@@ -334,7 +325,7 @@ def beta_RH(rh: float, _beta_s1: float) -> float:
     if 0.4 * _beta_s1 <= rh < 0.99 * _beta_s1:
         return -1.55 * (1 - rh**3)
     raise ValueError(
-        "The specified rh*beta_s1 is not in the range of application."
+        'The specified rh*beta_s1 is not in the range of application.'
     )
 
 
