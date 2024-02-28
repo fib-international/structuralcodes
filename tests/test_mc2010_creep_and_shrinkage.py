@@ -524,8 +524,16 @@ def test_k_sigma(sigma, fcm, expected):
 )
 def test_phi(_phi_bc, _phi_dc, _sigma, _fcm, expected):
     """Test phi function."""
+    if abs(_sigma) / _fcm > 0.4:
+        # Asserts that UserWarning is raised
+        with pytest.warns(UserWarning):
+            phi = _concrete_creep_and_shrinkage.phi(
+                _phi_bc, _phi_dc, _sigma, _fcm
+            )
+    else:
+        phi = _concrete_creep_and_shrinkage.phi(_phi_bc, _phi_dc, _sigma, _fcm)
     assert np.isclose(
-        _concrete_creep_and_shrinkage.phi(_phi_bc, _phi_dc, _sigma, _fcm),
+        phi,
         expected,
         rtol=1e-5,
     )
