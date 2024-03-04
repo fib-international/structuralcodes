@@ -57,6 +57,9 @@ ignore = [
     "D205",
     "D417",
 ]
+exclude = [
+    'tests/*',
+]
 
 [tool.ruff.pydocstyle]
 convention = "google"

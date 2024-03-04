@@ -14,5 +14,5 @@
           "source.organizeImports": "explicit" // This lets ruff reorganize the imports
         },
         "editor.defaultFormatter": "charliermarsh.ruff"
-      }
+    }
 }
