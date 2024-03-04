@@ -1,6 +1,7 @@
 """Collection of functions from EUROCODE 1992-1-1:2004
 Chapter 7.3 - Crack control.
 """
+
 import math
 import typing as t
 

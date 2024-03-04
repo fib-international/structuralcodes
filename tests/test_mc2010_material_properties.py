@@ -1,5 +1,7 @@
 """Tests for the _concrete_material_properties module"""
+
 import math
+import numpy as np
 
 import pytest
 
@@ -126,4 +128,84 @@ def test_Gf(test_input, expected):
         _concrete_material_properties.Gf(test_input),
         expected,
         rel_tol=1e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    '_fcm, agg_type, EC0, expected',
+    [
+        (20, 'quartzite', 21500, 27088.3),
+        (40, 'quartzite', 21500, 34129.1),
+        (20, 'quartzite', 30000, 37797.6),
+        (20, 'basalt', 21500, 32506.0),
+        (20, 'Limestone', 21500, 24379.5),
+        (20, 'SANDSTONE', 21500, 18961.8),
+    ],
+)
+def test_E_ci(_fcm, agg_type, EC0, expected):
+    """Test E_ci function."""
+    assert np.isclose(
+        _concrete_material_properties.E_ci(_fcm, agg_type, EC0),
+        expected,
+        rtol=1e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    'time, _fcm, cem_class, expected',
+    [
+        (10, 20, "32.5 n", 0.77425),
+        (10, 20, "32.5 R", 0.84507),
+        (10, 20, "42.5 N", 0.84507),
+        (10, 20, "42.5 R", 0.87401),
+        (10, 20, "52.5 n", 0.87401),
+        (10, 20, "52.5 R", 0.87401),
+        (30, 20, "32.5 n", 1.01297),
+        (10, 80, "32.5 n", 0.87401),
+        (10, 80, "32.5 R", 0.87401),
+        (
+            np.array([10, 20, 40]),
+            20,
+            "32.5 n",
+            np.array([0.77425, 0.93275, 1.06404]),
+        ),
+    ],
+)
+def test_beta_cc(time, _fcm, cem_class, expected):
+    """Test beta_cc function."""
+    assert np.isclose(
+        _concrete_material_properties.beta_cc(time, _fcm, cem_class),
+        expected,
+        rtol=1e-5,
+    ).all()  # all() is required to test numpy array.
+
+
+@pytest.mark.parametrize(
+    'beta_cc, expected',
+    [(0.7742, 0.87989), (0.9327, 0.96576), (1, 1), (1.0640, 1.0315)],
+)
+def test_beta_e(beta_cc, expected):
+    """Test beta_e function."""
+    assert np.isclose(
+        _concrete_material_properties.beta_e(beta_cc),
+        expected,
+        rtol=1e-5,
+    )
+
+
+@pytest.mark.parametrize(
+    '_beta_e, _E_ci, expected',
+    [
+        (0.8799, 27088.3, 23835.0),
+        (0.9658, 34129.1, 32961.9),
+        (1, 37797.6, 37797.6),
+        (1.0315, 32506.0, 33529.9),
+    ],
+)
+def test_E_ci_t(_beta_e, _E_ci, expected):
+    """Test E_ci_t function."""
+    assert np.isclose(
+        _concrete_material_properties.E_ci_t(_beta_e, _E_ci),
+        expected,
+        rtol=1e-5,
     )

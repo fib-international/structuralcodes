@@ -1,4 +1,5 @@
 """Core implementation of the concrete material."""
+
 import abc
 import typing as t
 from structuralcodes.core.base import Material

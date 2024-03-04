@@ -1,4 +1,5 @@
 """EUROCODE 2 1992-1-1:2023."""
+
 import typing as t
 
 from ._section5_materials import (
@@ -33,6 +34,19 @@ from ._section5_materials import (
     weight_c,
     weight_s,
 )
+from ._section9_sls import (
+    As_min_y,
+    delta_simpl,
+    Ec_eff,
+    epssm_epscm,
+    k_1_r,
+    kfl,
+    kh,
+    srm_cal,
+    wk_cal,
+    wk_cal2,
+)
+from ._annexB_time_dependent import alpha_c
 
 __all__ = [
     'A_phi_correction_exp',
@@ -65,6 +79,17 @@ __all__ = [
     'sigma_s',
     'weight_c',
     'weight_s',
+    'alpha_c',
+    'As_min_y',
+    'delta_simpl',
+    'Ec_eff',
+    'epssm_epscm',
+    'k_1_r',
+    'kfl',
+    'kh',
+    'srm_cal',
+    'wk_cal',
+    'wk_cal2',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1'

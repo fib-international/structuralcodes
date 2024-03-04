@@ -1,4 +1,5 @@
 """Test for the function of _concrete_punching"""
+
 import math
 
 import pytest
