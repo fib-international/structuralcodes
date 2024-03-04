@@ -4,5 +4,15 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    
+    // Config for ruff extension in VSCode
+    "[python]": {
+        "editor.formatOnSave": true, // Enable auto format on save
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "explicit",
+          "source.organizeImports": "explicit" // This lets ruff reorganize the imports
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+      }
 }
