@@ -1,4 +1,4 @@
-"""Tests for _AnnexB_TimeDependent module"""
+"""Tests for _AnnexB_TimeDependent module."""
 
 import math
 

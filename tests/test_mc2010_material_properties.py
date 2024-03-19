@@ -1,8 +1,8 @@
-"""Tests for the _concrete_material_properties module"""
+"""Tests for the _concrete_material_properties module."""
 
 import math
-import numpy as np
 
+import numpy as np
 import pytest
 
 from structuralcodes.codes.mc2010 import _concrete_material_properties
@@ -154,19 +154,19 @@ def test_E_ci(_fcm, agg_type, EC0, expected):
 @pytest.mark.parametrize(
     'time, _fcm, cem_class, expected',
     [
-        (10, 20, "32.5 n", 0.77425),
-        (10, 20, "32.5 R", 0.84507),
-        (10, 20, "42.5 N", 0.84507),
-        (10, 20, "42.5 R", 0.87401),
-        (10, 20, "52.5 n", 0.87401),
-        (10, 20, "52.5 R", 0.87401),
-        (30, 20, "32.5 n", 1.01297),
-        (10, 80, "32.5 n", 0.87401),
-        (10, 80, "32.5 R", 0.87401),
+        (10, 20, '32.5 n', 0.77425),
+        (10, 20, '32.5 R', 0.84507),
+        (10, 20, '42.5 N', 0.84507),
+        (10, 20, '42.5 R', 0.87401),
+        (10, 20, '52.5 n', 0.87401),
+        (10, 20, '52.5 R', 0.87401),
+        (30, 20, '32.5 n', 1.01297),
+        (10, 80, '32.5 n', 0.87401),
+        (10, 80, '32.5 R', 0.87401),
         (
             np.array([10, 20, 40]),
             20,
-            "32.5 n",
+            '32.5 n',
             np.array([0.77425, 0.93275, 1.06404]),
         ),
     ],

@@ -1,10 +1,10 @@
-"""Tests for the concrete mc2010"""
+"""Tests for the concrete mc2010."""
 
 import math
 
 import pytest
 
-from structuralcodes.materials.concrete import create_concrete, ConcreteMC2010
+from structuralcodes.materials.concrete import ConcreteMC2010, create_concrete
 
 # Series of tests using the factory function
 
@@ -42,7 +42,7 @@ def test_create_concrete_wrong_code():
     [(12, 20), (35, 43), (55, 63), (90, 98), (120, 128)],
 )
 def test_update_attributes(fck, fcm):
-    """Test update_attributes function"""
+    """Test update_attributes function."""
     c = create_concrete(fck=fck, design_code='mc2010')
     c.update_attributes({'fcm': fcm})
     # Test a warning is raised when a not valid key is inputted
@@ -54,7 +54,7 @@ def test_update_attributes(fck, fcm):
 
 
 def test_not_implemented_existing_error():
-    """Test existing not implemented function"""
+    """Test existing not implemented function."""
     with pytest.raises(NotImplementedError):
         create_concrete(fck=25, design_code='mc2010', existing=True)
 
@@ -67,9 +67,7 @@ fck_parametrized = pytest.mark.parametrize('fck', [20, 25, 30, 35, 40])
 
 @fck_parametrized
 def test_fck_getter(fck):
-    """
-    Test fck getter
-    """
+    """Test fck getter."""
     c = ConcreteMC2010(fck)
 
     assert c.fck == fck
@@ -77,9 +75,7 @@ def test_fck_getter(fck):
 
 @fck_parametrized
 def test_fck_setter(fck):
-    """
-    Test fck setter
-    """
+    """Test fck setter."""
     c = ConcreteMC2010(fck)
     c.fck = fck + 5
 
@@ -87,9 +83,7 @@ def test_fck_setter(fck):
 
 
 def test_properties_initialized_to_none():
-    """
-    Test if a ConcreteMC2010 when created has the attributes set to None
-    """
+    """Test if a ConcreteMC2010 when created has the attributes set to None."""
     c = ConcreteMC2010(fck=25)
 
     assert c._fcm is None
@@ -100,9 +94,7 @@ def test_properties_initialized_to_none():
 
 
 def test_reset_properties():
-    """
-    Test _reset_attributes function
-    """
+    """Test _reset_attributes function."""
     c = ConcreteMC2010(fck=25)
 
     c._reset_attributes()
@@ -189,10 +181,9 @@ def test_fctm_setter(test_input, expected):
 
 @pytest.mark.parametrize('test_input', [10, 15, 20, 25, 30, 35])
 def test_fctm_setter_warning(test_input):
+    """Test the fctm setter function. Check that a warning is raised when
+    trying to set a value higher than 0.5 times fck.
     """
-    Test the fctm setter function.
-    Check that a warning is raised when
-    trying to set a value higher than 0.5 times fck"""
     c = ConcreteMC2010(fck=test_input)
 
     with pytest.warns(UserWarning):

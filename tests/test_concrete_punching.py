@@ -1,4 +1,4 @@
-"""Test for the function of _concrete_punching"""
+"""Test for the function of _concrete_punching."""
 
 import math
 
@@ -8,8 +8,7 @@ from structuralcodes.codes.mc2010 import _concrete_punching
 
 
 @pytest.mark.parametrize(
-    '''Ved, e_u, l_x, l_y, inner,
-    edge_par, edge_per, corner, expected''',
+    'Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected',
     [
         (10e3, 20, 2e3, 2e3, True, False, False, False, 1401),
         (10e3, 20, 2e3, 3e3, False, True, False, False, 2500),
@@ -29,9 +28,10 @@ def test_m_ed(Ved, e_u, l_x, l_y, inner, edge_par, edge_per, corner, expected):
 
 
 @pytest.mark.parametrize(
-    '''l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u,
-    inner, edge_par, edge_per, corner, m_rd,
-    x_direction, expected''',
+    (
+        'l_x, l_y, f_yd, d, e_s, approx_lvl_p, Ved, e_u, inner, edge_par, '
+        'edge_per, corner, m_rd, x_direction, expected'
+    ),
     [
         (
             2e3,
