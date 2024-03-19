@@ -1,6 +1,7 @@
-""" Tests for EUROCODE 2-1-2:2004 Annex B and chapter 3"""
+"""Tests for EUROCODE 2-1-2:2004 Annex B and chapter 3."""
 
 import pytest
+
 from structuralcodes.codes.ec2_2004 import annex_b_shrink_and_creep
 
 
@@ -14,7 +15,7 @@ from structuralcodes.codes.ec2_2004 import annex_b_shrink_and_creep
 def test_creep_returns_expected_values(
     test_h_0, test_f_cm, test_RH, test_c_class, test_t0, test_t, expected
 ):
-    """Test that annex_B_Creep returns expected values"""
+    """Test that annex_B_Creep returns expected values."""
     creep = annex_b_shrink_and_creep.annex_B_creep(
         test_h_0, test_f_cm, test_RH, test_c_class, test_t0, test_t
     )
@@ -31,7 +32,7 @@ def test_creep_returns_expected_values(
 def test_shrinkage_returns_expected_values(
     test_h_0, test_f_cm, test_c_class, test_RH, test_t_S, test_t, expected
 ):
-    """Test that annex_B_Shrinkage returns expected values"""
+    """Test that annex_B_Shrinkage returns expected values."""
     shrinkage = annex_b_shrink_and_creep.annex_B_shrinkage(
         test_h_0, test_f_cm, test_c_class, test_RH, test_t_S, test_t
     )

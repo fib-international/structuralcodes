@@ -1,15 +1,15 @@
-"""Tests for the _concrete_creep_and_shrinkage module"""
+"""Tests for the _concrete_creep_and_shrinkage module."""
 
 import warnings
-import numpy as np
 
+import numpy as np
 import pytest
 
 from structuralcodes.codes.mc2010 import _concrete_creep_and_shrinkage
 from structuralcodes.codes.mc2010._concrete_creep_and_shrinkage import (
-    _check_fcm,
-    _check_env_temp,
     _check_age_at_loading,
+    _check_env_temp,
+    _check_fcm,
     _check_initial_stress,
     _check_RH,
 )
@@ -34,7 +34,7 @@ def test_check_fcm(fcm, expected):
         with pytest.raises(ValueError) as exc_info:
             assert _check_fcm(fcm) == expected
         assert str(exc_info.value).startswith(
-            "The specified mean compressive strength"
+            'The specified mean compressive strength'
         )
 
 
@@ -49,7 +49,7 @@ def test_check_initial_stress(sigma, fcm, expected):
     except ValueError:
         with pytest.raises(ValueError) as exc_info:
             assert _check_initial_stress(sigma, fcm) == expected
-        assert str(exc_info.value).startswith("The stress level exceeds")
+        assert str(exc_info.value).startswith('The stress level exceeds')
 
 
 def test_warning_initial_stress():
@@ -57,7 +57,7 @@ def test_warning_initial_stress():
     with warnings.catch_warnings(record=True) as w:
         _check_initial_stress(10, 20)
         assert len(w) == 1
-        assert "Initial stress is too high" in str(w[-1].message)
+        assert 'Initial stress is too high' in str(w[-1].message)
 
 
 @pytest.mark.parametrize(
@@ -71,7 +71,7 @@ def test_check_age_at_loading(t0, expected):
     except ValueError:
         with pytest.raises(ValueError) as exc_info:
             assert _check_age_at_loading(t0) == expected
-        assert str(exc_info.value).startswith("The load is applied too soon")
+        assert str(exc_info.value).startswith('The load is applied too soon')
 
 
 @pytest.mark.parametrize(
@@ -94,7 +94,7 @@ def test_check_RH(rh, expected):
         with pytest.raises(ValueError) as exc_info:
             assert _check_RH(rh) == expected
         assert str(exc_info.value).startswith(
-            "The specified relative humidity"
+            'The specified relative humidity'
         )
 
 
@@ -103,7 +103,7 @@ def test_warning_env_temp():
     with warnings.catch_warnings(record=True) as w:
         _check_env_temp(1)
         assert len(w) == 1
-        assert "The given environmental temperature" in str(w[-1].message)
+        assert 'The given environmental temperature' in str(w[-1].message)
 
 
 @pytest.mark.parametrize(
@@ -118,7 +118,7 @@ def test_warning_env_temp():
     ],
 )
 def test_t_T(t0, T_cur, dt, expected):
-    """Test t_T function"""
+    """Test t_T function."""
     try:
         assert np.isclose(
             _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt),
@@ -128,26 +128,26 @@ def test_t_T(t0, T_cur, dt, expected):
     except ValueError:
         with pytest.raises(ValueError) as exc_info:
             assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value).startswith("Dimensions of T_cur") or str(
+        assert str(exc_info.value).startswith('Dimensions of T_cur') or str(
             exc_info.value
-        ).startswith("Curing time")
+        ).startswith('Curing time')
 
     except TypeError:
         with pytest.raises(TypeError) as exc_info:
             assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value) == "T_cur has to be provided as list."
+        assert str(exc_info.value) == 'T_cur has to be provided as list.'
 
 
 @pytest.mark.parametrize(  # Complete test cases
     '_tT, cem_class, expected',
     [
-        (7, "32.5 N", 4.04647),
-        (7, "32.5 R", 7),
-        (7, "42.5 N", 7),
-        (7, "42.5 R", 12.10932),
-        (7, "52.5 N", 12.10932),
-        (7, "52.5 R", 12.10932),
-        (0, "32.5 N", 0.5),
+        (7, '32.5 N', 4.04647),
+        (7, '32.5 R', 7),
+        (7, '42.5 N', 7),
+        (7, '42.5 R', 12.10932),
+        (7, '52.5 N', 12.10932),
+        (7, '52.5 R', 12.10932),
+        (0, '32.5 N', 0.5),
     ],
 )
 def test_t0_adj(_tT, cem_class, expected):
@@ -162,13 +162,13 @@ def test_t0_adj(_tT, cem_class, expected):
 @pytest.mark.parametrize(  # Complete test cases
     'fcm, cem_class, expected',
     [
-        (28, "32.5 N", 3.82190e-4),
-        (28, "32.5 R", 4.71651e-4),  # original
-        (28, "42.5 N", 4.71651e-4),
-        (28, "42.5 R", 6.28868e-4),
-        (28, "52.5 N", 6.28868e-4),
-        (28, "52.5 R", 6.28868e-4),
-        (60, "32.5 R", 3.21256e-4),  # original
+        (28, '32.5 N', 3.82190e-4),
+        (28, '32.5 R', 4.71651e-4),  # original
+        (28, '42.5 N', 4.71651e-4),
+        (28, '42.5 R', 6.28868e-4),
+        (28, '52.5 N', 6.28868e-4),
+        (28, '52.5 R', 6.28868e-4),
+        (60, '32.5 R', 3.21256e-4),  # original
     ],
 )
 def test_eps_cds0(fcm, cem_class, expected):
@@ -244,7 +244,7 @@ def test_beta_RH(rh, beta_s1, expected):
                 rtol=1e-5,
                 atol=1e-10,
             )
-            assert str(exc_info.value).startswith("The specified rh*beta_s1")
+            assert str(exc_info.value).startswith('The specified rh*beta_s1')
 
 
 @pytest.mark.parametrize(
@@ -267,12 +267,12 @@ def test_eps_cds(_eps_cds0, _beta_ds, _beta_rh, expected):
 @pytest.mark.parametrize(
     'fcm, cem_class, expected',
     [
-        (28, "32.5 N", -4.568550e-5),
-        (28, "32.5 R", -3.997481e-5),
-        (28, "42.5 N", -3.997481e-5),
-        (28, "42.5 R", -3.426412e-5),
-        (28, "52.5 N", -3.426412e-5),
-        (28, "52.5 R", -3.426412e-5),
+        (28, '32.5 N', -4.568550e-5),
+        (28, '32.5 R', -3.997481e-5),
+        (28, '42.5 N', -3.997481e-5),
+        (28, '42.5 R', -3.426412e-5),
+        (28, '52.5 N', -3.426412e-5),
+        (28, '52.5 R', -3.426412e-5),
     ],
 )
 def test_eps_cas0(fcm, cem_class, expected):
