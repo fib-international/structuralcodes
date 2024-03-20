@@ -3,9 +3,7 @@
 import types
 import typing as t
 
-from . import mc2010
-
-from . import ec2_2023
+from . import ec2_2023, mc2010
 
 __all__ = [
     'mc2010',

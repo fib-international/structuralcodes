@@ -22,20 +22,20 @@ dynamic = ["version", "description"]
 [project.urls]
 source = "https://github.com/fib-international/structuralcodes"
 
-[tool.black]
-line-length = 79
-skip-string-normalization = "True"
-check = "True"
-diff = "True"
-
 [tool.ruff]
 line-length = 79
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.ruff.lint]
 select = [
     "F",
     "E",
     "W",
     "N",
     "BLE",
+    "I",
     "Q",
     "D",
     "RET",
@@ -58,10 +58,10 @@ ignore = [
     "D417",
 ]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "single"
 multiline-quotes = "double"
