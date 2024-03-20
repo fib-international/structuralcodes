@@ -231,3 +231,115 @@ def test_eps_c2(test_input, expect):
         expect,
         rel_tol=7e-3,
     )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
+        (12, 3.5e-3),
+        (16, 3.5e-3),
+        (20, 3.5e-3),
+        (25, 3.5e-3),
+        (30, 3.5e-3),
+        (35, 3.5e-3),
+        (40, 3.5e-3),
+        (45, 3.5e-3),
+        (50, 3.5e-3),
+        (55, 3.1e-3),
+        (60, 2.9e-3),
+        (70, 2.7e-3),
+        (80, 2.6e-3),
+        (90, 2.6e-3),
+    ],
+)
+def test_eps_cu2(test_input, expect):
+    """Test the eps_cu2 function."""
+    assert math.isclose(
+        _concrete_material_properties.eps_cu2(test_input),
+        expect,
+        rel_tol=1.63e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
+        (12, 2.0),
+        (16, 2.0),
+        (20, 2.0),
+        (25, 2.0),
+        (30, 2.0),
+        (35, 2.0),
+        (40, 2.0),
+        (45, 2.0),
+        (50, 2.0),
+        (55, 1.75),
+        (60, 1.6),
+        (70, 1.45),
+        (80, 1.4),
+        (90, 1.4),
+    ],
+)
+def test_n(test_input, expect):
+    """Test the n function."""
+    assert math.isclose(
+        _concrete_material_properties.n(test_input),
+        expect,
+        rel_tol=9e-3,
+    )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
+        (12, 1.75e-3),
+        (16, 1.75e-3),
+        (20, 1.75e-3),
+        (25, 1.75e-3),
+        (30, 1.75e-3),
+        (35, 1.75e-3),
+        (40, 1.75e-3),
+        (45, 1.75e-3),
+        (50, 1.75e-3),
+        (55, 1.8e-3),
+        (60, 1.9e-3),
+        (70, 2.0e-3),
+        (80, 2.2e-3),
+        (90, 2.3e-3),
+    ],
+)
+def test_eps_c3(test_input, expect):
+    """Test the eps_c3 function."""
+    assert math.isclose(
+        _concrete_material_properties.eps_c3(test_input),
+        expect,
+        rel_tol=1.71e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
+        (12, 3.5e-3),
+        (16, 3.5e-3),
+        (20, 3.5e-3),
+        (25, 3.5e-3),
+        (30, 3.5e-3),
+        (35, 3.5e-3),
+        (40, 3.5e-3),
+        (45, 3.5e-3),
+        (50, 3.5e-3),
+        (55, 3.1e-3),
+        (60, 2.9e-3),
+        (70, 2.7e-3),
+        (80, 2.6e-3),
+        (90, 2.6e-3),
+    ],
+)
+def test_eps_cu3(test_input, expect):
+    """Test the eps_cu3 function."""
+    assert math.isclose(
+        _concrete_material_properties.eps_cu3(test_input),
+        expect,
+        rel_tol=1.63e-2,
+    )

@@ -91,6 +91,8 @@ def eps_c2(fck: float) -> float:
     """The strain at maximum compressive stress of concrete for the
     parabolic-rectangular law.
 
+    EN 1992-1-1:2004, Table 3.1.
+
     Args:
         fck (float): The characteristic compressive strength of concrete.
 
@@ -98,3 +100,49 @@ def eps_c2(fck: float) -> float:
     return (
         2.0 / 1000 if fck < 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
     )
+
+
+def eps_cu2(fck: float) -> float:
+    """The ultimate strain of the parabolic-rectangular law.
+
+    EN 1992-1-1:2004, Table 3.1.
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete.
+    """
+    return (
+        3.5 / 1000 if fck < 50 else (2.6 + 35 * ((90 - fck) / 100) ** 4) / 1000
+    )
+
+
+def n(fck: float) -> float:
+    """The exponent in the parabolic-rectangular law.
+
+    EN 1992-1-1:2004, Table 3.1.
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete.
+    """
+    return 2.0 if fck < 50 else (1.4 + 23.4 * ((90 - fck) / 100) ** 4)
+
+
+def eps_c3(fck: float) -> float:
+    """The ultimate strain of the bi-linear law.
+
+    EN 1992-1-1:2004, Table 3.1.
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete.
+    """
+    return 1.75 / 1000 if fck < 50 else (1.75 + 0.55 * (fck - 50) / 40) / 1000
+
+
+def eps_cu3(fck: float) -> float:
+    """The ultimate strain of the bi-linear law.
+
+    EN 1992-1-1:2004, Table 3.1.
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete.
+    """
+    return eps_cu2(fck)

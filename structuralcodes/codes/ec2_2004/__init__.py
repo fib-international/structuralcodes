@@ -3,14 +3,18 @@
 import typing as t
 
 from ._concrete_material_properties import (
-    fcm,
-    fctm,
-    fctk_5,
-    fctk_95,
     Ecm,
     eps_c1,
-    eps_cu1,
     eps_c2,
+    eps_c3,
+    eps_cu1,
+    eps_cu2,
+    eps_cu3,
+    fcm,
+    fctk_5,
+    fctk_95,
+    fctm,
+    n,
 )
 from ._section_7_3_crack_control import (
     As_min,
@@ -72,6 +76,10 @@ __all__ = [
     'eps_c1',
     'eps_cu1',
     'eps_c2',
+    'eps_cu2',
+    'n',
+    'eps_c3',
+    'eps_cu3',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1'
