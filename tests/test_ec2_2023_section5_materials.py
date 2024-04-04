@@ -259,9 +259,12 @@ def test_eta_cc_raises_errors(fck, fck_ref):
     "t_ref, t0, concrete_class, expected",
     [
         (20, 40, "CR", 0.85),
+        (20, 40, "cr", 0.85),
+        (20, 40, "rapid", 0.85),
         (27, 180, "CR", 1),
         (57, 180, "CS", 0.85),
         (55, 180, "CS", 1),
+        (55, 180, "slow", 1),
     ],
 )
 def test_k_tc(t_ref, t0, concrete_class, expected):
