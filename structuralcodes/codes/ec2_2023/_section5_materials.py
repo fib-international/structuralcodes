@@ -2,10 +2,13 @@
 
 import math
 import typing as t
+
 import numpy as np
 import scipy.interpolate
 
 from structuralcodes.codes import mc2010
+
+VALID_STRENGTH_DEV_CLASSES = ('CS', 'CN', 'CR', 'SLOW', 'NORMAL', 'RAPID')
 
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
@@ -203,7 +206,7 @@ def phi_50y_t0(
         t0 (float): age at loading [days]
         atm_conditions (str): 'dry' or 'humid'
         _hn (float): the notional size in mm
-        strength_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
 
     Returns:
         float: the creep coefficient
@@ -212,7 +215,8 @@ def phi_50y_t0(
         ValueError: if t0 is less than 1
         ValueError: if atm_conditions is not 'dry' or 'humid'
         ValueError: if _hn is less than 100 or larger than 1000
-        ValueError: if strength_dev_class is not 'CS', 'CN' or 'CR'
+        ValueError: if strength_dev_class is not 'CS', 'CN',
+            'CR', 'slow', 'normal' or 'rapid'
         ValueError: if combination of t0 and _hn is out of scope
     """
     if t0 < 1:
@@ -230,17 +234,17 @@ def phi_50y_t0(
         raise ValueError(f'_hn={_hn} must be less or equal than 1000')
 
     strength_dev_class = strength_dev_class.upper().strip()
-    if strength_dev_class not in ('CS', 'CN', 'CR'):
+    if strength_dev_class not in VALID_STRENGTH_DEV_CLASSES:
         raise ValueError(
             f'strength_dev_class={strength_dev_class} must be'
-            + '"CS", "CN" or "CR"'
+            + '"CS", "CN", "CR", "slow", "normal" or "rapid"'
         )
 
-    if strength_dev_class == 'CS':
+    if strength_dev_class in ('CS', 'SLOW'):
         _t = (3, 10, 32, 91, 365)
-    elif strength_dev_class == 'CN':
+    elif strength_dev_class in ('CN', 'NORMAL'):
         _t = (1, 7, 28, 91, 365)
-    elif strength_dev_class == 'CR':
+    elif strength_dev_class in ('CR', 'RAPID'):
         _t = (1, 3, 23, 91, 365)
 
     h_v = (100, 200, 500, 1000)
@@ -316,7 +320,7 @@ def eps_cs_50y(
         fck_28 (float): characteristic strength at 28 days in MPa
         atm_conditions (str): 'dry' or 'humid'
         _hn (float): the notional size in mm
-        strength_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
 
     Returns:
         float: the nominal shrinkage value in ‰
@@ -325,7 +329,8 @@ def eps_cs_50y(
         ValueError: if fck_28 is less than 20 MPa or larger than 80 MPa
         ValueError: if atm_conditions is not 'dry' or 'humid'
         ValueError: if _hn is less than 100 or larger than 1000
-        ValueError: if strength_dev_class is not 'CS', 'CN' or 'CR'
+        ValueError: if strength_dev_class is not CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'
         ValueError: if combination of fck_28 and _hn is out of scope
     """
     if fck_28 < 20:
@@ -345,6 +350,13 @@ def eps_cs_50y(
         raise ValueError(f'_hn={_hn} must be less or equal than 1000')
 
     strength_dev_class = strength_dev_class.upper().strip()
+    if strength_dev_class == 'SLOW':
+        strength_dev_class = 'CS'
+    elif strength_dev_class == 'NORMAL':
+        strength_dev_class = 'CN'
+    elif strength_dev_class == 'RAPID':
+        strength_dev_class = 'CR'
+
     if strength_dev_class == 'CS':
         fck_v = (20, 35, 50)
     elif strength_dev_class == 'CN':
@@ -354,7 +366,7 @@ def eps_cs_50y(
     else:
         raise ValueError(
             f'strength_dev_class={strength_dev_class} '
-            + 'must be "CS", "CN" or "CR"'
+            + 'must be "CS", "CN", "CR", "slow", "normal" or "rapid"'
         )
 
     h_v = (100, 200, 500, 1000)
@@ -524,17 +536,20 @@ def k_tc(t_ref: float, t0: float, strength_dev_class: str) -> float:
 
     strength_dev_class = strength_dev_class.upper().strip()
 
-    valid_dev_classes = ('cs', 'cn', 'cr', 'slow', 'normal', 'rapid')
-    if strength_dev_class not in valid_dev_classes:
+    if strength_dev_class not in VALID_STRENGTH_DEV_CLASSES:
         raise ValueError(
             f'strength_dev_class={strength_dev_class}'
-            + f'should can only take {valid_dev_classes}'
+            + f'should can only take {VALID_STRENGTH_DEV_CLASSES}'
         )
 
-    if strength_dev_class.lower() in ('CR', 'CN', 'rapid', 'normal') and t_ref <= 28 and t0 > 90:
+    if (
+        strength_dev_class in ('CR', 'CN', 'RAPID', 'NORMAL')
+        and t_ref <= 28
+        and t0 > 90
+    ):
         return 1
 
-    if strength_dev_class == 'CS' and t_ref <= 56 and t0 > 90:
+    if strength_dev_class in ('CS', 'SLOW') and t_ref <= 56 and t0 > 90:
         return 1
 
     return 0.85
@@ -581,30 +596,32 @@ def k_tt(t_ref: float, strength_dev_class: str) -> float:
 
     Args:
         t_ref (float): the reference time in days
-        strength_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
 
     Returns:
         float: the factor value
 
     Raises:
         ValueError: if t_ref is less than 0
-        ValueError if strength_dev_class is not 'CS', 'CN', or 'CR'
+        ValueError if strength_dev_class is not 'CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'
     """
     if t_ref < 0:
         raise ValueError(f't_ref={t_ref} must be larger than 0')
 
     strength_dev_class = strength_dev_class.upper().strip()
 
-    if strength_dev_class not in ('CS', 'CN', 'CR'):
+    if strength_dev_class not in VALID_STRENGTH_DEV_CLASSES:
         raise ValueError(
             f'strength_dev_class={strength_dev_class}'
-            + 'should can only take "CS", "CN" or "CR" as values'
+            + 'should can only take "CS", "CN", "CR", "slow"'
+            + '"normal", "rapid" as values',
         )
 
-    if strength_dev_class in ('CR', 'CN') and t_ref <= 28:
+    if strength_dev_class in ('CR', 'CN', 'RAPID', 'NORMAL') and t_ref <= 28:
         return 0.8
 
-    if strength_dev_class == 'CS' and t_ref <= 56:
+    if strength_dev_class in ('CS', 'SLOW') and t_ref <= 56:
         return 0.8
 
     return 0.7

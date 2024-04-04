@@ -1,7 +1,8 @@
 """Covers torsion in Model code 2010, 7.3.4."""
 
-from math import pi, tan, sin, cos
-from ._concrete_shear import epsilon_x, v_rd_max, eta_fc
+from math import cos, pi, sin, tan
+
+from ._concrete_shear import epsilon_x, eta_fc, v_rd_max
 
 
 def create_load_dict(

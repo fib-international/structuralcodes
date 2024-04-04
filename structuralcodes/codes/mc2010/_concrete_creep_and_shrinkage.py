@@ -9,9 +9,9 @@ Todo:
 """
 
 import warnings
+
 import numpy as np
 import numpy.typing as npt
-
 
 _alpha = {
     '32.5 R': 0,

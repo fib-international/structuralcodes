@@ -1,6 +1,6 @@
 """Shear at the interface between concrete with different casting times."""
 
-from math import pi, sin, cos
+from math import cos, pi, sin
 
 
 def tau_edi(beta: float, v_ed: float, z: float, b_i: float):
