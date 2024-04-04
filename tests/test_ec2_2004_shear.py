@@ -1,15 +1,16 @@
-"""Test for the ec2.shear module"""
+"""Test for the ec2.shear module."""
 
 import math
+
 import pytest
 
 from structuralcodes.codes.ec2_2004 import shear
 from structuralcodes.codes.ec2_2004.shear import (
+    _alpha_l,
     _k,
     _rho_L,
     _sigma_cp,
     _theta,
-    _alpha_l,
 )
 
 
@@ -40,7 +41,7 @@ def test_k(d, expected):
     ],
 )
 def test_rho_L(Asl, bw, d, expected):
-    """Test the _rho_L function"""
+    """Test the _rho_L function."""
     assert math.isclose(_rho_L(Asl, bw, d), expected, rel_tol=0.01)
 
 
@@ -136,7 +137,7 @@ def test_Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected):
     ],
 )
 def test_VEdmax_unreinf(bw, d, fck, expected):
-    """test VEedmax_unreinf function."""
+    """Test VEedmax_unreinf function."""
     assert math.isclose(
         shear.VEdmax_unreinf(bw, d, fck), expected, rel_tol=0.01
     )
@@ -170,7 +171,7 @@ def test_theta(theta, cot_min, cot_max, expected):
     """Test the theta function."""
     with pytest.raises(ValueError) as exc_info:
         assert _theta(theta, cot_min, cot_max) == expected
-    assert str(exc_info.value).startswith("Wrong value for theta is chosen.")
+    assert str(exc_info.value).startswith('Wrong value for theta is chosen.')
 
 
 @pytest.mark.parametrize(
@@ -202,7 +203,7 @@ def test_VRds(Asw, s, z, theta, fyk, alpha, gamma_s, expected):
                 rel_tol=0.01,
             )
         assert str(exc_info.value).startswith(
-            "Wrong value for theta is chosen."
+            'Wrong value for theta is chosen.'
         )
 
 
@@ -247,7 +248,7 @@ def test_alpha_cw(Ned, Ac, fcd, expected):
             assert math.isclose(
                 shear.alpha_cw(Ned, Ac, fcd), expected, rel_tol=0.01
             )
-        assert str(exc_info.value).startswith("sigma_cp/fcd=")
+        assert str(exc_info.value).startswith('sigma_cp/fcd=')
 
 
 @pytest.mark.parametrize(

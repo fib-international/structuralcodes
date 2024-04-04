@@ -3,8 +3,8 @@
 import math
 from typing import Tuple
 
-from ._section5_materials import fctm, fcm
 from ._annexB_time_dependent import alpha_c
+from ._section5_materials import fcm, fctm
 
 
 def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:

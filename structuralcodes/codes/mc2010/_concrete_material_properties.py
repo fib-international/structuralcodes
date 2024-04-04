@@ -1,6 +1,7 @@
 """A collection of material properties for concrete."""
 
 import math
+
 import numpy as np
 import numpy.typing as npt
 

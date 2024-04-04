@@ -1,4 +1,4 @@
-"""Test for the function of _concrete_torsion"""
+"""Test for the function of _concrete_torsion."""
 
 import math
 
@@ -10,13 +10,12 @@ from structuralcodes.codes.mc2010 import _concrete_torsion
 def create_load_dict(
     Med: float, Ved: float, Ned: float, delta_e: float
 ) -> dict:
-    """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-    return dictionary
+    """Returns dictionary assosiated with loads."""
+    return {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
 
 
 @pytest.mark.parametrize(
-    '''t_ed, a_k, z_i, expected''',
+    't_ed, a_k, z_i, expected',
     [
         (2000000, 2000, 300, 150000),
     ],
@@ -29,8 +28,7 @@ def test_ved_ti(t_ed, a_k, z_i, expected):
 
 
 @pytest.mark.parametrize(
-    '''f_ck, d_k, a_k, theta, approx_lvl, z, E_s, As,
-        loads, gamma_c, expected''',
+    'f_ck, d_k, a_k, theta, approx_lvl, z, E_s, As, loads, gamma_c, expected',
     [
         (
             35,
@@ -87,8 +85,10 @@ def test_t_rd_max(
 
 
 @pytest.mark.parametrize(
-    '''t_ed, approx_lvl, fck, bw, theta, z, E_s, As,
-        loads, d_k, a_k, alpha, gamma_c, expected''',
+    (
+        't_ed, approx_lvl, fck, bw, theta, z, E_s, As, loads, d_k, a_k, alpha,'
+        ' gamma_c, expected'
+    ),
     [
         (
             100e3,

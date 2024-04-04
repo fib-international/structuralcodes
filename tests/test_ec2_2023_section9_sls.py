@@ -1,4 +1,4 @@
-"""Tests for the _section9_sls module"""
+"""Tests for the _section9_sls module."""
 
 import math
 
@@ -33,8 +33,10 @@ def test_Ec_eff(test_input1, test_input2, expected):
 
 
 @pytest.mark.parametrize(
-    'test_input1, test_input2, test_input3, test_input4, test_input5,'
-    + 'expected1, expected2',
+    (
+        'test_input1, test_input2, test_input3, test_input4, test_input5, '
+        'expected1, expected2'
+    ),
     [
         (-1000, 1, 0.15, 2.565, 500, 0, 0),
         (-500, 1, 0.15, 2.565, 500, 0, 0),
@@ -120,8 +122,10 @@ def test_k_1_r(test_input1, test_input2, test_input3, expected):
 
 
 @pytest.mark.parametrize(
-    'test_input1, test_input2, test_input3, test_input4, test_input5,'
-    + ' test_input6, expected',
+    (
+        'test_input1, test_input2, test_input3, test_input4, test_input5, '
+        'test_input6, expected'
+    ),
     [
         (100, 0.4, 4.072, 0.005, 5.365, 200000, 0.0003),
         (100, 0.6, 4.072, 0.005, 5.365, 200000, 0.0002),
@@ -179,8 +183,10 @@ def test_kfl(test_input1, test_input2, test_input3, expected):
 
 
 @pytest.mark.parametrize(
-    'test_input1, test_input2, test_input3, test_input4, test_input5,'
-    + ' test_input6,test_input7, test_input8, expected',
+    (
+        'test_input1, test_input2, test_input3, test_input4, test_input5, '
+        'test_input6,test_input7, test_input8, expected'
+    ),
     [
         (25, 0.5, 0.9, 16, 0.015, 1.3, 1000, 15, 104.167),
         (40, 0.5, 0.9, 16, 0.015, 1.3, 1000, 15, 126.667),
@@ -222,10 +228,12 @@ def test_srm_cal(
 
 
 @pytest.mark.parametrize(
-    'test_input1, test_input2, test_input3, test_input4, test_input5,'
-    + ' test_input6, test_input7, test_input8, test_input9, test_input10,'
-    + ' test_input11, test_input12, test_input13, test_input14,'
-    + ' expected1, expected2, expected3, expected4',
+    (
+        'test_input1, test_input2, test_input3, test_input4, test_input5, '
+        'test_input6, test_input7, test_input8, test_input9, test_input10, '
+        'test_input11, test_input12, test_input13, test_input14, expected1, '
+        'expected2, expected3, expected4'
+    ),
     [
         (
             1.3,
@@ -414,9 +422,10 @@ def test_wk_cal(
 
 
 @pytest.mark.parametrize(
-    'test_input1, test_input2,test_input3,test_input4,'
-    + 'test_input5, test_input6, test_input7, test_input8,'
-    + 'test_input9, expected',
+    (
+        'test_input1, test_input2,test_input3,test_input4, test_input5, '
+        'test_input6, test_input7, test_input8, test_input9, expected'
+    ),
     [
         (9.42, 5.32, 25, 2, 1, 0.62, 0.57, 49.1, 651.87, 24.45),
         (0.71, 0, 25, 2, 1, 0.3, 0.25, 49.1, 47.65, 0.82),
