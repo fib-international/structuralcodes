@@ -308,7 +308,7 @@ def phi_50y_t0(
     return _phi_50y_t0
 
 
-def eps_cs_50y(
+def eps_cs_50y(  # noqa: PLR0912
     fck_28: float, atm_conditions: str, _hn: float, strength_dev_class: str
 ) -> float:
     """Computes the nominal total shrinkage in ‰ for concrete after a duration
