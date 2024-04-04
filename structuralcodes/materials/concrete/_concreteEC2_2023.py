@@ -3,6 +3,7 @@
 import typing as t
 
 from structuralcodes.codes import ec2_2023
+
 from ._concrete import Concrete
 
 
@@ -31,7 +32,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         gamma_C: float = 1.5,
         existing: bool = False,
     ):
-        """Initializes a new instance of Concrete for MC 2010.
+        """Initializes a new instance of Concrete for EC2 2023.
 
         Args:
             fck (float): Characteristic strength in MPa if concrete is not
@@ -41,8 +42,8 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             name (str): A descriptive name for concrete
             density (float): Density of material in kg/m3 (default: 2400)
             kE (float): coefficient relating aggregates.
-            strength_dev_class (str, optional): default is CS.
-                Possible values: CS, CN, CR, slow, normal, rapid
+            strength_dev_class (str, optional): default is CN.
+                Possible values: CS, CN, CR, slow, normal or rapid
             gamma_C (float, optional): partial factor of concrete
                 (default is 1.5)
             existing (bool, optional): The material is of an existing structure
@@ -52,11 +53,13 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             name = f'C{round(fck):d}'
 
         # Check if strength_dev_class is valid
+        strength_dev_class = strength_dev_class.strip()
         valid_dev_classes = ('cs', 'cn', 'cr', 'slow', 'normal', 'rapid')
         if strength_dev_class.lower() not in valid_dev_classes:
             raise ValueError(
-                'strength_dev_class not valid. ' +
-                f'{strength_dev_class} not {valid_dev_classes}')
+                'strength_dev_class not valid. '
+                + f'{strength_dev_class} not {valid_dev_classes}'
+            )
 
         super().__init__(
             fck=fck, name=name, density=density, existing=existing
@@ -79,9 +82,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         Returns:
             float: The mean compressive strength in MPa.
         """
-        if self._fcm is not None:
-            return self._fcm
-        self._fcm = ec2_2023.fcm(self.fck)
+        self._fcm = self._fcm or ec2_2023.fcm(self.fck)
         return self._fcm
 
     @fcm.setter
@@ -162,7 +163,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             float: the design compressive strength of concrete in MPa
 
         Raises:
-            ValueError: if fkc_ref is less or equal to 0
+            ValueError: if fck_ref is less or equal to 0
             ValueError: if t_ref is less than 0
             ValueError: if t0 is less than 0
         """
