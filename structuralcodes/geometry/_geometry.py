@@ -262,14 +262,14 @@ class SurfaceGeometry:
         """
         # Check if inputs are of the correct type, otherwise return error
         if not isinstance(poly, Polygon):
-            raise ValueError(
+            raise TypeError(
                 f'poly need to be a valid shapely.geometry.Polygon object. \
                 {repr(poly)}'
             )
         if not isinstance(mat, Material) and not isinstance(
             mat, ConstitutiveLaw
         ):
-            raise ValueError(
+            raise TypeError(
                 f'mat should be a valid structuralcodes.base.Material \
                 or structuralcodes.base.ConstitutiveLaw object. \
                 {repr(mat)}'

@@ -25,6 +25,38 @@ from shapely import Polygon, MultiLineString, LineString
 from shapely.testing import assert_geometries_equal
 
 
+# Test create line
+@pytest.mark.parametrize(
+    'xp, yp, th, xb1, yb1, xb2, yb2, x1, y1, x2, y2',
+    [
+        (0, 0, 0, -10, -10, 10, 10, -10 - 1e-3, 0, 10 + 1e-3, 0),
+        (0, 0.5, 0, -1.0, -1.0, 1.0, 1.0, -1 - 1e-3, 0.5, 1 + 1e-3, 0.5),
+        (
+            0,
+            0,
+            np.pi / 4,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1 - 1e-3,
+            -1 - 1e-3,
+            1 + 1e-3,
+            1 + 1e-3,
+        ),
+        (0, 0, np.pi / 2, -1.0, -1.0, 1.0, 1.0, 0, -1 - 1e-3, 0, 1 + 1e-3),
+    ],
+)
+def test_create_line_point_angle(
+    xp, yp, th, xb1, yb1, xb2, yb2, x1, y1, x2, y2
+):
+    """ "Test creating a line from point and angle."""
+    line = create_line_point_angle(
+        point=(xp, yp), theta=th, bbox=(xb1, yb1, xb2, yb2)
+    )
+    assert_geometries_equal(line, LineString([(x1, y1), (x2, y2)]))
+
+
 # Test PointGeometry
 def test_point_geometry():
     """Test creating a PointGeometry object."""
@@ -132,6 +164,10 @@ def test_surface_geometry():
     ab, bl = geo.split(line=((0, -10), 0))
     assert len(ab) == 1
     assert len(bl) == 0
+    # Not interecting: all below
+    ab, bl = geo.split(line=((0, 410), 0))
+    assert len(ab) == 0
+    assert len(bl) == 1
 
     # Splitting with two lines
     line1 = LineString([(-120, -50), (120, -50)])
@@ -153,6 +189,11 @@ def test_surface_geometry():
         result, Polygon(((100, 0), (-100, 0), (-100, 5), (100, 5), (100, 0)))
     )
 
+    # Check assertion if passed more than two lines
+    with pytest.raises(RuntimeError) as excinfo:
+        geo_t.split_two_lines((line1, line2, line1))
+    assert str(excinfo.value) == 'Two lines must be input'
+
     # Rotate the geometry
     geo_r = geo_t.rotate(np.pi / 2)
     assert_geometries_equal(
@@ -160,6 +201,24 @@ def test_surface_geometry():
         Polygon(
             ((200, -100), (200, 100), (-200, 100), (-200, -100), (200, -100))
         ),
+    )
+
+    # Pass something else than a polygon
+    with pytest.raises(TypeError) as excinfo:
+        SurfaceGeometry(poly=[0, 0, 1, 1], mat=C25)
+    assert (
+        str(excinfo.value)
+        == f'poly need to be a valid shapely.geometry.Polygon object. \
+                {repr([0, 0, 1, 1])}'
+    )
+    # Pass something else than a polygon
+    with pytest.raises(TypeError) as excinfo:
+        SurfaceGeometry(poly=poly, mat=1)
+    assert (
+        str(excinfo.value)
+        == f'mat should be a valid structuralcodes.base.Material \
+                or structuralcodes.base.ConstitutiveLaw object. \
+                {repr(1)}'
     )
 
 
