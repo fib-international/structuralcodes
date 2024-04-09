@@ -259,14 +259,17 @@ class UserDefined(ConstitutiveLaw):
                 tangent_n = (self._y[1] - self._y[0]) / (
                     self._x[1] - self._x[0]
                 )
-                print(tangent_p, tangent_n)
-                y = np.insert(self._y, 0, x[0] * tangent_n)
-                y = np.append(y, x[-1] * tangent_p)
+                y = np.insert(
+                    self._y, 0, (x[0] - x[1]) * tangent_n + self._y[0]
+                )
+                y = np.append(y, (x[-1] - x[-2]) * tangent_p + self._y[-1])
             elif flag == 3:
                 secant_p = self._y[-1] / self._x[-1]
                 secant_n = self._y[0] / self._x[0]
-                y = np.insert(self._y, 0, x[0] * secant_n)
-                y = np.append(y, x[-1] * secant_p)
+                y = np.insert(
+                    self._y, 0, (x[0] - x[1]) * secant_n + self._y[0]
+                )
+                y = np.append(y, (x[-1] - x[-2]) * secant_p + self._y[-1])
             self._x = x
             self._y = y
 

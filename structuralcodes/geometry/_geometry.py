@@ -427,11 +427,11 @@ def _process_geometries_multipolygon(
             checked_geometries.append(SurfaceGeometry(g, materials))
     elif isinstance(materials, list):
         # the list of materials is provided, one for each polygon
-        if len(geometries) != len(materials):
+        if len(geometries.geoms) != len(materials):
             raise ValueError(
                 'geometries and materials should have the same length'
             )
-        for g, m in zip(geometries, materials):
+        for g, m in zip(geometries.geoms, materials):
             checked_geometries.append(SurfaceGeometry(g, m))
     return checked_geometries
 

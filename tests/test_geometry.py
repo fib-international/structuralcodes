@@ -10,6 +10,7 @@ from structuralcodes.geometry import (
     Geometry,
     PointGeometry,
     SurfaceGeometry,
+    CompoundGeometry,
     create_line_point_angle,
 )
 from structuralcodes.sections._reinforcement import (
@@ -21,7 +22,13 @@ from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
     ParabolaRectangle,
 )
-from shapely import Polygon, MultiLineString, LineString
+from shapely import (
+    Polygon,
+    MultiLineString,
+    LineString,
+    MultiPolygon,
+    LinearRing,
+)
 from shapely.testing import assert_geometries_equal
 
 
@@ -221,6 +228,27 @@ def test_surface_geometry():
                 {repr(1)}'
     )
 
+    # add two surfaces
+    poly1 = Polygon(((-100, -200), (100, -200), (100, 200), (-100, 200)))
+    poly2 = Polygon(((-500, 200), (500, 200), (500, 300), (-500, 300)))
+    geo1 = SurfaceGeometry(poly=poly1, mat=C25)
+    geo2 = SurfaceGeometry(poly=poly2, mat=C25)
+    geo_add = geo1 + geo2
+    assert isinstance(geo_add, CompoundGeometry) == True
+    assert_geometries_equal(geo_add.geometries[0].polygon, geo1.polygon)
+    assert_geometries_equal(geo_add.geometries[1].polygon, geo2.polygon)
+
+    # check svg representation
+    assert geo1._repr_svg_() == (
+        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w'
+        '3.org/1999/xlink" width="232.0" height="300" viewBox="-116.0 -216.0'
+        ' 232.0 432.0" preserveAspectRatio="xMinYMin meet"><g transform='
+        '"matrix(1,0,0,-1,0,0.0)"><path fill-rule="evenodd" fill="#66cc99" '
+        'stroke="#555555" stroke-width="2.88" opacity="0.6" d="M -100.0,-200.0'
+        ' L 100.0,-200.0 L 100.0,200.0 L -100.0,200.0 L -100.0,-200.0 z" />'
+        '</g></svg>'
+    )
+
 
 def test_compound_geometry():
     """Test creating a SurfaceGeometry object."""
@@ -275,3 +303,39 @@ def test_compound_geometry():
     geo_r = geo_t.rotate(np.pi / 2)
     assert math.isclose(geo_r.point_geometries[0].x, -160)
     assert math.isclose(geo_r.point_geometries[0].y, -60)
+
+    # Create a CompoundGeometry with a MultiPolygon
+    web = Polygon([(-100, -200), (100, -200), (100, 200), (-100, 200)])
+    coords = [(-500, 200), (500, 200), (500, 300), (-500, 300)]
+    flange = Polygon(coords)
+    multi_pol = MultiPolygon([web, flange])
+    # Create a compound geometry with the same material
+    geo = CompoundGeometry(multi_pol, C25)
+    assert_geometries_equal(geo.geometries[0].polygon, web)
+    assert_geometries_equal(geo.geometries[1].polygon, flange)
+    # Create a compound geometry with different materials
+    geo = CompoundGeometry(multi_pol, [C25, steel])
+    assert_geometries_equal(geo.geometries[0].polygon, web)
+    assert_geometries_equal(geo.geometries[1].polygon, flange)
+    assert isinstance(geo.geometries[0].material, ParabolaRectangle) == True
+    assert isinstance(geo.geometries[1].material, ElasticPlastic) == True
+    # check error is raised when the number of materials is incorrect
+    with pytest.raises(ValueError) as excinfo:
+        CompoundGeometry(multi_pol, [C25, C25, C25])
+    assert (
+        str(excinfo.value)
+        == 'geometries and materials should have the same length'
+    )
+
+    # check svg representation
+    assert geo._repr_svg_() == (
+        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w'
+        '3.org/1999/xlink" width="300" height="300" viewBox="-540.0 -240.0'
+        ' 1080.0 580.0" preserveAspectRatio="xMinYMin meet"><g transform='
+        '"matrix(1,0,0,-1,0,100.0)"><g><path fill-rule="evenodd" fill="#ff3333" '
+        'stroke="#555555" stroke-width="7.2" opacity="0.6" d="M -100.0,-200.0'
+        ' L 100.0,-200.0 L 100.0,200.0 L -100.0,200.0 L -100.0,-200.0 z" />'
+        '<path fill-rule="evenodd" fill="#ff3333" stroke="#555555" stroke-width'
+        '="7.2" opacity="0.6" d="M -500.0,200.0 L 500.0,200.0 L 500.0,300.0 L '
+        '-500.0,300.0 L -500.0,200.0 z" /></g></g></svg>'
+    )

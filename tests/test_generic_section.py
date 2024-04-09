@@ -12,6 +12,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.sections._reinforcement import (
     add_reinforcement_line,
+    add_reinforcement,
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
@@ -68,3 +69,96 @@ def test_rectangular_section():
     )
 
     assert math.isclose(res_mc_marin.my[-1], res_mc_fiber.my[-1], rel_tol=1e-2)
+
+
+# Test holed section
+def test_holed_section():
+    """Test a section with a hole"""
+
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ElasticPlastic(210000, 450, eps_su=0.0675)
+
+    # The section
+    poly = Polygon(
+        ((0, 0), (500, 0), (500, 1000), (0, 1000)),
+        [((100, 100), (400, 100), (400, 900), (100, 900))],
+    )
+    geo = SurfaceGeometry(poly, concrete)
+
+    # Add reinforcement
+    geo = add_reinforcement_line(geo, (50, 50), (450, 50), 28, steel, n=4)
+    geo = add_reinforcement_line(geo, (50, 950), (450, 950), 28, steel, n=4)
+    # Translate the section
+    geo = geo.translate(-250, -500)
+    assert geo.geometries[0].centroid[0] == 0
+    assert geo.geometries[0].centroid[1] == 0
+
+    # Create the section (default Marin integrator)
+    sec = GenericSection(geo)
+    assert sec.name == 'GenericSection'
+
+    assert math.isclose(sec.gross_properties.area, 260000)
+
+    # Compute bending strength
+    res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+
+    assert math.isclose(abs(res_marin.m_x * 1e-6), 1012, rel_tol=1e-2)
+
+    # Use fiber integration
+    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    assert math.isclose(sec.gross_properties.area, 260000)
+
+    # Compute bending strength
+    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+
+    assert math.isclose(res_marin.m_x, res_fiber.m_x, rel_tol=1e-2)
+
+
+# Test U section
+def test_u_section():
+    """Test a section with a U shape"""
+
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ElasticPlastic(210000, 450, eps_su=0.0675)
+
+    # The section
+    # bottom flange
+    poly = Polygon(
+        ((0, 0), (500, 0), (500, 100), (0, 100)),
+    )
+    poly = poly.union(Polygon(((0, 100), (100, 100), (100, 1000), (0, 1000))))
+    poly = poly.union(
+        Polygon(((400, 100), (500, 100), (500, 1000), (400, 1000)))
+    )
+    geo = SurfaceGeometry(poly, concrete)
+
+    # Add reinforcement
+    geo = add_reinforcement_line(geo, (50, 50), (450, 50), 28, steel, n=4)
+    geo = add_reinforcement(geo, (50, 950), 28, steel)
+    geo = add_reinforcement(geo, (450, 950), 28, steel)
+    # Translate the section
+    geo = geo.translate(-250, -441.30434782608694)
+    assert geo.geometries[0].centroid[0] == 0
+    assert geo.geometries[0].centroid[1] == 0
+
+    # Create the section (default Marin integrator)
+    sec = GenericSection(geo)
+    assert sec.name == 'GenericSection'
+
+    assert math.isclose(sec.gross_properties.area, 230000)
+
+    # Compute bending strength
+    res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+
+    assert math.isclose(abs(res_marin.m_x * 1e-6), 993.3, rel_tol=1e-2)
+
+    # Use fiber integration
+    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    assert math.isclose(sec.gross_properties.area, 230000)
+
+    # Compute bending strength
+    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+
+    assert math.isclose(res_marin.m_x, res_fiber.m_x, rel_tol=1e-2)
