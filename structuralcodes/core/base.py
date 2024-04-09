@@ -10,7 +10,6 @@ import structuralcodes.core._section_results as s_res
 class Material(abc.ABC):
     """Abstract base class for materials."""
 
-    __materials__: t.Tuple[str] = ()
     _stress_strain = None
 
     def __init__(self, density: float, name: t.Optional[str] = None) -> None:
@@ -64,6 +63,7 @@ class Material(abc.ABC):
 class ConstitutiveLaw(abc.ABC):
     """Abstract base class for constitutive laws."""
 
+    __materials__: t.Tuple[str] = ()
     constitutive_law_counter: t.ClassVar[int] = 0
 
     def __init__(self, name: t.Optional[str] = None) -> None:
