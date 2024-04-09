@@ -47,6 +47,14 @@ def test_fcm_setter_invalid_value(default_concrete):
         default_concrete.fcm = default_concrete.fck - 1
 
 
+def test_fcm_setter(default_concrete):
+    """Test the setter for the fcm property."""
+    expected_fcm = default_concrete.fcm + 1
+    default_concrete.fcm = default_concrete.fcm + 1
+
+    assert math.isclose(default_concrete.fcm, expected_fcm)
+
+
 def test_fcd_default_parameters(default_concrete):
     """Test for fcd method with default parameters."""
     expected_fcd_default = 20
@@ -170,3 +178,15 @@ def test_sigma_c_with_invalid_strain(default_concrete):
     invalid_strain = -0.001
     with pytest.raises(ValueError):
         default_concrete.sigma_c(eps_c=invalid_strain)
+
+
+def test_reset_attributes(default_concrete):
+    """Test resetting the attributes."""
+    default_concrete._reset_attributes()
+    assert default_concrete._fcm is None
+    assert default_concrete._fctm is None
+    assert default_concrete._Ecm is None
+    assert default_concrete._fctk_5 is None
+    assert default_concrete._fctk_95 is None
+    assert default_concrete._eps_c1 is None
+    assert default_concrete._eps_cu1 is None
