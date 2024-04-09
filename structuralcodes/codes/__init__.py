@@ -3,7 +3,7 @@
 import types
 import typing as t
 
-from . import ec2_2023, mc2010
+from . import ec2_2004, ec2_2023, mc2010
 
 __all__ = [
     'mc2010',
@@ -22,6 +22,8 @@ _NATIONAL_ANNEX: t.Optional[str] = None
 # Design code registry
 _DESIGN_CODES = {
     'mc2010': mc2010,
+    'ec2_2004': ec2_2004,
+    'ec2_2023': ec2_2023,
 }
 
 
@@ -34,7 +36,7 @@ def set_design_code(design_code: str) -> None:
     Note:
         Call get_design_codes() to get a list of the available codes.
     """
-    global _CODE  # pylint: disable=W0603
+    global _CODE
     _CODE = _DESIGN_CODES.get(design_code.lower())
 
 
