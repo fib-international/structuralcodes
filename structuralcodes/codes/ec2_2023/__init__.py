@@ -94,4 +94,4 @@ __all__ = [
 
 __title__: str = 'EUROCODE 2 1992-1-1:2023'
 __year__: str = '2023'
-__materials__: t.Tuple[str] = ('concrete',)
+__materials__: t.Tuple[str] = ('concrete', 'reinforcement')
