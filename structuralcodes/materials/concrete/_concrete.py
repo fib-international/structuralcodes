@@ -2,7 +2,8 @@
 
 import abc
 import typing as t
-from structuralcodes.core.base import Material, ConstitutiveLaw
+
+from structuralcodes.core.base import ConstitutiveLaw, Material
 from structuralcodes.materials.constitutive_laws import ParabolaRectangle
 
 

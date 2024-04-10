@@ -1,4 +1,4 @@
-"""Tests for getting and setting design codes"""
+"""Tests for getting and setting design codes."""
 
 import types
 
@@ -8,13 +8,13 @@ import structuralcodes
 
 
 @pytest.mark.parametrize(
-    "design_code_to_set",
-    ["mc2010", "MC2010", "mC2010"],
+    'design_code_to_set',
+    ['mc2010', 'MC2010', 'mC2010'],
 )
 def test_set_design_code(design_code_to_set):
     """Test setting the design code."""
     # Arrange
-    expected_design_code_title = "fib Model Code 2010"
+    expected_design_code_title = 'fib Model Code 2010'
 
     # Act
     structuralcodes.set_design_code(design_code_to_set)
@@ -37,29 +37,29 @@ def test_get_design_codes():
 
 
 @pytest.mark.parametrize(
-    "na_to_set",
-    ["NO", "no", "No", "nO"],
+    'na_to_set',
+    ['NO', 'no', 'No', 'nO'],
 )
 def test_set_national_annex(na_to_set):
     """Test setting the national annex."""
     # Arrange
-    expected_na = "no"
+    expected_na = 'no'
 
     # Act
     structuralcodes.set_national_annex(na_to_set)
 
     # Assert
-    assert structuralcodes.codes._NATIONAL_ANNEX == expected_na
+    assert expected_na == structuralcodes.codes._NATIONAL_ANNEX
 
 
 @pytest.mark.parametrize(
-    "design_code_to_user",
-    ["mc2010", "MC2010", "mC2010"],
+    'design_code_to_user',
+    ['mc2010', 'MC2010', 'mC2010'],
 )
 def test_use_design_code(design_code_to_user):
     """Test return a design code for use."""
     # Arrange
-    expected_design_code_title = "fib Model Code 2010"
+    expected_design_code_title = 'fib Model Code 2010'
 
     # Act
     code_to_use = structuralcodes.codes._use_design_code(design_code_to_user)
@@ -72,8 +72,8 @@ def test_use_design_code(design_code_to_user):
 def test_use_design_code_none():
     """Test return _CODE if called with None."""
     # Arrange
-    design_code_to_set = "mc2010"
-    expected_design_code_title = "fib Model Code 2010"
+    design_code_to_set = 'mc2010'
+    expected_design_code_title = 'fib Model Code 2010'
     structuralcodes.set_design_code(design_code_to_set)
 
     # Act

@@ -1,4 +1,4 @@
-"""Test for the function of _concrete_shear"""
+"""Test for the function of _concrete_shear."""
 
 import math
 
@@ -10,9 +10,8 @@ from structuralcodes.codes.mc2010 import _concrete_shear
 def create_load_dict(
     Med: float, Ved: float, Ned: float, delta_e: float
 ) -> dict:
-    """returns dictionary assosiated with loads"""
-    dictionary = {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
-    return dictionary
+    """Returns dictionary assosiated with loads."""
+    return {'Med': Med, 'Ved': Ved, 'Ned': Ned, 'delta_e': delta_e}
 
 
 @pytest.mark.parametrize(
@@ -84,8 +83,7 @@ def test_epsilon_x(E_s, As, z, loads, expected):
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, fck, bw, theta, z, E_s, As, loads, alpha,
-    gamma_c, expected''',
+    'approx_lvl, fck, bw, theta, z, E_s, As, loads, alpha, gamma_c, expected',
     [
         (
             1,
@@ -181,7 +179,7 @@ def test_vrd_max(
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, fck, z, bw, dg, E_s, As, loads, alpha, gamma_c, expected''',
+    'approx_lvl, fck, z, bw, dg, E_s, As, loads, alpha, gamma_c, expected',
     [
         (
             1,
@@ -277,7 +275,7 @@ def test_v_rdc(
 
 
 @pytest.mark.parametrize(
-    '''asw, sw, z, fywd, theta, alpha, expected''',
+    'asw, sw, z, fywd, theta, alpha, expected',
     [
         (1600, 50, 200, 500, 25, 30, 5383763),
         (2000, 50, 200, 500, 25, 30, 6729704),
@@ -298,8 +296,10 @@ def test_v_rds(asw, sw, z, fywd, theta, alpha, expected):
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl_h, f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy,
-    b_wy, y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected''',
+    (
+        'approx_lvl_h, f_ctd, i_c, s_c, b_w, sigma_cp, l_x, l_bd0, S_cy, b_wy,'
+        ' y, y_c, A_c, A_cy, y_pt, f_p_lx, f_p_lx_dx, expected'
+    ),
     [
         (
             1,
@@ -1030,9 +1030,10 @@ def test_v_rd_ct(
 
 
 @pytest.mark.parametrize(
-    '''approx_lvl, with_shear_reinforcment, fck, z,
-    bw, dg, E_s, As, loads,
-    asw, sw, f_ywk, theta, alpha, gamma_c, gamma_s, expected''',
+    (
+        'approx_lvl, with_shear_reinforcment, fck, z, bw, dg, E_s, As, loads,'
+        ' asw, sw, f_ywk, theta, alpha, gamma_c, gamma_s, expected'
+    ),
     [
         (
             1,

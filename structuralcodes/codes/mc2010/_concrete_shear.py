@@ -1,8 +1,8 @@
 """A collection of shear formulas for concrete."""
 
 import warnings
+from math import pi, sin, tan
 from typing import Optional
-from math import pi, tan, sin
 
 
 def epsilon_x(

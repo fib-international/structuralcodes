@@ -56,6 +56,6 @@ __all__ = [
     'xi1',
 ]
 
-__title__: str = 'EUROCODE 2 1992-1-1'
+__title__: str = 'EUROCODE 2 1992-1-1:2004'
 __year__: str = '2004'
-__materials__: t.Tuple[str] = ('concrete',)
+__materials__: t.Tuple[str] = ('concrete', 'reinforcement')

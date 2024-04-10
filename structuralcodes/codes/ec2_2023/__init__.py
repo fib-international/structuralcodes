@@ -2,16 +2,17 @@
 
 import typing as t
 
+from ._annexB_time_dependent import alpha_c
 from ._section5_materials import (
     A_phi_correction_exp,
+    Ecm,
+    Es,
     alpha_c_th,
     alpha_s_th,
-    Ecm,
     eps_c1,
     eps_cs_50y,
     eps_cu1,
     eps_ud,
-    Es,
     eta_cc,
     fcd,
     fcm,
@@ -36,8 +37,8 @@ from ._section5_materials import (
 )
 from ._section9_sls import (
     As_min_y,
-    delta_simpl,
     Ec_eff,
+    delta_simpl,
     epssm_epscm,
     k_1_r,
     kfl,
@@ -46,7 +47,6 @@ from ._section9_sls import (
     wk_cal,
     wk_cal2,
 )
-from ._annexB_time_dependent import alpha_c
 
 __all__ = [
     'A_phi_correction_exp',
@@ -92,6 +92,6 @@ __all__ = [
     'wk_cal2',
 ]
 
-__title__: str = 'EUROCODE 2 1992-1-1'
+__title__: str = 'EUROCODE 2 1992-1-1:2023'
 __year__: str = '2023'
-__materials__: t.Tuple[str] = ('concrete',)
+__materials__: t.Tuple[str] = ('concrete', 'reinforcement')
