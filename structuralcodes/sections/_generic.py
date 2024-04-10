@@ -1,19 +1,20 @@
-""""Generic class section implemenetation."""
+"""Generic class section implemenetation."""
 
 from __future__ import annotations
 
 import typing as t
+from math import cos, sin
 
-from math import sin, cos
 import numpy as np
 
+import structuralcodes.core._section_results as s_res
+from structuralcodes.core.base import Section, SectionCalculator
 from structuralcodes.geometry import (
+    CompoundGeometry,
     PointGeometry,
     SurfaceGeometry,
-    CompoundGeometry,
 )
-from structuralcodes.core.base import Section, SectionCalculator
-import structuralcodes.core._section_results as s_res
+
 from .section_integrators import integrator_factory
 
 

@@ -1,17 +1,18 @@
 """The Marin section integrator."""
 
-from math import cos, sin, atan2
 import typing as t
+from math import atan2, cos, sin
 
 import numpy as np
 from numpy.typing import ArrayLike
+from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
-from shapely import MultiLineString, Polygon, MultiPolygon
 
 from structuralcodes.geometry import (
-    create_line_point_angle,
     CompoundGeometry,
+    create_line_point_angle,
 )
+
 from ._marin_integration import marin_integration
 from ._section_integrator import SectionIntegrator
 

@@ -1,23 +1,24 @@
-""""Generic class section implemenetation."""
+"""Generic class section implemenetation."""
 
 from __future__ import annotations
 
 import typing as t
 import warnings
-from numpy.typing import ArrayLike
-import numpy as np
-from shapely.geometry import (
-    Polygon,
-    Point,
-    LineString,
-    LinearRing,
-    MultiPolygon,
-    MultiLineString,
-)
-from shapely import affinity
-from shapely.ops import split
-from structuralcodes.core.base import Material, ConstitutiveLaw
 
+import numpy as np
+from numpy.typing import ArrayLike
+from shapely import affinity
+from shapely.geometry import (
+    LinearRing,
+    LineString,
+    MultiLineString,
+    MultiPolygon,
+    Point,
+    Polygon,
+)
+from shapely.ops import split
+
+from structuralcodes.core.base import ConstitutiveLaw, Material
 
 # Useful classes and functions: where to put?????? (core?
 # utility folder in sections? here in this file?)

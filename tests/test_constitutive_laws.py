@@ -1,14 +1,16 @@
-"""Tests for the _concrete_material_properties module"""
+"""Tests for the _concrete_material_properties module."""
 
 import math
-import numpy as np
 
+import numpy as np
 import pytest
 
-from structuralcodes.materials.constitutive_laws import Elastic
-from structuralcodes.materials.constitutive_laws import ElasticPlastic
-from structuralcodes.materials.constitutive_laws import ParabolaRectangle
-from structuralcodes.materials.constitutive_laws import UserDefined
+from structuralcodes.materials.constitutive_laws import (
+    Elastic,
+    ElasticPlastic,
+    ParabolaRectangle,
+    UserDefined,
+)
 
 
 @pytest.mark.parametrize(
@@ -21,8 +23,7 @@ from structuralcodes.materials.constitutive_laws import UserDefined
     ],
 )
 def test_elastic_floats(E, strain, expected):
-    """Test the elastic material"""
-
+    """Test the elastic material."""
     assert math.isclose(Elastic(E).get_stress(strain), expected)
     assert math.isclose(Elastic(E).get_tangent(), E)
     assert math.isclose(Elastic(E).get_ultimate_strain()[0], 100)
@@ -30,7 +31,7 @@ def test_elastic_floats(E, strain, expected):
 
 
 def test_elastic_numpy():
-    """Test the elastic material with numpy input"""
+    """Test the elastic material with numpy input."""
     E = 200000
     strain = np.linspace(0, 0.01, 100)
     sig_expected = E * strain
@@ -49,14 +50,13 @@ def test_elastic_numpy():
         (200000, 450, 0.010, 450.0),
     ],
 )
-def test_elasticplastic_floats(E, fy, strain, expected):
-    """Test the elasticPlastic material"""
-
+def test_elasticplastic_get_stress(E, fy, strain, expected):
+    """Test the elasticPlastic material."""
     assert math.isclose(ElasticPlastic(E, fy).get_stress(strain)[0], expected)
 
 
 def test_elasticplastic_input_correct():
-    """Test invalid input values for ElasticPlastic"""
+    """Test invalid input values for ElasticPlastic."""
     with pytest.raises(ValueError) as excinfo:
         ElasticPlastic(-210000, 450)
     assert str(excinfo.value) == 'Elastic modulus E must be greater than zero'
@@ -73,9 +73,8 @@ def test_elasticplastic_input_correct():
         (200000, 450, 0.010, 0.0),
     ],
 )
-def test_elasticplastic_floats(E, fy, strain, expected):
-    """Test the elasticPlastic material"""
-
+def test_elasticplastic_get_tangent(E, fy, strain, expected):
+    """Test the elasticPlastic material."""
     assert math.isclose(ElasticPlastic(E, fy).get_tangent(strain), expected)
 
 
@@ -96,8 +95,7 @@ def test_elasticplastic_floats(E, fy, strain, expected):
     ],
 )
 def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
-    """Test the parabola-rectangle material"""
-
+    """Test the parabola-rectangle material."""
     mat = ParabolaRectangle(fc, eps_0, eps_u)
     assert math.isclose(mat.get_stress(strain)[0], stress)
     assert math.isclose(mat.get_tangent(strain)[0], tangent)
@@ -219,8 +217,7 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
     ],
 )
 def test_user_defined_floats(x, y, flag, strain, expected):
-    """Test the parabola-rectangle material"""
-
+    """Test the parabola-rectangle material."""
     assert math.isclose(
         UserDefined(x, y, flag=flag).get_stress(strain)[0], expected
     )

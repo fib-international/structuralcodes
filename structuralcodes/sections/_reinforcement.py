@@ -5,12 +5,12 @@ import typing as t
 import numpy as np
 from shapely import Point
 
+from structuralcodes.core.base import ConstitutiveLaw, Material
 from structuralcodes.geometry import (
-    SurfaceGeometry,
     CompoundGeometry,
     PointGeometry,
+    SurfaceGeometry,
 )
-from structuralcodes.core.base import Material, ConstitutiveLaw
 
 
 def add_reinforcement(

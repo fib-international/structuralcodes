@@ -1,8 +1,10 @@
 """Collection of some standard constitutive laws."""
 
 import typing as t
+
 import numpy as np
 from numpy.typing import ArrayLike
+
 from ..core.base import ConstitutiveLaw
 
 

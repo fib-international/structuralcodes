@@ -2,31 +2,25 @@
 
 import math
 
-import numpy as np
-
-import pytest
+from shapely import Polygon
 
 from structuralcodes.geometry import (
-    PointGeometry,
     SurfaceGeometry,
-)
-from structuralcodes.sections._reinforcement import (
-    add_reinforcement_line,
-    add_reinforcement,
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
-    ParabolaRectangle,
 )
 from structuralcodes.sections._generic import GenericSection
-from shapely import Polygon
+from structuralcodes.sections._reinforcement import (
+    add_reinforcement,
+    add_reinforcement_line,
+)
 
 
 # Test rectangular section
 def test_rectangular_section():
     """Test rectangular section."""
-
     # Create materials to use
     concrete = ConcreteMC2010(25)
     steel = ElasticPlastic(210000, 450, eps_su=0.0675)
@@ -73,8 +67,7 @@ def test_rectangular_section():
 
 # Test holed section
 def test_holed_section():
-    """Test a section with a hole"""
-
+    """Test a section with a hole."""
     # Create materials to use
     concrete = ConcreteMC2010(25)
     steel = ElasticPlastic(210000, 450, eps_su=0.0675)
@@ -117,8 +110,7 @@ def test_holed_section():
 
 # Test U section
 def test_u_section():
-    """Test a section with a U shape"""
-
+    """Test a section with a U shape."""
     # Create materials to use
     concrete = ConcreteMC2010(25)
     steel = ElasticPlastic(210000, 450, eps_su=0.0675)

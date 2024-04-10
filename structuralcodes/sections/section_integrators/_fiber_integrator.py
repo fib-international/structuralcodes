@@ -3,14 +3,15 @@
 import typing as t
 
 import numpy as np
+import triangle
 from numpy.typing import ArrayLike
 from shapely import Polygon
-import triangle
 
 from structuralcodes.geometry import (
     CompoundGeometry,
     SurfaceGeometry,
 )
+
 from ._section_integrator import SectionIntegrator
 
 
@@ -154,7 +155,7 @@ class FiberIntegrator(SectionIntegrator):
                 y = y[0]
                 area = pg.area
                 mat = pg.material
-                if reinf_data.get(mat, None) is None:
+                if reinf_data.get(mat) is None:
                     reinf_data[mat] = [
                         np.array(x),
                         np.array(y),

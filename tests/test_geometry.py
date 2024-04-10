@@ -3,33 +3,31 @@
 import math
 
 import numpy as np
-
 import pytest
+from shapely import (
+    LineString,
+    MultiLineString,
+    MultiPolygon,
+    Polygon,
+)
+from shapely.testing import assert_geometries_equal
 
 from structuralcodes.geometry import (
+    CompoundGeometry,
     Geometry,
     PointGeometry,
     SurfaceGeometry,
-    CompoundGeometry,
     create_line_point_angle,
-)
-from structuralcodes.sections._reinforcement import (
-    add_reinforcement,
-    add_reinforcement_line,
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
     ParabolaRectangle,
 )
-from shapely import (
-    Polygon,
-    MultiLineString,
-    LineString,
-    MultiPolygon,
-    LinearRing,
+from structuralcodes.sections._reinforcement import (
+    add_reinforcement,
+    add_reinforcement_line,
 )
-from shapely.testing import assert_geometries_equal
 
 
 # Test create line
@@ -57,7 +55,7 @@ from shapely.testing import assert_geometries_equal
 def test_create_line_point_angle(
     xp, yp, th, xb1, yb1, xb2, yb2, x1, y1, x2, y2
 ):
-    """ "Test creating a line from point and angle."""
+    """Test creating a line from point and angle."""
     line = create_line_point_angle(
         point=(xp, yp), theta=th, bbox=(xb1, yb1, xb2, yb2)
     )
@@ -67,7 +65,6 @@ def test_create_line_point_angle(
 # Test PointGeometry
 def test_point_geometry():
     """Test creating a PointGeometry object."""
-
     Geometry.section_counter = 0
     # Create a consitutive law to use
     steel = ElasticPlastic(210000, 450)
@@ -75,7 +72,7 @@ def test_point_geometry():
     # Create two points with default naming (uses global counter)
     for i in range(2):
         p = PointGeometry(np.array([2, 3]), 12, steel)
-        assert p.name == f"Geometry_{i}"
+        assert p.name == f'Geometry_{i}'
         assert math.isclose(p.diameter, 12)
         assert math.isclose(p.point.coords[0][0], 2)
         assert math.isclose(p.point.coords[0][1], 3)
@@ -87,13 +84,14 @@ def test_point_geometry():
             '3.org/1999/xlink" width="100.0" height="100.0" viewBox="1.0 2.0 '
             '2.0 2.0" preserveAspectRatio="xMinYMin meet"><g transform="matrix'
             '(1,0,0,-1,0,6.0)"><circle cx="2.0" cy="3.0" r="0.06" stroke="#555'
-            '555" stroke-width="0.02" fill="#66cc99" opacity="0.6" /></g></svg>'
+            '555" stroke-width="0.02" fill="#66cc99" opacity="0.6" /></g>'
+            '</svg>'
         )
 
     # Create two points with custom label for filtering
     for i in range(2):
         p = PointGeometry(np.array([2, 3]), 12, steel, group_label='Bottom')
-        assert p.name == f"Geometry_{i+2}"
+        assert p.name == f'Geometry_{i+2}'
         assert p.group_label == 'Bottom'
         assert math.isclose(p.diameter, 12)
         assert math.isclose(p.point.coords[0][0], 2)
@@ -102,7 +100,7 @@ def test_point_geometry():
     # Create two points with custom name
     for i in range(2):
         p = PointGeometry(np.array([2, 3]), 12, steel, name='Rebar')
-        assert p.name == f"Rebar"
+        assert p.name == 'Rebar'
         assert math.isclose(p.diameter, 12)
         assert math.isclose(p.point.coords[0][0], 2)
         assert math.isclose(p.point.coords[0][1], 3)
@@ -116,7 +114,7 @@ def test_point_geometry():
     with pytest.warns(UserWarning) as record:
         p = PointGeometry(np.array([2, 3, 4]), 12, steel)
     assert len(record) == 1
-    msg = f'Two coordinates are needed. 3'
+    msg = 'Two coordinates are needed. 3'
     msg += ' coords provided. The extra entries will be'
     msg += ' discarded'
     assert str(record[0].message) == msg
@@ -128,13 +126,12 @@ def test_point_geometry():
     # Trick for now since we don't hav a steel material
     C25 = ConcreteMC2010(25)
     p = PointGeometry(np.array([2, 3]), 12, C25)
-    assert isinstance(p.material, ParabolaRectangle) == True
+    assert isinstance(p.material, ParabolaRectangle)
 
 
 # Test Surface Geometry
-def test_surface_geometry():
+def test_surface_geometry():  # noqa: PLR0915
     """Test creating a SurfaceGeometry object."""
-
     # Create a material to use
     C25 = ConcreteMC2010(25)
 
@@ -145,12 +142,12 @@ def test_surface_geometry():
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
     for mat in (C25, C25_const):
         geo = SurfaceGeometry(poly, mat)
-        assert isinstance(geo.material, ParabolaRectangle) == True
+        assert isinstance(geo.material, ParabolaRectangle)
         assert geo.area == 200 * 400
         assert geo.centroid[0] == 100
         assert geo.centroid[1] == 200
         geo_t = geo.translate(-100, -200)
-        assert isinstance(geo_t.material, ParabolaRectangle) == True
+        assert isinstance(geo_t.material, ParabolaRectangle)
         assert geo_t.area == 200 * 400
         assert geo_t.centroid[0] == 0
         assert geo_t.centroid[1] == 0
@@ -234,7 +231,7 @@ def test_surface_geometry():
     geo1 = SurfaceGeometry(poly=poly1, mat=C25)
     geo2 = SurfaceGeometry(poly=poly2, mat=C25)
     geo_add = geo1 + geo2
-    assert isinstance(geo_add, CompoundGeometry) == True
+    assert isinstance(geo_add, CompoundGeometry)
     assert_geometries_equal(geo_add.geometries[0].polygon, geo1.polygon)
     assert_geometries_equal(geo_add.geometries[1].polygon, geo2.polygon)
 
@@ -252,7 +249,6 @@ def test_surface_geometry():
 
 def test_compound_geometry():
     """Test creating a SurfaceGeometry object."""
-
     # Create a material to use
     C25 = ConcreteMC2010(25)
     steel = ElasticPlastic(210000, 450)
@@ -317,8 +313,8 @@ def test_compound_geometry():
     geo = CompoundGeometry(multi_pol, [C25, steel])
     assert_geometries_equal(geo.geometries[0].polygon, web)
     assert_geometries_equal(geo.geometries[1].polygon, flange)
-    assert isinstance(geo.geometries[0].material, ParabolaRectangle) == True
-    assert isinstance(geo.geometries[1].material, ElasticPlastic) == True
+    assert isinstance(geo.geometries[0].material, ParabolaRectangle)
+    assert isinstance(geo.geometries[1].material, ElasticPlastic)
     # check error is raised when the number of materials is incorrect
     with pytest.raises(ValueError) as excinfo:
         CompoundGeometry(multi_pol, [C25, C25, C25])
@@ -332,10 +328,12 @@ def test_compound_geometry():
         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w'
         '3.org/1999/xlink" width="300" height="300" viewBox="-540.0 -240.0'
         ' 1080.0 580.0" preserveAspectRatio="xMinYMin meet"><g transform='
-        '"matrix(1,0,0,-1,0,100.0)"><g><path fill-rule="evenodd" fill="#ff3333" '
+        '"matrix(1,0,0,-1,0,100.0)"><g><path fill-rule="evenodd" '
+        'fill="#ff3333" '
         'stroke="#555555" stroke-width="7.2" opacity="0.6" d="M -100.0,-200.0'
         ' L 100.0,-200.0 L 100.0,200.0 L -100.0,200.0 L -100.0,-200.0 z" />'
-        '<path fill-rule="evenodd" fill="#ff3333" stroke="#555555" stroke-width'
+        '<path fill-rule="evenodd" fill="#ff3333" stroke="#555555" '
+        'stroke-width'
         '="7.2" opacity="0.6" d="M -500.0,200.0 L 500.0,200.0 L 500.0,300.0 L '
         '-500.0,300.0 L -500.0,200.0 z" /></g></g></svg>'
     )

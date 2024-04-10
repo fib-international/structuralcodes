@@ -5,7 +5,6 @@ from ._fiber_integrator import FiberIntegrator
 from ._marin_integrator import MarinIntegrator
 from ._section_integrator import SectionIntegrator
 
-
 __all__ = [
     'integrator_factory',
     'FiberIntegrator',
