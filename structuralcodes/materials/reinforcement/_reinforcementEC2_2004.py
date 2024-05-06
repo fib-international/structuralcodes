@@ -2,6 +2,8 @@
 
 import typing as t
 
+from structuralcodes.codes import ec2_2004
+
 from ._reinforcement import Reinforcement
 
 
@@ -28,3 +30,8 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
         super().__init__(fyk=fyk, Es=Es, name=name, density=density)
+
+    @property
+    def fyd(self) -> float:
+        """The design yield strength."""
+        return ec2_2004.fyd(self.fyk)

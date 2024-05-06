@@ -2,6 +2,8 @@
 
 import typing as t
 
+from structuralcodes.codes import mc2010
+
 from ._reinforcement import Reinforcement
 
 
@@ -28,3 +30,8 @@ class ReinforcementMC2010(Reinforcement):
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
         super().__init__(fyk=fyk, Es=Es, name=name, density=density)
+
+    @property
+    def fyd(self) -> float:
+        """The design yield strength."""
+        return mc2010.fyd(self.fyk)
