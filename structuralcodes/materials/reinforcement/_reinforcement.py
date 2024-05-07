@@ -33,7 +33,7 @@ class Reinforcement(Material):
     @fyk.setter
     def fyk(self, fyk: float) -> None:
         """Setter for fyk (in MPa)."""
-        self._fck = abs(fyk)
+        self._fyk = abs(fyk)
 
     @property
     def Es(self) -> float:
