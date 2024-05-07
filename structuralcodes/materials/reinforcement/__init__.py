@@ -26,6 +26,7 @@ REINFORCEMENTS: t.Dict[str, Reinforcement] = {
 
 def create_reinforcement(
     fyk: float,
+    Es: float,
     name: t.Optional[str] = None,
     density: float = 7850,
     design_code: t.Optional[str] = None,
@@ -35,6 +36,7 @@ def create_reinforcement(
 
     Args:
         fyk (float): Characteristic yield strength in MPa.
+        Es (float): The Young's modulus in MPa.
 
     Keyword Args:
         density (float): Density of the material in kg/m3 (default: 7850)
@@ -45,7 +47,7 @@ def create_reinforcement(
 
     Raises:
         ValueError: if the design code is not valid or does not cover
-    concrete as a material.
+        reinforcement as a material.
     """
     # Get the code from the global variable
     _code = _use_design_code(design_code)
@@ -64,5 +66,7 @@ def create_reinforcement(
     # Create the proper reinforcement object
     current_reinforcement = REINFORCEMENTS.get(code.__title__, None)
     if current_reinforcement is not None:
-        return current_reinforcement(fyk=fyk, name=name, density=density)
+        return current_reinforcement(
+            fyk=fyk, Es=Es, name=name, density=density
+        )
     return None
