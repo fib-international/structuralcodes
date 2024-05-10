@@ -2,7 +2,10 @@
 
 import typing as t
 
-from ._reinforcement_material_properties import fyd
+from ._reinforcement_material_properties import (
+    fyd,
+    reinforcement_duct_props,
+)
 from ._section_7_3_crack_control import (
     As_min,
     As_min_2,
@@ -47,6 +50,7 @@ __all__ = [
     'kc_tension',
     'kt',
     'phi_eq',
+    'reinforcement_duct_props',
     'rho_p_eff',
     'sr_max_close',
     'sr_max_far',
