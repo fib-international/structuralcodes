@@ -10,12 +10,16 @@ class Reinforcement(Material):
 
     _fyk: float
     _Es: float
+    _ftk: float
+    _epsuk: float
 
     def __init__(
         self,
         fyk: float,
         Es: float,
         density: float,
+        ftk: float,
+        epsuk: float,
         name: t.Optional[str] = None,
     ) -> None:
         """Initializes an abstract reinforcement material."""
@@ -24,6 +28,8 @@ class Reinforcement(Material):
 
         self._fyk = abs(fyk)
         self._Es = abs(Es)
+        self._ftk = abs(ftk)
+        self._epsuk = abs(epsuk)
 
     @property
     def fyk(self) -> float:
@@ -44,3 +50,23 @@ class Reinforcement(Material):
     def Es(self, Es: float) -> None:
         """Setter for Es (in MPa)."""
         self._Es = abs(Es)
+
+    @property
+    def ftk(self) -> float:
+        """Returns ftk in MPa."""
+        return self._ftk
+
+    @ftk.setter
+    def ftk(self, ftk: float) -> None:
+        """Setter for ftk (in MPa)."""
+        self._ftk = abs(ftk)
+
+    @property
+    def epsuk(self) -> float:
+        """Returns epsuk."""
+        return self._epsuk
+
+    @epsuk.setter
+    def epsuk(self, epsuk: float) -> None:
+        """Setter for epsuk."""
+        self._epsuk = abs(epsuk)

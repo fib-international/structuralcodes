@@ -14,6 +14,8 @@ class ReinforcementMC2010(Reinforcement):
         self,
         fyk: float,
         Es: float,
+        ftk: float,
+        epsuk: float,
         name: t.Optional[str] = None,
         density: float = 7850.0,
     ):
@@ -22,6 +24,9 @@ class ReinforcementMC2010(Reinforcement):
         Args:
             fyk (float): Characteristic yield strength in MPa.
             Es (float): The Young's modulus in MPa.
+            ftk (float): Characteristic ultimate strength in MPa.
+            epsuk (float): The characteristik strain at the ultimate stress
+                level.
 
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
@@ -29,7 +34,14 @@ class ReinforcementMC2010(Reinforcement):
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
-        super().__init__(fyk=fyk, Es=Es, name=name, density=density)
+        super().__init__(
+            fyk=fyk,
+            Es=Es,
+            name=name,
+            density=density,
+            ftk=ftk,
+            epsuk=epsuk,
+        )
 
     @property
     def fyd(self) -> float:

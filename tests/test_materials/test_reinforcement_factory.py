@@ -25,13 +25,17 @@ def test_reinforcement_factory(design_code, expected_reinforcement):
     # Arrange
     fyk = 500
     Es = 200000
+    ftk = 1.15 * fyk
+    epsuk = 7.5e-2
 
     # Act and assert
     if design_code is not None:
         set_design_code(design_code=design_code)
-        reinforcement = create_reinforcement(fyk=fyk, Es=Es)
+        reinforcement = create_reinforcement(
+            fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk
+        )
         assert isinstance(reinforcement, expected_reinforcement)
     else:
         set_design_code(design_code=design_code)
         with pytest.raises(ValueError):
-            create_reinforcement(fyk=fyk, Es=Es)
+            create_reinforcement(fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk)

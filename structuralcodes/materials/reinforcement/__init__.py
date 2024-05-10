@@ -27,6 +27,8 @@ REINFORCEMENTS: t.Dict[str, Reinforcement] = {
 def create_reinforcement(
     fyk: float,
     Es: float,
+    ftk: float,
+    epsuk: float,
     name: t.Optional[str] = None,
     density: float = 7850,
     design_code: t.Optional[str] = None,
@@ -37,6 +39,8 @@ def create_reinforcement(
     Args:
         fyk (float): Characteristic yield strength in MPa.
         Es (float): The Young's modulus in MPa.
+        ftk (float): Characteristic ultimate strength in MPa.
+        epsuk (float): The characteristik strain at the ultimate stress level.
 
     Keyword Args:
         density (float): Density of the material in kg/m3 (default: 7850)
@@ -67,6 +71,11 @@ def create_reinforcement(
     current_reinforcement = REINFORCEMENTS.get(code.__title__, None)
     if current_reinforcement is not None:
         return current_reinforcement(
-            fyk=fyk, Es=Es, name=name, density=density
+            fyk=fyk,
+            Es=Es,
+            name=name,
+            density=density,
+            ftk=ftk,
+            epsuk=epsuk,
         )
     return None
