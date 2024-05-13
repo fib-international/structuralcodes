@@ -88,26 +88,26 @@ class GenericSectionCalculator(SectionCalculator):
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
-                if g != other_g:
-                    eps_p = g.material.get_ultimate_strain(yielding)[0]
-                    if isinstance(g, SurfaceGeometry):
-                        y_p = g.polygon.bounds[1]
-                    elif isinstance(g, PointGeometry):
-                        y_p = g._point.coords[0][1]
-                    eps_n = other_g.material.get_ultimate_strain(yielding)[1]
-                    if isinstance(other_g, SurfaceGeometry):
-                        y_n = other_g.polygon.bounds[3]
-                    elif isinstance(other_g, PointGeometry):
-                        y_n = other_g._point.coords[0][1]
-                    if y_p >= y_n:
-                        continue
-                    chi = -(eps_p - eps_n) / (y_p - y_n)
-                    # print(y_p,eps_p,y_n,eps_n,chi)
-                    if chi < chi_min:
-                        chi_min = chi
-                        eps_0 = eps_n + chi_min * y_n
-                        y_n_min = y_n
-                        y_p_min = y_p
+                # if g != other_g:
+                eps_p = g.material.get_ultimate_strain(yielding)[0]
+                if isinstance(g, SurfaceGeometry):
+                    y_p = g.polygon.bounds[1]
+                elif isinstance(g, PointGeometry):
+                    y_p = g._point.coords[0][1]
+                eps_n = other_g.material.get_ultimate_strain(yielding)[1]
+                if isinstance(other_g, SurfaceGeometry):
+                    y_n = other_g.polygon.bounds[3]
+                elif isinstance(other_g, PointGeometry):
+                    y_n = other_g._point.coords[0][1]
+                if y_p >= y_n:
+                    continue
+                chi = -(eps_p - eps_n) / (y_p - y_n)
+                # print(y_p,eps_p,y_n,eps_n,chi)
+                if chi < chi_min:
+                    chi_min = chi
+                    eps_0 = eps_n + chi_min * y_n
+                    y_n_min = y_n
+                    y_p_min = y_p
         y_p, y_n = y_p_min, y_n_min
         strain = [eps_0, chi_min, 0]
         return (y_n, y_p, strain)
