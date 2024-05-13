@@ -234,3 +234,25 @@ def test_Ecm_setter(test_input, expected):
     c.Ecm = expected
 
     assert math.isclose(c.Ecm, expected)
+
+
+@pytest.mark.parametrize(
+    'fck, alpha_cc, gamma_c, fcd',
+    [
+        (35, 0.85, 1.5, 19.833),
+        (45, 0.85, 1.5, 25.5),
+        (70, 0.85, 1.5, 39.667),
+        (90, 0.85, 1.5, 51.0),
+    ],
+)
+def test_fcd(fck, alpha_cc, gamma_c, fcd):
+    """Test the fcd method on the concrete class."""
+    # Arrange
+    concrete = ConcreteEC2_2004(fck=fck)
+
+    # Act and assert
+    assert math.isclose(
+        concrete.fcd(alpha_cc=alpha_cc, gamma_c=gamma_c),
+        fcd,
+        rel_tol=1e-4,
+    )

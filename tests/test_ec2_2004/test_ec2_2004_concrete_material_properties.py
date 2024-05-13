@@ -343,3 +343,23 @@ def test_eps_cu3(test_input, expect):
         expect,
         rel_tol=1.63e-2,
     )
+
+
+@pytest.mark.parametrize(
+    'fck, alpha_cc, gamma_c, fcd',
+    [
+        (35, 0.85, 1.5, 19.833),
+        (45, 0.85, 1.5, 25.5),
+        (70, 0.85, 1.5, 39.667),
+        (90, 0.85, 1.5, 51.0),
+    ],
+)
+def test_fcd(fck, alpha_cc, gamma_c, fcd):
+    """Test calculating the design strength."""
+    assert math.isclose(
+        _concrete_material_properties.fcd(
+            fck=fck, alpha_cc=alpha_cc, gamma_c=gamma_c
+        ),
+        fcd,
+        rel_tol=1e-4,
+    )

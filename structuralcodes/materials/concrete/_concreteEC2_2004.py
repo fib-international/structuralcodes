@@ -166,3 +166,17 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             value (float): the value of Ecm in MPa
         """
         self._Ecm = abs(value)
+
+    def fcd(self, alpha_cc: float, gamma_c: float) -> float:
+        """Calculate the design compressive strength.
+
+        Args:
+            alpha_cc (float): A factor for considering long-term effects on the
+                strength, and effects that arise from the way the load is
+                applied.
+            gamma_c (float): The partial factor of concrete.
+
+        Returns:
+            float: The design compressive strength of concrete in MPa
+        """
+        return ec2_2004.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=gamma_c)

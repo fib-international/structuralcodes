@@ -201,3 +201,20 @@ def eps_cu3(fck: float) -> float:
         float: The ultimate strain, absolute value, no unit.
     """
     return eps_cu2(fck)
+
+
+def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
+    """The design compressive strength of concrete.
+
+    EN 1992-1-1:2004, Eq. (3.15)
+
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+        alpha_cc (float): A factor for considering long-term effects on the
+            strength, and effects that arise from the way the load is applied.
+        gamma_c (float): The partial factor of concrete.
+
+    Returns:
+        float: The design compressive strength of concrete in MPa
+    """
+    return abs(alpha_cc) * abs(fck) / abs(gamma_c)
