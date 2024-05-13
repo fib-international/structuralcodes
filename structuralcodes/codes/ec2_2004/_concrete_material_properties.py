@@ -21,7 +21,7 @@ def fcm(fck: float, delta_f: float = 8) -> float:
     Returns:
         float: The mean compressive strength in MPa.
     """
-    return mc2010.fcm(fck=fck, delta_f=delta_f)
+    return mc2010.fcm(fck=abs(fck), delta_f=abs(delta_f))
 
 
 def fctm(fck: float) -> float:
@@ -36,7 +36,7 @@ def fctm(fck: float) -> float:
     Returns:
         float: The mean tensile strength in MPa.
     """
-    return mc2010.fctm(fck=fck)
+    return mc2010.fctm(fck=abs(fck))
 
 
 def fctk_5(_fctm: float) -> float:
@@ -50,7 +50,7 @@ def fctk_5(_fctm: float) -> float:
     Returns:
         float: The 5% fractile of the tensile strength in MPa.
     """
-    return mc2010.fctkmin(_fctm=_fctm)
+    return mc2010.fctkmin(_fctm=abs(_fctm))
 
 
 def fctk_95(_fctm: float) -> float:
@@ -64,7 +64,7 @@ def fctk_95(_fctm: float) -> float:
     Returns:
         float: The 95% fractile of the tensile strength in MPa.
     """
-    return mc2010.fctkmax(_fctm=_fctm)
+    return mc2010.fctkmax(_fctm=abs(_fctm))
 
 
 def Ecm(_fcm: float) -> float:
@@ -78,7 +78,7 @@ def Ecm(_fcm: float) -> float:
     Returns:
         float: The secant modulus of concrete in MPa.
     """
-    return 22000.0 * math.pow(_fcm / 10, 0.3)
+    return 22000.0 * math.pow(abs(_fcm) / 10, 0.3)
 
 
 def eps_c1(_fcm: float) -> float:
@@ -94,7 +94,7 @@ def eps_c1(_fcm: float) -> float:
         float: The strain at maximum compressive stress, absolute value, no
         unit.
     """
-    return min(0.7 * math.pow(_fcm, 0.31), 2.8) / 1000
+    return min(0.7 * math.pow(abs(_fcm), 0.31), 2.8) / 1000
 
 
 def eps_cu1(fck: float) -> float:
@@ -109,6 +109,7 @@ def eps_cu1(fck: float) -> float:
     Returns:
         float: The ultimate strain, absolute value, no unit.
     """
+    fck = abs(fck)
     return (
         3.5 / 1000
         if fck < 50
@@ -130,6 +131,7 @@ def eps_c2(fck: float) -> float:
         float: The strain at maximum compressive stress, absolute value, no
         unit.
     """
+    fck = abs(fck)
     return (
         2.0 / 1000 if fck < 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
     )
@@ -147,6 +149,7 @@ def eps_cu2(fck: float) -> float:
     Returns:
         float: The ultimate strain, absolute value, no unit.
     """
+    fck = abs(fck)
     return (
         3.5 / 1000 if fck < 50 else (2.6 + 35 * ((90 - fck) / 100) ** 4) / 1000
     )
@@ -164,6 +167,7 @@ def n_parabolic_rectangular(fck: float) -> float:
     Returns:
         float: The exponent n, absolute value, no unit.
     """
+    fck = abs(fck)
     return 2.0 if fck < 50 else (1.4 + 23.4 * ((90 - fck) / 100) ** 4)
 
 
@@ -180,6 +184,7 @@ def eps_c3(fck: float) -> float:
         float: The strain at maximum compressive stress, absolute value, no
         unit.
     """
+    fck = abs(fck)
     return 1.75 / 1000 if fck < 50 else (1.75 + 0.55 * (fck - 50) / 40) / 1000
 
 
