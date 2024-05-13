@@ -11,7 +11,15 @@ def fcm(fck: float, delta_f: float = 8) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The caracteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Keyword Args:
+        delta_f (float): The difference between the mean and the
+            characteristic strength.
+
+    Returns:
+        float: The mean compressive strength in MPa.
     """
     return mc2010.fcm(fck=fck, delta_f=delta_f)
 
@@ -22,7 +30,11 @@ def fctm(fck: float) -> float:
     EN 1992-1-1: 2004, Table 3.1.
 
     Args:
-        fck (float): The caracteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The mean tensile strength in MPa.
     """
     return mc2010.fctm(fck=fck)
 
@@ -33,7 +45,10 @@ def fctk_5(_fctm: float) -> float:
     EN 1992-1-1: 2004, Table 3.1.
 
     Args:
-        _fctm (float): The mean tensile strength of concrete.
+        _fctm (float): The mean tensile strength of concrete in MPa.
+
+    Returns:
+        float: The 5% fractile of the tensile strength in MPa.
     """
     return mc2010.fctkmin(_fctm=_fctm)
 
@@ -44,7 +59,10 @@ def fctk_95(_fctm: float) -> float:
     EN 1992-1-1: 2004, Table 3.1.
 
     Args:
-        _fctm (float): The mean tensile strength of concrete.
+        _fctm (float): The mean tensile strength of concrete in MPa.
+
+    Returns:
+        float: The 95% fractile of the tensile strength in MPa.
     """
     return mc2010.fctkmax(_fctm=_fctm)
 
@@ -55,7 +73,10 @@ def Ecm(_fcm: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        _fcm (float): The mean compressive strength of concrete.
+        _fcm (float): The mean compressive strength of concrete in MPa.
+
+    Returns:
+        float: The secant modulus of concrete in MPa.
     """
     return 22000.0 * math.pow(_fcm / 10, 0.3)
 
@@ -67,7 +88,11 @@ def eps_c1(_fcm: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        _fcm (float): The mean compressive strength of concrete.
+        _fcm (float): The mean compressive strength of concrete in MPa.
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
     """
     return min(0.7 * math.pow(_fcm, 0.31), 2.8) / 1000
 
@@ -78,7 +103,11 @@ def eps_cu1(fck: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The characteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
     """
     return (
         3.5 / 1000
@@ -94,8 +123,12 @@ def eps_c2(fck: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The characteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
 
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
     """
     return (
         2.0 / 1000 if fck < 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
@@ -108,7 +141,11 @@ def eps_cu2(fck: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The characteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
     """
     return (
         3.5 / 1000 if fck < 50 else (2.6 + 35 * ((90 - fck) / 100) ** 4) / 1000
@@ -121,7 +158,11 @@ def n(fck: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The characteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The exponent n, absolute value, no unit.
     """
     return 2.0 if fck < 50 else (1.4 + 23.4 * ((90 - fck) / 100) ** 4)
 
@@ -132,7 +173,12 @@ def eps_c3(fck: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The characteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
     """
     return 1.75 / 1000 if fck < 50 else (1.75 + 0.55 * (fck - 50) / 40) / 1000
 
@@ -143,6 +189,10 @@ def eps_cu3(fck: float) -> float:
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        fck (float): The characteristic compressive strength of concrete.
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
     """
     return eps_cu2(fck)
