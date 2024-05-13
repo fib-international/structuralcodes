@@ -205,8 +205,9 @@ class GenericSectionCalculator(SectionCalculator):
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
+        delta = 10
         while not found and it < ITMAX:
-            x_b = x_a + sign * (10 * it**2)
+            x_b = x_a + sign * (delta * (it + 1) ** 2)
             (
                 n_int,
                 _,
@@ -218,6 +219,11 @@ class GenericSectionCalculator(SectionCalculator):
             dn_b = n_int - n
             if dn_a * dn_b < 0:
                 found = True
+            elif abs(dn_b) > abs(dn_a):
+                # we are driving aay from the solution, probably due
+                # to failure of a material
+                delta /= 2
+                it -= 1
             it += 1
         if it >= ITMAX and not found:
             s = f'Last iteration reached a unbalance of: \
