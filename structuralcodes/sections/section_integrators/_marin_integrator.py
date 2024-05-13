@@ -8,10 +8,7 @@ from numpy.typing import ArrayLike
 from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
 
-from structuralcodes.geometry import (
-    CompoundGeometry,
-    create_line_point_angle,
-)
+from structuralcodes.geometry import CompoundGeometry, create_line_point_angle
 
 from ._marin_integration import marin_integration
 from ._section_integrator import SectionIntegrator
@@ -57,7 +54,7 @@ class MarinIntegrator(SectionIntegrator):
         for g in rotated_geom.geometries:
             # 3a. get coefficients and strain limits from constitutive law
             if hasattr(g.material, '__marin__'):
-                strains, coeffs = g.material.__marin__(strain_rotated)
+                strains, coeffs = g.material.__marin__(strain=strain_rotated)
             else:
                 raise AttributeError(
                     f'The material object {g.material} of geometry {g} does \
@@ -71,8 +68,8 @@ class MarinIntegrator(SectionIntegrator):
             # 3b. Subdivide the polygon at the different strain limits
             for p in range(len(strains)):
                 # Create the two lines for selecting the needed part
-                y0 = (strain_rotated[0] - strains[p][0]) / strain_rotated[1]
-                y1 = (strain_rotated[0] - strains[p][1]) / strain_rotated[1]
+                y0 = -(strain_rotated[0] - strains[p][0]) / strain_rotated[1]
+                y1 = -(strain_rotated[0] - strains[p][1]) / strain_rotated[1]
                 if y0 > y1:
                     y0, y1 = y1, y0
                 bbox = g.polygon.bounds
@@ -126,7 +123,7 @@ class MarinIntegrator(SectionIntegrator):
             xp = xp[0]
             yp = yp[0]
             A = pg.area
-            strain = strain_rotated[0] - strain_rotated[1] * yp
+            strain = strain_rotated[0] + strain_rotated[1] * yp
             x.append(xp)
             y.append(yp)
             F.append(pg.material.get_stress(strain)[0] * A)

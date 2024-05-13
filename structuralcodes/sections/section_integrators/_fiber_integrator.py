@@ -7,10 +7,7 @@ import triangle
 from numpy.typing import ArrayLike
 from shapely import Polygon
 
-from structuralcodes.geometry import (
-    CompoundGeometry,
-    SurfaceGeometry,
-)
+from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 
 from ._section_integrator import SectionIntegrator
 
@@ -173,7 +170,7 @@ class FiberIntegrator(SectionIntegrator):
         F = []
         for tr in triangulated_data:
             # All have the same material
-            strains = strain[0] + strain[2] * tr[0] - strain[1] * tr[1]
+            strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
             # compute stresses in all materials
             stresses = tr[3].get_stress(strains)
             x.append(tr[0])

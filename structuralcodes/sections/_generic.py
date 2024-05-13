@@ -109,7 +109,8 @@ class GenericSectionCalculator(SectionCalculator):
                     y_n_min = y_n
                     y_p_min = y_p
         y_p, y_n = y_p_min, y_n_min
-        strain = [eps_0, chi_min, 0]
+        # In standard CRS negative curvature stretches bottom fiber
+        strain = [eps_0, -chi_min, 0]
         return (y_n, y_p, strain)
 
     def find_equilibrium_fixed_pivot(
@@ -134,28 +135,35 @@ class GenericSectionCalculator(SectionCalculator):
         # 1. Start with a balanced failure: this is found from all ultimate
         # strains for all materials, checking the minimum curvature value
         y_n, y_p, strain = self.get_balanced_failure_strain(geom, yielding)
-        eps_p = strain[0] - strain[1] * y_p
-        eps_n = strain[0] - strain[1] * y_n
+        eps_p = strain[0] + strain[1] * y_p
+        eps_n = strain[0] + strain[1] * y_n
         # Integrate this strain profile corresponding to balanced failure
         (
             n_int,
             _,
             _,
             tri,
-        ) = self.integrator.integrate_strain_response_on_geometry(geom, strain)
+        ) = self.integrator.integrate_strain_response_on_geometry(
+            geom, strain, mesh_size=self.mesh_size
+        )
         self.triangulated_data = tri
         # Check if there is equilibrium with this strain distribution
         chi_a = strain[1]
         dn_a = n_int - n
-        chi_b = 1e-13
+        # It may occur that dn_a is already almost zero (in eqiulibrium)
+        if abs(dn_a) <= 1e-2:
+            # return the equilibrium position
+            return [strain[0], chi_a, 0]
+        chi_b = -1e-13
         if n_int < n:
+            # Too much compression, raise NA
             pivot = y_p
             strain_pivot = eps_p
         else:
             # Too much tension, lower NA
             pivot = y_n
             strain_pivot = eps_n
-        eps_0 = strain_pivot + chi_b * pivot
+        eps_0 = strain_pivot - chi_b * pivot
         n_int, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
             geom, [eps_0, chi_b, 0], tri=self.triangulated_data
         )
@@ -163,7 +171,7 @@ class GenericSectionCalculator(SectionCalculator):
         it = 0
         while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
             chi_c = (chi_a + chi_b) / 2.0
-            eps_0 = strain_pivot + chi_c * pivot
+            eps_0 = strain_pivot - chi_c * pivot
             (
                 n_int,
                 _,
@@ -214,7 +222,7 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [curv * x_b, curv, 0], tri=self.triangulated_data
+                geom, [-curv * x_b, curv, 0], tri=self.triangulated_data
             )
             dn_b = n_int - n
             if dn_a * dn_b < 0:
@@ -248,7 +256,7 @@ class GenericSectionCalculator(SectionCalculator):
         # Number of maximum iteration for the bisection algorithm
         ITMAX = 100
         # Start from previous position of N.A.
-        eps_0 = curv * x
+        eps_0 = -curv * x
         # find internal axial force by integration
         (
             n_int,
@@ -275,7 +283,7 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [curv * x_c, curv, 0], tri=self.triangulated_data
+                geom, [-curv * x_c, curv, 0], tri=self.triangulated_data
             )
             dn_c = n_int - n
             if dn_a * dn_c < 0:
@@ -289,7 +297,7 @@ class GenericSectionCalculator(SectionCalculator):
             s = f'Last iteration reached a unbalance of: \
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return (x_c, [curv * x_c, curv, 0])
+        return (x_c, [-curv * x_c, curv, 0])
 
     def calculate_bending_strength(
         self, theta=0, n=0
@@ -358,13 +366,20 @@ class GenericSectionCalculator(SectionCalculator):
         # Find the yielding curvature
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n, True)
         chi_yield = strain[1]
+        sign = -1 if chi_yield < 0 else 1
+        if chi_ultimate * chi_yield < 0:
+            # They cannot have opposite signs!
+            raise ValueError(
+                'curvature at yield and ultimate cannot have opposite signs!'
+            )
         # Define the array of curvatures
         chi = np.concatenate(
             (
-                np.linspace(1e-13, chi_yield, 10, endpoint=False),
+                np.linspace(1e-13 * sign, chi_yield, 10, endpoint=False),
                 np.linspace(chi_yield, chi_ultimate, 100),
             )
         )
+
         # prepare results
         eps_a = np.zeros_like(chi)
         my = np.zeros_like(chi)

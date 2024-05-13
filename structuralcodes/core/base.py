@@ -99,10 +99,11 @@ class ConstitutiveLaw(abc.ABC):
         ultimate strain (positive and negative).
         """
 
-    def __marin__(self):
+    def __marin__(self, **kwargs):
         """Function for getting the strain limits and coefficients
         for marin integration.
         """
+        del kwargs
         raise NotImplementedError
 
     def get_secant(self, eps: float) -> float:

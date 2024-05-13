@@ -86,12 +86,54 @@ class ElasticPlastic(ConstitutiveLaw):
             return self._Eh
         return self._E
 
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin
+        integration in a simply formatted way.
+
+        Args:
+            strain: (float, float) tuple defining the strain
+                profile: eps = strain[0] + strain[1]*y
+        Returns:
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        y_na = strain[0] / strain[1]
+        eps_sy_p, eps_sy_n = self.get_ultimate_strain(yielding=True)
+        # y_yp = (strain[0] - eps_sy_p) / strain[1]
+        # y_yn = (strain[0] - eps_sy_n) / strain[1]
+        # Hardening part negative
+        eps_su_p, eps_su_n = self.get_ultimate_strain()
+        strains.append((eps_su_n, eps_sy_n))
+        a0 = -self._Eh * y_na * strain[1] - self._fy * (1 - self._Eh / self._E)
+        a1 = self._Eh * strain[1]
+        coeff.append((a0, a1))
+        # Elastic part
+        strains.append((eps_sy_n, eps_sy_p))
+        a0 = -self._E * y_na * strain[1]
+        a1 = self._E * strain[1]
+        coeff.append((a0, a1))
+        # Hardening part positive
+        strains.append((eps_sy_p, eps_su_p))
+        a0 = -self._Eh * y_na * strain[1] + self._fy * (1 - self._Eh / self._E)
+        a1 = self._Eh * strain[1]
+        coeff.append((a0, a1))
+        return strains, coeff
+
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (positive and negative)."""
         if yielding:
             return (self._eps_sy, -self._eps_sy)
+        # If not specified eps
+        if self._eps_su is None:
+            return (self._eps_sy * 2, -self._eps_sy * 2)
         return (self._eps_su, -self._eps_su)
 
 
@@ -157,7 +199,9 @@ class ParabolaRectangle(ConstitutiveLaw):
         tangent[eps > 0] = 0.0
         return tangent
 
-    def __marin__(self, strain):
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[float], t.List[float]]:
         """Returns coefficients and strain limits for Marin
         integration in a simply formatted way.
 
@@ -172,9 +216,9 @@ class ParabolaRectangle(ConstitutiveLaw):
         """
         strains = []
         coeff = []
-        y_na = strain[0] / strain[1]
-        y_0 = (strain[0] - self._eps_0) / strain[1]
-        (strain[0] - self._eps_u) / strain[1]
+        y_na = -strain[0] / strain[1]
+        y_0 = (self._eps_0 - strain[0]) / strain[1]
+        # (strain[0] - self._eps_u) / strain[1]
         # Parabolic part
         strains.append((self._eps_0, 0))
         y0na = y_0 - y_na
