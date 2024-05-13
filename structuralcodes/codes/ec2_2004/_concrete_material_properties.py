@@ -152,7 +152,7 @@ def eps_cu2(fck: float) -> float:
     )
 
 
-def n(fck: float) -> float:
+def n_parabolic_rectangular(fck: float) -> float:
     """The exponent in the parabolic-rectangular law.
 
     EN 1992-1-1:2004, Table 3.1.

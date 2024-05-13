@@ -283,7 +283,7 @@ def test_eps_cu2(test_input, expect):
 def test_n(test_input, expect):
     """Test the n function."""
     assert math.isclose(
-        _concrete_material_properties.n(test_input),
+        _concrete_material_properties.n_parabolic_rectangular(test_input),
         expect,
         rel_tol=9e-3,
     )

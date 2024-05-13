@@ -14,7 +14,7 @@ from ._concrete_material_properties import (
     fctk_5,
     fctk_95,
     fctm,
-    n,
+    n_parabolic_rectangular,
 )
 from ._section_7_3_crack_control import (
     As_min,
@@ -77,7 +77,7 @@ __all__ = [
     'eps_cu1',
     'eps_c2',
     'eps_cu2',
-    'n',
+    'n_parabolic_rectangular',
     'eps_c3',
     'eps_cu3',
 ]
