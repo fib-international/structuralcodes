@@ -172,7 +172,7 @@ def n_parabolic_rectangular(fck: float) -> float:
 
 
 def eps_c3(fck: float) -> float:
-    """The ultimate strain of the bi-linear law.
+    """The strain at maximum compressive stress of the bi-linear law.
 
     EN 1992-1-1:2004, Table 3.1.
 
