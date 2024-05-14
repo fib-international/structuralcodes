@@ -2,15 +2,14 @@
 
 import math
 
-from shapely import Polygon
+import pytest
+from shapely import Point, Polygon
+from shapely.affinity import scale, translate
+from shapely.ops import unary_union
 
-from structuralcodes.geometry import (
-    SurfaceGeometry,
-)
+from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.concrete import ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import (
-    ElasticPlastic,
-)
+from structuralcodes.materials.constitutive_laws import ElasticPlastic
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.sections._reinforcement import (
     add_reinforcement,
@@ -154,3 +153,319 @@ def test_u_section():
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
     assert math.isclose(res_marin.m_x, res_fiber.m_x, rel_tol=1e-2)
+
+
+# Test steel I section
+def _iyy_IPE(h: float, b: float, tw: float, tf: float, r: float) -> float:
+    return (
+        1 / 12 * b * h**3
+        - 1 / 12 * (b - tw) * (h - 2 * tf) ** 3
+        + 4 * (r**4 / 12.0 + r**2 * (h / 2 - tf - r / 2) ** 2)
+        - 4
+        * (
+            (math.pi / 16 - 4 / (9 * math.pi)) * r**4
+            + math.pi
+            * r**2
+            / 4
+            * (h / 2 - tf - r * (3 * math.pi - 4) / (3 * math.pi)) ** 2
+        )
+    )
+
+
+def _izz_IPE(h: float, b: float, tw: float, tf: float, r: float) -> float:
+    return (
+        2 / 12 * tf * b**3
+        + 1 / 12 * (h - 2 * tf) * tw**3
+        + 4 * (r**4 / 12.0 + r**2 * ((tw + r) / 2) ** 2)
+        - 4
+        * (
+            (math.pi / 16 - 4 / (9 * math.pi)) * r**4
+            + math.pi
+            * r**2
+            / 4
+            * (tw / 2 + r * (3 * math.pi - 4) / (3 * math.pi)) ** 2
+        )
+    )
+
+
+def _wyel_IPE(h: float, b: float, tw: float, tf: float, r: float) -> float:
+    return _iyy_IPE(h, b, tw, tf, r) / (h / 2.0)
+
+
+def _wzel_IPE(h: float, b: float, tw: float, tf: float, r: float) -> float:
+    return _izz_IPE(h, b, tw, tf, r) / (b / 2.0)
+
+
+def _wypl_IPE(h: float, b: float, tw: float, tf: float, r: float) -> float:
+    return 2 * (
+        tw * h**2 / 8.0
+        + tf * (b - tw) * (h - tf) / 2.0
+        + 2.0 * r**2 * (h / 2.0 - tf - r / 2.0)
+        - 2
+        * math.pi
+        * r**2
+        / 4.0
+        * (h / 2 - tf - r * (3 * math.pi - 4) / (3 * math.pi))
+    )
+
+
+def _wzpl_IPE(h: float, b: float, tw: float, tf: float, r: float) -> float:
+    return 2 * (
+        2 * tf * b**2 / 8.0
+        + tw**2 / 8.0 * (h - 2 * tf)
+        + 2 * r**2 * (tw + r) / 2.0
+        - 2
+        * math.pi
+        * r**2
+        / 4
+        * (tw / 2 + r * (3 * math.pi - 4) / (3 * math.pi))
+    )
+
+
+def _create_I_section(h: float, b: float, tw: float, tf: float, r: float):
+    # create the geometry of section
+    # top flange
+    top_flange = Polygon(
+        [
+            (-b / 2, -h / 2),
+            (b / 2, -h / 2),
+            (b / 2, -h / 2 + tf),
+            (-b / 2, -h / 2 + tf),
+        ]
+    )
+    # bottom flange
+    bottom_flange = translate(top_flange, xoff=0, yoff=h - tf)
+    web = Polygon(
+        [
+            (-tw / 2, -h / 2 + tf),
+            (tw / 2, -h / 2 + tf),
+            (tw / 2, h / 2 - tf),
+            (-tw / 2, h / 2 - tf),
+        ]
+    )
+    # fillets
+    p = Point([tw / 2 + r, -h / 2 + tf + r]).buffer(r)
+    s = Polygon(
+        [
+            (tw / 2, -h / 2 + tf),
+            (tw / 2 + r, -h / 2 + tf),
+            (tw / 2 + r, -h / 2 + tf + r),
+            (tw / 2, -h / 2 + tf + r),
+        ]
+    )
+    fillet = s.difference(p)
+    p = Point([-tw / 2 - r, -h / 2 + tf + r]).buffer(r)
+    s = Polygon(
+        [
+            (-tw / 2 - r, -h / 2 + tf),
+            (-tw / 2, -h / 2 + tf),
+            (-tw / 2, -h / 2 + tf + r),
+            (-tw / 2 - r, -h / 2 + tf + r),
+        ]
+    )
+    fillet = s.difference(p).union(fillet)
+    fillet = translate(
+        scale(fillet, 1, -1), xoff=0, yoff=h - 2 * tf - r
+    ).union(fillet)
+    # Create the geometry
+    return unary_union([fillet, top_flange, bottom_flange, web])
+
+
+@pytest.mark.parametrize(
+    'h, b, tw, tf, r',
+    [
+        (80, 46, 3.8, 5.2, 5),
+        (100, 55, 4.1, 5.7, 7),
+        # (120, 64, 4.4, 6.3, 7),
+        # (140, 73, 4.7, 6.9, 7),
+        # (160, 82, 5, 7.4, 9),
+        # (180, 91, 5.3, 8, 9),
+        # (200, 100, 5.6, 8.5, 12),
+        # (220, 110, 5.9, 9.2, 12),
+        # (240, 120, 6.2, 9.8, 15),
+        # (270, 135, 6.6, 10.2, 15),
+        # (300, 150, 7.1, 10.7, 15),
+        # (330, 160, 7.5, 11.5, 18),
+        # (360, 170, 8, 12.7, 18),
+        # (400, 180, 8.6, 13.5, 21),
+        # (450, 190, 9.4, 14.6, 21),
+        # (500, 200, 10.2, 16, 21),
+        # (550, 210, 11.1, 17.2, 21),
+        # (600, 220, 12, 19, 24),
+    ],
+)
+def test_Isection_elastic_fiber(h, b, tw, tf, r):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    eps_su = fy / Es
+    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+
+    # Create geometry
+    geo = CompoundGeometry(
+        [SurfaceGeometry(_create_I_section(h, b, tw, tf, r), steel)]
+    )
+
+    # Compute expected values
+    wy_el = _wyel_IPE(h, b, tw, tf, r)
+    wz_el = _wzel_IPE(h, b, tw, tf, r)
+    my_expected = wy_el * fy * 1e-6
+    mz_expected = wz_el * fy * 1e-6
+    # Create the section with fiber
+    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(
+        theta=math.pi / 2, n=0
+    )
+    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+
+
+@pytest.mark.parametrize(
+    'h, b, tw, tf, r',
+    [
+        (80, 46, 3.8, 5.2, 5),
+        (100, 55, 4.1, 5.7, 7),
+        # (120, 64, 4.4, 6.3, 7),
+        # (140, 73, 4.7, 6.9, 7),
+        # (160, 82, 5, 7.4, 9),
+        # (180, 91, 5.3, 8, 9),
+        # (200, 100, 5.6, 8.5, 12),
+        # (220, 110, 5.9, 9.2, 12),
+        # (240, 120, 6.2, 9.8, 15),
+        # (270, 135, 6.6, 10.2, 15),
+        # (300, 150, 7.1, 10.7, 15),
+        # (330, 160, 7.5, 11.5, 18),
+        # (360, 170, 8, 12.7, 18),
+        # (400, 180, 8.6, 13.5, 21),
+        # (450, 190, 9.4, 14.6, 21),
+        # (500, 200, 10.2, 16, 21),
+        # (550, 210, 11.1, 17.2, 21),
+        # (600, 220, 12, 19, 24),
+    ],
+)
+def test_Isection_elastic_marin(h, b, tw, tf, r):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    eps_su = fy / Es
+    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+
+    # Create geometry
+    geo = CompoundGeometry(
+        [SurfaceGeometry(_create_I_section(h, b, tw, tf, r), steel)]
+    )
+
+    # Compute expected values
+    wy_el = _wyel_IPE(h, b, tw, tf, r)
+    wz_el = _wzel_IPE(h, b, tw, tf, r)
+    my_expected = wy_el * fy * 1e-6
+    mz_expected = wz_el * fy * 1e-6
+    # Create the section with fiber
+    sec = GenericSection(geo)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(
+        theta=math.pi / 2, n=0
+    )
+    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+
+
+@pytest.mark.parametrize(
+    'h, b, tw, tf, r',
+    [
+        (80, 46, 3.8, 5.2, 5),
+        (100, 55, 4.1, 5.7, 7),
+        # (120, 64, 4.4, 6.3, 7),
+        # (140, 73, 4.7, 6.9, 7),
+        # (160, 82, 5, 7.4, 9),
+        # (180, 91, 5.3, 8, 9),
+        # (200, 100, 5.6, 8.5, 12),
+        # (220, 110, 5.9, 9.2, 12),
+        # (240, 120, 6.2, 9.8, 15),
+        # (270, 135, 6.6, 10.2, 15),
+        # (300, 150, 7.1, 10.7, 15),
+        # (330, 160, 7.5, 11.5, 18),
+        # (360, 170, 8, 12.7, 18),
+        # (400, 180, 8.6, 13.5, 21),
+        # (450, 190, 9.4, 14.6, 21),
+        # (500, 200, 10.2, 16, 21),
+        # (550, 210, 11.1, 17.2, 21),
+        # (600, 220, 12, 19, 24),
+    ],
+)
+def test_Isection_plastic_fiber(h, b, tw, tf, r):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    eps_su = 0.15
+    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+
+    # Create geometry
+    geo = CompoundGeometry(
+        [SurfaceGeometry(_create_I_section(h, b, tw, tf, r), steel)]
+    )
+
+    # Compute expected values
+    wy_pl = _wypl_IPE(h, b, tw, tf, r)
+    wz_pl = _wzpl_IPE(h, b, tw, tf, r)
+    my_expected = wy_pl * fy * 1e-6
+    mz_expected = wz_pl * fy * 1e-6
+    # Create the section with fiber
+    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-2)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(
+        theta=math.pi / 2, n=0
+    )
+    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+
+
+@pytest.mark.parametrize(
+    'h, b, tw, tf, r',
+    [
+        (80, 46, 3.8, 5.2, 5),
+        (100, 55, 4.1, 5.7, 7),
+        # (120, 64, 4.4, 6.3, 7),
+        # (140, 73, 4.7, 6.9, 7),
+        # (160, 82, 5, 7.4, 9),
+        # (180, 91, 5.3, 8, 9),
+        # (200, 100, 5.6, 8.5, 12),
+        # (220, 110, 5.9, 9.2, 12),
+        # (240, 120, 6.2, 9.8, 15),
+        # (270, 135, 6.6, 10.2, 15),
+        # (300, 150, 7.1, 10.7, 15),
+        # (330, 160, 7.5, 11.5, 18),
+        # (360, 170, 8, 12.7, 18),
+        # (400, 180, 8.6, 13.5, 21),
+        # (450, 190, 9.4, 14.6, 21),
+        # (500, 200, 10.2, 16, 21),
+        # (550, 210, 11.1, 17.2, 21),
+        # (600, 220, 12, 19, 24),
+    ],
+)
+def test_Isection_plastic_marin(h, b, tw, tf, r):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    eps_su = 0.15
+    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+
+    # Create geometry
+    geo = CompoundGeometry(
+        [SurfaceGeometry(_create_I_section(h, b, tw, tf, r), steel)]
+    )
+
+    # Compute expected values
+    wy_pl = _wypl_IPE(h, b, tw, tf, r)
+    wz_pl = _wzpl_IPE(h, b, tw, tf, r)
+    my_expected = wy_pl * fy * 1e-6
+    mz_expected = wz_pl * fy * 1e-6
+    # Create the section with fiber
+    sec = GenericSection(geo)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-2)
+    res_fiber = sec.section_analyzer.calculate_bending_strength(
+        theta=math.pi / 2, n=0
+    )
+    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-2)
