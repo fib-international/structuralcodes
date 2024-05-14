@@ -270,6 +270,10 @@ class GenericSectionCalculator(SectionCalculator):
             self.triangulated_data = tri
         dn_a = n_int - n
         x_a = x
+        # It may occur that dn_a is already almost zero (in eqiulibrium)
+        if abs(dn_a) <= 1e-2:
+            # return the equilibrium position
+            return (x_a, [eps_0, curv, 0])
         x_b, dn_b = self._prefind_range_curvature_equilibrium(
             geom, n, curv, x_a, dn_a
         )
@@ -373,12 +377,17 @@ class GenericSectionCalculator(SectionCalculator):
                 'curvature at yield and ultimate cannot have opposite signs!'
             )
         # Define the array of curvatures
-        chi = np.concatenate(
-            (
-                np.linspace(1e-13 * sign, chi_yield, 10, endpoint=False),
-                np.linspace(chi_yield, chi_ultimate, 100),
+        if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
+            # We don't want a plastic branch in the analysis
+            # this is done to speed up analysis
+            chi = np.linspace(1e-13 * sign, chi_yield, 10)
+        else:
+            chi = np.concatenate(
+                (
+                    np.linspace(1e-13 * sign, chi_yield, 10, endpoint=False),
+                    np.linspace(chi_yield, chi_ultimate, 100),
+                )
             )
-        )
 
         # prepare results
         eps_a = np.zeros_like(chi)
