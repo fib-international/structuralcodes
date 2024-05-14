@@ -10,6 +10,7 @@ from shapely.ops import unary_union
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import ElasticPlastic
+from structuralcodes.materials.reinforcement import ReinforcementMC2010
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.sections._reinforcement import (
     add_reinforcement,
@@ -22,7 +23,7 @@ def test_rectangular_section():
     """Test rectangular section."""
     # Create materials to use
     concrete = ConcreteMC2010(25)
-    steel = ElasticPlastic(210000, 450, eps_su=0.0675)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
@@ -69,7 +70,7 @@ def test_holed_section():
     """Test a section with a hole."""
     # Create materials to use
     concrete = ConcreteMC2010(25)
-    steel = ElasticPlastic(210000, 450, eps_su=0.0675)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
     poly = Polygon(
@@ -112,7 +113,7 @@ def test_u_section():
     """Test a section with a U shape."""
     # Create materials to use
     concrete = ConcreteMC2010(25)
-    steel = ElasticPlastic(210000, 450, eps_su=0.0675)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
     # bottom flange
