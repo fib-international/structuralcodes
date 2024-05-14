@@ -667,3 +667,40 @@ def test_steel_p_raises_errors(eps, fpy, fpu, eps_u, Ep):
     """Test steel_p raises errors."""
     with pytest.raises(ValueError):
         _section5_materials.sigma_p(eps, fpy, fpu, eps_u, Ep)
+
+
+def test_duct_class_not_existing():
+    """Test getting ductility properties for a ductility class that is not
+    available.
+    """
+    # Arrange
+    fyk = 500
+    ductility_class = 'not a class'
+    # Assert
+    with pytest.raises(ValueError):
+        _section5_materials.reinforcement_duct_props(
+            fyk=fyk, ductility_class=ductility_class
+        )
+
+
+@pytest.mark.parametrize(
+    'ductility_class, exp_ratio, exp_strain',
+    [
+        ('a', 1.05, 2.5e-2),
+        ('b', 1.08, 5e-2),
+        ('c', 1.15, 7.5e-2),
+    ],
+)
+def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
+    """Test getting ductility class properties."""
+    # Arrange
+    fyk = 500
+
+    # Act
+    props = _section5_materials.reinforcement_duct_props(
+        fyk=fyk, ductility_class=ductility_class
+    )
+
+    # Assert
+    assert math.isclose(props['ftk'] / fyk, exp_ratio)
+    assert math.isclose(props['epsuk'], exp_strain)

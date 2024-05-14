@@ -3,6 +3,7 @@
 import typing as t
 
 from ._concrete_material_properties import Gf, fcm, fctkmax, fctkmin, fctm
+from ._reinforcement_material_properties import fyd, reinforcement_duct_props
 
 __all__ = [
     'fcm',
@@ -10,6 +11,8 @@ __all__ = [
     'fctkmin',
     'fctkmax',
     'Gf',
+    'fyd',
+    'reinforcement_duct_props',
 ]
 
 __title__: str = 'fib Model Code 2010'

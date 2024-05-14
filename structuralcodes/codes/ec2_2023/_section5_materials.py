@@ -10,6 +10,21 @@ from structuralcodes.codes import mc2010
 
 VALID_STRENGTH_DEV_CLASSES = ('CS', 'CN', 'CR', 'SLOW', 'NORMAL', 'RAPID')
 
+DUCTILITY_CLASSES = {
+    'A': {
+        'epsuk': 2.5e-2,
+        'k': 1.05,
+    },
+    'B': {
+        'epsuk': 5.0e-2,
+        'k': 1.08,
+    },
+    'C': {
+        'epsuk': 7.5e-2,
+        'k': 1.15,
+    },
+}
+
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Determines the mean strength of concrete from its characteristic value.
@@ -858,7 +873,7 @@ def weight_s() -> float:
     return 78.5
 
 
-def fyd(fyk: float, gamma_S: float) -> float:
+def fyd(fyk: float, gamma_S: float = 1.15) -> float:
     """Design value for the yielding stress for welding reinforcing steel.
 
     EN 1992-1-1:2023, Eq (5.11)
@@ -1109,3 +1124,34 @@ def sigma_p(
     # If plastic
     m = (fpu - fpy) / (eps_u - eps_y)
     return fpy + m * (eps - eps_y)
+
+
+def reinforcement_duct_props(
+    fyk: float,
+    ductility_class: t.Literal['A', 'B', 'C'],
+) -> t.Dict[str, float]:
+    """Return a dict with the minimum characteristic ductility properties for
+    reinforcement ductility class.
+
+    EUROCODE 2 1992-1-1:2023, Tab. 5.5
+
+    Args:
+        fyk (float): The characteristic yield strength.
+        ductility_class (Literal['A', 'B', 'C']): The reinforcement ductility
+            class designation.
+
+    Returns:
+        Dict[str, float]: A dict with the characteristik strain value at the
+        ultimate stress level (epsuk), and the characteristic ultimate stress
+        (ftk).
+    """
+    duct_props = DUCTILITY_CLASSES.get(ductility_class.upper(), None)
+    if duct_props is None:
+        raise ValueError(
+            'The no properties was found for the provided ductility class '
+            f'({ductility_class}).'
+        )
+    return {
+        'epsuk': duct_props['epsuk'],
+        'ftk': duct_props['k'] * fyk,
+    }
