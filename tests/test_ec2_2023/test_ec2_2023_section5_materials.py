@@ -161,8 +161,12 @@ def test_A_phi_correction_exp_raises_errors(hn, atm_conditions):
     't0, atm_conditions, _hn, concrete_class, expected',
     [
         (10, 'dry', 500, 'CS', 2.5),
+        (10, 'dry', 500, 'slow', 2.5),
+        (10, 'dry', 500, 'SLOW', 2.5),
         (28, 'humid', 200, 'CN', 1.6),
+        (28, 'humid', 200, 'normal', 1.6),
         (91, 'dry', 750, 'CR', 1.45),
+        (91, 'dry', 750, 'rapid', 1.45),
         (60, 'humid', 600, 'CS', 1.41016),
     ],
 )
@@ -181,11 +185,14 @@ def test_phi_50y_t0(t0, atm_conditions, _hn, concrete_class, expected):
     't0, atm_conditions, _hn, concrete_class',
     [
         (-1, 'dry', 500, 'CS'),
+        (-1, 'dry', 500, 'slow'),
         (50, 'ASDF', 500, 'CS'),
+        (50, 'ASDF', 500, 'slow'),
         (50, 'dry', 50, 'CS'),
         (50, 'dry', 1500, 'CS'),
         (50, 'dry', 500, 'ASD'),
         (1, 'dry', 100, 'CS'),
+        (1, 'dry', 100, 'asdfasd'),
     ],
 )
 def test_phi_50y_t0_raises_errors(t0, atm_conditions, _hn, concrete_class):
@@ -198,8 +205,13 @@ def test_phi_50y_t0_raises_errors(t0, atm_conditions, _hn, concrete_class):
     'fck_28, atm_conditions, _hn, concrete_class, expected',
     [
         (35, 'dry', 500, 'CS', 0.45),
+        (35, 'dry', 500, 'slow', 0.45),
+        (35, 'dry', 500, 'SLOW', 0.45),
         (50, 'humid', 1000, 'CN', 0.23),
+        (50, 'humid', 1000, 'normal', 0.23),
+        (50, 'humid', 1000, 'NORMAL', 0.23),
         (80, 'dry', 200, 'CR', 0.54),
+        (80, 'dry', 200, 'rapid', 0.54),
         (40, 'humid', 300, 'CS', 0.29),
         (25, 'dry', 800, 'CN', 0.46333),
     ],
@@ -259,9 +271,12 @@ def test_eta_cc_raises_errors(fck, fck_ref):
     't_ref, t0, concrete_class, expected',
     [
         (20, 40, 'CR', 0.85),
+        (20, 40, 'cr', 0.85),
+        (20, 40, 'rapid', 0.85),
         (27, 180, 'CR', 1),
         (57, 180, 'CS', 0.85),
         (55, 180, 'CS', 1),
+        (55, 180, 'slow', 1),
     ],
 )
 def test_k_tc(t_ref, t0, concrete_class, expected):
@@ -275,7 +290,13 @@ def test_k_tc(t_ref, t0, concrete_class, expected):
 
 @pytest.mark.parametrize(
     't_ref, t0, concrete_class',
-    [(-3, 20, 'CS'), (10, -5, 'CS'), (10, 10, 'aadsf')],
+    [
+        (-3, 20, 'CS'),
+        (-3, 20, 'slow'),
+        (10, -5, 'CS'),
+        (10, -5, 'SLOW'),
+        (10, 10, 'aadsf'),
+    ],
 )
 def test_k_tc_raises_errors(t_ref, t0, concrete_class):
     """Test k_tc taises errors."""
@@ -317,7 +338,14 @@ def test_fcd_raises_errors(fck, eta_cc, k_tc, gamma_C):
 
 @pytest.mark.parametrize(
     't_ref, concrete_class, expected',
-    [(25, 'CR', 0.8), (30, 'CR', 0.7), (48, 'cs', 0.8), (70, 'CS', 0.7)],
+    [
+        (25, 'CR', 0.8),
+        (25, 'RAPID', 0.8),
+        (30, 'CR', 0.7),
+        (48, 'cs', 0.8),
+        (48, 'slow', 0.8),
+        (70, 'CS', 0.7),
+    ],
 )
 def test_k_tt(t_ref, concrete_class, expected):
     """Test k_tt function."""
@@ -328,7 +356,14 @@ def test_k_tt(t_ref, concrete_class, expected):
     )
 
 
-@pytest.mark.parametrize('t_ref, concrete_class', [(-10, 'CR'), (20, 'ADSF')])
+@pytest.mark.parametrize(
+    't_ref, concrete_class',
+    [
+        (-10, 'CR'),
+        (-10, 'rapid'),
+        (20, 'ADSF'),
+    ],
+)
 def test_k_tt_raises_errors(t_ref, concrete_class):
     """Test k_tt raises errors."""
     with pytest.raises(ValueError):
@@ -632,3 +667,40 @@ def test_steel_p_raises_errors(eps, fpy, fpu, eps_u, Ep):
     """Test steel_p raises errors."""
     with pytest.raises(ValueError):
         _section5_materials.sigma_p(eps, fpy, fpu, eps_u, Ep)
+
+
+def test_duct_class_not_existing():
+    """Test getting ductility properties for a ductility class that is not
+    available.
+    """
+    # Arrange
+    fyk = 500
+    ductility_class = 'not a class'
+    # Assert
+    with pytest.raises(ValueError):
+        _section5_materials.reinforcement_duct_props(
+            fyk=fyk, ductility_class=ductility_class
+        )
+
+
+@pytest.mark.parametrize(
+    'ductility_class, exp_ratio, exp_strain',
+    [
+        ('a', 1.05, 2.5e-2),
+        ('b', 1.08, 5e-2),
+        ('c', 1.15, 7.5e-2),
+    ],
+)
+def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
+    """Test getting ductility class properties."""
+    # Arrange
+    fyk = 500
+
+    # Act
+    props = _section5_materials.reinforcement_duct_props(
+        fyk=fyk, ductility_class=ductility_class
+    )
+
+    # Assert
+    assert math.isclose(props['ftk'] / fyk, exp_ratio)
+    assert math.isclose(props['epsuk'], exp_strain)

@@ -8,6 +8,23 @@ import scipy.interpolate
 
 from structuralcodes.codes import mc2010
 
+VALID_STRENGTH_DEV_CLASSES = ('CS', 'CN', 'CR', 'SLOW', 'NORMAL', 'RAPID')
+
+DUCTILITY_CLASSES = {
+    'A': {
+        'epsuk': 2.5e-2,
+        'k': 1.05,
+    },
+    'B': {
+        'epsuk': 5.0e-2,
+        'k': 1.08,
+    },
+    'C': {
+        'epsuk': 7.5e-2,
+        'k': 1.15,
+    },
+}
+
 
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Determines the mean strength of concrete from its characteristic value.
@@ -193,7 +210,7 @@ def phi_correction_factor(fck: float, A_exponent: float) -> float:
 
 
 def phi_50y_t0(
-    t0: float, atm_conditions: str, _hn: float, concrete_dev_class: str
+    t0: float, atm_conditions: str, _hn: float, strength_dev_class: str
 ) -> float:
     """Computes the creep coefficient of plain concrete at 50 years of loading.
     Interpolation is linear between values.
@@ -204,7 +221,7 @@ def phi_50y_t0(
         t0 (float): age at loading [days]
         atm_conditions (str): 'dry' or 'humid'
         _hn (float): the notional size in mm
-        concrete_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
 
     Returns:
         float: the creep coefficient
@@ -213,7 +230,8 @@ def phi_50y_t0(
         ValueError: if t0 is less than 1
         ValueError: if atm_conditions is not 'dry' or 'humid'
         ValueError: if _hn is less than 100 or larger than 1000
-        ValueError: if concrete_dev_class is not 'CS', 'CN' or 'CR'
+        ValueError: if strength_dev_class is not 'CS', 'CN',
+            'CR', 'slow', 'normal' or 'rapid'
         ValueError: if combination of t0 and _hn is out of scope
     """
     if t0 < 1:
@@ -230,18 +248,18 @@ def phi_50y_t0(
     if _hn > 1000:
         raise ValueError(f'_hn={_hn} must be less or equal than 1000')
 
-    concrete_dev_class = concrete_dev_class.upper().strip()
-    if concrete_dev_class not in ('CS', 'CN', 'CR'):
+    strength_dev_class = strength_dev_class.upper().strip()
+    if strength_dev_class not in VALID_STRENGTH_DEV_CLASSES:
         raise ValueError(
-            f'concrete_dev_class={concrete_dev_class} must be'
-            + '"CS", "CN" or "CR"'
+            f'strength_dev_class={strength_dev_class} must be'
+            + '"CS", "CN", "CR", "slow", "normal" or "rapid"'
         )
 
-    if concrete_dev_class == 'CS':
+    if strength_dev_class in ('CS', 'SLOW'):
         _t = (3, 10, 32, 91, 365)
-    elif concrete_dev_class == 'CN':
+    elif strength_dev_class in ('CN', 'NORMAL'):
         _t = (1, 7, 28, 91, 365)
-    elif concrete_dev_class == 'CR':
+    elif strength_dev_class in ('CR', 'RAPID'):
         _t = (1, 3, 23, 91, 365)
 
     h_v = (100, 200, 500, 1000)
@@ -305,8 +323,8 @@ def phi_50y_t0(
     return _phi_50y_t0
 
 
-def eps_cs_50y(
-    fck_28: float, atm_conditions: str, _hn: float, concrete_dev_class: str
+def eps_cs_50y(  # noqa: PLR0912
+    fck_28: float, atm_conditions: str, _hn: float, strength_dev_class: str
 ) -> float:
     """Computes the nominal total shrinkage in ‰ for concrete after a duration
     of drying of 50 years.
@@ -317,7 +335,7 @@ def eps_cs_50y(
         fck_28 (float): characteristic strength at 28 days in MPa
         atm_conditions (str): 'dry' or 'humid'
         _hn (float): the notional size in mm
-        concrete_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
 
     Returns:
         float: the nominal shrinkage value in ‰
@@ -326,7 +344,8 @@ def eps_cs_50y(
         ValueError: if fck_28 is less than 20 MPa or larger than 80 MPa
         ValueError: if atm_conditions is not 'dry' or 'humid'
         ValueError: if _hn is less than 100 or larger than 1000
-        ValueError: if concrete_dev_class is not 'CS', 'CN' or 'CR'
+        ValueError: if strength_dev_class is not CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'
         ValueError: if combination of fck_28 and _hn is out of scope
     """
     if fck_28 < 20:
@@ -345,17 +364,24 @@ def eps_cs_50y(
     if _hn > 1000:
         raise ValueError(f'_hn={_hn} must be less or equal than 1000')
 
-    concrete_dev_class = concrete_dev_class.upper().strip()
-    if concrete_dev_class == 'CS':
+    strength_dev_class = strength_dev_class.upper().strip()
+    if strength_dev_class == 'SLOW':
+        strength_dev_class = 'CS'
+    elif strength_dev_class == 'NORMAL':
+        strength_dev_class = 'CN'
+    elif strength_dev_class == 'RAPID':
+        strength_dev_class = 'CR'
+
+    if strength_dev_class == 'CS':
         fck_v = (20, 35, 50)
-    elif concrete_dev_class == 'CN':
+    elif strength_dev_class == 'CN':
         fck_v = (20, 35, 50, 80)
-    elif concrete_dev_class == 'CR':
+    elif strength_dev_class == 'CR':
         fck_v = (35, 50, 80)
     else:
         raise ValueError(
-            f'concrete_dev_class={concrete_dev_class} '
-            + 'must be "CS", "CN" or "CR"'
+            f'strength_dev_class={strength_dev_class} '
+            + 'must be "CS", "CN", "CR", "slow", "normal" or "rapid"'
         )
 
     h_v = (100, 200, 500, 1000)
@@ -458,7 +484,7 @@ def eps_cs_50y(
             ),
         },
     }
-    values = data.get(atm_conditions).get(concrete_dev_class)
+    values = data.get(atm_conditions).get(strength_dev_class)
 
     grid = np.array(np.meshgrid(fck_v, h_v)).T.reshape(-1, 2)
     p = (fck_28, _hn)
@@ -498,7 +524,7 @@ def eta_cc(fck: float, fck_ref: float = 40) -> float:
     return min(math.pow(fck_ref / fck, 1 / 3), 1)
 
 
-def k_tc(t_ref: float, t0: float, concrete_dev_class: str) -> float:
+def k_tc(t_ref: float, t0: float, strength_dev_class: str) -> float:
     """Computes the factor for considering the effect of high sustained loads
     and of time of loading on concrete compressive strength.
 
@@ -507,7 +533,7 @@ def k_tc(t_ref: float, t0: float, concrete_dev_class: str) -> float:
     Args:
         t_ref (float): the reference time in days
         t0 (float): age at loading in days
-        concrete_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal', 'rapid'
 
     Returns:
         float: the factor value
@@ -515,25 +541,30 @@ def k_tc(t_ref: float, t0: float, concrete_dev_class: str) -> float:
     Raises:
         ValueError: if t_ref is less than 0
         ValueError: if t0 is less than 0
-        ValueError if concrete_dev_class is not 'CS', 'CN', or 'CR'
+        ValueError if strength_dev_class is not
+            'CS', 'CN', 'CR', 'slow', 'normal', 'rapid'
     """
     if t_ref < 0:
         raise ValueError(f't_ref={t_ref} must be larger than 0')
     if t0 < 0:
         raise ValueError(f't0={t0} must be larger than 0')
 
-    concrete_dev_class = concrete_dev_class.upper().strip()
+    strength_dev_class = strength_dev_class.upper().strip()
 
-    if concrete_dev_class not in ('CS', 'CN', 'CR'):
+    if strength_dev_class not in VALID_STRENGTH_DEV_CLASSES:
         raise ValueError(
-            f'concrete_dev_class={concrete_dev_class}'
-            + 'should can only take "CS", "CN" or "CR" as values'
+            f'strength_dev_class={strength_dev_class}'
+            + f'should can only take {VALID_STRENGTH_DEV_CLASSES}'
         )
 
-    if concrete_dev_class in ('CR', 'CN') and t_ref <= 28 and t0 > 90:
+    if (
+        strength_dev_class in ('CR', 'CN', 'RAPID', 'NORMAL')
+        and t_ref <= 28
+        and t0 > 90
+    ):
         return 1
 
-    if concrete_dev_class == 'CS' and t_ref <= 56 and t0 > 90:
+    if strength_dev_class in ('CS', 'SLOW') and t_ref <= 56 and t0 > 90:
         return 1
 
     return 0.85
@@ -572,7 +603,7 @@ def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
     return _eta_cc * _k_tc * fck / gamma_C
 
 
-def k_tt(t_ref: float, concrete_dev_class: str) -> float:
+def k_tt(t_ref: float, strength_dev_class: str) -> float:
     """Computes the factor for considering the effect of high sustained loads
     and of time of loading on concrete tensile strength.
 
@@ -580,30 +611,32 @@ def k_tt(t_ref: float, concrete_dev_class: str) -> float:
 
     Args:
         t_ref (float): the reference time in days
-        concrete_dev_class (str): 'CS', 'CN' or 'CR'
+        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
 
     Returns:
         float: the factor value
 
     Raises:
         ValueError: if t_ref is less than 0
-        ValueError if concrete_dev_class is not 'CS', 'CN', or 'CR'
+        ValueError if strength_dev_class is not 'CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'
     """
     if t_ref < 0:
         raise ValueError(f't_ref={t_ref} must be larger than 0')
 
-    concrete_dev_class = concrete_dev_class.upper().strip()
+    strength_dev_class = strength_dev_class.upper().strip()
 
-    if concrete_dev_class not in ('CS', 'CN', 'CR'):
+    if strength_dev_class not in VALID_STRENGTH_DEV_CLASSES:
         raise ValueError(
-            f'concrete_dev_class={concrete_dev_class}'
-            + 'should can only take "CS", "CN" or "CR" as values'
+            f'strength_dev_class={strength_dev_class}'
+            + 'should can only take "CS", "CN", "CR", "slow"'
+            + '"normal", "rapid" as values',
         )
 
-    if concrete_dev_class in ('CR', 'CN') and t_ref <= 28:
+    if strength_dev_class in ('CR', 'CN', 'RAPID', 'NORMAL') and t_ref <= 28:
         return 0.8
 
-    if concrete_dev_class == 'CS' and t_ref <= 56:
+    if strength_dev_class in ('CS', 'SLOW') and t_ref <= 56:
         return 0.8
 
     return 0.7
@@ -840,7 +873,7 @@ def weight_s() -> float:
     return 78.5
 
 
-def fyd(fyk: float, gamma_S: float) -> float:
+def fyd(fyk: float, gamma_S: float = 1.15) -> float:
     """Design value for the yielding stress for welding reinforcing steel.
 
     EN 1992-1-1:2023, Eq (5.11)
@@ -1091,3 +1124,34 @@ def sigma_p(
     # If plastic
     m = (fpu - fpy) / (eps_u - eps_y)
     return fpy + m * (eps - eps_y)
+
+
+def reinforcement_duct_props(
+    fyk: float,
+    ductility_class: t.Literal['A', 'B', 'C'],
+) -> t.Dict[str, float]:
+    """Return a dict with the minimum characteristic ductility properties for
+    reinforcement ductility class.
+
+    EUROCODE 2 1992-1-1:2023, Tab. 5.5
+
+    Args:
+        fyk (float): The characteristic yield strength.
+        ductility_class (Literal['A', 'B', 'C']): The reinforcement ductility
+            class designation.
+
+    Returns:
+        Dict[str, float]: A dict with the characteristik strain value at the
+        ultimate stress level (epsuk), and the characteristic ultimate stress
+        (ftk).
+    """
+    duct_props = DUCTILITY_CLASSES.get(ductility_class.upper(), None)
+    if duct_props is None:
+        raise ValueError(
+            'The no properties was found for the provided ductility class '
+            f'({ductility_class}).'
+        )
+    return {
+        'epsuk': duct_props['epsuk'],
+        'ftk': duct_props['k'] * fyk,
+    }

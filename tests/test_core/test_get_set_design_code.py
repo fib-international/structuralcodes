@@ -9,7 +9,7 @@ import structuralcodes
 
 @pytest.mark.parametrize(
     'design_code_to_set',
-    ['mc2010', 'MC2010', 'mC2010'],
+    ['mc2010', 'MC2010', 'mC2010', None],
 )
 def test_set_design_code(design_code_to_set):
     """Test setting the design code."""
@@ -20,8 +20,13 @@ def test_set_design_code(design_code_to_set):
     structuralcodes.set_design_code(design_code_to_set)
 
     # Assert
-    assert isinstance(structuralcodes.codes._CODE, types.ModuleType)
-    assert structuralcodes.codes._CODE.__title__ == expected_design_code_title
+    if design_code_to_set is not None:
+        assert isinstance(structuralcodes.codes._CODE, types.ModuleType)
+        assert (
+            structuralcodes.codes._CODE.__title__ == expected_design_code_title
+        )
+    else:
+        assert structuralcodes.codes._CODE is None
 
 
 def test_get_design_codes():
