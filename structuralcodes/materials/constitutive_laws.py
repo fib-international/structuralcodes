@@ -103,7 +103,7 @@ class ElasticPlastic(ConstitutiveLaw):
         """
         strains = []
         coeff = []
-        y_na = strain[0] / strain[1]
+        y_na = -strain[0] / strain[1]
         eps_sy_p, eps_sy_n = self.get_ultimate_strain(yielding=True)
         # y_yp = (strain[0] - eps_sy_p) / strain[1]
         # y_yn = (strain[0] - eps_sy_n) / strain[1]
