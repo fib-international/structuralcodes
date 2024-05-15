@@ -873,7 +873,7 @@ def weight_s() -> float:
     return 78.5
 
 
-def fyd(fyk: float, gamma_S: float = 1.15) -> float:
+def fyd(fyk: float, gamma_S: float) -> float:
     """Design value for the yielding stress for welding reinforcing steel.
 
     EN 1992-1-1:2023, Eq (5.11)

@@ -46,9 +46,9 @@ class ReinforcementMC2010(Reinforcement):
             gamma_s=gamma_s,
         )
 
-    @property
     def fyd(self) -> float:
         """The design yield strength."""
+        return mc2010.fyd(self.fyk, self.gamma_s)
 
     @property
     def gamma_s(self) -> float:

@@ -18,7 +18,7 @@ DUCTILITY_CLASSES = {
 }
 
 
-def fyd(fyk: float, gamma_s: float = 1.15) -> float:
+def fyd(fyk: float, gamma_s: float) -> float:
     """Calculate the design value of the reinforcement yield strength.
 
     EUROCODE 2 1992-1-1:2004, Fig. 3.8

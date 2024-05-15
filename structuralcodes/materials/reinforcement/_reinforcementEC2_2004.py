@@ -47,9 +47,9 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             gamma_s=gamma_s,
         )
 
-    @property
     def fyd(self) -> float:
         """The design yield strength."""
+        return ec2_2004.fyd(self.fyk, self.gamma_s)
 
     @property
     def gamma_s(self) -> float:
