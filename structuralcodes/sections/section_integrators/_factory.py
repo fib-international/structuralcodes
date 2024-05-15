@@ -6,7 +6,7 @@ from ._fiber_integrator import FiberIntegrator
 from ._marin_integrator import MarinIntegrator
 from ._section_integrator import SectionIntegrator
 
-integrator_registry = {'Marin': MarinIntegrator, 'Fiber': FiberIntegrator}
+integrator_registry = {'marin': MarinIntegrator, 'fiber': FiberIntegrator}
 
 
 class IntegratorFactory:
@@ -22,11 +22,11 @@ class IntegratorFactory:
     def __call__(self, method: str) -> SectionIntegrator:
         """Create an integrator based on its name."""
         self.instances.setdefault(
-            method, self.registry.get(method, MarinIntegrator)
+            method.lower(), self.registry.get(method.lower(), MarinIntegrator)
         )
         # Here we should throw a warning if the user input an integrator not
         # given in the registry.
-        return self.instances.get(method)
+        return self.instances.get(method.lower())
 
 
 integrator_factory = IntegratorFactory(integrator_registry)
