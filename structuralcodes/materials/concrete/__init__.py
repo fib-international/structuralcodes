@@ -20,6 +20,7 @@ def create_concrete(
     fck: float,
     name: t.Optional[str] = None,
     density: float = 2400.0,
+    gamma_c: t.Optional[float] = None,
     existing: bool = False,
     design_code: t.Optional[str] = None,
 ) -> t.Optional[Concrete]:
@@ -32,6 +33,7 @@ def create_concrete(
 
     Keyword Args:
         density (float): Density of Concrete in kg/m3 (default: 2400)
+        gamma_c (Optional(float)): The partial factor for concrete.
         existing (bool): Boolean indicating if the concrete is of an
             existing structure (default: False)
         design_code (str): Optional string (default: None) indicating the
@@ -60,5 +62,11 @@ def create_concrete(
 
     # Create the proper concrete object
     if code.__title__ == 'fib Model Code 2010':
-        return ConcreteMC2010(fck, name, density, existing)
+        return ConcreteMC2010(
+            fck=fck,
+            name=name,
+            density=density,
+            gamma_c=gamma_c,
+            existing=existing,
+        )
     return None

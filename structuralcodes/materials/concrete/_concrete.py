@@ -10,6 +10,7 @@ class Concrete(Material):
     """The abstract concrete material."""
 
     _fck: float
+    _gamma_c: t.Optional[float] = None
     _existing: bool
 
     def __init__(
@@ -17,6 +18,7 @@ class Concrete(Material):
         fck: float,
         name: t.Optional[str] = None,
         density: float = 2400,
+        gamma_c: t.Optional[float] = None,
         existing: t.Optional[bool] = False,
     ) -> None:
         """Initializes an abstract concrete material."""
@@ -29,6 +31,7 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
+        self._gamma_c = gamma_c
 
     @property
     def fck(self) -> float:
@@ -45,4 +48,11 @@ class Concrete(Material):
     def _reset_attributes(self):
         """Each concrete should define its own _reset_attributes method
         This is because fck setting, reset the object arguments.
+        """
+
+    @property
+    @abc.abstractmethod
+    def gamma_c(self) -> float:
+        """Each concrete should implement its own getter for the partial factor
+        in order to interact with the globally set national annex.
         """

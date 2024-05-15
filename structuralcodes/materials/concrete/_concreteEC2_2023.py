@@ -13,7 +13,6 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
     # Inherent concrete properties
     _kE: t.Optional[float] = None  # noqa: N815
     _strength_dev_class: t.Optional[str] = None
-    _gamma_C: t.Optional[float] = None  # noqa: N815
 
     # Computed attributes
     _fcm: t.Optional[float] = None
@@ -31,7 +30,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         density: float = 2400.0,
         kE: float = 9500,
         strength_dev_class: str = 'CN',
-        gamma_C: float = 1.5,
+        gamma_c: t.Optional[float] = None,
         existing: bool = False,
     ):
         """Initializes a new instance of Concrete for EC2 2023.
@@ -46,7 +45,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             kE (float): coefficient relating aggregates.
             strength_dev_class (str, optional): default is CN.
                 Possible values: CS, CN, CR, slow, normal or rapid
-            gamma_C (float, optional): partial factor of concrete
+            gamma_c (float, optional): partial factor of concrete
                 (default is 1.5)
             existing (bool, optional): The material is of an existing structure
                 (default: False)
@@ -64,17 +63,20 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             )
 
         # Check for valid security coeff
-        if gamma_C <= 0:
+        if gamma_c is not None and gamma_c <= 0:
             raise ValueError(
-                f'gamma_C cannot be less than zero. Current: {gamma_C}'
+                f'gamma_c cannot be less than zero. Current: {gamma_c}'
             )
 
         super().__init__(
-            fck=fck, name=name, density=density, existing=existing
+            fck=fck,
+            name=name,
+            density=density,
+            existing=existing,
+            gamma_c=gamma_c,
         )
         self._kE = kE
         self._strength_dev_class = strength_dev_class
-        self._gamma_C = gamma_C
 
     def _reset_attributes(self):
         """Reset computed properties."""
@@ -259,3 +261,10 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         return ec2_2023.sigma_c(
             self.Ecm, self.fcm, eps_c, self.eps_c1, self.eps_cu1
         )
+
+    @property
+    def gamma_c(self) -> float:
+        """The partial factor for concrete."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._gamma_c or 1.5
