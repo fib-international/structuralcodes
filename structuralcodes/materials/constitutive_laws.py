@@ -22,6 +22,7 @@ class Elastic(ConstitutiveLaw):
         name = name if name is not None else 'ElasticLaw'
         super().__init__(name=name)
         self._E = E
+        self._eps_su = None
 
     def get_stress(self, eps: ArrayLike) -> float:
         """Return stress given strain."""
@@ -33,10 +34,70 @@ class Elastic(ConstitutiveLaw):
         del args
         return self._E
 
-    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin
+        integration in a simply formatted way.
+
+        Args:
+            strain: (float, float) tuple defining the strain
+                profile: eps = strain[0] + strain[1]*y
+        Returns:
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = None
+        y_na = -strain[0] / strain[1]
+        a0 = -self._E * y_na * strain[1]
+        a1 = self._E * strain[1]
+        coeff = [(a0, a1)]
+        return strains, coeff
+
+    def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (positive and negative)."""
         # There is no real strain limit, so set it to very large values
-        return (100, -100)
+        # unlesse specified by the user differently
+        del kwargs
+        return self._eps_su or (100, -100)
+
+    def set_ultimate_strain(
+        self, eps_su=t.Union[float, t.Tuple[float, float]]
+    ) -> None:
+        """Set ultimate strains for Elastic Material if needed.
+
+        Args:
+            eps_su: float or (float, float) defining ultimate strain
+                if a single value is provided the same is adopted for
+                both positive and negative strains
+        """
+        if isinstance(eps_su, float):
+            self._eps_su = (abs(eps_su), -abs(eps_su))
+        elif isinstance(eps_su, tuple):
+            if len(eps_su) < 2:
+                raise ValueError(
+                    'Two values need to be provided when setting the tuple'
+                )
+            eps_su_p = eps_su[0]
+            eps_su_n = eps_su[1]
+            if eps_su_p < eps_su_n:
+                eps_su_p, eps_su_n = eps_su_n, eps_su_p
+            if eps_su_p < 0:
+                raise ValueError(
+                    'Positive ultimate strain should be non-negative'
+                )
+            if eps_su_n > 0:
+                raise ValueError(
+                    'Negative utimate strain should be non-positive'
+                )
+            self._eps_su = (eps_su_p, eps_su_n)
+        else:
+            raise ValueError(
+                'set_ultimate_strain requires a single value or a tuple \
+                with  two values'
+            )
 
 
 class ElasticPlastic(ConstitutiveLaw):
@@ -329,6 +390,74 @@ class UserDefined(ConstitutiveLaw):
         # this function is still TO DO
         raise NotImplementedError
 
-    def get_ultimate_strain(self) -> t.Tuple[float, float]:
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin
+        integration in a simply formatted way.
+
+        Args:
+            strain: (float, float) tuple defining the strain
+                profile: eps = strain[0] + strain[1]*y
+        Returns:
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        for i in range(len(self._x) - 1):
+            # For each branch of the linear piecewise function
+            stiffness = (self._y[i + 1] - self._y[i]) / (
+                self._x[i + 1] - self._x[i]
+            )
+            strains.appen((self._x[i], self._x[i + 1]))
+            a0 = stiffness * (strain[0] - self._x[i]) + self._y[i]
+            a1 = stiffness * strain[1]
+            coeff.append((a0, a1))
+
+        return strains, coeff
+
+    def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (positive and negative)."""
+        del kwargs
         return (self._ultimate_strain_p, self._ultimate_strain_n)
+
+    def set_ultimate_strain(
+        self, eps_su=t.Union[float, t.Tuple[float, float]]
+    ) -> None:
+        """Set ultimate strains for Elastic Material if needed.
+
+        Args:
+            eps_su: float or (float, float) defining ultimate strain
+                if a single value is provided the same is adopted for
+                both positive and negative strains
+        """
+        if isinstance(eps_su, float):
+            self._ultimate_strain_p = abs(eps_su)
+            self._ultimate_strain_n = -abs(eps_su)
+        elif isinstance(eps_su, tuple):
+            if len(eps_su) < 2:
+                raise ValueError(
+                    'Two values need to be provided when setting the tuple'
+                )
+            eps_su_p = eps_su[0]
+            eps_su_n = eps_su[1]
+            if eps_su_p < eps_su_n:
+                eps_su_p, eps_su_n = eps_su_n, eps_su_p
+            if eps_su_p < 0:
+                raise ValueError(
+                    'Positive ultimate strain should be non-negative'
+                )
+            if eps_su_n > 0:
+                raise ValueError(
+                    'Negative utimate strain should be non-positive'
+                )
+            self._ultimate_strain_p = eps_su_p
+            self._ultimate_strain_n = eps_su_n
+        else:
+            raise ValueError(
+                'set_ultimate_strain requires a single value or a tuple \
+                with  two values'
+            )

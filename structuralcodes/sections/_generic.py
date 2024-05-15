@@ -89,12 +89,14 @@ class GenericSectionCalculator(SectionCalculator):
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
                 # if g != other_g:
-                eps_p = g.material.get_ultimate_strain(yielding)[0]
+                eps_p = g.material.get_ultimate_strain(yielding=yielding)[0]
                 if isinstance(g, SurfaceGeometry):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
                     y_p = g._point.coords[0][1]
-                eps_n = other_g.material.get_ultimate_strain(yielding)[1]
+                eps_n = other_g.material.get_ultimate_strain(
+                    yielding=yielding
+                )[1]
                 if isinstance(other_g, SurfaceGeometry):
                     y_n = other_g.polygon.bounds[3]
                 elif isinstance(other_g, PointGeometry):
