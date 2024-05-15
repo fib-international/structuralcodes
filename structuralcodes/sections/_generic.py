@@ -25,13 +25,16 @@ class GenericSection(Section):
         self,
         geometry: t.Union[SurfaceGeometry, CompoundGeometry],
         name: t.Optional[str] = None,
+        integrator: t.Literal['marin', 'fiber'] = 'marin',
         **kwargs,
     ) -> None:
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
         self.geometry = geometry
-        self.section_analyzer = GenericSectionCalculator(self, **kwargs)
+        self.section_analyzer = GenericSectionCalculator(
+            sec=self, integrator=integrator, **kwargs
+        )
         self.gross_properties = (
             self.section_analyzer._calculate_gross_section_properties()
         )
