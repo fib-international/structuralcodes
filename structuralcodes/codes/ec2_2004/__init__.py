@@ -17,6 +17,10 @@ from ._concrete_material_properties import (
     fctm,
     n_parabolic_rectangular,
 )
+from ._reinforcement_material_properties import (
+    fyd,
+    reinforcement_duct_props,
+)
 from ._section_7_3_crack_control import (
     As_min,
     As_min_2,
@@ -61,6 +65,7 @@ __all__ = [
     'kc_tension',
     'kt',
     'phi_eq',
+    'reinforcement_duct_props',
     'rho_p_eff',
     'sr_max_close',
     'sr_max_far',
@@ -82,6 +87,7 @@ __all__ = [
     'n_parabolic_rectangular',
     'eps_c3',
     'eps_cu3',
+    'fyd',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2004'
