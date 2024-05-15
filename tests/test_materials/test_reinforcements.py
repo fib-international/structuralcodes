@@ -31,7 +31,7 @@ def test_reinforcements(reinforcement_material):
     # Assert
     assert reinf.fyk == fyk
     assert reinf.Es == Es
-    assert math.isclose(reinf.fyd, fyk / 1.15)
+    assert math.isclose(reinf.fyd(), fyk / 1.15)
 
     # Set new values
     reinf.fyk = 1.05 * reinf.fyk
