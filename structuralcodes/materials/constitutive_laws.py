@@ -412,7 +412,7 @@ class UserDefined(ConstitutiveLaw):
             stiffness = (self._y[i + 1] - self._y[i]) / (
                 self._x[i + 1] - self._x[i]
             )
-            strains.appen((self._x[i], self._x[i + 1]))
+            strains.append((self._x[i], self._x[i + 1]))
             a0 = stiffness * (strain[0] - self._x[i]) + self._y[i]
             a1 = stiffness * strain[1]
             coeff.append((a0, a1))

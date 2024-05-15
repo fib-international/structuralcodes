@@ -66,54 +66,63 @@ class MarinIntegrator(SectionIntegrator):
                 )
 
             # 3b. Subdivide the polygon at the different strain limits
-            for p in range(len(strains)):
-                # Create the two lines for selecting the needed part
-                y0 = -(strain_rotated[0] - strains[p][0]) / strain_rotated[1]
-                y1 = -(strain_rotated[0] - strains[p][1]) / strain_rotated[1]
-                if y0 > y1:
-                    y0, y1 = y1, y0
-                bbox = g.polygon.bounds
-                line0 = create_line_point_angle((0, y0), 0, bbox)
-                line1 = create_line_point_angle((0, y1), 0, bbox)
-                lines = MultiLineString((line0, line1))
-                # intersection
-                result = g.split_two_lines(lines=lines)
-
-                def get_input_polygon(polygon, coeffs):
-                    # Let's be sure to orient in the right way
-                    if polygon.is_empty:
-                        return
-                    polygon = orient(polygon, 1)
-                    if not polygon.exterior.is_ccw:
+            def get_input_polygon(polygon, coeffs):
+                # Let's be sure to orient in the right way
+                if polygon.is_empty:
+                    return
+                polygon = orient(polygon, 1)
+                if not polygon.exterior.is_ccw:
+                    raise ValueError(
+                        'The exterior of a polygon should have vertices \
+                                    ordered ccw'
+                    )
+                # Manage exterior part
+                x, y = polygon.exterior.coords.xy
+                x = np.array(x)
+                y = np.array(y)
+                prepared_input.append(
+                    (0, np.array(x), np.array(y), np.array(coeffs))
+                )
+                # Manage holes
+                for i in polygon.interiors:
+                    if i.is_ccw:
                         raise ValueError(
-                            'The exterior of a polygon should have vertices \
-                                         ordered ccw'
+                            'A inner hole should have cw coordinates'
                         )
-                    # Manage exterior part
-                    x, y = polygon.exterior.coords.xy
-                    x = np.array(x)
-                    y = np.array(y)
+                    x, y = i.coords.xy
                     prepared_input.append(
                         (0, np.array(x), np.array(y), np.array(coeffs))
                     )
-                    # Manage holes
-                    for i in polygon.interiors:
-                        if i.is_ccw:
-                            raise ValueError(
-                                'A inner hole should have cw coordinates'
-                            )
-                        x, y = i.coords.xy
-                        prepared_input.append(
-                            (0, np.array(x), np.array(y), np.array(coeffs))
-                        )
 
-                if isinstance(result, Polygon):
-                    # If the result is a single polygon
-                    get_input_polygon(result, coeffs[p])
-                elif isinstance(result, MultiPolygon):
-                    # If the result is a MultiPolygon
-                    for polygon in result.geoms:
-                        get_input_polygon(polygon, coeffs[p])
+            if strains is None:
+                get_input_polygon(g.polygon, coeffs[0])
+            else:
+                for p in range(len(strains)):
+                    # Create the two lines for selecting the needed part
+                    y0 = (
+                        -(strain_rotated[0] - strains[p][0])
+                        / strain_rotated[1]
+                    )
+                    y1 = (
+                        -(strain_rotated[0] - strains[p][1])
+                        / strain_rotated[1]
+                    )
+                    if y0 > y1:
+                        y0, y1 = y1, y0
+                    bbox = g.polygon.bounds
+                    line0 = create_line_point_angle((0, y0), 0, bbox)
+                    line1 = create_line_point_angle((0, y1), 0, bbox)
+                    lines = MultiLineString((line0, line1))
+                    # intersection
+                    result = g.split_two_lines(lines=lines)
+
+                    if isinstance(result, Polygon):
+                        # If the result is a single polygon
+                        get_input_polygon(result, coeffs[p])
+                    elif isinstance(result, MultiPolygon):
+                        # If the result is a MultiPolygon
+                        for polygon in result.geoms:
+                            get_input_polygon(polygon, coeffs[p])
         # Tentative proposal for managing reinforcement (PointGeometry)
         x = []
         y = []
