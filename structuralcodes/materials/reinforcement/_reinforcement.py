@@ -1,5 +1,6 @@
 """Core implementation of the reinforcement material."""
 
+import abc
 import typing as t
 
 from structuralcodes.core.base import Material
@@ -12,6 +13,7 @@ class Reinforcement(Material):
     _Es: float
     _ftk: float
     _epsuk: float
+    _gamma_s: t.Optional[float] = None
 
     def __init__(
         self,
@@ -20,6 +22,7 @@ class Reinforcement(Material):
         density: float,
         ftk: float,
         epsuk: float,
+        gamma_s: t.Optional[float] = None,
         name: t.Optional[str] = None,
     ) -> None:
         """Initializes an abstract reinforcement material."""
@@ -30,6 +33,7 @@ class Reinforcement(Material):
         self._Es = abs(Es)
         self._ftk = abs(ftk)
         self._epsuk = abs(epsuk)
+        self._gamma_s = gamma_s
 
     @property
     def fyk(self) -> float:
@@ -70,3 +74,10 @@ class Reinforcement(Material):
     def epsuk(self, epsuk: float) -> None:
         """Setter for epsuk."""
         self._epsuk = abs(epsuk)
+
+    @property
+    @abc.abstractmethod
+    def gamma_s(self) -> float:
+        """Each reinforcement should implement its own getter for the partial
+        factor in order to interact with the globally set national annex.
+        """

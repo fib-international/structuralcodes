@@ -29,6 +29,7 @@ def create_reinforcement(
     Es: float,
     ftk: float,
     epsuk: float,
+    gamma_s: t.Optional[float] = None,
     name: t.Optional[str] = None,
     density: float = 7850,
     design_code: t.Optional[str] = None,
@@ -43,6 +44,7 @@ def create_reinforcement(
         epsuk (float): The characteristik strain at the ultimate stress level.
 
     Keyword Args:
+        gamma_s (Optional(float)): The partial factor for reinforcement.
         density (float): Density of the material in kg/m3 (default: 7850)
         design_code (str): Optional string (default: None) indicating the
             desired standard. If None (default) the globally used design
@@ -77,5 +79,6 @@ def create_reinforcement(
             density=density,
             ftk=ftk,
             epsuk=epsuk,
+            gamma_s=gamma_s,
         )
     return None
