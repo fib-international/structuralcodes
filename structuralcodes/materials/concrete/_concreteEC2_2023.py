@@ -204,7 +204,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """
         eta_cc = ec2_2023.eta_cc(self.fck, fck_ref=fck_ref)
         k_tc = ec2_2023.k_tc(t_ref, t0, self._strength_dev_class)
-        return ec2_2023.fcd(self.fck, eta_cc, k_tc, self._gamma_C)
+        return ec2_2023.fcd(self.fck, eta_cc, k_tc, self.gamma_c)
 
     def fctd(self, t_ref: float = 28) -> float:
         """Computes the value of the design tensile strength of concrete.
@@ -222,7 +222,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         k_tt = ec2_2023.k_tt(
             t_ref=t_ref, strength_dev_class=self._strength_dev_class
         )
-        return ec2_2023.fctd(self.fctk_5, k_tt, self._gamma_C)
+        return ec2_2023.fctd(self.fctk_5, k_tt, self.gamma_c)
 
     @property
     def eps_c1(self) -> float:

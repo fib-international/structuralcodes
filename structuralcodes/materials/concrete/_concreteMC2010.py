@@ -178,3 +178,16 @@ class ConcreteMC2010(Concrete):
     def gamma_c(self) -> float:
         """The partial factor for concrete."""
         return self._gamma_c or 1.5
+
+    def fcd(self, alpha_cc: float) -> float:
+        """Calculate the design compressive strength.
+
+        Args:
+            alpha_cc (float): A factor for considering long-term effects on the
+                strength, and effects that arise from the way the load is
+                applied.
+
+        Returns:
+            float: The design compressive strength of concrete in MPa
+        """
+        return mc2010.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=self.gamma_c)
