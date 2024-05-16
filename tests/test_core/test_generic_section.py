@@ -9,7 +9,11 @@ from shapely.ops import unary_union
 
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.concrete import ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import ElasticPlastic
+from structuralcodes.materials.constitutive_laws import (
+    Elastic,
+    ElasticPlastic,
+    UserDefined,
+)
 from structuralcodes.materials.reinforcement import ReinforcementMC2010
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.sections._reinforcement import (
@@ -318,12 +322,12 @@ def test_Isection_elastic_fiber(h, b, tw, tf, r):
     mz_expected = wz_el * fy * 1e-6
     # Create the section with fiber
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-3)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -366,14 +370,14 @@ def test_Isection_elastic_marin(h, b, tw, tf, r):
     wz_el = _wzel_IPE(h, b, tw, tf, r)
     my_expected = wy_el * fy * 1e-6
     mz_expected = wz_el * fy * 1e-6
-    # Create the section with fiber
+    # Create the section with Marin integrator
     sec = GenericSection(geo)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-3)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -418,12 +422,12 @@ def test_Isection_plastic_fiber(h, b, tw, tf, r):
     mz_expected = wz_pl * fy * 1e-6
     # Create the section with fiber
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-2)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-2)
+    results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -466,11 +470,111 @@ def test_Isection_plastic_marin(h, b, tw, tf, r):
     wz_pl = _wzpl_IPE(h, b, tw, tf, r)
     my_expected = wy_pl * fy * 1e-6
     mz_expected = wz_pl * fy * 1e-6
-    # Create the section with fiber
+    # Create the section with marin integrator
     sec = GenericSection(geo)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-res_fiber.m_x * 1e-6, my_expected, rel_tol=1e-2)
-    res_fiber = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-2)
+    results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(res_fiber.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+
+
+@pytest.mark.parametrize(
+    'h, b, tw, tf, r',
+    [
+        (80, 46, 3.8, 5.2, 5),
+        (100, 55, 4.1, 5.7, 7),
+        (120, 64, 4.4, 6.3, 7),
+        (140, 73, 4.7, 6.9, 7),
+        (160, 82, 5, 7.4, 9),
+        (180, 91, 5.3, 8, 9),
+        (200, 100, 5.6, 8.5, 12),
+        (220, 110, 5.9, 9.2, 12),
+        (240, 120, 6.2, 9.8, 15),
+        (270, 135, 6.6, 10.2, 15),
+        (300, 150, 7.1, 10.7, 15),
+        (330, 160, 7.5, 11.5, 18),
+        (360, 170, 8, 12.7, 18),
+        (400, 180, 8.6, 13.5, 21),
+        (450, 190, 9.4, 14.6, 21),
+        (500, 200, 10.2, 16, 21),
+        (550, 210, 11.1, 17.2, 21),
+        (600, 220, 12, 19, 24),
+    ],
+)
+def test_Isection_elastic_material_marin(h, b, tw, tf, r):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    steel = Elastic(E=Es)
+    steel.set_ultimate_strain(fy / Es)
+    # Create geometry
+    geo = CompoundGeometry(
+        [SurfaceGeometry(_create_I_section(h, b, tw, tf, r), steel)]
+    )
+
+    # Compute expected values
+    wy_el = _wyel_IPE(h, b, tw, tf, r)
+    wz_el = _wzel_IPE(h, b, tw, tf, r)
+    my_expected = wy_el * fy * 1e-6
+    mz_expected = wz_el * fy * 1e-6
+    # Create the section with marin integrator
+    sec = GenericSection(geo)
+    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    results = sec.section_analyzer.calculate_bending_strength(
+        theta=math.pi / 2, n=0
+    )
+    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+
+
+@pytest.mark.parametrize(
+    'h, b, tw, tf, r',
+    [
+        (80, 46, 3.8, 5.2, 5),
+        (100, 55, 4.1, 5.7, 7),
+        (120, 64, 4.4, 6.3, 7),
+        (140, 73, 4.7, 6.9, 7),
+        (160, 82, 5, 7.4, 9),
+        (180, 91, 5.3, 8, 9),
+        (200, 100, 5.6, 8.5, 12),
+        (220, 110, 5.9, 9.2, 12),
+        (240, 120, 6.2, 9.8, 15),
+        (270, 135, 6.6, 10.2, 15),
+        (300, 150, 7.1, 10.7, 15),
+        (330, 160, 7.5, 11.5, 18),
+        (360, 170, 8, 12.7, 18),
+        (400, 180, 8.6, 13.5, 21),
+        (450, 190, 9.4, 14.6, 21),
+        (500, 200, 10.2, 16, 21),
+        (550, 210, 11.1, 17.2, 21),
+        (600, 220, 12, 19, 24),
+    ],
+)
+def test_Isection_user_material_marin(h, b, tw, tf, r):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    eps_su = 7e-2
+    steel = UserDefined(
+        x=[-eps_su, -fy / Es, 0, fy / Es, eps_su], y=[-fy, -fy, 0, fy, fy]
+    )
+    # Create geometry
+    geo = CompoundGeometry(
+        [SurfaceGeometry(_create_I_section(h, b, tw, tf, r), steel)]
+    )
+
+    # Compute expected values
+    wy_pl = _wypl_IPE(h, b, tw, tf, r)
+    wz_pl = _wzpl_IPE(h, b, tw, tf, r)
+    my_expected = wy_pl * fy * 1e-6
+    mz_expected = wz_pl * fy * 1e-6
+    # Create the section with fiber
+    sec = GenericSection(geo)
+    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    results = sec.section_analyzer.calculate_bending_strength(
+        theta=math.pi / 2, n=0
+    )
+    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-2)

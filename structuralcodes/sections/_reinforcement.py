@@ -19,20 +19,18 @@ def add_reinforcement(
     diameter: float,
     material: t.Union[Material, ConstitutiveLaw],
 ) -> CompoundGeometry:
-    """Adds a reinforcement bar to the geometry.
+    """Add a single bar given coordinate.
 
-    Proposals:
-        i. Geometry class (group_label -> to be use for filtering)
-        ii. PointGeometry(Geometry) that is a point with a mat
-        iii. SurfaceGeometry(Geometry) that is a polygon with a mat
-        iv. CompoundGeometry(Geometry) that is a set of geometries
+    Args:
+        geo: a geometry (SurfaceGeometry or CompoundGeometry) to
+            which add reinforcement
+        coords: a tuple with cordinates of bar
+        diameter: the diameter of the reinforcement
+        material: a material or a constitutive law for the behavior
+            of the reinforcement
 
-    For compound we could implement simple + method so that geo1 + geo2
-    returns a compunt.
-    So this method could become simply:
-
-    bar = Polygon(xxxx)
-    return geo + bar
+    Returns:
+        the resulting compound geometry
     """
     bar = PointGeometry(Point(coords), diameter, material)
     return CompoundGeometry([geo, bar])
@@ -51,21 +49,22 @@ def add_reinforcement_line(
 ) -> CompoundGeometry:
     """Adds a set of bars distributed in a line.
 
-    Arguments:
-    geo: the geometry used as input
-    coords_i: coordinates of the initial point of line
-    coords_j: coordinates of the final point of line
-    diamter: the diameter of the bars
-    material: a valid material or constitutive law
-    n: the number of bars to be distributed inside the line (default = 0)
-    s: the distance between the bars (default = 0)
-    first: boolean indicating if placing the first bar (default = True)
-    last: boolean indicating if placing the last bar (default = True)
+    Args:
+        geo: the geometry used as input
+        coords_i: coordinates of the initial point of line
+        coords_j: coordinates of the final point of line
+        diamter: the diameter of the bars
+        material: a valid material or constitutive law
+        n: the number of bars to be distributed inside the line (default = 0)
+        s: the distance between the bars (default = 0)
+        first: boolean indicating if placing the first bar (default = True)
+        last: boolean indicating if placing the last bar (default = True)
 
-    at least n or s should be greater than zero
+    Note:
+        at least n or s should be greater than zero
 
     Returns:
-    compound geometry
+        compound geometry
     """
     from math import floor
 

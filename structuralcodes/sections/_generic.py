@@ -48,9 +48,17 @@ class GenericSectionCalculator(SectionCalculator):
     def __init__(
         self, sec: GenericSection, integrator: str = 'Marin', **kwargs
     ) -> None:
-        """Initialize the GenericSectionCalculator
-        Input:
-        section (SectionCalculator): the section object.
+        """Initialize the GenericSectionCalculator.
+
+        Args:
+            section (SectionCalculator): the section object.
+            integrator (str): the integrator to be used for computations
+                            (default = 'marin')
+
+        Note:
+            when using 'fiber' integrator the kwarg 'mesh_size' can be used
+            to specify a dimensionless number (between 0 and 1) specifying
+            the size of the resulting mesh.
         """
         super().__init__(section=sec)
         # Select the integrator if specified
@@ -61,7 +69,8 @@ class GenericSectionCalculator(SectionCalculator):
         self.triangulated_data = None
 
     def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
-        """Calculates the gross section properties of the GenericSection
+        """Calculates the gross section properties of the GenericSection.
+
         This function is private and called when the section is created
         It stores the result into the result object.
 
@@ -79,6 +88,7 @@ class GenericSectionCalculator(SectionCalculator):
         self, geom: CompoundGeometry, yielding: bool = False
     ) -> t.Tuple[float, float, float]:
         """Returns the strain profile corresponding to balanced failure.
+
         This is found from all ultimate strains for all materials, checking
         the minimum value of curvature.
         It returns a tuple with:
@@ -87,6 +97,15 @@ class GenericSectionCalculator(SectionCalculator):
         3. Strain profile as a list with three values: axial strain, curvature
            y*, curvature z* (assumed zero since in the rotated frame y*z* it is
            a case of uniaxial bending).
+
+        Args:
+            geom: the compund geometry
+            yielding: (bool, default = False) consider yielding instead of
+                ultimate strain
+
+        Returns:
+            Returns a tuple (float, float, float) that define the strain
+            distribution
         """
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
