@@ -2,6 +2,21 @@
 
 import typing as t
 
+from ._concrete_material_properties import (
+    Ecm,
+    eps_c1,
+    eps_c2,
+    eps_c3,
+    eps_cu1,
+    eps_cu2,
+    eps_cu3,
+    fcd,
+    fcm,
+    fctk_5,
+    fctk_95,
+    fctm,
+    n_parabolic_rectangular,
+)
 from ._reinforcement_material_properties import (
     fyd,
     reinforcement_duct_props,
@@ -59,6 +74,19 @@ __all__ = [
     'w_spacing',
     'wk',
     'xi1',
+    'fcd',
+    'fcm',
+    'fctm',
+    'fctk_5',
+    'fctk_95',
+    'Ecm',
+    'eps_c1',
+    'eps_cu1',
+    'eps_c2',
+    'eps_cu2',
+    'n_parabolic_rectangular',
+    'eps_c3',
+    'eps_cu3',
     'fyd',
 ]
 
