@@ -233,13 +233,13 @@ class GenericSectionCalculator(SectionCalculator):
         # With the following algorithm we find quickly a position of NA that
         # guarantees that the is at least one zero in the function dn vs. curv
         # in order to apply bisection algorithm
-        ITMAX = 100
+        ITMAX = 20
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
         delta = 10
         while not found and it < ITMAX:
-            x_b = x_a + sign * (delta * (it + 1) ** 2)
+            x_b = x_a + sign * (delta * (it + 1) ** 3)
             (
                 n_int,
                 _,
@@ -334,7 +334,8 @@ class GenericSectionCalculator(SectionCalculator):
         and axial load.
 
         Arguments:
-        theta (float, default = 0): inclination of n.a. respect to y axis
+        theta (float, default = 0): inclination of n.a. respect to section
+            y axis (X direction in 2D coordinates)
         n (float, default = 0): axial load applied to the section
         (+: tension, -: compression)
 
@@ -343,7 +344,7 @@ class GenericSectionCalculator(SectionCalculator):
         """
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
-        rotated_geom = self.section.geometry.rotate(theta)
+        rotated_geom = self.section.geometry.rotate(-theta)
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -353,7 +354,7 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         # Rotate back to section CRS
-        T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])
+        T = np.array([[cos(-theta), sin(-theta)], [-sin(-theta), cos(-theta)]])
         M = T @ np.array([[Mx], [My]])
 
         # Create result object
@@ -386,15 +387,16 @@ class GenericSectionCalculator(SectionCalculator):
         res = s_res.MomentCurvatureResults()
         res.n = n
         # Rotate the section of angle theta
-        rotated_geom = self.section.geometry.rotate(theta)
+        rotated_geom = self.section.geometry.rotate(-theta)
         # Find ultimate curvature from the strain distribution corresponding
         # to failure and equilibrium with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
         chi_ultimate = strain[1]
         # Find the yielding curvature
-        strain = self.find_equilibrium_fixed_pivot(rotated_geom, n, True)
+        strain = self.find_equilibrium_fixed_pivot(
+            rotated_geom, n, yielding=True
+        )
         chi_yield = strain[1]
-        sign = -1 if chi_yield < 0 else 1
         if chi_ultimate * chi_yield < 0:
             # They cannot have opposite signs!
             raise ValueError(
@@ -404,11 +406,11 @@ class GenericSectionCalculator(SectionCalculator):
         if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
             # We don't want a plastic branch in the analysis
             # this is done to speed up analysis
-            chi = np.linspace(1e-13 * sign, chi_yield, 10)
+            chi = np.linspace(chi_yield / 10, chi_yield, 10)
         else:
             chi = np.concatenate(
                 (
-                    np.linspace(1e-13 * sign, chi_yield, 10, endpoint=False),
+                    np.linspace(chi_yield / 10, chi_yield, 10, endpoint=False),
                     np.linspace(chi_yield, chi_ultimate, 100),
                 )
             )
@@ -417,6 +419,8 @@ class GenericSectionCalculator(SectionCalculator):
         eps_a = np.zeros_like(chi)
         my = np.zeros_like(chi)
         mz = np.zeros_like(chi)
+        chi_y = np.zeros_like(chi)
+        chi_z = np.zeros_like(chi)
         # Previous position of neutral axes
         x = 0
         # For each value of curvature
@@ -436,15 +440,22 @@ class GenericSectionCalculator(SectionCalculator):
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
-            T = np.array([[cos(theta), sin(theta)], [-sin(theta), cos(theta)]])
+            T = np.array(
+                [[cos(-theta), sin(-theta)], [-sin(-theta), cos(-theta)]]
+            )
             M = T @ np.array([[Mx], [My]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
             mz[i] = M[1, 0]
-        res.chi = chi
+            chi_mat = T @ np.array([[curv], [0]])
+            chi_y[i] = chi_mat[0, 0]
+            chi_z[i] = chi_mat[1, 0]
+
+        res.chi_y = chi_y
+        res.chi_z = chi_z
         res.eps_axial = eps_a
-        res.my = my
-        res.mz = mz
+        res.m_y = my
+        res.m_z = mz
 
         return res
 

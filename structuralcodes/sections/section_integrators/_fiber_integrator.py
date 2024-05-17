@@ -192,7 +192,7 @@ class FiberIntegrator(SectionIntegrator):
 
         N = np.sum(F)
         Mx = np.sum(F * y)
-        My = np.sum(F * x)
+        My = np.sum(-F * x)
 
         return N, Mx, My
 

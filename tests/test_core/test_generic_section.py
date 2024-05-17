@@ -66,7 +66,9 @@ def test_rectangular_section():
         theta=0, n=0
     )
 
-    assert math.isclose(res_mc_marin.my[-1], res_mc_fiber.my[-1], rel_tol=1e-2)
+    assert math.isclose(
+        res_mc_marin.m_y[-1], res_mc_fiber.m_y[-1], rel_tol=1e-2
+    )
 
 
 # Test holed section
@@ -327,7 +329,7 @@ def test_Isection_elastic_fiber(h, b, tw, tf, r):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -377,7 +379,7 @@ def test_Isection_elastic_marin(h, b, tw, tf, r):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -427,7 +429,7 @@ def test_Isection_plastic_fiber(h, b, tw, tf, r):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -477,7 +479,7 @@ def test_Isection_plastic_marin(h, b, tw, tf, r):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -526,7 +528,7 @@ def test_Isection_elastic_material_marin(h, b, tw, tf, r):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -577,4 +579,4 @@ def test_Isection_user_material_marin(h, b, tw, tf, r):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-2)

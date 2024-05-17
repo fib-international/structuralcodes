@@ -84,10 +84,11 @@ class MomentCurvatureResults:
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
-    chi: ArrayLike = None  # the curvatures
+    chi_y: ArrayLike = None  # the curvatures
+    chi_z: ArrayLike = None  # the curvatures
     eps_axial: ArrayLike = 0  # the axial strain (at section 0,0)
-    my: ArrayLike = None  # the moment
-    mz: ArrayLike = None  # the moment
+    m_y: ArrayLike = None  # the moment
+    m_z: ArrayLike = None  # the moment
 
     # The strains can be reconstructed at each step from chi and eps_axial
     # The stresses can be recomputed if needed on the fly? Or storing them?
