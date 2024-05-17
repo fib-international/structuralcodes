@@ -551,6 +551,13 @@ class CompoundGeometry(Geometry):
             processed_geoms.append(pg.rotate(angle, point, use_radians))
         return CompoundGeometry(geometries=processed_geoms)
 
-    # Add split method that call the split for each geometry
+    def __add__(self, other: Geometry) -> CompoundGeometry:
+        """Add operator "+" for geometries.
 
-    # Add methods for translation and rotation of compound and single geoms
+        Args:
+            other: the other geometry to add
+
+        Returns:
+        the Compound Geometry
+        """
+        return CompoundGeometry([self, other])

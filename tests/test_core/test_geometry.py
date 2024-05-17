@@ -4,12 +4,8 @@ import math
 
 import numpy as np
 import pytest
-from shapely import (
-    LineString,
-    MultiLineString,
-    MultiPolygon,
-    Polygon,
-)
+from shapely import LineString, MultiLineString, MultiPolygon, Polygon
+from shapely.affinity import translate
 from shapely.testing import assert_geometries_equal
 
 from structuralcodes.geometry import (
@@ -337,3 +333,51 @@ def test_compound_geometry():
         '="7.2" opacity="0.6" d="M -500.0,200.0 L 500.0,200.0 L 500.0,300.0 L '
         '-500.0,300.0 L -500.0,200.0 z" /></g></g></svg>'
     )
+
+
+def test_add_geometries():
+    """Test addition for different geometries."""
+    polys = []
+    polys.append(
+        Polygon([(-150, -300), (0, -300), (0, -289.3), (-150, -289.3)])
+    )
+    mat = ElasticPlastic(E=206000, fy=300)
+    geo1 = SurfaceGeometry(polys[-1], mat)
+
+    polys.append(Polygon([(-150, 289.3), (0, 289.3), (0, 300), (-150, 300)]))
+    geo2 = SurfaceGeometry(polys[-1], mat)
+
+    # add two surface geometries
+    geo = geo1 + geo2
+    assert isinstance(geo, CompoundGeometry)
+
+    # add a further geometry
+    polys.append(
+        Polygon(
+            [
+                (-78.55, -289.3),
+                (-71.45, -289.3),
+                (-71.45, 289.3),
+                (-78.55, 289.3),
+            ]
+        )
+    )
+
+    geo3 = SurfaceGeometry(polys[-1], mat)
+    # add one compound geometry with a surface geometry
+    geo += geo3
+    assert isinstance(geo, CompoundGeometry)
+
+    for i in range(3):
+        polys.append(translate(polys[i], 150, 0))
+
+    geo_t = geo.translate(dx=150, dy=0)
+
+    # add one compound geometry with another compoud geometry
+    geo += geo_t
+    assert isinstance(geo, CompoundGeometry)
+
+    # check the sum was fine
+    assert len(polys) == len(geo.geometries)
+    for i, p in enumerate(geo.geometries):
+        assert_geometries_equal(polys[i], p.polygon)

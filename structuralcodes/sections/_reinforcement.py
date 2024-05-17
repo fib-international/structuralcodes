@@ -33,7 +33,7 @@ def add_reinforcement(
         the resulting compound geometry
     """
     bar = PointGeometry(Point(coords), diameter, material)
-    return CompoundGeometry([geo, bar])
+    return geo + bar
 
 
 def add_reinforcement_line(
