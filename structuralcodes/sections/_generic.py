@@ -354,9 +354,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         Arguments:
         theta (float, default = 0): inclination of n.a. respect to section
-            y axis (X direction in 2D coordinates)
+            y axis
         n (float, default = 0): axial load applied to the section
-        (+: tension, -: compression)
+            (+: tension, -: compression)
 
         Return:
         ultimate_bending_moment_result (UltimateBendingMomentResult)
@@ -368,23 +368,23 @@ class GenericSectionCalculator(SectionCalculator):
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
         # Compute the internal forces with this strain distribution
-        N, Mx, My, _ = self.integrator.integrate_strain_response_on_geometry(
+        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
             geo=rotated_geom, strain=strain, tri=self.triangulated_data
         )
 
         # Rotate back to section CRS
         T = np.array([[cos(-theta), sin(-theta)], [-sin(-theta), cos(-theta)]])
-        M = T @ np.array([[Mx], [My]])
+        M = T @ np.array([[My], [Mz]])
 
         # Create result object
         res = s_res.UltimateBendingMomentResults()
         res.theta = theta
         res.n = N
-        res.chi_x = strain[1]
-        res.chi_y = strain[2]
+        res.chi_y = strain[1]
+        res.chi_z = strain[2]
         res.eps_a = strain[0]
-        res.m_x = M[0, 0]
-        res.m_y = M[1, 0]
+        res.m_y = M[0, 0]
+        res.m_z = M[1, 0]
 
         return res
 
@@ -452,8 +452,8 @@ class GenericSectionCalculator(SectionCalculator):
             )
             (
                 _,
-                Mx,
                 My,
+                Mz,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
@@ -462,7 +462,7 @@ class GenericSectionCalculator(SectionCalculator):
             T = np.array(
                 [[cos(-theta), sin(-theta)], [-sin(-theta), cos(-theta)]]
             )
-            M = T @ np.array([[Mx], [My]])
+            M = T @ np.array([[My], [Mz]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
             mz[i] = M[1, 0]

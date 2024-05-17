@@ -25,12 +25,12 @@ class GrossProperties:
     perimeter: float = 0
 
     # first moments of area
-    sx: float = 0
     sy: float = 0
+    sz: float = 0
 
     # centroids
-    cx: float = 0
     cy: float = 0
+    cz: float = 0
 
     # second moments of area
     i_yy: float = 0  # strong axis
@@ -39,8 +39,8 @@ class GrossProperties:
     # TODO: principal axes i_11 i_22 and angle
 
     # section flexural rigidity
-    ei_xx: float = 0
     ei_yy: float = 0
+    ei_zz: float = 0
 
     def __format__(self, spec: str) -> str:
         """Defines the format for returning the string representation.
@@ -66,13 +66,13 @@ class CrackedProperties:
     """Simple dataclass for storing cracked section properties."""
 
     # second moments of area
-    i_xx: float = 0
     i_yy: float = 0
-    i_xy: float = 0
+    i_zz: float = 0
+    i_yz: float = 0
 
     # section cracked flexural rigidity
-    ei_xx: float = 0
     ei_yy: float = 0
+    ei_zz: float = 0
 
 
 @dataclass
@@ -102,8 +102,8 @@ class UltimateBendingMomentResults:
 
     theta: float = 0  # the inclination of n.a.
     n: float = 0  # axial load - mantained constant during analysis
-    m_x: float = 0  # the ultimate moment for given theta and n
     m_y: float = 0  # the ultimate moment for given theta and n
-    chi_x: float = 0  # the curvature corresponding to the ultimate moment
+    m_z: float = 0  # the ultimate moment for given theta and n
     chi_y: float = 0  # the curvature corresponding to the ultimate moment
+    chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult

@@ -59,7 +59,7 @@ def test_rectangular_section():
     # Compute bending strength
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(res_marin.m_x, res_fiber.m_x, rel_tol=1e-2)
+    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-2)
 
     # Compute moment curvature
     res_mc_fiber = sec.section_analyzer.calculate_moment_curvature(
@@ -102,7 +102,7 @@ def test_holed_section():
     # Compute bending strength
     res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(abs(res_marin.m_x * 1e-6), 1012, rel_tol=1e-2)
+    assert math.isclose(abs(res_marin.m_y * 1e-6), 1012, rel_tol=1e-2)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
@@ -111,7 +111,7 @@ def test_holed_section():
     # Compute bending strength
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(res_marin.m_x, res_fiber.m_x, rel_tol=1e-2)
+    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-2)
 
 
 # Test U section
@@ -150,7 +150,7 @@ def test_u_section():
     # Compute bending strength
     res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(abs(res_marin.m_x * 1e-6), 993.3, rel_tol=1e-2)
+    assert math.isclose(abs(res_marin.m_y * 1e-6), 993.3, rel_tol=1e-2)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
@@ -159,7 +159,7 @@ def test_u_section():
     # Compute bending strength
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(res_marin.m_x, res_fiber.m_x, rel_tol=1e-2)
+    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-2)
 
 
 # Test steel I section
@@ -325,11 +325,11 @@ def test_Isection_elastic_fiber(h, b, tw, tf, r):
     # Create the section with fiber
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
     results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -375,11 +375,11 @@ def test_Isection_elastic_marin(h, b, tw, tf, r):
     # Create the section with Marin integrator
     sec = GenericSection(geo)
     results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -425,11 +425,11 @@ def test_Isection_plastic_fiber(h, b, tw, tf, r):
     # Create the section with fiber
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
     results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-2)
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -475,11 +475,11 @@ def test_Isection_plastic_marin(h, b, tw, tf, r):
     # Create the section with marin integrator
     sec = GenericSection(geo)
     results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-2)
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -524,11 +524,11 @@ def test_Isection_elastic_material_marin(h, b, tw, tf, r):
     # Create the section with marin integrator
     sec = GenericSection(geo)
     results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -575,8 +575,8 @@ def test_Isection_user_material_marin(h, b, tw, tf, r):
     # Create the section with fiber
     sec = GenericSection(geo)
     results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-    assert math.isclose(-results.m_x * 1e-6, my_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_y * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
