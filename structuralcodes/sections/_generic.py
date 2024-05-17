@@ -244,7 +244,7 @@ class GenericSectionCalculator(SectionCalculator):
         geom: CompoundGeometry,
         n: float,
         curv: float,
-        x_a: float,
+        eps_0_a: float,
         dn_a: float,
     ):
         """Perfind range where the curvature equilibrium is located.
@@ -256,65 +256,17 @@ class GenericSectionCalculator(SectionCalculator):
         ITMAX = 20
         sign = -1 if dn_a > 0 else 1
         found = False
-        it = 0
-        delta = 10
-        while not found and it < ITMAX:
-            x_b = x_a + sign * (delta * (it + 1) ** 3)
-            (
-                n_int,
-                _,
-                _,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [-curv * x_b, curv, 0], tri=self.triangulated_data
-            )
-            dn_b = n_int - n
-            if dn_a * dn_b < 0:
-                found = True
-            elif abs(dn_b) > abs(dn_a):
-                # we are driving aay from the solution, probably due
-                # to failure of a material
-                delta /= 2
-                it -= 1
-            it += 1
-        if it >= ITMAX and not found:
-            s = f'Last iteration reached a unbalance of: \
-                dn_a = {dn_a} dn_b = {dn_b})'
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return (x_b, dn_b)
-
-    def _prefind_range_curvature_equilibrium_2(
-        self,
-        geom: CompoundGeometry,
-        n: float,
-        curv: float,
-        x_a: float,
-        dn_a: float,
-    ):
-        """Perfind range where the curvature equilibrium is located.
-
-        This algorithms quickly finds a position of NA that guaranteed the
-        existence of at least one zero in the function dn vs. curv in order
-        to apply the bisection algorithm.
-
-        AN ATTEMPT FOR A MORE ROBUST IMPLEMENTATION
-        """
-        ITMAX = 20
-        sign = -1 if dn_a > 0 else 1
-        found = False
-        e0_a = -curv * x_a
         it = 0
         delta = 1e-3
         while not found and it < ITMAX:
-            e0_b = e0_a + sign * delta * (it + 1)
-            x_b = -e0_b / curv
+            eps_0_b = eps_0_a + sign * delta * (it + 1)
             (
                 n_int,
                 _,
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [e0_b, curv, 0], tri=self.triangulated_data
+                geom, [eps_0_b, curv, 0], tri=self.triangulated_data
             )
             dn_b = n_int - n
             if dn_a * dn_b < 0:
@@ -329,10 +281,10 @@ class GenericSectionCalculator(SectionCalculator):
             s = f'Last iteration reached a unbalance of: \
                 dn_a = {dn_a} dn_b = {dn_b})'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return (x_b, dn_b)
+        return (eps_0_b, dn_b)
 
     def find_equilibrium_fixed_curvature(
-        self, geom: CompoundGeometry, n: float, curv: float, x: float
+        self, geom: CompoundGeometry, n: float, curv: float, eps_0: float
     ):
         """Find strain profile with equilibrium with fixed curvature.
         Given curvature and external axial force, find the strain profile
@@ -342,13 +294,13 @@ class GenericSectionCalculator(SectionCalculator):
         geom: (CompounGeometry) the geometry
         n: (float) the external axial load
         curv: (float) the value of curvature
-        x: (float) a first attempt for neutral axis position
+        eps_0: (float) a first attempt for neutral axis position
         """
         # Useful for Moment Curvature Analysis
         # Number of maximum iteration for the bisection algorithm
         ITMAX = 100
         # Start from previous position of N.A.
-        eps_0 = -curv * x
+        eps_0_a = eps_0
         # find internal axial force by integration
         (
             n_int,
@@ -361,39 +313,38 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is None:
             self.triangulated_data = tri
         dn_a = n_int - n
-        x_a = x
         # It may occur that dn_a is already almost zero (in eqiulibrium)
         if abs(dn_a) <= 1e-2:
             # return the equilibrium position
-            return (x_a, [eps_0, curv, 0])
-        x_b, dn_b = self._prefind_range_curvature_equilibrium_2(
-            geom, n, curv, x_a, dn_a
+            return [eps_0_a, curv, 0]
+        eps_0_b, dn_b = self._prefind_range_curvature_equilibrium(
+            geom, n, curv, eps_0_a, dn_a
         )
         # Found a range within there is the solution, apply bisection
         it = 0
         while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
-            x_c = (x_a + x_b) / 2
+            eps_0_c = (eps_0_a + eps_0_b) / 2
             (
                 n_int,
                 _,
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [-curv * x_c, curv, 0], tri=self.triangulated_data
+                geom, [eps_0_c, curv, 0], tri=self.triangulated_data
             )
             dn_c = n_int - n
             if dn_a * dn_c < 0:
                 dn_b = dn_c
-                x_b = x_c
+                eps_0_b = eps_0_c
             else:
                 dn_a = dn_c
-                x_a = x_c
+                eps_0_a = eps_0_c
             it += 1
         if it >= ITMAX:
             s = f'Last iteration reached a unbalance of: \
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return (x_c, [-curv * x_c, curv, 0])
+        return [eps_0_c, curv, 0]
 
     def calculate_bending_strength(
         self, theta=0, n=0
@@ -489,15 +440,15 @@ class GenericSectionCalculator(SectionCalculator):
         mz = np.zeros_like(chi)
         chi_y = np.zeros_like(chi)
         chi_z = np.zeros_like(chi)
-        # Previous position of neutral axes
-        x = 0
+        # Previous position of strain at (0,0)
+        strain = [0, 0, 0]
         # For each value of curvature
         for i, curv in enumerate(chi):
             # find the new position of neutral axis for mantaining equilibrium
             # store the information in the results object for the current
             # value of curvature
-            x, strain = self.find_equilibrium_fixed_curvature(
-                rotated_geom, n, curv, x
+            strain = self.find_equilibrium_fixed_curvature(
+                rotated_geom, n, curv, strain[0]
             )
             (
                 _,
