@@ -247,9 +247,12 @@ class GenericSectionCalculator(SectionCalculator):
         x_a: float,
         dn_a: float,
     ):
-        # With the following algorithm we find quickly a position of NA that
-        # guarantees that the is at least one zero in the function dn vs. curv
-        # in order to apply bisection algorithm
+        """Perfind range where the curvature equilibrium is located.
+
+        This algorithms quickly finds a position of NA that guaranteed the
+        existence of at least one zero in the function dn vs. curv in order
+        to apply the bisection algorithm.
+        """
         ITMAX = 20
         sign = -1 if dn_a > 0 else 1
         found = False
@@ -264,6 +267,54 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geom, [-curv * x_b, curv, 0], tri=self.triangulated_data
+            )
+            dn_b = n_int - n
+            if dn_a * dn_b < 0:
+                found = True
+            elif abs(dn_b) > abs(dn_a):
+                # we are driving aay from the solution, probably due
+                # to failure of a material
+                delta /= 2
+                it -= 1
+            it += 1
+        if it >= ITMAX and not found:
+            s = f'Last iteration reached a unbalance of: \
+                dn_a = {dn_a} dn_b = {dn_b})'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+        return (x_b, dn_b)
+
+    def _prefind_range_curvature_equilibrium_2(
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv: float,
+        x_a: float,
+        dn_a: float,
+    ):
+        """Perfind range where the curvature equilibrium is located.
+
+        This algorithms quickly finds a position of NA that guaranteed the
+        existence of at least one zero in the function dn vs. curv in order
+        to apply the bisection algorithm.
+
+        AN ATTEMPT FOR A MORE ROBUST IMPLEMENTATION
+        """
+        ITMAX = 20
+        sign = -1 if dn_a > 0 else 1
+        found = False
+        e0_a = -curv * x_a
+        it = 0
+        delta = 1e-3
+        while not found and it < ITMAX:
+            e0_b = e0_a + sign * delta * (it + 1)
+            x_b = -e0_b / curv
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [e0_b, curv, 0], tri=self.triangulated_data
             )
             dn_b = n_int - n
             if dn_a * dn_b < 0:
@@ -315,7 +366,7 @@ class GenericSectionCalculator(SectionCalculator):
         if abs(dn_a) <= 1e-2:
             # return the equilibrium position
             return (x_a, [eps_0, curv, 0])
-        x_b, dn_b = self._prefind_range_curvature_equilibrium(
+        x_b, dn_b = self._prefind_range_curvature_equilibrium_2(
             geom, n, curv, x_a, dn_a
         )
         # Found a range within there is the solution, apply bisection
