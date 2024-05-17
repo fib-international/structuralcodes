@@ -381,3 +381,60 @@ def test_add_geometries():
     assert len(polys) == len(geo.geometries)
     for i, p in enumerate(geo.geometries):
         assert_geometries_equal(polys[i], p.polygon)
+
+
+def test_sub_geometries():
+    """Test subtraction between geometries."""
+    mat = ElasticPlastic(E=206000, fy=300)
+    # Create the exptected polygons
+    poly_1 = Polygon(
+        shell=[(-100, -200), (100, -200), (100, 200), (-100, 200)],
+        holes=[[(-50, -150), (50, -150), (50, -50), (-50, -50)]],
+    )
+    poly_2 = Polygon(
+        shell=[(-100, -200), (100, -200), (100, 200), (-100, 200)],
+        holes=[
+            [(-50, -150), (50, -150), (50, -50), (-50, -50)],
+            [(-50, 50), (50, 50), (50, 150), (-50, 150)],
+        ],
+    )
+    # Create a rectangle
+    geo_rect = SurfaceGeometry(
+        Polygon([(-100, -200), (100, -200), (100, 200), (-100, 200)]), mat
+    )
+
+    # Create one hole
+    geo_hole = SurfaceGeometry(
+        Polygon([(-50, -150), (50, -150), (50, -50), (-50, -50)]), mat
+    )
+
+    # Create a compound geometry with two holes
+    geo_holes = geo_hole + geo_hole.translate(dx=0, dy=200)
+
+    # Subtract from surface one hole
+    assert_geometries_equal(
+        poly_1, (geo_rect - geo_hole).polygon, normalize=True
+    )
+
+    # Subtract from surface two holes (a compund)
+    assert_geometries_equal(
+        poly_2, (geo_rect - geo_holes).polygon, normalize=True
+    )
+
+    # Create a compound geometry
+    geo_rects = geo_rect.translate(-100, 0) + geo_rect.translate(100, 0)
+    geo_holes = geo_holes.translate(-100, 0) + geo_holes.translate(100, 0)
+
+    # Subtract from Compound another compound
+    geo_sub = geo_rects - geo_holes
+    assert len(geo_sub.geometries) == 2
+    assert_geometries_equal(
+        geo_sub.geometries[0].polygon,
+        translate(poly_2, xoff=-100),
+        normalize=True,
+    )
+    assert_geometries_equal(
+        geo_sub.geometries[1].polygon,
+        translate(poly_2, xoff=100),
+        normalize=True,
+    )

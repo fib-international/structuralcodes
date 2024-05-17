@@ -372,6 +372,30 @@ class SurfaceGeometry:
         """
         return CompoundGeometry([self, other])
 
+    def __sub__(self, other: Geometry) -> SurfaceGeometry:
+        """Add operator "-" for geometries.
+
+        Args:
+            other: the other geometry to be subtracted from a
+
+        Returns:
+            the resulting SurfaceGeometry
+        """
+        material = self.material
+
+        # if we subtract a point from a surface we obtain the same surface
+        sub_polygon = self.polygon
+        if isinstance(other, SurfaceGeometry):
+            # We are subtracting a surface from another surface
+            sub_polygon = self.polygon - other.polygon
+        if isinstance(other, CompoundGeometry):
+            # We are subtracting a compound from a surface
+            sub_polygon = self.polygon
+            for g in other.geometries:
+                sub_polygon = sub_polygon - g.polygon
+
+        return SurfaceGeometry(poly=sub_polygon, mat=material)
+
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
         return str(self.polygon._repr_svg_())
@@ -561,3 +585,23 @@ class CompoundGeometry(Geometry):
         the Compound Geometry
         """
         return CompoundGeometry([self, other])
+
+    def __sub__(self, other: Geometry) -> CompoundGeometry:
+        """Add operator "-" for geometries.
+
+        Args:
+            other: the other geometry to be subtracted from a
+
+        Returns:
+        the Compound Geometry
+        """
+        # if we subtract a point from a surface we obtain the same surface
+        if isinstance(other, PointGeometry):
+            return self
+        # Otherwise perform subtraction
+        processed_geoms = []
+        for g in self.geometries:
+            processed_geoms.append(g - other)
+        for pg in self.point_geometries:
+            processed_geoms.append(pg)
+        return CompoundGeometry(geometries=processed_geoms)
