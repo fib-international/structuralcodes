@@ -19,7 +19,24 @@ from .section_integrators import integrator_factory
 
 
 class GenericSection(Section):
-    """This is the implementation of the generic class section."""
+    """This is the implementation of the generic class section.
+
+    The section is a 2D geometry where Y axis is horizontal while
+    Z axis is vertical.
+    The moments and curvatures around Y and Z axes are assumed
+    positive according to RHR.
+
+    Attributes:
+        geometry: (SurfaceGeometry or CompoundGeometry)
+            the geometry of the section
+        name: (str) the name of the section
+        section_analyzer: (GenericSectionCalculator)
+            the object responsible for performing different
+            computations on the section (e.g. bending strength,
+            moment curvature, etc.)
+        gross_properties: (GrossProperties)
+            the results of gross properties computation
+    """
 
     def __init__(
         self,
