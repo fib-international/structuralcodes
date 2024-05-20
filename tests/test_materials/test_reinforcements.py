@@ -4,7 +4,12 @@ import math
 
 import pytest
 
+from structuralcodes.materials.constitutive_laws import (
+    Elastic,
+    ParabolaRectangle,
+)
 from structuralcodes.materials.reinforcement import (
+    Reinforcement,
     ReinforcementEC2_2004,
     ReinforcementEC2_2023,
     ReinforcementMC2010,
@@ -44,3 +49,25 @@ def test_reinforcements(reinforcement_material):
     assert reinf.Es == 1.05 * Es
     assert reinf.ftk == 1.05 * ftk
     assert reinf.epsuk == 0.5 * epsuk
+
+
+def test_constitutive_law_setter_valid():
+    """Test the constitutive law setter, valid law."""
+    # Arrange
+    steel = Reinforcement(500, 200000, 7850, 550, 0.07)
+    constitutive_law = Elastic(200000)
+
+    # Act and assert
+    steel.constitutive_law = constitutive_law
+    assert isinstance(steel.constitutive_law, Elastic)
+
+
+def test_constitutive_law_setter_invalid():
+    """Test the constitutive law setter, invalid law."""
+    # Arrange
+    steel = Reinforcement(500, 200000, 7850, 550, 0.07)
+    constitutive_law = ParabolaRectangle(500)
+
+    # Act and assert
+    with pytest.raises(ValueError):
+        steel.constitutive_law = constitutive_law

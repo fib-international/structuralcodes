@@ -2,7 +2,8 @@
 
 import typing as t
 
-from structuralcodes.core.base import Material
+from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.materials.constitutive_laws import ElasticPlastic
 
 
 class Reinforcement(Material):
@@ -30,6 +31,15 @@ class Reinforcement(Material):
         self._Es = abs(Es)
         self._ftk = abs(ftk)
         self._epsuk = abs(epsuk)
+
+        # Calculate the plastic hardening modulus
+        if self.epsuk - self.fyk / self.Es > 0.0 and self.ftk - self.fyk > 0:
+            Eh = (self.ftk - self.fyk) / (self.epsuk - self.fyk / self.Es)
+        else:
+            Eh = 0.0
+        self._constitutive_law = ElasticPlastic(
+            E=self.Es, fy=self.fyk, Eh=Eh, eps_su=self.epsuk
+        )
 
     @property
     def fyk(self) -> float:
@@ -70,3 +80,19 @@ class Reinforcement(Material):
     def epsuk(self, epsuk: float) -> None:
         """Setter for epsuk."""
         self._epsuk = abs(epsuk)
+
+    @property
+    def constitutive_law(self) -> ConstitutiveLaw:
+        """Returns the constitutive law object."""
+        return self._constitutive_law
+
+    @constitutive_law.setter
+    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
+        """Setter for constitutive law."""
+        if 'rebars' in constitutive_law.__materials__:
+            self._constitutive_law = constitutive_law
+        else:
+            raise ValueError(
+                'The constitutive law selected is not suitable '
+                'for being used with a reinforcement material.'
+            )
