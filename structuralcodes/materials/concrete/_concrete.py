@@ -3,7 +3,8 @@
 import abc
 import typing as t
 
-from structuralcodes.core.base import Material
+from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.materials.constitutive_laws import ParabolaRectangle
 
 
 class Concrete(Material):
@@ -31,6 +32,9 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
+        self._constitutive_law = ParabolaRectangle(
+            self._fck, name=name + '_ConstLaw'
+        )
         self._gamma_c = gamma_c
 
     @property
@@ -49,6 +53,22 @@ class Concrete(Material):
         """Each concrete should define its own _reset_attributes method
         This is because fck setting, reset the object arguments.
         """
+
+    @property
+    def constitutive_law(self) -> ConstitutiveLaw:
+        """Returns the constitutive law object."""
+        return self._constitutive_law
+
+    @constitutive_law.setter
+    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
+        """Setter for constitutive law."""
+        if 'concrete' in constitutive_law.__materials__:
+            self._constitutive_law = constitutive_law
+        else:
+            raise ValueError(
+                'The constitutive law selected is not suitable '
+                'for being used with a concrete material.'
+            )
 
     @property
     @abc.abstractmethod

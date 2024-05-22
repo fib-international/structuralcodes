@@ -23,8 +23,8 @@ _NATIONAL_ANNEX: t.Optional[str] = None
 # Design code registry
 _DESIGN_CODES = {
     'mc2010': mc2010,
-    'ec2_2023': ec2_2023,
     'ec2_2004': ec2_2004,
+    'ec2_2023': ec2_2023,
 }
 
 

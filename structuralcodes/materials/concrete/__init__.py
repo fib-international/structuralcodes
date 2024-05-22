@@ -5,6 +5,7 @@ import typing as t
 from structuralcodes.codes import _use_design_code
 
 from ._concrete import Concrete
+from ._concreteEC2_2004 import ConcreteEC2_2004
 from ._concreteEC2_2023 import ConcreteEC2_2023
 from ._concreteMC2010 import ConcreteMC2010
 
@@ -13,7 +14,14 @@ __all__ = [
     'Concrete',
     'ConcreteMC2010',
     'ConcreteEC2_2023',
+    'ConcreteEC2_2004',
 ]
+
+CONCRETES: t.Dict[str, Concrete] = {
+    'fib Model Code 2010': ConcreteMC2010,
+    'EUROCODE 2 1992-1-1:2004': ConcreteEC2_2004,
+    'EUROCODE 2 1992-1-1:2023': ConcreteEC2_2023,
+}
 
 
 def create_concrete(
@@ -61,12 +69,9 @@ def create_concrete(
         )
 
     # Create the proper concrete object
-    if code.__title__ == 'fib Model Code 2010':
-        return ConcreteMC2010(
-            fck=fck,
-            name=name,
-            density=density,
-            gamma_c=gamma_c,
-            existing=existing,
+    current_concrete = CONCRETES.get(code.__title__, None)
+    if current_concrete is not None:
+        return current_concrete(
+            fck=fck, name=name, density=density, existing=existing
         )
     return None
