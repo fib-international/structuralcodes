@@ -48,7 +48,6 @@ def create_concrete(
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
-            Currently available codes: 'mc2010'
 
     Raises:
         ValueError: if the design code is not valid or does not cover
@@ -72,6 +71,10 @@ def create_concrete(
     current_concrete = CONCRETES.get(code.__title__, None)
     if current_concrete is not None:
         return current_concrete(
-            fck=fck, name=name, density=density, existing=existing
+            fck=fck,
+            name=name,
+            density=density,
+            gamma_c=gamma_c,
+            existing=existing,
         )
     return None
