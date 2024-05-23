@@ -873,31 +873,31 @@ def weight_s() -> float:
     return 78.5
 
 
-def fyd(fyk: float, gamma_S: float) -> float:
+def fyd(fyk: float, gamma_s: float) -> float:
     """Design value for the yielding stress for welding reinforcing steel.
 
     EN 1992-1-1:2023, Eq (5.11)
 
     Args:
         fyk (float): characteristic yield stress for the steel in MPa
-        gamma_S (float): safety coefficient
+        gamma_s (float): safety coefficient
 
     Returns:
         float: design yielding stress for steel in MPa
 
     Raises:
         ValueError: if fyk is less than 0
-        ValueError: if gamma_S is less or equal to 0
+        ValueError: if gamma_s is less than 1
     """
     if fyk < 0:
         raise ValueError(f'fyk={fyk} cannot be less than 0')
-    if gamma_S <= 0:
-        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+    if gamma_s < 1:
+        raise ValueError(f'gamma_s={gamma_s} must be larger or equal to 1')
 
-    return fyk / gamma_S
+    return fyk / gamma_s
 
 
-def eps_ud(eps_uk: float, gamma_S: float) -> float:
+def eps_ud(eps_uk: float, gamma_s: float) -> float:
     """Design value for the ultimate limit strain welding reinforcing steel.
 
     EN 1992-1-1:2023, 5.2.4-2
@@ -905,21 +905,21 @@ def eps_ud(eps_uk: float, gamma_S: float) -> float:
     Args:
         eps_uk (float): characteristic ultimate limit
             strain
-        gamma_S (float): safety coefficient
+        gamma_s (float): safety coefficient
 
     Returns:
         float: design ultimate strain limit
 
     Raises:
         ValueError: if eps_uk is less than 0
-        ValueError: if gamma_S is less or equal to 0
+        ValueError: if gamma_s is less than 1
     """
     if eps_uk < 0:
         raise ValueError(f'eps_uk={eps_uk} must be equal or larger to 0')
-    if gamma_S < 0:
-        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+    if gamma_s < 1:
+        raise ValueError(f'gamma_s={gamma_s} must be larger or equal to 1')
 
-    return eps_uk / gamma_S
+    return eps_uk / gamma_s
 
 
 def sigma_s(
