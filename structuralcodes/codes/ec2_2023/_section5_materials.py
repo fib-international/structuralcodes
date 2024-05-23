@@ -591,14 +591,14 @@ def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_c: float) -> float:
     Raises:
         ValueError: if fck is less than 12 MPa
         ValueError if _etc_cc is not between 0 and 1
-        ValueError: if gamma_c is less or equal to 0
+        ValueError: if gamma_c is less than 1
     """
     if fck < 12:
         raise ValueError(f'fck={fck} must be larger or equal than 12 MPa')
     if _eta_cc < 0 or _eta_cc > 1:
         raise ValueError(f'_eta_cc={_eta_cc} must be between 0 and 1')
-    if gamma_c <= 0:
-        raise ValueError(f'gamma_c={gamma_c} must be larger than 0')
+    if gamma_c < 1:
+        raise ValueError(f'gamma_c={gamma_c} must be larger or equal to 1')
 
     return _eta_cc * _k_tc * fck / gamma_c
 
