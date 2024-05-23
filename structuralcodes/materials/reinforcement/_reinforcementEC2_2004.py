@@ -29,6 +29,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             epsuk (float): The characteristik strain at the ultimate stress
                 level.
             gamma_s (Optional(float)): The partial factor for reinforcement.
+                Default value is 1.15.
 
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
