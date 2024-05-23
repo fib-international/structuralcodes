@@ -200,6 +200,7 @@ class ElasticPlastic(ConstitutiveLaw):
 
 class ParabolaRectangle(ConstitutiveLaw):
     """Class for parabola rectangle constitutive law.
+
     The stresses and strains are assumed negative in compression and positive
     in tension.
     """
@@ -214,7 +215,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         n: float = 2.0,
         name: t.Optional[str] = None,
     ) -> None:
-        """Initialize an Elastic-Plastic Material.
+        """Initialize a Parabola-Rectangle Material.
 
         Arguments:
         fc: (float) the strength of concrete in compression
