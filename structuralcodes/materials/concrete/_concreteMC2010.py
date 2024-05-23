@@ -16,6 +16,7 @@ class ConcreteMC2010(Concrete):
     _fctkmin: t.Optional[float] = None
     _fctkmax: t.Optional[float] = None
     _Gf: t.Optional[float] = None
+    _alpha_cc: t.Optional[float] = None
 
     def __init__(
         self,
@@ -24,6 +25,7 @@ class ConcreteMC2010(Concrete):
         density: float = 2400.0,
         gamma_c: t.Optional[float] = None,
         existing: bool = False,
+        alpha_cc: t.Optional[float] = None,
         **kwargs,
     ):
         """Initializes a new instance of Concrete for MC 2010.
@@ -38,6 +40,9 @@ class ConcreteMC2010(Concrete):
             gamma_c (Optional(float)): The partial factor for concrete.
             existing (bool): The material is of an existing structure
                 (default: False).
+            alpha_cc (float, optional): A factor for considering long-term
+                effects on the strength, and effects that arise from the way
+                the load is applied.
         """
         del kwargs
         if name is None:
@@ -49,6 +54,7 @@ class ConcreteMC2010(Concrete):
             existing=existing,
             gamma_c=gamma_c,
         )
+        self._alpha_cc = alpha_cc
 
     def _reset_attributes(self):
         self._fcm = None
@@ -192,4 +198,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The design compressive strength of concrete in MPa
         """
-        return mc2010.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=self.gamma_c)
+    @property
+    def alpha_cc(self) -> float:
+        """The alpha_cc factor."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._alpha_cc or 1.0
