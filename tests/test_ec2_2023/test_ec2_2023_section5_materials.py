@@ -305,24 +305,24 @@ def test_k_tc_raises_errors(t_ref, t0, concrete_class):
 
 
 @pytest.mark.parametrize(
-    'fck, eta_cc, k_tc, gamma_C, expected',
+    'fck, eta_cc, k_tc, gamma_c, expected',
     [
         (40, 0.9, 0.85, 1.35, 22.6666666666667),
         (35, 1, 1, 1.5, 23.3333333333333),
         (50, 0.85, 0.85, 1.4, 25.8035714285714),
     ],
 )
-def test_fcd(fck, eta_cc, k_tc, gamma_C, expected):
+def test_fcd(fck, eta_cc, k_tc, gamma_c, expected):
     """Test fcd function."""
     assert math.isclose(
-        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_C),
+        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_c),
         expected,
         rel_tol=10e-5,
     )
 
 
 @pytest.mark.parametrize(
-    'fck, eta_cc, k_tc, gamma_C',
+    'fck, eta_cc, k_tc, gamma_c',
     [
         (-10, 0.5, 0.85, 1.5),
         (40, -1, 0.85, 1.5),
@@ -330,10 +330,10 @@ def test_fcd(fck, eta_cc, k_tc, gamma_C, expected):
         (40, 0.9, 1.0, -2),
     ],
 )
-def test_fcd_raises_errors(fck, eta_cc, k_tc, gamma_C):
+def test_fcd_raises_errors(fck, eta_cc, k_tc, gamma_c):
     """Test fcd function raises errors."""
     with pytest.raises(ValueError):
-        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_C)
+        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_c)
 
 
 @pytest.mark.parametrize(
@@ -371,26 +371,26 @@ def test_k_tt_raises_errors(t_ref, concrete_class):
 
 
 @pytest.mark.parametrize(
-    'fctk_5, k_tt, gamma_C', [(-20, 0.8, 1.5), (40, 0.7, -1)]
+    'fctk_5, k_tt, gamma_c', [(-20, 0.8, 1.5), (40, 0.7, -1)]
 )
-def test_fctd_raises_errors(fctk_5, k_tt, gamma_C):
+def test_fctd_raises_errors(fctk_5, k_tt, gamma_c):
     """Test fctd raises errors."""
     with pytest.raises(ValueError):
-        _section5_materials.fctd(fctk_5, k_tt, gamma_C)
+        _section5_materials.fctd(fctk_5, k_tt, gamma_c)
 
 
 @pytest.mark.parametrize(
-    'fctk_5, k_tt, gamma_C, expected',
+    'fctk_5, k_tt, gamma_c, expected',
     [
         (2, 0.7, 1.5, 0.933333333333333),
         (3, 0.8, 1.25, 1.92),
         (1.8, 0.7, 1.3, 0.969230769230769),
     ],
 )
-def test_fctd(fctk_5, k_tt, gamma_C, expected):
+def test_fctd(fctk_5, k_tt, gamma_c, expected):
     """Test fctd."""
     assert math.isclose(
-        _section5_materials.fctd(fctk_5, k_tt, gamma_C),
+        _section5_materials.fctd(fctk_5, k_tt, gamma_c),
         expected,
         rel_tol=10e-5,
     )

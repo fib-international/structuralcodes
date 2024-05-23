@@ -28,6 +28,7 @@ def create_concrete(
     fck: float,
     name: t.Optional[str] = None,
     density: float = 2400.0,
+    gamma_c: t.Optional[float] = None,
     existing: bool = False,
     design_code: t.Optional[str] = None,
 ) -> t.Optional[Concrete]:
@@ -40,13 +41,13 @@ def create_concrete(
 
     Keyword Args:
         density (float): Density of Concrete in kg/m3 (default: 2400)
+        gamma_c (Optional(float)): The partial factor for concrete.
         existing (bool): Boolean indicating if the concrete is of an
             existing structure (default: False)
         design_code (str): Optional string (default: None) indicating the
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
-            Currently available codes: 'mc2010'
 
     Raises:
         ValueError: if the design code is not valid or does not cover
@@ -70,6 +71,10 @@ def create_concrete(
     current_concrete = CONCRETES.get(code.__title__, None)
     if current_concrete is not None:
         return current_concrete(
-            fck=fck, name=name, density=density, existing=existing
+            fck=fck,
+            name=name,
+            density=density,
+            gamma_c=gamma_c,
+            existing=existing,
         )
     return None

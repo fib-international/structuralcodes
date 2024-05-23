@@ -11,6 +11,7 @@ class Concrete(Material):
     """The abstract concrete material."""
 
     _fck: float
+    _gamma_c: t.Optional[float] = None
     _existing: bool
 
     def __init__(
@@ -18,6 +19,7 @@ class Concrete(Material):
         fck: float,
         name: t.Optional[str] = None,
         density: float = 2400,
+        gamma_c: t.Optional[float] = None,
         existing: t.Optional[bool] = False,
     ) -> None:
         """Initializes an abstract concrete material."""
@@ -33,6 +35,7 @@ class Concrete(Material):
         self._constitutive_law = ParabolaRectangle(
             self._fck, name=name + '_ConstLaw'
         )
+        self._gamma_c = gamma_c
 
     @property
     def fck(self) -> float:
@@ -66,3 +69,10 @@ class Concrete(Material):
                 'The constitutive law selected is not suitable '
                 'for being used with a concrete material.'
             )
+
+    @property
+    @abc.abstractmethod
+    def gamma_c(self) -> float:
+        """Each concrete should implement its own getter for the partial factor
+        in order to interact with the globally set national annex.
+        """

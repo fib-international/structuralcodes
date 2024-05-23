@@ -22,6 +22,7 @@ class ConcreteMC2010(Concrete):
         fck: float,
         name: t.Optional[str] = None,
         density: float = 2400.0,
+        gamma_c: t.Optional[float] = None,
         existing: bool = False,
     ):
         """Initializes a new instance of Concrete for MC 2010.
@@ -31,15 +32,20 @@ class ConcreteMC2010(Concrete):
                 existing.
 
         Keyword Args:
-            name (str): A descriptive name for concrete
-            density (float): Density of material in kg/m3 (default: 2400)
+            name (Optional(str)): A descriptive name for concrete.
+            density (float): Density of material in kg/m3 (default: 2400).
+            gamma_c (Optional(float)): The partial factor for concrete.
             existing (bool): The material is of an existing structure
-                (default: False)
+                (default: False).
         """
         if name is None:
             name = f'C{round(fck):d}'
         super().__init__(
-            fck=fck, name=name, density=density, existing=existing
+            fck=fck,
+            name=name,
+            density=density,
+            existing=existing,
+            gamma_c=gamma_c,
         )
 
     def _reset_attributes(self):
@@ -167,3 +173,21 @@ class ConcreteMC2010(Concrete):
             value (float): the value of Gf in N/m
         """
         self._Gf = abs(value)
+
+    @property
+    def gamma_c(self) -> float:
+        """The partial factor for concrete."""
+        return self._gamma_c or 1.5
+
+    def fcd(self, alpha_cc: float = 1.0) -> float:
+        """Calculate the design compressive strength.
+
+        Args:
+            alpha_cc (float): A factor for considering long-term effects on the
+                strength, and effects that arise from the way the load is
+                applied. Default value 1.0.
+
+        Returns:
+            float: The design compressive strength of concrete in MPa
+        """
+        return mc2010.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=self.gamma_c)

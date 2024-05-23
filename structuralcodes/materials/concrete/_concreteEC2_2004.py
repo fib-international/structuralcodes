@@ -22,6 +22,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         fck: float,
         name: t.Optional[str] = None,
         density: float = 2400,
+        gamma_c: t.Optional[float] = None,
         **kwargs,
     ) -> None:
         """Initializes a new instance of Concrete for EC2 2004.
@@ -33,13 +34,19 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Keyword Args:
             name (str): A descriptive name for concrete
             density (float): Density of material in kg/m3 (default: 2400)
-            existing (bool): The material is of an existing structure
-                (default: False)
+            gamma_c (float, optional): partial factor of concrete
+                (default is 1.5)
         """
         del kwargs
         if name is None:
             name = f'C{round(fck):d}'
-        super().__init__(fck=fck, name=name, density=density, existing=False)
+        super().__init__(
+            fck=fck,
+            name=name,
+            density=density,
+            existing=False,
+            gamma_c=gamma_c,
+        )
 
     def _reset_attributes(self):
         self._fcm = None
@@ -167,16 +174,22 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         """
         self._Ecm = abs(value)
 
-    def fcd(self, alpha_cc: float, gamma_c: float) -> float:
+    def fcd(self, alpha_cc: float) -> float:
         """Calculate the design compressive strength.
 
         Args:
             alpha_cc (float): A factor for considering long-term effects on the
                 strength, and effects that arise from the way the load is
                 applied.
-            gamma_c (float): The partial factor of concrete.
 
         Returns:
             float: The design compressive strength of concrete in MPa
         """
-        return ec2_2004.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=gamma_c)
+        return ec2_2004.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=self.gamma_c)
+
+    @property
+    def gamma_c(self) -> float:
+        """The partial factor for concrete."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._gamma_c or 1.5

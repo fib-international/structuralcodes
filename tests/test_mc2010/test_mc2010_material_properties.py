@@ -209,3 +209,20 @@ def test_E_ci_t(_beta_e, _E_ci, expected):
         expected,
         rtol=1e-5,
     )
+
+
+@pytest.mark.parametrize(
+    'fck, alpha_cc, gamma_c, expected',
+    [
+        (35, 0.85, 1.5, 19.8333),
+        (45, 0.85, 1.5, 25.5),
+        (90, 0.85, 1.5, 51.0),
+    ],
+)
+def test_fcd(fck, alpha_cc, gamma_c, expected):
+    """Test fcd function."""
+    assert math.isclose(
+        _concrete_material_properties.fcd(fck, alpha_cc, gamma_c),
+        expected,
+        rel_tol=10e-5,
+    )

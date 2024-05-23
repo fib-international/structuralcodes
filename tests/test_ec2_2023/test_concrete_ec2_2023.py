@@ -20,7 +20,7 @@ def test_initialization(default_concrete):
     assert default_concrete.density == 2400.0
     assert default_concrete._kE == 9500
     assert default_concrete._strength_dev_class == 'CN'
-    assert default_concrete._gamma_C == 1.5
+    assert default_concrete.gamma_c == 1.5
 
 
 def test_invalid_strength_dev_class():
@@ -29,10 +29,10 @@ def test_invalid_strength_dev_class():
         ConcreteEC2_2023(fck=30, strength_dev_class='invalid_class')
 
 
-def test_invalid_gamma_C():
+def test_invalid_gamma_c():
     """Test for invalid sec. coefficient."""
     with pytest.raises(ValueError):
-        ConcreteEC2_2023(fck=30, gamma_C=-1)
+        ConcreteEC2_2023(fck=30, gamma_c=-1)
 
 
 def test_fcm_property(default_concrete):

@@ -16,6 +16,7 @@ class ReinforcementMC2010(Reinforcement):
         Es: float,
         ftk: float,
         epsuk: float,
+        gamma_s: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
     ):
@@ -27,6 +28,8 @@ class ReinforcementMC2010(Reinforcement):
             ftk (float): Characteristic ultimate strength in MPa.
             epsuk (float): The characteristik strain at the ultimate stress
                 level.
+            gamma_s (Optional(float)): The partial factor for reinforcement.
+                Default value is 1.15.
 
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
@@ -41,9 +44,14 @@ class ReinforcementMC2010(Reinforcement):
             density=density,
             ftk=ftk,
             epsuk=epsuk,
+            gamma_s=gamma_s,
         )
 
-    @property
     def fyd(self) -> float:
         """The design yield strength."""
-        return mc2010.fyd(self.fyk)
+        return mc2010.fyd(self.fyk, self.gamma_s)
+
+    @property
+    def gamma_s(self) -> float:
+        """The partial factor for reinforcement."""
+        return self._gamma_s or 1.15

@@ -570,7 +570,7 @@ def k_tc(t_ref: float, t0: float, strength_dev_class: str) -> float:
     return 0.85
 
 
-def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
+def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_c: float) -> float:
     """Computes the value of the design compressive strength of concrete.
 
     EN 1992-1-1:2023, Eq. (5.3)
@@ -583,7 +583,7 @@ def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
             member
         _k_tc (float): factor for taking into consideration high
             sustained loads and of time of loading
-        gamma_C (float): partial factor of concrete
+        gamma_c (float): partial factor of concrete
 
     Returns:
         float: the design compressive strength of concrete in MPa
@@ -591,16 +591,16 @@ def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_C: float) -> float:
     Raises:
         ValueError: if fck is less than 12 MPa
         ValueError if _etc_cc is not between 0 and 1
-        ValueError: if gamma_C is less or equal to 0
+        ValueError: if gamma_c is less than 1
     """
     if fck < 12:
         raise ValueError(f'fck={fck} must be larger or equal than 12 MPa')
     if _eta_cc < 0 or _eta_cc > 1:
         raise ValueError(f'_eta_cc={_eta_cc} must be between 0 and 1')
-    if gamma_C <= 0:
-        raise ValueError(f'gamma_C={gamma_C} must be larger than 0')
+    if gamma_c < 1:
+        raise ValueError(f'gamma_c={gamma_c} must be larger or equal to 1')
 
-    return _eta_cc * _k_tc * fck / gamma_C
+    return _eta_cc * _k_tc * fck / gamma_c
 
 
 def k_tt(t_ref: float, strength_dev_class: str) -> float:
@@ -642,7 +642,7 @@ def k_tt(t_ref: float, strength_dev_class: str) -> float:
     return 0.7
 
 
-def fctd(_fctk_5: float, _k_tt: float, gamma_C: float) -> float:
+def fctd(_fctk_5: float, _k_tt: float, gamma_c: float) -> float:
     """Computes the value of the design tensile strength of concrete.
 
     EN 1992-1-1:2023, Eq. (5.5)
@@ -651,21 +651,21 @@ def fctd(_fctk_5: float, _k_tt: float, gamma_C: float) -> float:
         fctk_5 (float): the 5% mean concrete tensile strength fractile in MPa
         _k_tt (float): the factor for considering the effect of high sustained
             loads and of time of loading on concrete tensile strength
-        gamma_C (float): partial factor of concrete
+        gamma_c (float): partial factor of concrete
 
     Returns:
         float: the design tensile strength of concrete in MPa
 
     Raises:
         ValueError: if fctk_5 is less than 0
-        ValueError: gamma_C is less than 1
+        ValueError: gamma_c is less than 1
     """
     if _fctk_5 < 0:
         raise ValueError(f'fctk_5={_fctk_5} must be larger or equal to 0')
-    if gamma_C < 1:
-        raise ValueError(f'gamma_C={gamma_C} must be larger or equal to 1')
+    if gamma_c < 1:
+        raise ValueError(f'gamma_c={gamma_c} must be larger or equal to 1')
 
-    return _k_tt * _fctk_5 / gamma_C
+    return _k_tt * _fctk_5 / gamma_c
 
 
 def eps_c1(_fcm: float) -> float:
@@ -873,31 +873,31 @@ def weight_s() -> float:
     return 78.5
 
 
-def fyd(fyk: float, gamma_S: float = 1.15) -> float:
+def fyd(fyk: float, gamma_s: float) -> float:
     """Design value for the yielding stress for welding reinforcing steel.
 
     EN 1992-1-1:2023, Eq (5.11)
 
     Args:
         fyk (float): characteristic yield stress for the steel in MPa
-        gamma_S (float): safety coefficient
+        gamma_s (float): safety coefficient
 
     Returns:
         float: design yielding stress for steel in MPa
 
     Raises:
         ValueError: if fyk is less than 0
-        ValueError: if gamma_S is less or equal to 0
+        ValueError: if gamma_s is less than 1
     """
     if fyk < 0:
         raise ValueError(f'fyk={fyk} cannot be less than 0')
-    if gamma_S <= 0:
-        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+    if gamma_s < 1:
+        raise ValueError(f'gamma_s={gamma_s} must be larger or equal to 1')
 
-    return fyk / gamma_S
+    return fyk / gamma_s
 
 
-def eps_ud(eps_uk: float, gamma_S: float) -> float:
+def eps_ud(eps_uk: float, gamma_s: float) -> float:
     """Design value for the ultimate limit strain welding reinforcing steel.
 
     EN 1992-1-1:2023, 5.2.4-2
@@ -905,21 +905,21 @@ def eps_ud(eps_uk: float, gamma_S: float) -> float:
     Args:
         eps_uk (float): characteristic ultimate limit
             strain
-        gamma_S (float): safety coefficient
+        gamma_s (float): safety coefficient
 
     Returns:
         float: design ultimate strain limit
 
     Raises:
         ValueError: if eps_uk is less than 0
-        ValueError: if gamma_S is less or equal to 0
+        ValueError: if gamma_s is less than 1
     """
     if eps_uk < 0:
         raise ValueError(f'eps_uk={eps_uk} must be equal or larger to 0')
-    if gamma_S < 0:
-        raise ValueError(f'gamma_S={gamma_S} must be larger than 0')
+    if gamma_s < 1:
+        raise ValueError(f'gamma_s={gamma_s} must be larger or equal to 1')
 
-    return eps_uk / gamma_S
+    return eps_uk / gamma_s
 
 
 def sigma_s(

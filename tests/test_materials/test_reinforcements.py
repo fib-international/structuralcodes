@@ -9,7 +9,6 @@ from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
 )
 from structuralcodes.materials.reinforcement import (
-    Reinforcement,
     ReinforcementEC2_2004,
     ReinforcementEC2_2023,
     ReinforcementMC2010,
@@ -36,7 +35,7 @@ def test_reinforcements(reinforcement_material):
     # Assert
     assert reinf.fyk == fyk
     assert reinf.Es == Es
-    assert math.isclose(reinf.fyd, fyk / 1.15)
+    assert math.isclose(reinf.fyd(), fyk / 1.15)
 
     # Set new values
     reinf.fyk = 1.05 * reinf.fyk
@@ -54,7 +53,7 @@ def test_reinforcements(reinforcement_material):
 def test_constitutive_law_setter_valid():
     """Test the constitutive law setter, valid law."""
     # Arrange
-    steel = Reinforcement(500, 200000, 7850, 550, 0.07)
+    steel = ReinforcementEC2_2004(500, 200000, 7850, 550, 0.07)
     constitutive_law = Elastic(200000)
 
     # Act and assert
@@ -65,7 +64,7 @@ def test_constitutive_law_setter_valid():
 def test_constitutive_law_setter_invalid():
     """Test the constitutive law setter, invalid law."""
     # Arrange
-    steel = Reinforcement(500, 200000, 7850, 550, 0.07)
+    steel = ReinforcementEC2_2004(500, 200000, 7850, 550, 0.07)
     constitutive_law = ParabolaRectangle(500)
 
     # Act and assert
