@@ -187,17 +187,18 @@ class ConcreteMC2010(Concrete):
         """The partial factor for concrete."""
         return self._gamma_c or 1.5
 
-    def fcd(self, alpha_cc: float = 1.0) -> float:
-        """Calculate the design compressive strength.
-
-        Args:
-            alpha_cc (float): A factor for considering long-term effects on the
-                strength, and effects that arise from the way the load is
-                applied. Default value 1.0.
+    def fcd(self) -> float:
+        """Return the design compressive strength in MPa.
 
         Returns:
             float: The design compressive strength of concrete in MPa
         """
+        # This method should perhaps become a property, but is left as a method
+        # for now, to be consistent with other concretes.
+        return mc2010.fcd(
+            self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
+        )
+
     @property
     def alpha_cc(self) -> float:
         """The alpha_cc factor."""

@@ -180,18 +180,17 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         """
         self._Ecm = abs(value)
 
-    def fcd(self, alpha_cc: float) -> float:
-        """Calculate the design compressive strength.
-
-        Args:
-            alpha_cc (float): A factor for considering long-term effects on the
-                strength, and effects that arise from the way the load is
-                applied.
+    def fcd(self) -> float:
+        """Return the design compressive strength in MPa.
 
         Returns:
             float: The design compressive strength of concrete in MPa
         """
-        return ec2_2004.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=self.gamma_c)
+        # This method should perhaps become a property, but is left as a method
+        # for now, to be consistent with other concretes.
+        return ec2_2004.fcd(
+            self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
+        )
 
     @property
     def gamma_c(self) -> float:

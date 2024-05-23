@@ -76,3 +76,9 @@ class Concrete(Material):
         """Each concrete should implement its own getter for the partial factor
         in order to interact with the globally set national annex.
         """
+
+    @abc.abstractmethod
+    def fcd(self) -> float:
+        """Each concrete should implement its own method for calculating the
+        design compressive strength.
+        """
