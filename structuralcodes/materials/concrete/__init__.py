@@ -31,6 +31,7 @@ def create_concrete(
     gamma_c: t.Optional[float] = None,
     existing: bool = False,
     design_code: t.Optional[str] = None,
+    **kwargs,
 ) -> t.Optional[Concrete]:
     """A factory function to create the correct type of concrete based on the
     desired design code.
@@ -76,5 +77,6 @@ def create_concrete(
             density=density,
             gamma_c=gamma_c,
             existing=existing,
+            **kwargs,
         )
     return None

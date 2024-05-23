@@ -24,6 +24,7 @@ class ConcreteMC2010(Concrete):
         density: float = 2400.0,
         gamma_c: t.Optional[float] = None,
         existing: bool = False,
+        **kwargs,
     ):
         """Initializes a new instance of Concrete for MC 2010.
 
@@ -38,6 +39,7 @@ class ConcreteMC2010(Concrete):
             existing (bool): The material is of an existing structure
                 (default: False).
         """
+        del kwargs
         if name is None:
             name = f'C{round(fck):d}'
         super().__init__(

@@ -32,6 +32,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         strength_dev_class: str = 'CN',
         gamma_c: t.Optional[float] = None,
         existing: bool = False,
+        **kwargs,
     ):
         """Initializes a new instance of Concrete for EC2 2023.
 
@@ -50,6 +51,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             existing (bool, optional): The material is of an existing structure
                 (default: False)
         """
+        del kwargs
         if name is None:
             name = f'C{round(fck):d}'
 
