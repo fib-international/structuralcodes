@@ -13,6 +13,7 @@ class Concrete(Material):
     _fck: float
     _gamma_c: t.Optional[float] = None
     _existing: bool
+    _constitutive_law: t.Optional[ConstitutiveLaw] = None
 
     def __init__(
         self,
@@ -32,10 +33,8 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
-        self._constitutive_law = ParabolaRectangle(
-            self._fck, name=name + '_ConstLaw'
-        )
         self._gamma_c = gamma_c
+        self._constitutive_law = None
 
     @property
     def fck(self) -> float:
@@ -57,6 +56,10 @@ class Concrete(Material):
     @property
     def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the constitutive law object."""
+        if self._constitutive_law is None:
+            self._constitutive_law = ParabolaRectangle(
+                self.fcd(), name=self.name + '_ConstLaw'
+            )
         return self._constitutive_law
 
     @constitutive_law.setter
