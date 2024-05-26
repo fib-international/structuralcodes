@@ -14,7 +14,7 @@ class Elastic(ConstitutiveLaw):
     __materials__: t.Tuple[str] = (
         'concrete',
         'steel',
-        'reinforcement',
+        'rebars',
     )
 
     def __init__(self, E: float, name: t.Optional[str] = None) -> None:
@@ -105,7 +105,7 @@ class ElasticPlastic(ConstitutiveLaw):
 
     __materials__: t.Tuple[str] = (
         'steel',
-        'reinforcement',
+        'rebars',
     )
 
     def __init__(
@@ -392,7 +392,7 @@ class UserDefined(ConstitutiveLaw):
     controls this behavior.
     """
 
-    __materials__: t.Tuple[str] = ('concrete', 'steel', 'reinforcement')
+    __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
 
     def __init__(
         self,
