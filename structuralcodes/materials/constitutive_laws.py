@@ -14,7 +14,7 @@ class Elastic(ConstitutiveLaw):
     __materials__: t.Tuple[str] = (
         'concrete',
         'steel',
-        'rebars',
+        'reinforcement',
     )
 
     def __init__(self, E: float, name: t.Optional[str] = None) -> None:
@@ -105,7 +105,7 @@ class ElasticPlastic(ConstitutiveLaw):
 
     __materials__: t.Tuple[str] = (
         'steel',
-        'rebars',
+        'reinforcement',
     )
 
     def __init__(
@@ -214,7 +214,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         n: float = 2.0,
         name: t.Optional[str] = None,
     ) -> None:
-        """Initialize an Elastic-Plastic Material.
+        """Initialize a Parabola-Rectangle Material.
 
         Arguments:
         fc: (float) the strength of concrete in compression
@@ -302,6 +302,87 @@ class ParabolaRectangle(ConstitutiveLaw):
         return (100, self._eps_u)
 
 
+class Sargin(ConstitutiveLaw):
+    """Class for Sargin constitutive law.
+    The stresses and strains are assumed negative in compression
+    and positive in tension.
+    """
+
+    __materials__: t.Tuple[str] = ('concrete',)
+
+    def __init__(
+        self,
+        fc: float,
+        eps_c1: float = -0.0023,
+        eps_cu1: float = -0.0035,
+        k: float = 2.04,
+        name: t.Optional[str] = None,
+    ) -> None:
+        """Initialize a Sargin Material.
+
+        Arguments:
+            fc: (float) the strength of concrete in compression
+            eps_c1: (float) peak strain of concrete in compression
+                optional, default value = -0.0023
+            eps_u: (float) ultimate strain of concrete in compression
+                optional, default value = -0.0035
+            k: (float) plasticity numberm, default value = 2.04
+            name: (str) a name for the constitutive law,
+
+        Raises:
+            ValueError: if k is less or equal to 0
+        Notes:
+            if positive values are input for fc, eps_c1 and eps_cu1
+            are input, they will be assumed negative.
+        """
+        name = name if name is not None else 'ParabolaRectangleLaw'
+        super().__init__(name=name)
+        self._fc = -abs(fc)
+        self._eps_c1 = -abs(eps_c1)
+        self._eps_cu1 = -abs(eps_cu1)
+        self._k = k
+
+    def get_stress(self, eps: float) -> float:
+        """Return the stress given the strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Polynomial branch
+        eta = eps / self._eps_c1
+
+        sig = self._fc * (self._k * eta - eta**2) / (1 + (self._k - 2) * eta)
+
+        # Elsewhere stress is 0.0
+        sig[eps < self._eps_cu1] = 0.0
+        sig[eps > 0] = 0.0
+
+        return sig
+
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+        """Return the tangent given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # polynomial branch
+        eta = eps / self._eps_c1
+
+        tangent = (
+            self._fc
+            / self._eps_c1
+            * ((2 - self._k) * eta**2 - 2 * eta + self._k)
+            / (1 + (self._k - 2) * eta) ** 2
+        )
+        # Elsewhere tangent is zero
+        tangent[eps < self._eps_cu1] = 0.0
+        tangent[eps > 0] = 0.0
+
+        return tangent
+
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (100, self._eps_c1)
+        return (100, self._eps_cu1)
+
+
 class UserDefined(ConstitutiveLaw):
     """Class for a user defined constitutive law
     The curve is defined with positive and optionally negative
@@ -311,7 +392,7 @@ class UserDefined(ConstitutiveLaw):
     controls this behavior.
     """
 
-    __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
+    __materials__: t.Tuple[str] = ('concrete', 'steel', 'reinforcement')
 
     def __init__(
         self,
