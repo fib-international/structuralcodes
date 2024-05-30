@@ -442,12 +442,14 @@ class SurfaceGeometry:
 
 def _process_geometries_multipolygon(
     geometries: MultiPolygon,
-    materials: t.Optional[t.Union[t.List[Material], Material]],
+    materials: t.Optional[
+        t.Union[t.List[Material], Material, ConstitutiveLaw]
+    ],
 ) -> list:
     """Process geometries for initialization."""
     checked_geometries = []
     # a MultiPolygon is provided
-    if isinstance(materials, Material):
+    if isinstance(materials, (ConstitutiveLaw, Material)):
         for g in geometries.geoms:
             checked_geometries.append(SurfaceGeometry(g, materials))
     elif isinstance(materials, list):
