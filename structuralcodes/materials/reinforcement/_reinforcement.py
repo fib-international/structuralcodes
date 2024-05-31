@@ -42,7 +42,7 @@ class Reinforcement(Material):
         else:
             Eh = 0.0
         self._constitutive_law = ElasticPlastic(
-            E=self.Es, fy=self.fyk, Eh=Eh, eps_su=self.epsuk
+            E=self.Es, fy=self.fyd(), Eh=Eh, eps_su=self.epsud()
         )
 
     @property

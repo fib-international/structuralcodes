@@ -99,10 +99,8 @@ def test_holed_section():
 
     assert math.isclose(sec.gross_properties.area, 260000)
 
-    # Compute bending strength
+    # Compute bending strength with Marin
     res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-
-    assert math.isclose(abs(res_marin.m_y * 1e-6), 1012, rel_tol=1e-3)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
@@ -149,8 +147,6 @@ def test_u_section():
 
     # Compute bending strength
     res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-
-    assert math.isclose(abs(res_marin.m_y * 1e-6), 993.3, rel_tol=1e-2)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)

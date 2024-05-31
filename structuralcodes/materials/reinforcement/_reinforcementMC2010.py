@@ -38,6 +38,7 @@ class ReinforcementMC2010(Reinforcement):
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
+        self._gamma_eps = gamma_eps
         super().__init__(
             fyk=fyk,
             Es=Es,
@@ -47,7 +48,6 @@ class ReinforcementMC2010(Reinforcement):
             epsuk=epsuk,
             gamma_s=gamma_s,
         )
-        self._gamma_eps = gamma_eps
 
     def fyd(self) -> float:
         """The design yield strength."""

@@ -39,6 +39,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
 
+        self._gamma_eps = gamma_eps
         super().__init__(
             fyk=fyk,
             Es=Es,
@@ -48,7 +49,6 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             epsuk=epsuk,
             gamma_s=gamma_s,
         )
-        self._gamma_eps = gamma_eps
 
     def fyd(self) -> float:
         """The design yield strength."""
