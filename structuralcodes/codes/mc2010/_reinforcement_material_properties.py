@@ -63,11 +63,15 @@ def reinforcement_duct_props(
         Dict[str, float]: A dict with the characteristik strain value at the
         ultimate stress level (epsuk), and the characteristic ultimate stress
         (ftk).
+
+    Raises:
+        ValueError: when the ductility_class does not define a valid ductility
+            class
     """
     duct_props = DUCTILITY_CLASSES.get(ductility_class.upper(), None)
     if duct_props is None:
         raise ValueError(
-            'The no properties was found for the provided ductility class '
+            'No properties were found for the provided ductility class '
             f'({ductility_class}).'
         )
     return {
