@@ -247,23 +247,6 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         self._eps_cu1 = self._eps_cu1 or ec2_2023.eps_cu1(self.fcm)
         return self._eps_cu1
 
-    def sigma_c(self, eps_c: float) -> float:
-        """Computes the compressive stress of concrete given a
-        strain eps_c under short term uniaxial compression.
-
-        Args:
-            eps_c (float): the strain of concrete
-
-        Returns:
-            float: the compressive stress of concrete in MPa
-
-        Raises:
-            ValueError: if eps_c is less than 0
-        """
-        return ec2_2023.sigma_c(
-            self.Ecm, self.fcm, eps_c, self.eps_c1, self.eps_cu1
-        )
-
     @property
     def gamma_c(self) -> float:
         """The partial factor for concrete."""
