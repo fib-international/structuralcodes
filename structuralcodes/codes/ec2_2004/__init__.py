@@ -18,6 +18,7 @@ from ._concrete_material_properties import (
     n_parabolic_rectangular,
 )
 from ._reinforcement_material_properties import (
+    epsud,
     fyd,
     reinforcement_duct_props,
 )
@@ -88,6 +89,7 @@ __all__ = [
     'eps_c3',
     'eps_cu3',
     'fyd',
+    'epsud',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2004'

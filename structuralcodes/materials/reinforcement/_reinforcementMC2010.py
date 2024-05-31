@@ -17,6 +17,7 @@ class ReinforcementMC2010(Reinforcement):
         ftk: float,
         epsuk: float,
         gamma_s: t.Optional[float] = None,
+        gamma_eps: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
     ):
@@ -46,6 +47,7 @@ class ReinforcementMC2010(Reinforcement):
             epsuk=epsuk,
             gamma_s=gamma_s,
         )
+        self._gamma_eps = gamma_eps
 
     def fyd(self) -> float:
         """The design yield strength."""
@@ -55,3 +57,14 @@ class ReinforcementMC2010(Reinforcement):
     def gamma_s(self) -> float:
         """The partial factor for reinforcement."""
         return self._gamma_s or 1.15
+
+    def epsud(self) -> float:
+        """The design ultimate strain."""
+        return mc2010.epsud(self.epsuk, self.gamma_eps)
+
+    @property
+    def gamma_eps(self) -> float:
+        """The partial factor for ultimate strain."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._gamma_eps or 0.9

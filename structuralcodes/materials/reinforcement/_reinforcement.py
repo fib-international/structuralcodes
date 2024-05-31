@@ -107,3 +107,9 @@ class Reinforcement(Material):
         """Each reinforcement should implement its own getter for the partial
         factor in order to interact with the globally set national annex.
         """
+
+    @abc.abstractmethod
+    def fyd(self) -> float:
+        """Each reinforcement should implement its own method for calculating
+        the design yield strength.
+        """
