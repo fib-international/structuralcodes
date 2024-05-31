@@ -4,6 +4,8 @@ import abc
 import typing as t
 import warnings
 
+import numpy as np
+
 import structuralcodes.core._section_results as s_res
 
 
@@ -102,9 +104,50 @@ class ConstitutiveLaw(abc.ABC):
     def __marin__(self, **kwargs):
         """Function for getting the strain limits and coefficients
         for marin integration.
+
+        By default the law is discretized as a piecewise linear
+        function. Then marin coefficients are computed based on this
+        discretization.
         """
-        del kwargs
-        raise NotImplementedError
+
+        # Discretize the constitutive law in a "smart way"
+        def find_x_lim(x, y):
+            # Find the index where x changes from negative to non-negative
+            zero_crossing_index = np.argmax(x >= 0)
+
+            # Check if there are non-zero values for x > 0
+            if np.any(y[zero_crossing_index:] != 0):
+                # Find the last non-zero index for x > 0
+                non_zero_indices = np.nonzero(y[zero_crossing_index:])[0]
+                x_lim_index = zero_crossing_index + non_zero_indices[-1]
+                return x[x_lim_index]
+            # All values are zero for x > 0
+            return None
+
+        eps_max, eps_min = self.get_ultimate_strain()
+        if eps_max > 1:
+            eps_max = 1
+        eps = np.linspace(eps_min, eps_max, 100000)
+        sig = self.get_stress(eps)
+        sig[(sig > 0) & (sig < np.max(sig) * 1e-6)] = 0
+        eps_lim = find_x_lim(eps, sig)
+        # Now discretize the function in 10 steps for positive and 10 steps for
+        # negative part
+        if eps_lim is None:
+            eps = np.linspace(eps_min, 0, 10)
+        else:
+            eps = np.concatenate(
+                (
+                    np.linspace(eps_min, 0, 10, endpoint=False),
+                    np.linspace(0, eps_lim, 10),
+                )
+            )
+
+        sig = self.get_stress(eps)
+        from structuralcodes.materials.constitutive_laws import UserDefined
+
+        # Return Marin coefficients for linearized version
+        return UserDefined(eps, sig).__marin__(**kwargs)
 
     def get_secant(self, eps: float) -> float:
         """Method to return the
