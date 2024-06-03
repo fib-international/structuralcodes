@@ -113,3 +113,9 @@ class Reinforcement(Material):
         """Each reinforcement should implement its own method for calculating
         the design yield strength.
         """
+
+    @abc.abstractmethod
+    def epsud(self) -> float:
+        """Each reinforcement should implement its own method for calculating
+        the design yield strain.
+        """
