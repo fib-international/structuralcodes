@@ -51,6 +51,10 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
         """The design yield strength."""
         return ec2_2023.fyd(self.fyk, self.gamma_s)
 
+    def epsud(self) -> float:
+        """The design ultimate strain."""
+        return ec2_2023.eps_ud(self.epsuk, self.gamma_s)
+
     @property
     def gamma_s(self) -> float:
         """The partial factor for reinforcement."""

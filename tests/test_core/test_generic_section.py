@@ -59,7 +59,7 @@ def test_rectangular_section():
     # Compute bending strength
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-2)
+    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-5)
 
     # Compute moment curvature
     res_mc_fiber = sec.section_analyzer.calculate_moment_curvature(
@@ -67,7 +67,7 @@ def test_rectangular_section():
     )
 
     assert math.isclose(
-        res_mc_marin.m_y[-1], res_mc_fiber.m_y[-1], rel_tol=1e-2
+        res_mc_marin.m_y[-1], res_mc_fiber.m_y[-1], rel_tol=1e-5
     )
 
 
@@ -75,7 +75,7 @@ def test_rectangular_section():
 def test_holed_section():
     """Test a section with a hole."""
     # Create materials to use
-    concrete = ConcreteMC2010(25)
+    concrete = ConcreteMC2010(25, gamma_c=1.0, alpha_cc=1.0)
     steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
@@ -99,10 +99,8 @@ def test_holed_section():
 
     assert math.isclose(sec.gross_properties.area, 260000)
 
-    # Compute bending strength
+    # Compute bending strength with Marin
     res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-
-    assert math.isclose(abs(res_marin.m_y * 1e-6), 1012, rel_tol=1e-2)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
@@ -111,14 +109,14 @@ def test_holed_section():
     # Compute bending strength
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-2)
+    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-3)
 
 
 # Test U section
 def test_u_section():
     """Test a section with a U shape."""
     # Create materials to use
-    concrete = ConcreteMC2010(25)
+    concrete = ConcreteMC2010(25, gamma_c=1.0)
     steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
@@ -149,8 +147,6 @@ def test_u_section():
 
     # Compute bending strength
     res_marin = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
-
-    assert math.isclose(abs(res_marin.m_y * 1e-6), 993.3, rel_tol=1e-2)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)

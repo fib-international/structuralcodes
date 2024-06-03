@@ -16,6 +16,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
     _fctk_5: t.Optional[float] = None
     _fctk_95: t.Optional[float] = None
     _Ecm: t.Optional[float] = None
+    _alpha_cc: t.Optional[float] = None
 
     def __init__(
         self,
@@ -23,6 +24,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         name: t.Optional[str] = None,
         density: float = 2400,
         gamma_c: t.Optional[float] = None,
+        alpha_cc: t.Optional[float] = None,
         **kwargs,
     ) -> None:
         """Initializes a new instance of Concrete for EC2 2004.
@@ -36,6 +38,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             density (float): Density of material in kg/m3 (default: 2400)
             gamma_c (float, optional): partial factor of concrete
                 (default is 1.5)
+            alpha_cc (float, optional): A factor for considering long-term
+                effects on the strength, and effects that arise from the way
+                the load is applied.
         """
         del kwargs
         if name is None:
@@ -47,6 +52,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             existing=False,
             gamma_c=gamma_c,
         )
+        self._alpha_cc = alpha_cc
 
     def _reset_attributes(self):
         self._fcm = None
@@ -174,18 +180,17 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         """
         self._Ecm = abs(value)
 
-    def fcd(self, alpha_cc: float) -> float:
-        """Calculate the design compressive strength.
-
-        Args:
-            alpha_cc (float): A factor for considering long-term effects on the
-                strength, and effects that arise from the way the load is
-                applied.
+    def fcd(self) -> float:
+        """Return the design compressive strength in MPa.
 
         Returns:
             float: The design compressive strength of concrete in MPa
         """
-        return ec2_2004.fcd(self.fck, alpha_cc=alpha_cc, gamma_c=self.gamma_c)
+        # This method should perhaps become a property, but is left as a method
+        # for now, to be consistent with other concretes.
+        return ec2_2004.fcd(
+            self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
+        )
 
     @property
     def gamma_c(self) -> float:
@@ -193,3 +198,10 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._gamma_c or 1.5
+
+    @property
+    def alpha_cc(self) -> float:
+        """The alpha_cc factor."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._alpha_cc or 1.0

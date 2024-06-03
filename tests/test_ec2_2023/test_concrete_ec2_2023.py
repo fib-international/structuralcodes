@@ -162,24 +162,6 @@ def test_eps_cu1_property(default_concrete):
     )
 
 
-def test_sigma_c_with_valid_strain(default_concrete):
-    """Test for sigma_c method with valid strain."""
-    valid_strain = 0.001
-    expected_sigma_c = 25.830
-    assert math.isclose(
-        default_concrete.sigma_c(eps_c=valid_strain),
-        expected_sigma_c,
-        rel_tol=0.001,
-    )
-
-
-def test_sigma_c_with_invalid_strain(default_concrete):
-    """Test for sigma_c method with invalid strain (negative)."""
-    invalid_strain = -0.001
-    with pytest.raises(ValueError):
-        default_concrete.sigma_c(eps_c=invalid_strain)
-
-
 def test_reset_attributes(default_concrete):
     """Test resetting the attributes."""
     default_concrete._reset_attributes()

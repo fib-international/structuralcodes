@@ -53,7 +53,9 @@ def test_reinforcements(reinforcement_material):
 def test_constitutive_law_setter_valid():
     """Test the constitutive law setter, valid law."""
     # Arrange
-    steel = ReinforcementEC2_2004(500, 200000, 7850, 550, 0.07)
+    steel = ReinforcementEC2_2004(
+        fyk=500, Es=200000, density=7850, ftk=550, epsuk=0.07
+    )
     constitutive_law = Elastic(200000)
 
     # Act and assert
@@ -64,7 +66,9 @@ def test_constitutive_law_setter_valid():
 def test_constitutive_law_setter_invalid():
     """Test the constitutive law setter, invalid law."""
     # Arrange
-    steel = ReinforcementEC2_2004(500, 200000, 7850, 550, 0.07)
+    steel = ReinforcementEC2_2004(
+        fyk=500, Es=200000, density=7850, ftk=550, epsuk=0.07
+    )
     constitutive_law = ParabolaRectangle(500)
 
     # Act and assert
