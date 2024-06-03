@@ -65,6 +65,4 @@ class ReinforcementMC2010(Reinforcement):
     @property
     def gamma_eps(self) -> float:
         """The partial factor for ultimate strain."""
-        # Here we should implement the interaction with the globally set
-        # national annex. For now, we simply return the default value.
         return self._gamma_eps or 0.9
