@@ -373,13 +373,23 @@ def test_sargin(fc, eps_c1, eps_cu1, k):
 
     eps = np.linspace(0, eps_cu1, 20)
 
-    # compute stresses expected
+    # compute expected
     sig_expected = (
         fc
         * (k * eps / eps_c1 - (eps / eps_c1) ** 2)
         / (1 + (k - 2) * eps / eps_c1)
     )
+    tan_expected = (
+        fc
+        / eps_c1
+        * ((2 - k) * (eps / eps_c1) ** 2 - 2 * (eps / eps_c1) + k)
+        / (1 + (k - 2) * eps / eps_c1) ** 2
+    )
 
+    # compute from Sargin
     sig_computed = law.get_stress(eps)
+    tan_computed = law.get_tangent(eps)
 
+    # Compare the two
     assert_allclose(sig_computed, sig_expected)
+    assert_allclose(tan_computed, tan_expected)
