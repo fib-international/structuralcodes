@@ -24,7 +24,7 @@ class Elastic(ConstitutiveLaw):
         self._E = E
         self._eps_su = None
 
-    def get_stress(self, eps: ArrayLike) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return stress given strain."""
         eps = np.asarray(eps)
         return self._E * eps
@@ -344,7 +344,7 @@ class Sargin(ConstitutiveLaw):
         self._eps_cu1 = -abs(eps_cu1)
         self._k = k
 
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given the strain."""
         eps = np.atleast_1d(np.asarray(eps))
         # Polynomial branch
