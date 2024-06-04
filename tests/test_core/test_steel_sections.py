@@ -21,6 +21,9 @@ from structuralcodes.materials.constitutive_laws import (
     UserDefined,
 )
 from structuralcodes.sections._generic import GenericSection
+from structuralcodes.sections.section_integrators._marin_integration import (
+    marin_integration,
+)
 
 
 # Test steel I section
@@ -88,6 +91,99 @@ def _wzpl_I_beam(h: float, b: float, tw: float, tf: float, r: float) -> float:
         / 4
         * (tw / 2 + r * (3 * math.pi - 4) / (3 * math.pi))
     )
+
+
+@pytest.mark.parametrize(
+    'cls, invalid_name',
+    [
+        (IPE, 'IPE95'),
+        (IPE, 'az132'),
+        (HE, 'HEA3000'),
+        (HE, 'HEB3000'),
+        (HE, 'HEM3000'),
+        (UB, 'UB203'),
+        (UC, 'UC152'),
+        (UBP, 'UBP203'),
+        (IPN, 'IPN125'),
+        (UPN, 'UPN123'),
+    ],
+)
+def test_names_invalid(cls, invalid_name):
+    """Test Steel I section elastic strength."""
+    # Invalid name for class method
+    with pytest.raises(ValueError):
+        cls.get_polygon(name=invalid_name)
+    # Invalid name for constructure
+    with pytest.raises(ValueError):
+        cls(invalid_name).polygon
+
+
+@pytest.mark.parametrize(
+    'cls, name',
+    [
+        (IPE, 'IPE80'),
+        (IPE, 'IPE100'),
+        (IPE, 'IPE120'),
+        (IPE, 'IPE140'),
+        (IPE, 'IPE160'),
+        (IPE, 'IPE180'),
+        (IPE, 'IPE200'),
+        (IPE, 'IPE220'),
+        (IPE, 'IPE240'),
+        (IPE, 'IPE270'),
+        (IPE, 'IPE300'),
+        (IPE, 'IPE330'),
+        (IPE, 'IPE360'),
+        (IPE, 'IPE400'),
+        (IPE, 'IPE450'),
+        (IPE, 'IPE500'),
+        (IPE, 'IPE550'),
+        (IPE, 'IPE600'),
+        (HE, 'HEA300'),
+        (HE, 'HEB300'),
+        (HE, 'HEM300'),
+        (HE, 'HEA400'),
+        (HE, 'HEB400'),
+        (HE, 'HEM400'),
+        (UB, 'UB203x102x23'),
+        (UB, 'UB203x133x30'),
+        (UC, 'UC152x152x44'),
+        (UC, 'UC203x203x52'),
+        (UBP, 'UBP203x203x54'),
+        (UBP, 'UBP254x254x71'),
+        (IPN, 'IPN80'),
+        (IPN, 'IPN300'),
+        (IPN, 'IPN320'),
+        (IPN, 'IPN340'),
+        (IPN, 'IPN360'),
+        (IPN, 'IPN380'),
+        (IPN, 'IPN400'),
+        (UPN, 'UPN120'),
+        (UPN, 'UPN140'),
+        (UPN, 'UPN160'),
+        (UPN, 'UPN180'),
+        (UPN, 'UPN200'),
+        (UPN, 'UPN300'),
+    ],
+)
+def test_section_get_polygon(cls, name):
+    """Test Steel I section elastic strength."""
+    Es = 206000
+    fy = 355
+    eps_su = fy / Es
+    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+
+    # Create geometry
+    geo = CompoundGeometry([SurfaceGeometry(cls.get_polygon(name), steel)])
+    sec = GenericSection(geo)
+
+    # Compute expected values
+    xy = sec.geometry.geometries[0].polygon.exterior.coords.xy
+
+    A = marin_integration(xy[0], xy[1], 0, 0)
+
+    A_sec = sec.gross_properties.area
+    assert math.isclose(A_sec, A)
 
 
 @pytest.mark.parametrize(
