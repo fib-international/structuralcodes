@@ -2,6 +2,7 @@
 
 import numpy as np
 from shapely import (
+    LinearRing,
     LineString,
     Point,
     Polygon,
@@ -9,12 +10,205 @@ from shapely import (
     polygonize,
     set_precision,
 )
-from shapely.affinity import scale, translate
+from shapely.affinity import rotate, scale, translate
 from shapely.geometry.polygon import orient
-from shapely.ops import linemerge, unary_union
+from shapely.ops import linemerge, split, unary_union
+
+from structuralcodes.sections.section_integrators._marin_integration import (
+    marin_integration,
+)
 
 
-class IPE:
+class BaseProfile:
+    """Base class representing a profille.
+
+    Contains the common code for all sections
+    """
+
+    _polygon: Polygon = None
+    _A: float = None
+    _Iy: float = None
+    _Iz: float = None
+    _Wely: float = None
+    _Welz: float = None
+    _iy: float = None
+    _iz: float = None
+    _Wply: float = None
+    _Wplz: float = None
+
+    def _compute_section_properties(self):
+        """Compute section properties with Marin integration.
+
+        This method compute the section properties (area, moments
+        of inertia, section modulus) by using marin algorithm.
+
+        The parameters are saved as internal attributes and can be
+        accessed by derived classes.
+        """
+        # The polygon attribute should be already defined
+        if self._polygon is None:
+            raise RuntimeError(
+                'The polygon for some reason was not correctly defined.'
+            )
+        # Compute section properties:
+        xy = self._polygon.exterior.coords.xy
+        # Compute area
+        self._A = marin_integration(xy[0], xy[1], 0, 0)
+        # Compute second moments of inertia
+        self._Iy = marin_integration(xy[0], xy[1], 0, 2)
+        self._Iz = marin_integration(xy[0], xy[1], 2, 0)
+        # Compute radius of inertia
+        self._iy = (self._Iy / self._A) ** 0.5
+        self._iz = (self._Iz / self._A) ** 0.5
+        # For computing section modulus get bounds
+        bounds = self._polygon.bounds
+        xmax = max(abs(bounds[0]), bounds[2])
+        ymax = max(abs(bounds[1]), bounds[3])
+        # Then compute section modulus
+        self._Wely = self._Iy / ymax
+        self._Welz = self._Iz / xmax
+        # Compute plastic section modulus
+        # find plastic neutral axis parallel to y
+        self._Wply = 0
+        z_pna = self._find_plastic_neutral_axis_y()
+        poly = translate(self._polygon, xoff=0, yoff=-z_pna)
+        result = split(
+            poly,
+            LineString([[-xmax * 1.05, 0], [xmax * 1.05, 0]]),
+        )
+        for poly in result.geoms:
+            xy = poly.exterior.coords.xy
+            self._Wply += abs(marin_integration(xy[0], xy[1], 0, 1))
+        # # find plastic neutral axis parallel to z
+        self._polygon = rotate(geom=self._polygon, angle=90, origin=(0, 0))
+        self._Wplz = 0
+        y_pna = self._find_plastic_neutral_axis_y()
+        poly = translate(self._polygon, xoff=0, yoff=-y_pna)
+        result = split(
+            poly,
+            LineString([[-ymax * 1.05, 0], [ymax * 1.05, 0]]),
+        )
+        for poly in result.geoms:
+            xy = poly.exterior.coords.xy
+            self._Wplz += abs(marin_integration(xy[0], xy[1], 0, 1))
+        self._polygon = rotate(geom=self._polygon, angle=-90)
+
+    def _find_plastic_neutral_axis_y(self) -> float:
+        """Find posizion z of plastic neutral axes parallel to y.
+
+        We use bisection algorithm within the section limits.
+        """
+        bounds = self.polygon.bounds
+        zmin, zmax = bounds[1], bounds[3]
+
+        zA = zmin
+        zB = zmax
+
+        daA = self._find_delta_area_above_minus_below(z=zA)
+
+        ITMAX = 200
+        it = 0
+
+        while (it < ITMAX) and (abs(zB - zA) > (zmax - zmin) * 1e-10):
+            zC = (zA + zB) / 2.0
+            daC = self._find_delta_area_above_minus_below(z=zC)
+            if abs(daC) < 1e-10:
+                break
+            if daA * daC < 0:
+                # The solution is between A and C
+                zB = zC
+            else:
+                # The solution is between C and B
+                zA = zC
+                daA = daC
+            it += 1
+        if it >= ITMAX:
+            s = f'Last iteration reached a unbalance of {daC}'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+
+        return zC
+
+    def _find_delta_area_above_minus_below(self, z: float) -> float:
+        """Returns area difference between above and below parts.
+
+        Above and below parts are computed splitting the polygon
+        with a line parallel to Y axes at z coordinate.
+        """
+        bounds = self._polygon.bounds
+        xmax = max(abs(bounds[0]), bounds[2])
+        line = LineString([[-xmax * 1.05, z], [xmax * 1.05, z]])
+
+        area_above = 0
+        area_below = 0
+        # divide polygons "above" and "below" line
+        if line.intersects(self._polygon):
+            result = split(self._polygon, line)
+            # divide polygons "above" and "below" line
+            for geom in result.geoms:
+                if LinearRing(
+                    (line.coords[0], line.coords[1], geom.centroid.coords[0])
+                ).is_ccw:
+                    area_above += geom.area
+                else:
+                    area_below += geom.area
+        else:
+            # not intersecting, all the polygon is above or below the line
+            geom = self.polygon
+            if LinearRing(
+                (line.coords[0], line.coords[1], geom.centroid.coords[0])
+            ).is_ccw:
+                area_above += geom.area
+            else:
+                area_below += geom.area
+        return area_above - area_below
+
+    @property
+    def A(self) -> float:
+        """Returns area of profile."""
+        return self._A
+
+    @property
+    def Iy(self) -> float:
+        """Returns second moment of area around y axis."""
+        return self._Iy
+
+    @property
+    def Iz(self) -> float:
+        """Returns second moment of area around z axis."""
+        return self._Iz
+
+    @property
+    def Wely(self) -> float:
+        """Returns section modulus in y direction."""
+        return self._Wely
+
+    @property
+    def Welz(self) -> float:
+        """Returns section modulus in z direction."""
+        return self._Welz
+
+    @property
+    def Wply(self) -> float:
+        """Returns plastic section modulus in y direction."""
+        return self._Wply
+
+    @property
+    def Wplz(self) -> float:
+        """Returns plastic section modulus in z direction."""
+        return self._Wplz
+
+    @property
+    def iy(self) -> float:
+        """Returns radius of inertia of profile."""
+        return self._iy
+
+    @property
+    def iz(self) -> float:
+        """Returns radius of inertia of profile."""
+        return self._iz
+
+
+class IPE(BaseProfile):
     """Simple class for representing an IPE profile.
 
     IPE 80-600 in accordance with standard Euronorm 19-57
@@ -77,6 +271,7 @@ class IPE:
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -133,7 +328,7 @@ class IPE:
         return self._r
 
 
-class HE:
+class HE(BaseProfile):
     """Simple class for representing an HE profile.
 
     HE A, HE B, HE M 100-1000 in accordance with Standard Euronorm 53-62
@@ -258,6 +453,7 @@ class HE:
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -314,7 +510,7 @@ class HE:
         return self._r
 
 
-class UB:
+class UB(BaseProfile):
     """Simple class for representing a UB profile.
 
     Universal Beams
@@ -511,6 +707,7 @@ class UB:
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -567,7 +764,7 @@ class UB:
         return self._r
 
 
-class UC:
+class UC(BaseProfile):
     """Simple class for representing a UC profile.
 
     Universal Columns
@@ -776,6 +973,7 @@ class UC:
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -832,7 +1030,7 @@ class UC:
         return self._r
 
 
-class UBP:
+class UBP(BaseProfile):
     """Simple class for representing a UBP profile.
 
     Universal Bearing Pile
@@ -992,6 +1190,7 @@ class UBP:
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -1048,7 +1247,7 @@ class UBP:
         return self._r
 
 
-class IPN:
+class IPN(BaseProfile):
     """Simple class for representing an IPN profile.
 
     IPN  in accordance with standard
@@ -1301,6 +1500,7 @@ class IPN:
             r2=self._r2,
             slope=self._flange_slope,
         )
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -1366,7 +1566,7 @@ class IPN:
         return self._r2
 
 
-class UPN:
+class UPN(BaseProfile):
     """Simple class for representing an UPN profile.
 
     European standard channels UPN 50 - 400
@@ -1604,6 +1804,7 @@ class UPN:
             slope=self._flange_slope,
             u=self._u,
         )
+        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
