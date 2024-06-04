@@ -130,18 +130,21 @@ class ConstitutiveLaw(abc.ABC):
         sig[(sig < np.max(sig) * 1e-6)] = 0
         eps_lim = find_x_lim(eps, sig)
         # Now discretize the function in 10 steps for positive part
-        eps_pos = [] if eps_lim is None else np.linspace(0, eps_lim, 10)
+        eps_pos = (
+            np.linspace(0, -eps_min, 1)
+            if eps_lim is None
+            else np.linspace(0, eps_lim, 10)
+        )
         # Analise negative branch
         eps = np.linspace(0, eps_min, 10000)
         sig = -self.get_stress(eps)
         sig[(sig < np.max(sig) * 1e-6)] = 0
         eps_lim = find_x_lim(-eps, sig)
         # Now discretize the function in 10 steps for negative part
-        endpoint = bool(eps_pos == [])
         eps_neg = (
-            []
+            np.linspace(eps_min, 0, 1, endpoint=False)
             if eps_lim is None
-            else np.linspace(-eps_lim, 0, 10, endpoint=endpoint)
+            else np.linspace(-eps_lim, 0, 10, endpoint=False)
         )
 
         eps = np.concatenate((eps_neg, eps_pos))
