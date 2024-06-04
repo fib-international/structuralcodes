@@ -393,3 +393,12 @@ def test_sargin(fc, eps_c1, eps_cu1, k):
     # Compare the two
     assert_allclose(sig_computed, sig_expected)
     assert_allclose(tan_computed, tan_expected)
+
+    # Test getting ultimate strain
+    eps_max, eps_min = law.get_ultimate_strain()
+    assert math.isclose(eps_min, eps_cu1)
+    assert math.isclose(eps_max, 100)
+
+    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    assert math.isclose(eps_min, eps_c1)
+    assert math.isclose(eps_max, 100)
