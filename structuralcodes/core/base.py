@@ -112,14 +112,11 @@ class ConstitutiveLaw(abc.ABC):
 
         # Discretize the constitutive law in a "smart way"
         def find_x_lim(x, y):
-            # Find the index where x changes from negative to non-negative
-            zero_crossing_index = np.argmax(x >= 0)
-
             # Check if there are non-zero values for x > 0
-            if np.any(y[zero_crossing_index:] != 0):
+            if np.any(y[0:] != 0):
                 # Find the last non-zero index for x > 0
-                non_zero_indices = np.nonzero(y[zero_crossing_index:])[0]
-                x_lim_index = zero_crossing_index + non_zero_indices[-1]
+                non_zero_indices = np.nonzero(y[0:])[0]
+                x_lim_index = 0 + non_zero_indices[-1]
                 return x[x_lim_index]
             # All values are zero for x > 0
             return None
@@ -127,22 +124,27 @@ class ConstitutiveLaw(abc.ABC):
         eps_max, eps_min = self.get_ultimate_strain()
         if eps_max > 1:
             eps_max = 1
-        eps = np.linspace(eps_min, eps_max, 100000)
+        # Analise positive branch
+        eps = np.linspace(0, eps_max, 10000)
         sig = self.get_stress(eps)
-        sig[(sig > 0) & (sig < np.max(sig) * 1e-6)] = 0
+        sig[(sig < np.max(sig) * 1e-6)] = 0
         eps_lim = find_x_lim(eps, sig)
-        # Now discretize the function in 10 steps for positive and 10 steps for
-        # negative part
-        if eps_lim is None:
-            eps = np.linspace(eps_min, 0, 10)
-        else:
-            eps = np.concatenate(
-                (
-                    np.linspace(eps_min, 0, 10, endpoint=False),
-                    np.linspace(0, eps_lim, 10),
-                )
-            )
+        # Now discretize the function in 10 steps for positive part
+        eps_pos = [] if eps_lim is None else np.linspace(0, eps_lim, 10)
+        # Analise negative branch
+        eps = np.linspace(0, eps_min, 10000)
+        sig = -self.get_stress(eps)
+        sig[(sig < np.max(sig) * 1e-6)] = 0
+        eps_lim = find_x_lim(-eps, sig)
+        # Now discretize the function in 10 steps for negative part
+        endpoint = bool(eps_pos == [])
+        eps_neg = (
+            []
+            if eps_lim is None
+            else np.linspace(-eps_lim, 0, 10, endpoint=endpoint)
+        )
 
+        eps = np.concatenate((eps_neg, eps_pos))
         sig = self.get_stress(eps)
         from structuralcodes.materials.constitutive_laws import UserDefined
 
