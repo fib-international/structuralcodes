@@ -200,6 +200,7 @@ class ElasticPlastic(ConstitutiveLaw):
 
 class ParabolaRectangle(ConstitutiveLaw):
     """Class for parabola rectangle constitutive law.
+
     The stresses and strains are assumed negative in compression and positive
     in tension.
     """
@@ -304,6 +305,7 @@ class ParabolaRectangle(ConstitutiveLaw):
 
 class Sargin(ConstitutiveLaw):
     """Class for Sargin constitutive law.
+
     The stresses and strains are assumed negative in compression
     and positive in tension.
     """
@@ -384,7 +386,8 @@ class Sargin(ConstitutiveLaw):
 
 
 class UserDefined(ConstitutiveLaw):
-    """Class for a user defined constitutive law
+    """Class for a user defined constitutive law.
+
     The curve is defined with positive and optionally negative
     values. After the last value, the stress can go to zero to simulate
     failure (default), or be mantained constante, or the last tanget or
