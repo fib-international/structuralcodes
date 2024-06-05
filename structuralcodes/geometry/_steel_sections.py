@@ -39,75 +39,17 @@ class BaseProfile:
     _Wply: float = None
     _Wplz: float = None
 
-    def _compute_section_properties(self):
-        """Compute section properties with Marin integration.
+    def _check_polygon_defined(self):
+        """Just checks if polygon attribute is defined.
 
-        This method compute the section properties (area, moments
-        of inertia, section modulus) by using marin algorithm.
-
-        The parameters are saved as internal attributes and can be
-        accessed by derived classes.
+        If the polygon is not defined (it should never happen),
+        an exception is Raised.
         """
         # The polygon attribute should be already defined
         if self._polygon is None:
             raise RuntimeError(
                 'The polygon for some reason was not correctly defined.'
             )
-        # Compute section properties:
-        xy = self._polygon.exterior.coords.xy
-        # Compute area
-        self._A = marin_integration(xy[0], xy[1], 0, 0)
-        # Compute second moments of inertia
-        self._Iy = marin_integration(xy[0], xy[1], 0, 2)
-        self._Iz = marin_integration(xy[0], xy[1], 2, 0)
-        # Compute product moment of area
-        self._Iyz = marin_integration(xy[0], xy[1], 1, 1)
-        # Compute principal axes direction
-        eigres = np.linalg.eig(
-            np.array([[self._Iy, self._Iyz], [self._Iyz, self._Iz]])
-        )
-        max_idx = np.argmax(eigres.eigenvalues)
-        min_idx = 0 if max_idx == 1 else 1
-        self._Icsi = eigres.eigenvalues[max_idx]
-        self._Ieta = eigres.eigenvalues[min_idx]
-        self._theta = np.arccos(
-            np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
-        )
-        # Compute radius of inertia
-        self._iy = (self._Iy / self._A) ** 0.5
-        self._iz = (self._Iz / self._A) ** 0.5
-        # For computing section modulus get bounds
-        bounds = self._polygon.bounds
-        xmax = max(abs(bounds[0]), bounds[2])
-        ymax = max(abs(bounds[1]), bounds[3])
-        # Then compute section modulus
-        self._Wely = self._Iy / ymax
-        self._Welz = self._Iz / xmax
-        # Compute plastic section modulus
-        # find plastic neutral axis parallel to y
-        self._Wply = 0
-        z_pna = self._find_plastic_neutral_axis_y()
-        poly = translate(self._polygon, xoff=0, yoff=-z_pna)
-        result = split(
-            poly,
-            LineString([[-xmax * 1.05, 0], [xmax * 1.05, 0]]),
-        )
-        for poly in result.geoms:
-            xy = poly.exterior.coords.xy
-            self._Wply += abs(marin_integration(xy[0], xy[1], 0, 1))
-        # # find plastic neutral axis parallel to z
-        self._polygon = rotate(geom=self._polygon, angle=90, origin=(0, 0))
-        self._Wplz = 0
-        y_pna = self._find_plastic_neutral_axis_y()
-        poly = translate(self._polygon, xoff=0, yoff=-y_pna)
-        result = split(
-            poly,
-            LineString([[-ymax * 1.05, 0], [ymax * 1.05, 0]]),
-        )
-        for poly in result.geoms:
-            xy = poly.exterior.coords.xy
-            self._Wplz += abs(marin_integration(xy[0], xy[1], 0, 1))
-        self._polygon = rotate(geom=self._polygon, angle=-90)
 
     def _find_plastic_neutral_axis_y(self) -> float:
         """Find posizion z of plastic neutral axes parallel to y.
@@ -181,17 +123,50 @@ class BaseProfile:
     @property
     def A(self) -> float:
         """Returns area of profile."""
+        if self._A is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # Get the polygon coordinates:
+            xy = self._polygon.exterior.coords.xy
+            # Compute area
+            self._A = marin_integration(xy[0], xy[1], 0, 0)
         return self._A
 
     @property
     def Iy(self) -> float:
         """Returns second moment of area around y axis."""
+        if self._Iy is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # Get the polygon coordinates:
+            xy = self._polygon.exterior.coords.xy
+            # Compute second moments of inertia
+            self._Iy = marin_integration(xy[0], xy[1], 0, 2)
         return self._Iy
 
     @property
     def Iz(self) -> float:
         """Returns second moment of area around z axis."""
+        if self._Iz is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # Get the polygon coordinates:
+            xy = self._polygon.exterior.coords.xy
+            # Compute second moments of inertia
+            self._Iz = marin_integration(xy[0], xy[1], 2, 0)
         return self._Iz
+
+    @property
+    def Iyz(self) -> float:
+        """Returns product moment of inertia."""
+        if self._Iyz is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # Get the polygon coordinates:
+            xy = self._polygon.exterior.coords.xy
+            # Compute product moment of area
+            self._Iyz = marin_integration(xy[0], xy[1], 1, 1)
+        return self._Iyz
 
     @property
     def Icsi(self) -> float:
@@ -200,6 +175,18 @@ class BaseProfile:
         It is assumed that Icsi is maximum second moment, while Ieta is
         the minimum one.
         """
+        if self._Icsi is None:
+            # Compute principal axes direction
+            eigres = np.linalg.eig(
+                np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
+            )
+            max_idx = np.argmax(eigres.eigenvalues)
+            min_idx = 0 if max_idx == 1 else 1
+            self._Icsi = eigres.eigenvalues[max_idx]
+            self._Ieta = eigres.eigenvalues[min_idx]
+            self._theta = np.arccos(
+                np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
+            )
         return self._Icsi
 
     @property
@@ -209,6 +196,18 @@ class BaseProfile:
         It is assumed that Icsi is maximum second moment, while Ieta is
         the minimum one.
         """
+        if self._Ieta is None:
+            # Compute principal axes direction
+            eigres = np.linalg.eig(
+                np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
+            )
+            max_idx = np.argmax(eigres.eigenvalues)
+            min_idx = 0 if max_idx == 1 else 1
+            self._Icsi = eigres.eigenvalues[max_idx]
+            self._Ieta = eigres.eigenvalues[min_idx]
+            self._theta = np.arccos(
+                np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
+            )
         return self._Ieta
 
     @property
@@ -221,36 +220,110 @@ class BaseProfile:
         Returns:
             (float): the angle in radians
         """
+        if self._theta is None:
+            # Compute principal axes direction
+            eigres = np.linalg.eig(
+                np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
+            )
+            max_idx = np.argmax(eigres.eigenvalues)
+            min_idx = 0 if max_idx == 1 else 1
+            self._Icsi = eigres.eigenvalues[max_idx]
+            self._Ieta = eigres.eigenvalues[min_idx]
+            self._theta = np.arccos(
+                np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
+            )
         return self._theta
 
     @property
     def Wely(self) -> float:
         """Returns section modulus in y direction."""
+        if self._Wely is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # For computing section modulus get bounds
+            bounds = self._polygon.bounds
+            xmax = max(abs(bounds[0]), bounds[2])
+            ymax = max(abs(bounds[1]), bounds[3])
+            # Then compute section modulus
+            self._Wely = self._Iy / ymax
+            self._Welz = self._Iz / xmax
         return self._Wely
 
     @property
     def Welz(self) -> float:
         """Returns section modulus in z direction."""
+        if self._Welz is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # For computing section modulus get bounds
+            bounds = self._polygon.bounds
+            xmax = max(abs(bounds[0]), bounds[2])
+            ymax = max(abs(bounds[1]), bounds[3])
+            # Then compute section modulus
+            self._Wely = self._Iy / ymax
+            self._Welz = self._Iz / xmax
         return self._Welz
 
     @property
     def Wply(self) -> float:
         """Returns plastic section modulus in y direction."""
+        if self._Wply is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # For computing section modulus get bounds
+            bounds = self._polygon.bounds
+            xmax = max(abs(bounds[0]), bounds[2])
+            # Compute plastic section modulus
+            # find plastic neutral axis parallel to y
+            self._Wply = 0
+            z_pna = self._find_plastic_neutral_axis_y()
+            poly = translate(self._polygon, xoff=0, yoff=-z_pna)
+            result = split(
+                poly,
+                LineString([[-xmax * 1.05, 0], [xmax * 1.05, 0]]),
+            )
+            for poly in result.geoms:
+                xy = poly.exterior.coords.xy
+                self._Wply += abs(marin_integration(xy[0], xy[1], 0, 1))
         return self._Wply
 
     @property
     def Wplz(self) -> float:
         """Returns plastic section modulus in z direction."""
+        if self._Wplz is None:
+            # Check if the polygon is defined
+            self._check_polygon_defined()
+            # For computing section modulus get bounds
+            bounds = self._polygon.bounds
+            ymax = max(abs(bounds[1]), bounds[3])
+            # Compute plastic section modulus
+            # # find plastic neutral axis parallel to z
+            self._polygon = rotate(geom=self._polygon, angle=90, origin=(0, 0))
+            self._Wplz = 0
+            y_pna = self._find_plastic_neutral_axis_y()
+            poly = translate(self._polygon, xoff=0, yoff=-y_pna)
+            result = split(
+                poly,
+                LineString([[-ymax * 1.05, 0], [ymax * 1.05, 0]]),
+            )
+            for poly in result.geoms:
+                xy = poly.exterior.coords.xy
+                self._Wplz += abs(marin_integration(xy[0], xy[1], 0, 1))
+            self._polygon = rotate(geom=self._polygon, angle=-90)
         return self._Wplz
 
     @property
     def iy(self) -> float:
         """Returns radius of inertia of profile."""
+        # Compute radius of inertia
+        self._iy = self._iy or (self.Iy / self.A) ** 0.5
         return self._iy
 
     @property
     def iz(self) -> float:
         """Returns radius of inertia of profile."""
+        # Compute radius of inertia
+        self._iz = self._iz or (self.Iz / self.A) ** 0.5
         return self._iz
 
 
@@ -317,7 +390,6 @@ class IPE(BaseProfile):
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -499,7 +571,6 @@ class HE(BaseProfile):
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -753,7 +824,6 @@ class UB(BaseProfile):
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -1019,7 +1089,6 @@ class UC(BaseProfile):
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -1236,7 +1305,6 @@ class UBP(BaseProfile):
         self._tf = parameters.get('tf')
         self._r = parameters.get('r')
         self._polygon = _create_I_section(**parameters)
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -1546,7 +1614,6 @@ class IPN(BaseProfile):
             r2=self._r2,
             slope=self._flange_slope,
         )
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
@@ -1850,7 +1917,6 @@ class UPN(BaseProfile):
             slope=self._flange_slope,
             u=self._u,
         )
-        self._compute_section_properties()
 
     @property
     def polygon(self) -> Polygon:
