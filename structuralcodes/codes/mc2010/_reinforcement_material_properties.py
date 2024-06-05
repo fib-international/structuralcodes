@@ -45,6 +45,31 @@ def fyd(fyk: float, gamma_s: float = 1.15) -> float:
     return fyk / gamma_s
 
 
+def epsud(epsuk: float, gamma_eps: float = 0.9) -> float:
+    """Calculate the design value of the reinforcement ultimate strain.
+
+    fib Model Code 2010, Sec. 7.2.3.2
+
+    Args:
+        epsuk (float): The characteristic ultimate strain
+        gamma_eps (float): The partial factor. Default value 0.9.
+
+    Returns:
+        float: The design ultimate strain
+
+    Raises:
+        ValueError: if epsuk is less than 0
+        ValueError: if gamma_eps is greater than 1
+    """
+    if epsuk < 0:
+        raise ValueError(f'epsuk={epsuk} cannot be less than 0')
+    if gamma_eps > 1:
+        raise ValueError(
+            f'gamma_eps={gamma_eps} must be smaller or equal to 1'
+        )
+    return epsuk * gamma_eps
+
+
 def reinforcement_duct_props(
     fyk: float,
     ductility_class: t.Literal['A', 'B', 'C', 'D'],
@@ -63,11 +88,15 @@ def reinforcement_duct_props(
         Dict[str, float]: A dict with the characteristik strain value at the
         ultimate stress level (epsuk), and the characteristic ultimate stress
         (ftk).
+
+    Raises:
+        ValueError: when the ductility_class does not define a valid ductility
+            class
     """
     duct_props = DUCTILITY_CLASSES.get(ductility_class.upper(), None)
     if duct_props is None:
         raise ValueError(
-            'The no properties was found for the provided ductility class '
+            'No properties were found for the provided ductility class '
             f'({ductility_class}).'
         )
     return {

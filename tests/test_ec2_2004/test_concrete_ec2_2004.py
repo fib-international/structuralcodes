@@ -248,11 +248,11 @@ def test_Ecm_setter(test_input, expected):
 def test_fcd(fck, alpha_cc, fcd):
     """Test the fcd method on the concrete class."""
     # Arrange
-    concrete = ConcreteEC2_2004(fck=fck)
+    concrete = ConcreteEC2_2004(fck=fck, alpha_cc=alpha_cc)
 
     # Act and assert
     assert math.isclose(
-        concrete.fcd(alpha_cc=alpha_cc),
+        concrete.fcd(),
         fcd,
         rel_tol=1e-4,
     )
