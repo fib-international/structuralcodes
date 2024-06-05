@@ -318,10 +318,10 @@ def test_gamma_c():
 def test_fcd(fck, alpha_cc, expected):
     """Test calculating the design compressive strength."""
     # Arrange
-    concrete = ConcreteMC2010(fck)
+    concrete = ConcreteMC2010(fck, alpha_cc=alpha_cc)
 
     # Act
-    fcd = concrete.fcd(alpha_cc=alpha_cc)
+    fcd = concrete.fcd()
 
     # Assert
     assert math.isclose(fcd, expected, rel_tol=10e-5)

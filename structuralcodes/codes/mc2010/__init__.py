@@ -3,7 +3,11 @@
 import typing as t
 
 from ._concrete_material_properties import Gf, fcd, fcm, fctkmax, fctkmin, fctm
-from ._reinforcement_material_properties import fyd, reinforcement_duct_props
+from ._reinforcement_material_properties import (
+    epsud,
+    fyd,
+    reinforcement_duct_props,
+)
 
 __all__ = [
     'fcm',
@@ -13,6 +17,7 @@ __all__ = [
     'fcd',
     'Gf',
     'fyd',
+    'epsud',
     'reinforcement_duct_props',
 ]
 

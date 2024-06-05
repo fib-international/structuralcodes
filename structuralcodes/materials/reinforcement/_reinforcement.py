@@ -42,7 +42,7 @@ class Reinforcement(Material):
         else:
             Eh = 0.0
         self._constitutive_law = ElasticPlastic(
-            E=self.Es, fy=self.fyk, Eh=Eh, eps_su=self.epsuk
+            E=self.Es, fy=self.fyd(), Eh=Eh, eps_su=self.epsud()
         )
 
     @property
@@ -106,4 +106,16 @@ class Reinforcement(Material):
     def gamma_s(self) -> float:
         """Each reinforcement should implement its own getter for the partial
         factor in order to interact with the globally set national annex.
+        """
+
+    @abc.abstractmethod
+    def fyd(self) -> float:
+        """Each reinforcement should implement its own method for calculating
+        the design yield strength.
+        """
+
+    @abc.abstractmethod
+    def epsud(self) -> float:
+        """Each reinforcement should implement its own method for calculating
+        the design yield strain.
         """

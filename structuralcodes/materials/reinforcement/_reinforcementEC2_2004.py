@@ -17,6 +17,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         ftk: float,
         epsuk: float,
         gamma_s: t.Optional[float] = None,
+        gamma_eps: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
     ):
@@ -38,6 +39,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
 
+        self._gamma_eps = gamma_eps
         super().__init__(
             fyk=fyk,
             Es=Es,
@@ -58,3 +60,14 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._gamma_s or 1.15
+
+    def epsud(self) -> float:
+        """The design ultimate strain."""
+        return ec2_2004.epsud(self.epsuk, self.gamma_eps)
+
+    @property
+    def gamma_eps(self) -> float:
+        """The partial factor for ultimate strain."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._gamma_eps or 0.9

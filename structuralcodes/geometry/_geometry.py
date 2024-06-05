@@ -278,7 +278,7 @@ class SurfaceGeometry:
         self.polygon = poly
         # Pass a constitutive law to the SurfaceGeometry
         if isinstance(mat, Material):
-            mat = mat._constitutive_law
+            mat = mat.constitutive_law
         self.material = mat
 
     @property

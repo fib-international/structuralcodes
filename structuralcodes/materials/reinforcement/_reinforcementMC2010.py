@@ -17,6 +17,7 @@ class ReinforcementMC2010(Reinforcement):
         ftk: float,
         epsuk: float,
         gamma_s: t.Optional[float] = None,
+        gamma_eps: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
     ):
@@ -37,6 +38,7 @@ class ReinforcementMC2010(Reinforcement):
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
+        self._gamma_eps = gamma_eps
         super().__init__(
             fyk=fyk,
             Es=Es,
@@ -55,3 +57,12 @@ class ReinforcementMC2010(Reinforcement):
     def gamma_s(self) -> float:
         """The partial factor for reinforcement."""
         return self._gamma_s or 1.15
+
+    def epsud(self) -> float:
+        """The design ultimate strain."""
+        return mc2010.epsud(self.epsuk, self.gamma_eps)
+
+    @property
+    def gamma_eps(self) -> float:
+        """The partial factor for ultimate strain."""
+        return self._gamma_eps or 0.9
