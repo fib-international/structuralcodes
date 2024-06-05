@@ -25,19 +25,21 @@ class BaseProfile:
     Contains the common code for all sections
     """
 
-    _polygon: Polygon = None
-    _A: float = None
-    _Iy: float = None
-    _Iz: float = None
-    _Icsi: float = None
-    _Ieta: float = None
-    _Iyz: float = None
-    _Wely: float = None
-    _Welz: float = None
-    _iy: float = None
-    _iz: float = None
-    _Wply: float = None
-    _Wplz: float = None
+    def __init__(self):
+        """Creates an empy base profile."""
+        self._polygon: Polygon = None
+        self._A: float = None
+        self._Iy: float = None
+        self._Iz: float = None
+        self._Icsi: float = None
+        self._Ieta: float = None
+        self._Iyz: float = None
+        self._Wely: float = None
+        self._Welz: float = None
+        self._iy: float = None
+        self._iz: float = None
+        self._Wply: float = None
+        self._Wplz: float = None
 
     def _check_polygon_defined(self):
         """Just checks if polygon attribute is defined.
@@ -217,34 +219,32 @@ class BaseProfile:
             self._find_principals_direction_and_moments()
         return self._theta
 
+    def _compute_elastic_moduli(self):
+        """Compute elastic moduli Wely and Welz."""
+        # Check if the polygon is defined
+        self._check_polygon_defined()
+        # For computing section modulus get bounds
+        bounds = self._polygon.bounds
+        xmax = max(abs(bounds[0]), bounds[2])
+        ymax = max(abs(bounds[1]), bounds[3])
+        # Then compute section modulus
+        self._Wely = self._Iy / ymax
+        self._Welz = self._Iz / xmax
+
     @property
     def Wely(self) -> float:
         """Returns section modulus in y direction."""
         if self._Wely is None:
-            # Check if the polygon is defined
-            self._check_polygon_defined()
-            # For computing section modulus get bounds
-            bounds = self._polygon.bounds
-            xmax = max(abs(bounds[0]), bounds[2])
-            ymax = max(abs(bounds[1]), bounds[3])
-            # Then compute section modulus
-            self._Wely = self._Iy / ymax
-            self._Welz = self._Iz / xmax
+            # Compute elastic moduli
+            self._compute_elastic_moduli()
         return self._Wely
 
     @property
     def Welz(self) -> float:
         """Returns section modulus in z direction."""
         if self._Welz is None:
-            # Check if the polygon is defined
-            self._check_polygon_defined()
-            # For computing section modulus get bounds
-            bounds = self._polygon.bounds
-            xmax = max(abs(bounds[0]), bounds[2])
-            ymax = max(abs(bounds[1]), bounds[3])
-            # Then compute section modulus
-            self._Wely = self._Iy / ymax
-            self._Welz = self._Iz / xmax
+            # Compute elastic moduli
+            self._compute_elastic_moduli()
         return self._Welz
 
     @property
@@ -292,7 +292,9 @@ class BaseProfile:
             for poly in result.geoms:
                 xy = poly.exterior.coords.xy
                 self._Wplz += abs(marin_integration(xy[0], xy[1], 0, 1))
-            self._polygon = rotate(geom=self._polygon, angle=-90)
+            self._polygon = rotate(
+                geom=self._polygon, angle=-90, origin=(0, 0)
+            )
         return self._Wplz
 
     @property
@@ -367,6 +369,7 @@ class IPE(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')
@@ -548,6 +551,7 @@ class HE(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')
@@ -801,6 +805,7 @@ class UB(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')
@@ -1066,6 +1071,7 @@ class UC(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')
@@ -1282,6 +1288,7 @@ class UBP(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')
@@ -1581,6 +1588,7 @@ class IPN(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')
@@ -1840,7 +1848,7 @@ class UPN(BaseProfile):
     def get_polygon(cls, name: str) -> Polygon:
         """Returns a shapely polygon representing an UPN section."""
         if isinstance(name, (float, int)):
-            name = f'IPN{int(name):0d}'
+            name = f'UPN{int(name):0d}'
         parameters = cls.parameters.get(name)
         if parameters is None:
             raise ValueError(
@@ -1868,9 +1876,9 @@ class UPN(BaseProfile):
         return list(cls.parameters.keys())
 
     def __init__(self, name: str) -> None:
-        """Creates a new IPN object."""
+        """Creates a new UPN object."""
         if isinstance(name, (float, int)):
-            name = f'IPN{int(name):0d}'
+            name = f'UPN{int(name):0d}'
         parameters = self.parameters.get(name)
         if parameters is None:
             raise ValueError(
@@ -1878,6 +1886,7 @@ class UPN(BaseProfile):
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
+        super().__init__()
         self._h = parameters.get('h')
         self._b = parameters.get('b')
         self._tw = parameters.get('tw')

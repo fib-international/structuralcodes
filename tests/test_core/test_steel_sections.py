@@ -3,6 +3,7 @@
 import math
 
 import pytest
+from shapely.testing import assert_geometries_equal
 
 from structuralcodes.geometry import (
     HE,
@@ -116,6 +117,83 @@ def test_names_invalid(cls, invalid_name):
     # Invalid name for constructure
     with pytest.raises(ValueError):
         cls(invalid_name).polygon
+
+
+@pytest.mark.parametrize(
+    'cls, name',
+    [
+        (IPE, 'IPE80'),
+        (IPE, 'IPE100'),
+        (IPE, 'IPE120'),
+        (IPE, 'IPE140'),
+        (IPE, 'IPE160'),
+        (IPE, 'IPE180'),
+        (IPE, 'IPE200'),
+        (IPE, 'IPE220'),
+        (IPE, 'IPE240'),
+        (IPE, 'IPE270'),
+        (IPE, 'IPE300'),
+        (IPE, 'IPE330'),
+        (IPE, 'IPE360'),
+        (IPE, 'IPE400'),
+        (IPE, 'IPE450'),
+        (IPE, 'IPE500'),
+        (IPE, 'IPE550'),
+        (IPE, 'IPE600'),
+        (UPN, 'UPN50'),
+        (UPN, 'UPN65'),
+        (UPN, 'UPN80'),
+        (UPN, 'UPN100'),
+        (UPN, 'UPN120'),
+        (UPN, 'UPN140'),
+        (UPN, 'UPN160'),
+        (UPN, 'UPN180'),
+        (UPN, 'UPN200'),
+        (UPN, 'UPN220'),
+        (UPN, 'UPN240'),
+        (UPN, 'UPN260'),
+        (UPN, 'UPN280'),
+        (UPN, 'UPN300'),
+        (UPN, 'UPN320'),
+        (UPN, 'UPN350'),
+        (UPN, 'UPN380'),
+        (UPN, 'UPN400'),
+        (IPN, 'IPN80'),
+        (IPN, 'IPN100'),
+        (IPN, 'IPN120'),
+        (IPN, 'IPN140'),
+        (IPN, 'IPN160'),
+        (IPN, 'IPN180'),
+        (IPN, 'IPN200'),
+        (IPN, 'IPN220'),
+        (IPN, 'IPN240'),
+        (IPN, 'IPN260'),
+        (IPN, 'IPN280'),
+        (IPN, 'IPN300'),
+        (IPN, 'IPN320'),
+        (IPN, 'IPN340'),
+        (IPN, 'IPN360'),
+        (IPN, 'IPN380'),
+        (IPN, 'IPN400'),
+        (IPN, 'IPN450'),
+        (IPN, 'IPN500'),
+        (IPN, 'IPN550'),
+        (IPN, 'IPN600'),
+    ],
+)
+def test_reduced_names(cls, name):
+    """Tests when imputing reduced names."""
+    full_name = cls(name)
+    short_name = cls(int(name[3:]))
+    assert_geometries_equal(
+        full_name.polygon,
+        short_name.polygon,
+        normalize=True,
+    )
+
+    # check also class method
+    poly = cls.get_polygon(int(name[3:]))
+    assert_geometries_equal(full_name.polygon, poly, normalize=True)
 
 
 @pytest.mark.parametrize(
@@ -477,6 +555,326 @@ def test_section_get_polygon(cls, name):
             33870000,
             0.0,
         ),
+        (
+            UPN,
+            'UPN50',
+            710,
+            264000,
+            10600,
+            13100,
+            19,
+            91200,
+            3750,
+            6780,
+            11.2,
+            264000,
+            91200,
+            0,
+        ),
+        (
+            UPN,
+            'UPN65',
+            900,
+            575000,
+            17700,
+            21700,
+            25,
+            141000,
+            5070,
+            9380,
+            12.4,
+            575000,
+            141000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN80',
+            1100,
+            1060000,
+            26500,
+            31800,
+            31,
+            194000,
+            6360,
+            12100,
+            13.3,
+            1060000,
+            194000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN100',
+            1350,
+            2060000,
+            41200,
+            49000,
+            39.1,
+            293000,
+            8490,
+            16200,
+            14.7,
+            2060000,
+            293000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN120',
+            1700,
+            3640000,
+            60700,
+            72600,
+            46.2,
+            432000,
+            11100,
+            21200,
+            15.9,
+            3640000,
+            432000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN140',
+            2040,
+            6050000,
+            86400,
+            103000,
+            54.5,
+            627000,
+            14800,
+            28300,
+            17.5,
+            6050000,
+            627000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN160',
+            2400,
+            9250000,
+            116000,
+            138000,
+            62.1,
+            853000,
+            18300,
+            35200,
+            18.9,
+            9250000,
+            853000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN180',
+            2800,
+            13500000,
+            150000,
+            179000,
+            69.5,
+            1140000,
+            22400,
+            42900,
+            20.2,
+            13500000,
+            1140000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN200',
+            3220,
+            19100000,
+            191000,
+            228000,
+            77,
+            1480000,
+            27000,
+            51800,
+            21.4,
+            19100000,
+            1480000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN220',
+            3740,
+            26900000,
+            245000,
+            292000,
+            84.8,
+            1970000,
+            33600,
+            64100,
+            23,
+            26900000,
+            1970000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN240',
+            4230,
+            36000000,
+            300000,
+            358000,
+            92.2,
+            2480000,
+            39600,
+            75700,
+            24.2,
+            36000000,
+            2480000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN260',
+            4830,
+            48200000,
+            371000,
+            442000,
+            99.9,
+            3170000,
+            47700,
+            91600,
+            25.6,
+            48200000,
+            3170000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN280',
+            5330,
+            62800000,
+            448000,
+            532000,
+            109,
+            3990000,
+            57200,
+            109000,
+            27.4,
+            62800000,
+            3990000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN300',
+            5880,
+            80300000,
+            535000,
+            632000,
+            117,
+            4950000,
+            67800,
+            130000,
+            29,
+            80300000,
+            4950000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN320',
+            7580,
+            108700000,
+            679000,
+            826000,
+            121,
+            5970000,
+            80600,
+            152000,
+            28.1,
+            108700000,
+            5970000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN350',
+            7730,
+            128400000,
+            734000,
+            899310,
+            129,
+            5700000,
+            75000,
+            143000,
+            27.2,
+            128400000,
+            5700000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN380',
+            8040,
+            157600000,
+            829000,
+            1010000,
+            140,
+            6150000,
+            78700,
+            148000,
+            27.7,
+            157600000,
+            6150000,
+            0,
+        ),
+        (
+            UPN,
+            'UPN400',
+            9150,
+            203500000,
+            1020000,
+            1240000,
+            149,
+            8460000,
+            102000,
+            190000,
+            30.4,
+            203500000,
+            8460000,
+            0,
+        ),
+        (
+            IPN,
+            'IPN80',
+            758,
+            778000,
+            19500,
+            22800,
+            32,
+            62900,
+            3000,
+            5000,
+            9.1,
+            778000,
+            62900,
+            0,
+        ),
+        (
+            IPN,
+            'IPN500',
+            17900,
+            687400000,
+            2750000,
+            3240000,
+            196,
+            24800000,
+            268000,
+            456000,
+            37.2,
+            687400000,
+            24800000,
+            0.0,
+        ),
     ],
 )
 def test_section_properties(
@@ -484,22 +882,39 @@ def test_section_properties(
 ):
     """Test Steel section comparing section properties with tables."""
     # Create polygon representing geometyr of profile
-    i_beam = cls(name)
+    profile = cls(name)
 
     # Compare wth stored values with a 2% tolerance
-    assert math.isclose(A, i_beam.A, rel_tol=2e-2)
-    assert math.isclose(Iy, i_beam.Iy, rel_tol=2e-2)
-    assert math.isclose(Iz, i_beam.Iz, rel_tol=2e-2)
-    assert math.isclose(Wely, i_beam.Wely, rel_tol=2e-2)
-    assert math.isclose(Welz, i_beam.Welz, rel_tol=2e-2)
-    assert math.isclose(Wply, i_beam.Wply, rel_tol=2e-2)
-    assert math.isclose(Wplz, i_beam.Wplz, rel_tol=2e-2)
-    assert math.isclose(iy, i_beam.iy, rel_tol=2e-2)
-    assert math.isclose(iz, i_beam.iz, rel_tol=2e-2)
-    assert math.isclose(iz, i_beam.iz, rel_tol=2e-2)
-    assert math.isclose(Icsi, i_beam.Icsi, rel_tol=2e-2)
-    assert math.isclose(Ieta, i_beam.Ieta, rel_tol=2e-2)
-    assert math.isclose(theta, i_beam.theta, rel_tol=2e-2)
+    assert math.isclose(A, profile.A, rel_tol=2e-2)
+    assert math.isclose(Iy, profile.Iy, rel_tol=2e-2)
+    assert math.isclose(Iz, profile.Iz, rel_tol=2e-2)
+    assert math.isclose(Wely, profile.Wely, rel_tol=2e-2)
+    assert math.isclose(Welz, profile.Welz, rel_tol=2e-2)
+    assert math.isclose(Wply, profile.Wply, rel_tol=2e-2)
+    assert math.isclose(Wplz, profile.Wplz, rel_tol=2e-2)
+    assert math.isclose(iy, profile.iy, rel_tol=2e-2)
+    assert math.isclose(iz, profile.iz, rel_tol=2e-2)
+    assert math.isclose(iz, profile.iz, rel_tol=2e-2)
+    assert math.isclose(Icsi, profile.Icsi, rel_tol=2e-2)
+    assert math.isclose(Ieta, profile.Ieta, rel_tol=2e-2)
+    assert math.isclose(theta, profile.theta, rel_tol=2e-2)
+
+    # Check other properties
+    params = cls.parameters.get(name)
+    if params is not None:
+        assert math.isclose(params.get('h'), profile.h, rel_tol=2e-2)
+        assert math.isclose(params.get('b'), profile.b, rel_tol=2e-2)
+        assert math.isclose(params.get('tw'), profile.tw, rel_tol=2e-2)
+        assert math.isclose(params.get('tf'), profile.tf, rel_tol=2e-2)
+        r = params.get('r')
+        if r is not None:
+            assert math.isclose(r, profile.r, rel_tol=2.0e-2)
+        r1 = params.get('r1')
+        if r1 is not None:
+            assert math.isclose(r1, profile.r1, rel_tol=2.0e-2)
+        r2 = params.get('r2')
+        if r2 is not None:
+            assert math.isclose(r2, profile.r2, rel_tol=2.0e-2)
 
 
 @pytest.mark.parametrize(
@@ -996,7 +1411,7 @@ def test_Isection_user_material_marin(cls, name):
         (UPN, 'UPN280', 448e3, 57.2e3, 532e3, 109e3),
         (UPN, 'UPN300', 535e3, 67.8e3, 632e3, 130e3),
         (UPN, 'UPN320', 679e3, 80.6e3, 826e3, 152e3),
-        (UPN, 'UPN350', 734e3, 75e3, 918e3, 143e3),
+        (UPN, 'UPN350', 734e3, 75e3, 901e3, 143e3),
         (UPN, 'UPN380', 829e3, 78.7e3, 1010e3, 148e3),
         (UPN, 'UPN400', 1020e3, 102e3, 1240e3, 190e3),
     ],
@@ -1011,6 +1426,7 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     )
     # Create geometry
     beam = cls(name)
+
     geo = CompoundGeometry([SurfaceGeometry(beam.polygon, steel)])
 
     # Compute expected values
