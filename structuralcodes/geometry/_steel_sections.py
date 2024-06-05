@@ -29,6 +29,9 @@ class BaseProfile:
     _A: float = None
     _Iy: float = None
     _Iz: float = None
+    _Icsi: float = None
+    _Ieta: float = None
+    _Iyz: float = None
     _Wely: float = None
     _Welz: float = None
     _iy: float = None
@@ -57,6 +60,19 @@ class BaseProfile:
         # Compute second moments of inertia
         self._Iy = marin_integration(xy[0], xy[1], 0, 2)
         self._Iz = marin_integration(xy[0], xy[1], 2, 0)
+        # Compute product moment of area
+        self._Iyz = marin_integration(xy[0], xy[1], 1, 1)
+        # Compute principal axes direction
+        eigres = np.linalg.eig(
+            np.array([[self._Iy, self._Iyz], [self._Iyz, self._Iz]])
+        )
+        max_idx = np.argmax(eigres.eigenvalues)
+        min_idx = 0 if max_idx == 1 else 1
+        self._Icsi = eigres.eigenvalues[max_idx]
+        self._Ieta = eigres.eigenvalues[min_idx]
+        self._theta = np.arccos(
+            np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
+        )
         # Compute radius of inertia
         self._iy = (self._Iy / self._A) ** 0.5
         self._iz = (self._Iz / self._A) ** 0.5
@@ -176,6 +192,36 @@ class BaseProfile:
     def Iz(self) -> float:
         """Returns second moment of area around z axis."""
         return self._Iz
+
+    @property
+    def Icsi(self) -> float:
+        """Returns second moment of area around principal csi axis.
+
+        It is assumed that Icsi is maximum second moment, while Ieta is
+        the minimum one.
+        """
+        return self._Icsi
+
+    @property
+    def Ieta(self) -> float:
+        """Returns second moment of area around principal eta axis.
+
+        It is assumed that Icsi is maximum second moment, while Ieta is
+        the minimum one.
+        """
+        return self._Ieta
+
+    @property
+    def theta(self) -> float:
+        """Returns angle between x and principal eta axis.
+
+        It is assumed that Icsi is maximum second moment, while Ieta is
+        the minimum one.
+
+        Returns:
+            (float): the angle in radians
+        """
+        return self._theta
 
     @property
     def Wely(self) -> float:
