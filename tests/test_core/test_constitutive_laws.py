@@ -4,11 +4,13 @@ import math
 
 import numpy as np
 import pytest
+from numpy.testing import assert_allclose
 
 from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
     ParabolaRectangle,
+    Sargin,
     UserDefined,
 )
 
@@ -336,3 +338,67 @@ def test_userdefined_set_ultimate_strain_tuple_error(E, fy, eps_su):
     material = UserDefined(x=x, y=y)
     with pytest.raises(ValueError):
         material.set_ultimate_strain(eps_su)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_c1, eps_cu1, k',
+    [
+        (-12, -1.9e-3, -3.5e-3, 2.44),
+        (-16, -2.0e-3, -3.5e-3, 2.36),
+        (-20, -2.1e-3, -3.5e-3, 2.28),
+        (-25, -2.2e-3, -3.5e-3, 2.15),
+        (-30, -2.3e-3, -3.5e-3, 2.04),
+        (
+            -35,
+            -2.3e-3,
+            -3.5e-3,
+            1.92,
+        ),
+        (-40, -2.4e-3, -3.5e-3, 1.82),
+        (-45, -2.5e-3, -3.5e-3, 1.74),
+        (-50, -2.6e-3, -3.4e-3, 1.66),
+        (-55, -2.6e-3, -3.4e-3, 1.61),
+        (-60, -2.7e-3, -3.3e-3, 1.55),
+        (-70, -2.7e-3, -3.2e-3, 1.47),
+        (-80, -2.8e-3, -3.1e-3, 1.41),
+        (-90, -2.9e-3, -3.0e-3, 1.36),
+        (-100, -3.0e-3, -3.0e-3, 1.32),
+        (-110, -3.0e-3, -3.0e-3, 1.24),
+        (-120, -3.0e-3, -3.0e-3, 1.18),
+    ],
+)
+def test_sargin(fc, eps_c1, eps_cu1, k):
+    """Test Sargin material."""
+    law = Sargin(fc=fc, eps_c1=eps_c1, eps_cu1=eps_cu1, k=k)
+
+    eps = np.linspace(0, eps_cu1, 20)
+
+    # compute expected
+    sig_expected = (
+        fc
+        * (k * eps / eps_c1 - (eps / eps_c1) ** 2)
+        / (1 + (k - 2) * eps / eps_c1)
+    )
+    tan_expected = (
+        fc
+        / eps_c1
+        * ((2 - k) * (eps / eps_c1) ** 2 - 2 * (eps / eps_c1) + k)
+        / (1 + (k - 2) * eps / eps_c1) ** 2
+    )
+
+    # compute from Sargin
+    sig_computed = law.get_stress(eps)
+    tan_computed = law.get_tangent(eps)
+
+    # Compare the two
+    assert_allclose(sig_computed, sig_expected)
+    assert_allclose(tan_computed, tan_expected)
+
+    # Test getting ultimate strain
+    eps_max, eps_min = law.get_ultimate_strain()
+    assert math.isclose(eps_min, eps_cu1)
+    assert math.isclose(eps_max, 100)
+
+    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    assert math.isclose(eps_min, eps_c1)
+    assert math.isclose(eps_max, 100)
