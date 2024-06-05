@@ -120,6 +120,19 @@ class BaseProfile:
                 area_below += geom.area
         return area_above - area_below
 
+    def _find_principals_direction_and_moments(self):
+        """Computes principal direction and second area moments."""
+        eigres = np.linalg.eig(
+            np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
+        )
+        max_idx = np.argmax(eigres[0])
+        min_idx = 0 if max_idx == 1 else 1
+        self._Icsi = eigres[0][max_idx]
+        self._Ieta = eigres[0][min_idx]
+        self._theta = np.arccos(
+            np.dot(np.array([1, 0]), eigres[1][:, max_idx])
+        )
+
     @property
     def A(self) -> float:
         """Returns area of profile."""
@@ -176,17 +189,7 @@ class BaseProfile:
         the minimum one.
         """
         if self._Icsi is None:
-            # Compute principal axes direction
-            eigres = np.linalg.eig(
-                np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
-            )
-            max_idx = np.argmax(eigres.eigenvalues)
-            min_idx = 0 if max_idx == 1 else 1
-            self._Icsi = eigres.eigenvalues[max_idx]
-            self._Ieta = eigres.eigenvalues[min_idx]
-            self._theta = np.arccos(
-                np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
-            )
+            self._find_principals_direction_and_moments()
         return self._Icsi
 
     @property
@@ -197,17 +200,7 @@ class BaseProfile:
         the minimum one.
         """
         if self._Ieta is None:
-            # Compute principal axes direction
-            eigres = np.linalg.eig(
-                np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
-            )
-            max_idx = np.argmax(eigres.eigenvalues)
-            min_idx = 0 if max_idx == 1 else 1
-            self._Icsi = eigres.eigenvalues[max_idx]
-            self._Ieta = eigres.eigenvalues[min_idx]
-            self._theta = np.arccos(
-                np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
-            )
+            self._find_principals_direction_and_moments()
         return self._Ieta
 
     @property
@@ -221,17 +214,7 @@ class BaseProfile:
             (float): the angle in radians
         """
         if self._theta is None:
-            # Compute principal axes direction
-            eigres = np.linalg.eig(
-                np.array([[self.Iy, self.Iyz], [self.Iyz, self.Iz]])
-            )
-            max_idx = np.argmax(eigres.eigenvalues)
-            min_idx = 0 if max_idx == 1 else 1
-            self._Icsi = eigres.eigenvalues[max_idx]
-            self._Ieta = eigres.eigenvalues[min_idx]
-            self._theta = np.arccos(
-                np.dot(np.array([1, 0]), eigres.eigenvectors[:, max_idx])
-            )
+            self._find_principals_direction_and_moments()
         return self._theta
 
     @property
