@@ -179,6 +179,7 @@ def VRdc(
     bw: float,
     NEd: float,
     Ac: float,
+    fcd: float,
     k1: float = 0.15,
     gamma_c: float = 1.5,
 ) -> float:
@@ -197,6 +198,7 @@ def VRdc(
         NEd (float): The normal force in the cross-section due to
             loading or prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
+        fcd (float): The design compressive strength in MPa.
 
     Kwargs:
         k1 (float): Factor used to include the effect of the normal
@@ -204,11 +206,12 @@ def VRdc(
             value = 0.15, value might differ between National Annexes.
         gamma_c (float): Partial factor for concrete. Default value =
             1.5, value might differ between National Annexes.
+        alpha_cc (float): A factor for considering long-term effects on the
+            strength, and effects that arise from the way the load is applied.
 
     Returns:
         float: The concrete shear resistance in MPa.
     """
-    fcd = fck / gamma_c
     CRdc = 0.18 / gamma_c
     return (
         max(
@@ -297,7 +300,10 @@ def Vrdc_prin_stress(
 
 # Equation (6.5)
 def VEdmax_unreinf(
-    bw: float, d: float, fck: float, gamma_c: float = 1.5
+    bw: float,
+    d: float,
+    fck: float,
+    fcd: float,
 ) -> float:
     """Calculate the maximum allowable shear force for cross-sections
         without shear reinforcement.
@@ -309,8 +315,7 @@ def VEdmax_unreinf(
             in mm.
         d (float): The effective depth of the cross-section in mm.
         fck (float): The characteristic compressive strength in MPa.
-        gamma_c (float): Partial factor for concrete. Default value =
-            1.5, value might differ between National Annexes.
+        fcd (float): The design compressive strength in MPa.
 
     Return:
         float: The maximum allowable shear force in the cross-section
@@ -318,7 +323,6 @@ def VEdmax_unreinf(
             calculations, the unreduced shear force has to comply to
             this value.
     """
-    fcd = fck / gamma_c
     return 0.5 * bw * d * v(fck) * fcd
 
 
@@ -337,6 +341,23 @@ def v(fck: float) -> float:
             cracked by shear forces.
     """
     return 0.6 * (1 - fck / 250.0)
+
+
+# Equation (6.10N)
+def v1(fck: float) -> float:
+    """Calculate a strength redcution factor for concrete cracked by
+        shear forces.
+
+    EN 1992-1-1 (2005), Eq. (6.10N)
+
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+
+    Returns:
+        float: A concrete reduction factor to account for concrete
+            cracked by shear forces.
+    """
+    return 0.6 if fck <= 60 else max(0.9 - fck / 200.0, 0.5)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -406,8 +427,9 @@ def VRdmax(
     theta: float,
     NEd: float,
     Ac: float,
-    gamma_c: float = 1.5,
+    fcd: float,
     alpha: float = 90.0,
+    limit_fyd: bool = False,
 ) -> float:
     """Calculate the maximum shear strength of the compression strut.
 
@@ -422,13 +444,16 @@ def VRdmax(
         NEd (float): The normal force in the cross-section due to
             loading or prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
+        fcd (float): The design compressive strength in MPa.
 
     Kwargs:
-        gamma_c (float): Partial factor for concrete. Default value =
-            1.5, value might differ between National Annexes.
         alpha (float): The angle of the shear reinforcement with
             respect to the neutral axis in degrees. Default value = 90
             degrees.
+        limit_fyd (bool): Flag to indicate if the design yield stress is
+            limited to 0.8 * fyk or not. This controls whether the stress
+            reduction factor of concrete is given by Eq. (6.6) (False) or
+            (6.10) (True).
 
     Returns:
         float: The shear strength of the shear reinforcement in N.
@@ -437,15 +462,15 @@ def VRdmax(
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
         ValueError: When sigma_cp > fcd.
     """
-    fcd = fck / gamma_c
     _theta(theta)
     theta = math.radians(theta)
     alpha = math.radians(alpha)
+    strength_reduction = v(fck) if not limit_fyd else v1(fck)
     return (
         alpha_cw(NEd, Ac, fcd)
         * bw
         * z
-        * v(fck)
+        * strength_reduction
         * fcd
         * (1.0 / math.tan(theta) + 1.0 / math.tan(alpha))
         / (1 + 1.0 / math.tan(theta) ** 2)
