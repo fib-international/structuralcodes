@@ -29,9 +29,10 @@ class Elastic(ConstitutiveLaw):
         eps = np.asarray(eps)
         return self._E * eps
 
-    def get_tangent(self, *args) -> float:
+    def get_tangent(self, *args, **kwargs) -> float:
         """Return the tangent."""
         del args
+        del kwargs
         return self._E
 
     def __marin__(
@@ -426,8 +427,8 @@ class UserDefined(ConstitutiveLaw):
             raise ValueError('The two arrays should have the same length')
         if not np.any(x < 0):
             # User provided only positive part, reflect in negative
-            self._x = np.concatenate((-np.flip(x), x))
-            self._y = np.concatenate((-np.flip(y), y))
+            self._x = np.concatenate((-np.flip(x)[:-1], x))
+            self._y = np.concatenate((-np.flip(y)[:-1], y))
         else:
             # User gave both positive and negative parts
             self._x = x
@@ -464,6 +465,9 @@ class UserDefined(ConstitutiveLaw):
             self._x = x
             self._y = y
 
+        # Compute slope of each segment
+        self._slopes = np.diff(self._y) / np.diff(self._x)
+
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
@@ -471,8 +475,22 @@ class UserDefined(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain."""
-        # this function is still TO DO
-        raise NotImplementedError
+        eps = np.atleast_1d(np.array(eps))
+
+        # Find the segment index for each x value
+        indices = np.searchsorted(self._x, eps) - 1
+
+        # Check that indices are within vlaid range
+        indices = np.clip(indices, 0, len(self._slopes) - 1)
+
+        # Get the corresponding slopes
+        tangent = self._slopes[indices]
+
+        # Elsewhere tangent is zero
+        tangent[eps < self._x[0]] = 0.0
+        tangent[eps > self._x[-1]] = 0.0
+
+        return tangent
 
     def __marin__(
         self, strain: t.Tuple[float, float]

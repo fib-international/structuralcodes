@@ -49,7 +49,8 @@ class GrossProperties:
         spec: the string specifying the format
         """
         output_string = 'Gross Concrete Section Properties:\n'
-        output_string += f'Total area: {self.area:{spec}}'
+        output_string += f'Total area: {self.area:{spec}}\n'
+        output_string += f'Axial rigidity (EA): {self.ea:{spec}}'
         # etc. all other characteristics
         return output_string
 

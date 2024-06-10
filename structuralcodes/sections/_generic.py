@@ -96,9 +96,17 @@ class GenericSectionCalculator(SectionCalculator):
         """
         # It will use the algorithms for generic sections
         gp = s_res.GrossProperties()
-        # Here compute area, centroid and other stuff from gross properties
-        # 1. Computation of area
+
+        # Computation of area: this is taken directly from shapely
         gp.area = self.section.geometry.area
+        # Computation of EA (axial rigidity)
+        gp.ea = 0.0
+        for geo in self.section.geometry.geometries:
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
+        for geo in self.section.geometry.point_geometries:
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
+        # Computation of E*S (first area moments * E)
+
         return gp
 
     def get_balanced_failure_strain(
