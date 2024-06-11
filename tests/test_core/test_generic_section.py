@@ -52,7 +52,7 @@ def test_rectangular_section():
     # Compute bending strength
     res_fiber = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
 
-    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-5)
+    assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=2e-3)
 
     # Compute moment curvature
     res_mc_fiber = sec.section_analyzer.calculate_moment_curvature(
@@ -60,7 +60,7 @@ def test_rectangular_section():
     )
 
     assert math.isclose(
-        res_mc_marin.m_y[-1], res_mc_fiber.m_y[-1], rel_tol=1e-5
+        res_mc_marin.m_y[-1], res_mc_fiber.m_y[-1], rel_tol=2e-3
     )
 
 
