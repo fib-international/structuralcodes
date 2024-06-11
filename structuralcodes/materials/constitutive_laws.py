@@ -26,14 +26,13 @@ class Elastic(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return stress given strain."""
-        eps = np.asarray(eps)
+        eps = np.atleast_1d(np.asarray(eps))
         return self._E * eps
 
-    def get_tangent(self, *args, **kwargs) -> float:
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent."""
-        del args
-        del kwargs
-        return self._E
+        eps = np.atleast_1d(np.asarray(eps))
+        return np.ones_like(eps) * self._E
 
     def __marin__(
         self, strain: t.Tuple[float, float]
@@ -143,10 +142,12 @@ class ElasticPlastic(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent for given strain."""
-        tol = 1.0e-6
-        if abs(eps) - self._eps_sy > tol:
-            return self._Eh
-        return self._E
+        eps = np.atleast_1d(np.asarray(eps))
+        tangent = np.ones_like(eps) * self._E
+        tangent[eps > self._eps_sy] = self._Eh
+        tangent[eps < -self._eps_sy] = self._Eh
+
+        return tangent
 
     def __marin__(
         self, strain: t.Tuple[float, float]
