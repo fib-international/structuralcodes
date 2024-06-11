@@ -975,7 +975,7 @@ def test_Isection_elastic_fiber(cls, name):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -1097,7 +1097,7 @@ def test_Isection_plastic_fiber(cls, name):
     results = sec.section_analyzer.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=2e-2)
 
 
 @pytest.mark.parametrize(

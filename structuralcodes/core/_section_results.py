@@ -107,3 +107,31 @@ class UltimateBendingMomentResults:
     chi_y: float = 0  # the curvature corresponding to the ultimate moment
     chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
+
+
+@dataclass
+class NmmInteractionDomain:
+    """Class for storing the NMM interaction domain results."""
+
+    n_theta: int = 0  # number of discretizations along the angle
+    n_axial: int = 0  # number of discretizations along axial load axis
+
+
+@dataclass
+class NmInteractionDomain:
+    """Class for storing the NM interaction domain results."""
+
+    theta: float = 0  # the inclination of n.a.
+    n_axial: float = 0  # number of discretizations along axial load axis
+
+    n: ArrayLike = None  # Axial loads
+    m_y: ArrayLike = None  # Moments My
+    m_z: ArrayLike = None  # Moments Mz
+
+
+@dataclass
+class MmInteractionDomain:
+    """Class for storing the MM interaction domain results."""
+
+    n_theta: float = 0  # number of discretizations along the angle
+    n: float = 0  # axial load
