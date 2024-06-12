@@ -585,23 +585,117 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
+    def _compute_ultimate_strain_profiles(self, theta: float = 0):
+        """Return an array of ultimate strain profiles.
+
+        Args:
+        theta: (float) the angle of neutral axis
+        """
+        rotated_geom = self.section.geometry.rotate(-theta)
+
+        # Find yield failure
+        # Find balanced failure: this defines the transition
+        y_n, y_p, strain = self.get_balanced_failure_strain(
+            geom=rotated_geom, yielding=True
+        )
+        eps_p_y = strain[0] + strain[1] * y_p
+        eps_n_y = strain[0] + strain[1] * y_n
+        # between fields 2 and 3
+        y_n, y_p, strain = self.get_balanced_failure_strain(
+            geom=rotated_geom, yielding=False
+        )
+        _, _, min_y, _ = rotated_geom.calculate_extents()
+        h = y_n - min_y
+        eps_p_b = strain[0] + strain[1] * y_p
+        eps_n_b = strain[0] + strain[1] * y_n
+
+        eps_p = []
+        eps_n = []
+        # For generation of fields 1 and 2 pivot on steel
+        # Field 1: pivot on steel
+        n = 3
+        eps_n = np.linspace(eps_p_b, 0, n, endpoint=False)
+        eps_p = np.zeros_like(eps_n) + eps_p_b
+        # Field 2: pivot on steel
+        n = 10  # 10
+        eps_n = np.append(eps_n, np.linspace(0, eps_n_b, n, endpoint=False))
+        eps_p = np.append(eps_p, np.zeros(n) + eps_p_b)
+        # Field 3: pivot on concrete
+        n = 40  # 40
+        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_p = np.append(
+            eps_p, np.linspace(eps_p_b, eps_p_y, n, endpoint=False)
+        )
+        # Field 4: pivot on concrete
+        n = 6  # 6
+        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_p = np.append(eps_p, np.linspace(eps_p_y, 0, n, endpoint=False))
+        # Field 5: pivot on concrete
+        n = 8  # 8
+        eps_p_lim = eps_n_b * (h - (y_n - y_p)) / h
+        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_p = np.append(eps_p, np.linspace(0, eps_p_lim, n, endpoint=False))
+        # Field 6: pivot on eps_n_y point! Morten:
+        # How to make this general? This is concrete!
+        n = 8  # 8
+        z_pivot = y_n - (1 - eps_n_y / eps_n_b) * h
+        eps_p_6 = np.linspace(eps_p_lim, eps_n_y, n, endpoint=True)
+        eps_n_6 = (
+            -(eps_n_y - eps_p_6) * (z_pivot - y_n) / (z_pivot - y_p) + eps_n_y
+        )
+        eps_n = np.append(eps_n, eps_n_6)
+        eps_p = np.append(eps_p, eps_p_6)
+        # rotate them
+        kappa_y = (eps_n - eps_p) / (y_n - y_p)
+        eps_a = eps_n - kappa_y * y_n
+        kappa_z = np.zeros_like(kappa_y)
+
+        # rotate back components to work in section CRS
+        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        components = np.vstack((kappa_y, kappa_z))
+        rotated_components = T @ components
+        return np.column_stack((eps_a, rotated_components.T))
+
     def calculate_nmm_interaction_domain(
         self, n_theta: int = 32, n_axial: int = 20
     ) -> s_res.NmmInteractionDomain:
         """Calculates the NMM interaction domain."""
         res = s_res.NmmInteractionDomain()
         res.n_theta = n_theta
+        # TODO: if we want to resample and structure better data we can
+        # use n_axial as the number of discretizations in axial direction
         res.n_axial = n_axial
+
         # cycle for all n_thetas
-        theta = 0
-        rotated_geom = self.section.geometry.rotate(-theta)
-        # Find balanced failure
-        y_n, y_p, strain = self.get_balanced_failure_strain(
-            geom=rotated_geom, yielding=False
-        )
-        eps_p = strain[0] + strain[1] * y_p
-        eps_n = strain[0] + strain[1] * y_n
-        print(eps_p, eps_n)
+        thetas = np.linspace(0, np.pi * 2, n_theta)
+        # Initialize an empty array with the correct shape
+        strains = np.empty((0, 3))
+        for theta in thetas:
+            # Get ultimate strain profiles for theta angle
+            strain = self._compute_ultimate_strain_profiles(theta=theta)
+            strains = np.vstack((strains, strain))
+
+        # integrate all strain profiles
+        forces = np.zeros_like(strains)
+        for i in range(strains.shape[0]):
+            N, My, Mz, tri = (
+                self.integrator.integrate_strain_response_on_geometry(
+                    geo=self.section.geometry,
+                    strain=strains[i, :],
+                    tri=self.triangulated_data,
+                )
+            )
+            if self.triangulated_data is None:
+                self.triangulated_data = tri
+            forces[i, 0] = N
+            forces[i, 1] = My
+            forces[i, 2] = Mz
+
+        # Save to results
+        res.strains = strains
+        res.forces = forces
+
+        return res
 
 
 # Use examples:

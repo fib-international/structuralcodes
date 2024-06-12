@@ -299,6 +299,18 @@ class SurfaceGeometry:
         """
         return self.polygon.centroid.coords[0]
 
+    def calculate_extents(self) -> tuple[float, float, float, float]:
+        """Calculate extents of SurfaceGeometry.
+
+        Calculates the minimum and maximum x and y values.
+
+        Returns:
+            Minimum and maximum x and y values (``x_min``, ``x_max``,
+            ``y_min``, ``y_max``)
+        """
+        min_x, min_y, max_x, max_y = self.polygon.bounds
+        return min_x, max_x, min_y, max_y
+
     def split(
         self, line: t.Union[LineString, t.Tuple[t.Tuple[float, float], float]]
     ) -> t.Tuple[t.List[SurfaceGeometry], t.List[SurfaceGeometry]]:
@@ -544,6 +556,28 @@ class CompoundGeometry(Geometry):
         for geo in self.geometries:
             area += geo.area
         return area
+
+    def calculate_extents(self) -> tuple[float, float, float, float]:
+        """Calculate extents of CompundGeometry.
+
+        Calculates the minimum and maximum x and y-values.
+        Consideres only SurfaceGeometries and not points!
+
+        Returns:
+            Minimum and maximum x and y values (``x_min``, ``x_max``,
+            ``y_min``, ``y_max``)
+        """
+        min_x = 1e16
+        max_x = -1e16
+        min_y = 1e16
+        max_y = -1e16
+        for geo in self.geometries:
+            xmin, xmax, ymin, ymax = geo.calculate_extents()
+            min_x = min(min_x, xmin)
+            min_y = min(min_y, ymin)
+            max_x = max(max_x, xmax)
+            max_y = max(max_y, ymax)
+        return min_x, max_x, min_y, max_y
 
     def translate(self, dx: float = 0.0, dy: float = 0.0) -> CompoundGeometry:
         """Returns a new CompountGeometry that is translated by dx, dy.
