@@ -6,6 +6,7 @@ import typing as t
 from math import cos, sin
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 import structuralcodes.core._section_results as s_res
 from structuralcodes.core.base import Section, SectionCalculator
@@ -408,6 +409,29 @@ class GenericSectionCalculator(SectionCalculator):
                 (coords_r[0, :], coords_r[1, :], tr[2], tr[3])
             )
         self.triangulated_data = rotated_triangulated_data
+
+    def integrate_strain_profile(
+        self, strain: ArrayLike
+    ) -> t.Tuple[float, float, float]:
+        """Integrate a strain profile returning internal forces.
+
+        Args:
+            strain: (Array like) represents the deformation plane
+                    the strain should have three entries representing
+                    respectively:
+                    axial strain (At 0,0 coordinates)
+                    curv_y
+                    curv_z
+
+        Returns:
+            (float, float, float) N, My and Mz
+        """
+        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+            geo=self.section.geometry,
+            strain=strain,
+            tri=self.triangulated_data,
+        )
+        return N, My, Mz
 
     def calculate_bending_strength(
         self, theta=0, n=0
