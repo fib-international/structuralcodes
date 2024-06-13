@@ -82,7 +82,7 @@ class GenericSectionCalculator(SectionCalculator):
         # Select the integrator if specified
         self.integrator = integrator_factory(integrator)()
         # Mesh size used for Fibre integrator
-        self.mesh_size = kwargs.get('mesh_size', 0.001)
+        self.mesh_size = kwargs.get('mesh_size', 0.01)
         # triangulated_data used for Fibre integrator
         self.triangulated_data = None
         # Maximum and minimum axial load
@@ -366,10 +366,11 @@ class GenericSectionCalculator(SectionCalculator):
                 self.section.geometry,
                 [eps_n, 0, 0],
                 tri=self.triangulated_data,
+                mesh_size=self.mesh_size,
             )
         )
         n_max, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
-            self.section.geometry, [eps_p, 0, 0], tri=self.triangulated_data
+            self.section.geometry, [eps_p, 0, 0], tri=tri
         )
 
         if self.triangulated_data is None:
