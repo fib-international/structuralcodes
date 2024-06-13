@@ -506,6 +506,9 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is not None:
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
+
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
         # Find ultimate curvature from the strain distribution corresponding
         # to failure and equilibrium with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
