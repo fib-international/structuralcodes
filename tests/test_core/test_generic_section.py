@@ -114,12 +114,14 @@ def test_rectangular_section_mn_domain():
 
     # Compute MN domain
     # slow version
-    mn_res_marin_s = sec_marin.section_analyzer.calculate_interaction_domain(
-        theta=0
+    mn_res_marin_s = (
+        sec_marin.section_analyzer.calculate_nm_interaction_domain_slow(
+            theta=0
+        )
     )
     # fast version
-    mn_res_marin_f = sec_marin.section_analyzer.calculate_interaction_domain_2(
-        theta=0
+    mn_res_marin_f = (
+        sec_marin.section_analyzer.calculate_nm_interaction_domain(theta=0)
     )
 
     # Use fiber integration
@@ -127,12 +129,14 @@ def test_rectangular_section_mn_domain():
 
     # compute MN domain
     # slow version
-    mn_res_fiber_s = sec_fiber.section_analyzer.calculate_interaction_domain(
-        theta=0
+    mn_res_fiber_s = (
+        sec_fiber.section_analyzer.calculate_nm_interaction_domain_slow(
+            theta=0
+        )
     )
     # Fast version
-    mn_res_fiber_f = sec_fiber.section_analyzer.calculate_interaction_domain_2(
-        theta=0
+    mn_res_fiber_f = (
+        sec_fiber.section_analyzer.calculate_nm_interaction_domain(theta=0)
     )
 
     assert math.isclose(

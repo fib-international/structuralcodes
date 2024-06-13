@@ -110,22 +110,22 @@ class UltimateBendingMomentResults:
 
 
 @dataclass
-class NmmInteractionDomain:
+class NMMInteractionDomain:
     """Class for storing the NMM interaction domain results."""
 
-    n_theta: int = 0  # number of discretizations along the angle
-    n_axial: int = 0  # number of discretizations along axial load axis
+    num_theta: int = 0  # number of discretizations along the angle
+    num_axial: int = 0  # number of discretizations along axial load axis
 
     strains: ArrayLike = None  # array with shape (n,3) containing strains
     forces: ArrayLike = None  # array with shape(n,3) containing N, My, Mz
 
 
 @dataclass
-class NmInteractionDomain:
+class NMInteractionDomain:
     """Class for storing the NM interaction domain results."""
 
     theta: float = 0  # the inclination of n.a.
-    n_axial: float = 0  # number of discretizations along axial load axis
+    num_axial: float = 0  # number of discretizations along axial load axis
 
     n: ArrayLike = None  # Axial loads
     m_y: ArrayLike = None  # Moments My
@@ -133,10 +133,10 @@ class NmInteractionDomain:
 
 
 @dataclass
-class MmInteractionDomain:
+class MMInteractionDomain:
     """Class for storing the MM interaction domain results."""
 
-    n_theta: float = 0  # number of discretizations along the angle
+    num_theta: float = 0  # number of discretizations along the angle
     n: float = 0  # axial load
 
     theta: ArrayLike = None  # Angle theta respect axis Y

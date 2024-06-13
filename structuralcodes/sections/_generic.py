@@ -581,9 +581,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_interaction_domain(
-        self, theta: float = 0, n_axial: int = 100
-    ) -> s_res.NmInteractionDomain:
+    def calculate_nm_interaction_domain_slow(
+        self, theta: float = 0, num_axial: int = 100
+    ) -> s_res.NMInteractionDomain:
         """Calculate the NM interaction domain.
 
         Arguments:
@@ -594,11 +594,11 @@ class GenericSectionCalculator(SectionCalculator):
         (NmInteractionDomain)
         """
         # Prepare the results
-        res = s_res.NmInteractionDomain()
+        res = s_res.NMInteractionDomain()
         res.theta = theta
-        res.n_axial = n_axial
+        res.num_axial = num_axial
         # Create an array of axial loads
-        res.n = np.linspace(self.n_min, self.n_max, n_axial)
+        res.n = np.linspace(self.n_min, self.n_max, num_axial)
         # Initialize the result's arrays
         res.m_y = np.zeros_like(res.n)
         res.m_z = np.zeros_like(res.n)
@@ -612,9 +612,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_interaction_domain_2(
-        self, theta: float = 0, n_axial: int = 100
-    ) -> s_res.NmInteractionDomain:
+    def calculate_nm_interaction_domain(
+        self, theta: float = 0, num_axial: int = 100
+    ) -> s_res.NMInteractionDomain:
         """Calculate the NM interaction domain (attempt to make it faster).
 
         Arguments:
@@ -625,11 +625,11 @@ class GenericSectionCalculator(SectionCalculator):
         (NmInteractionDomain)
         """
         # Prepare the results
-        res = s_res.NmInteractionDomain()
+        res = s_res.NMInteractionDomain()
         res.theta = theta
         # with this version really n_axial is not used unless we perform
         # some resampling after computation?
-        res.n_axial = n_axial
+        res.num_axial = num_axial
 
         # Get ultimate strain profiles for theta angle
         strains = self._compute_ultimate_strain_profiles(theta=theta)
@@ -739,17 +739,17 @@ class GenericSectionCalculator(SectionCalculator):
         return np.column_stack((eps_a, rotated_components.T))
 
     def calculate_nmm_interaction_domain(
-        self, n_theta: int = 32, n_axial: int = 20
-    ) -> s_res.NmmInteractionDomain:
+        self, num_theta: int = 32, num_axial: int = 20
+    ) -> s_res.NMMInteractionDomain:
         """Calculates the NMM interaction domain."""
-        res = s_res.NmmInteractionDomain()
-        res.n_theta = n_theta
+        res = s_res.NMMInteractionDomain()
+        res.num_theta = num_theta
         # TODO: if we want to resample and structure better data we can
         # use n_axial as the number of discretizations in axial direction
-        res.n_axial = n_axial
+        res.num_axial = num_axial
 
         # cycle for all n_thetas
-        thetas = np.linspace(0, np.pi * 2, n_theta)
+        thetas = np.linspace(0, np.pi * 2, num_theta)
         # Initialize an empty array with the correct shape
         strains = np.empty((0, 3))
         for theta in thetas:
@@ -780,8 +780,8 @@ class GenericSectionCalculator(SectionCalculator):
         return res
 
     def calculate_mm_interaction_domain(
-        self, n: float = 0, n_theta: int = 32
-    ) -> s_res.MmInteractionDomain:
+        self, n: float = 0, num_theta: int = 32
+    ) -> s_res.MMInteractionDomain:
         """Calculate the My-Mz interaction domain.
 
         Arguments:
@@ -789,14 +789,14 @@ class GenericSectionCalculator(SectionCalculator):
         n_theta (int, default = 32): number of discretization for theta
 
         Return:
-        (MmInteractionDomain)
+        (MMInteractionDomain)
         """
         # Prepare the results
-        res = s_res.NmInteractionDomain()
-        res.n_theta = n_theta
+        res = s_res.MMInteractionDomain()
+        res.num_theta = num_theta
         res.n = n
         # Create array of thetas
-        res.theta = np.linspace(0, np.pi * 2, n_theta)
+        res.theta = np.linspace(0, np.pi * 2, num_theta)
         # Initialize the result's arrays
         res.m_y = np.zeros_like(res.theta)
         res.m_z = np.zeros_like(res.theta)
