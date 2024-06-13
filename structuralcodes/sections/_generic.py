@@ -395,8 +395,7 @@ class GenericSectionCalculator(SectionCalculator):
         if n < self.n_min or n > self.n_max:
             error_str = f'Axial load {n} cannot be taken by section.\n'
             error_str += f'n_min = {self.n_min} / n_max = {self.n_max}'
-            # Morten, I would like to raise this error!:
-            # raise ValueError(error_str)
+            raise ValueError(error_str)
 
     def _rotate_triangulated_data(self, theta: float):
         """Rotate triangulated data of angle theta."""
@@ -707,7 +706,8 @@ class GenericSectionCalculator(SectionCalculator):
         eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
         eps_p = np.append(eps_p, np.linspace(0, eps_p_lim, n, endpoint=False))
         # Field 6: pivot on eps_n_y point! Morten:
-        # How to make this general? This is concrete!
+        # Talked with Morten: we will infer if the section is reinforced
+        # concrete and act consequently.
         n = 8  # 8
         z_pivot = y_n - (1 - eps_n_y / eps_n_b) * h
         eps_p_6 = np.linspace(eps_p_lim, eps_n_y, n, endpoint=True)
