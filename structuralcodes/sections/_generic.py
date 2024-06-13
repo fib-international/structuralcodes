@@ -122,21 +122,33 @@ class GenericSectionCalculator(SectionCalculator):
             gp.area_surface += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
-                gp.mass += geo.area * geo.density * 1e-8
+                gp.mass += geo.area * geo.density * 1e-9
 
         for geo in self.section.geometry.point_geometries:
             gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
             gp.area_reinforcement += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
-                gp.mass += geo.area * geo.density * 1e-8
+                gp.mass += geo.area * geo.density * 1e-9
 
-        # Computation of E*S (first area moments * E)
+        # Computation of area moments
+        #
         # Implementation idea:
-        # Using integrator: we need to integrate integr(E*y*dA)
-        #    or integr(E*x*dA) for obtaining E*Sy and E*Sz.
-        #    Chat with Morten!
-        # Preparared small playground
+        # Using integrator: we need to compute the following integrals:
+        # E Sy = integr(E*z*dA)
+        # E Sz = integr(E*y*dA)
+        # E Iyy = integr(E*z*z*dA)
+        # E Izz = integr(E*y*y*dA)
+        # E Iyz = integr(E*y*z*dA)
+        #
+        # The first can be imagined as computing axial force
+        # by integration of a E*z stress;
+        # since eps = eps_a + ky * z - kz * y
+        # E*z is the stress corresponding to an elastic material
+        # with stiffness E and strain equal to z (i.e. eps_a and kz = 0,
+        # ky = 1 )
+        #
+        # With the same idea we can integrate the other quantities.
 
         def compute_area_moments(geometry, material=None):
             # create a new dummy geometry from the original one

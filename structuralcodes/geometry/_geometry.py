@@ -116,7 +116,12 @@ class PointGeometry(Geometry):
         Arguments:
             point: a couple of coordinates or e shapely Point object
             diameter: the diameter of the point
-            material: the material for the point
+            material: the material for the point (this can be a Material or
+                    a ConstitutiveLaw)
+            density (Optional: default None) when a ConstitutiveLaw is passed
+                    as material, the density can be providen by this argument.
+                    When the material is a Material object the density is taken
+                    from the material.
             name (Optional: default None): the name to be given to the object
             group_label (Optional: default None): a label for grouping several
         objects
@@ -238,7 +243,19 @@ class PointGeometry(Geometry):
         geo: PointGeometry,
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
     ) -> PointGeometry:
-        """Create a new PointGeometry with a different material."""
+        """Create a new PointGeometry with a different material.
+
+        Arguments:
+        geo: (PointGeometry) the geometry
+        new_material: (Optional: dault None) a new material to
+            be applied to the geometry. If new_material is None
+            an Elastic material with same stiffness of the original
+            material is created.
+
+        Note:
+        The polygon is not copied, but just referenced in the
+        returned PointGeometry object.
+        """
         if not isinstance(geo, PointGeometry):
             raise TypeError('geo should be a PointGeometry')
         if new_material is not None:
@@ -315,7 +332,12 @@ class SurfaceGeometry:
 
         Args:
             poly (shapely.Polygon): Shapely polygon
-            mat (Material): A Material class applied to the geometry
+            mat (Material or ConstitutiveLaw): A Material or ConsitutiveLaw
+                class applied to the geometry
+            density (Optional: default None) when a ConstitutiveLaw is passed
+                    as mat, the density can be providen by this argument.
+                    When mat is a Material object the density is taken
+                    from the material.
         """
         # Check if inputs are of the correct type, otherwise return error
         if not isinstance(poly, Polygon):
@@ -501,7 +523,19 @@ class SurfaceGeometry:
         geo: SurfaceGeometry,
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
     ) -> SurfaceGeometry:
-        """Create a new SurfaceGeometry with a different material."""
+        """Create a new SurfaceGeometry with a different material.
+
+        Arguments:
+        geo: (SurfaceGeometry) the geometry
+        new_material: (Optional: dault None) a new material to
+            be applied to the geometry. If new_material is None
+            an Elastic material with same stiffness of the original
+            material is created.
+
+        Note:
+        The polygon is not copied, but just referenced in the
+        returned SurfaceGeometry object.
+        """
         if not isinstance(geo, SurfaceGeometry):
             raise TypeError('geo should be a SurfaceGeometry')
         if new_material is not None:
@@ -707,7 +741,15 @@ class CompoundGeometry(Geometry):
         geo: CompoundGeometry,
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
     ) -> CompoundGeometry:
-        """Create a new CompoundGeometry with a different material."""
+        """Create a new CompoundGeometry with a different material.
+
+        Arguments:
+        geo: (CompoundGeometry) the geometry
+        new_material: (Optional: dault None) a new material to
+            be applied to the geometry. If new_material is None
+            an Elastic material with same stiffness of the original
+            material is created.
+        """
         if not isinstance(geo, CompoundGeometry):
             raise TypeError('geo should be a CompoundGeometry')
         processed_geoms = []
