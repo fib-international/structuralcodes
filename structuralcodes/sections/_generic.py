@@ -665,58 +665,65 @@ class GenericSectionCalculator(SectionCalculator):
         rotated_geom = self.section.geometry.rotate(-theta)
 
         # Find yield failure
-        # Find balanced failure: this defines the transition
         y_n, y_p, strain = self.get_balanced_failure_strain(
             geom=rotated_geom, yielding=True
         )
         eps_p_y = strain[0] + strain[1] * y_p
         eps_n_y = strain[0] + strain[1] * y_n
+        # Find balanced failure: this defines the transition
         # between fields 2 and 3
         y_n, y_p, strain = self.get_balanced_failure_strain(
             geom=rotated_geom, yielding=False
         )
-        _, _, min_y, _ = rotated_geom.calculate_extents()
-        h = y_n - min_y
         eps_p_b = strain[0] + strain[1] * y_p
         eps_n_b = strain[0] + strain[1] * y_n
 
-        eps_p = []
-        eps_n = []
-        # For generation of fields 1 and 2 pivot on steel
-        # Field 1: pivot on steel
+        # get h of the rotated geometry
+        _, _, min_y, _ = rotated_geom.calculate_extents()
+        h = y_n - min_y
+
+        # For generation of fields 1 and 2 pivot on positive strain
+        # Field 1: pivot on positive strain
         n = 3
         eps_n = np.linspace(eps_p_b, 0, n, endpoint=False)
         eps_p = np.zeros_like(eps_n) + eps_p_b
-        # Field 2: pivot on steel
+        # Field 2: pivot on positive strain
         n = 10  # 10
         eps_n = np.append(eps_n, np.linspace(0, eps_n_b, n, endpoint=False))
         eps_p = np.append(eps_p, np.zeros(n) + eps_p_b)
-        # Field 3: pivot on concrete
+        # For fields 3-4-5 pivot on negative strain
+        # Field 3: pivot on negative strain
         n = 40  # 40
         eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
         eps_p = np.append(
             eps_p, np.linspace(eps_p_b, eps_p_y, n, endpoint=False)
         )
-        # Field 4: pivot on concrete
-        n = 6  # 6
+        # Field 4: pivot on negative strain
+        n = 10  # 6
         eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
         eps_p = np.append(eps_p, np.linspace(eps_p_y, 0, n, endpoint=False))
-        # Field 5: pivot on concrete
-        n = 8  # 8
+        # Field 5: pivot on negative strain
+        n = 40  # 8
         eps_p_lim = eps_n_b * (h - (y_n - y_p)) / h
         eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
         eps_p = np.append(eps_p, np.linspace(0, eps_p_lim, n, endpoint=False))
-        # Field 6: pivot on eps_n_y point! Morten:
-        # Talked with Morten: we will infer if the section is reinforced
-        # concrete and act consequently.
-        n = 8  # 8
-        z_pivot = y_n - (1 - eps_n_y / eps_n_b) * h
-        eps_p_6 = np.linspace(eps_p_lim, eps_n_y, n, endpoint=True)
-        eps_n_6 = (
-            -(eps_n_y - eps_p_6) * (z_pivot - y_n) / (z_pivot - y_p) + eps_n_y
-        )
+        # Field 6: pivot on eps_n_y point or eps_n_b
+        n = 40  # 8
+        # If reinforced concrete section pivot on eps_n_y (default -0.002)
+        # otherwise pivot on eps_n_b (in top chord)
+        if self.section.geometry.reinforced_concrete:
+            z_pivot = y_n - (1 - eps_n_y / eps_n_b) * h
+            eps_p_6 = np.linspace(eps_p_lim, eps_n_y, n, endpoint=True)
+            eps_n_6 = (
+                -(eps_n_y - eps_p_6) * (z_pivot - y_n) / (z_pivot - y_p)
+                + eps_n_y
+            )
+        else:
+            eps_n_6 = np.zeros(n) + eps_n_b
+            eps_p_6 = np.linspace(eps_p_lim, eps_n_b, n, endpoint=False)
         eps_n = np.append(eps_n, eps_n_6)
         eps_p = np.append(eps_p, eps_p_6)
+
         # rotate them
         kappa_y = (eps_n - eps_p) / (y_n - y_p)
         eps_a = eps_n - kappa_y * y_n

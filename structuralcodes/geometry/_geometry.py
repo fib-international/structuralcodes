@@ -19,6 +19,7 @@ from shapely.geometry import (
 from shapely.ops import split
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.materials.concrete import Concrete
 
 # Useful classes and functions: where to put?????? (core?
 # utility folder in sections? here in this file?)
@@ -253,7 +254,10 @@ class SurfaceGeometry:
     """
 
     def __init__(
-        self, poly: Polygon, mat: t.Union[Material, ConstitutiveLaw]
+        self,
+        poly: Polygon,
+        mat: t.Union[Material, ConstitutiveLaw],
+        concrete: bool = False,
     ) -> None:
         """Initializes a SurfaceGeometry object.
 
@@ -278,8 +282,12 @@ class SurfaceGeometry:
         self.polygon = poly
         # Pass a constitutive law to the SurfaceGeometry
         if isinstance(mat, Material):
+            if isinstance(mat, Concrete):
+                concrete = True
             mat = mat.constitutive_law
+
         self.material = mat
+        self.concrete = concrete
 
     @property
     def area(self) -> float:
@@ -539,6 +547,7 @@ class CompoundGeometry(Geometry):
                 for pg in self.point_geometries
             ]
             self.geom = MultiPolygon(geoms_representation)
+        self._reinforced_concrete = None
 
     # we can add here static methods like
     # from_dxf
@@ -548,6 +557,17 @@ class CompoundGeometry(Geometry):
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
         return str(self.geom._repr_svg_())
+
+    @property
+    def reinforced_concrete(self) -> bool:
+        """Returns True if it is a Reinforced Concrete section."""
+        if self._reinforced_concrete is None:
+            self._reinforced_concrete = False
+            for geo in self.geometries:
+                if geo.concrete:
+                    self._reinforced_concrete = True
+                    break
+        return self._reinforced_concrete
 
     @property
     def area(self) -> float:
