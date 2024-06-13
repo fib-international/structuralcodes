@@ -116,6 +116,9 @@ class NmmInteractionDomain:
     n_theta: int = 0  # number of discretizations along the angle
     n_axial: int = 0  # number of discretizations along axial load axis
 
+    strains: ArrayLike = None  # array with shape (n,3) containing strains
+    forces: ArrayLike = None  # array with shape(n,3) containing N, My, Mz
+
 
 @dataclass
 class NmInteractionDomain:
@@ -135,3 +138,7 @@ class MmInteractionDomain:
 
     n_theta: float = 0  # number of discretizations along the angle
     n: float = 0  # axial load
+
+    theta: ArrayLike = None  # Angle theta respect axis Y
+    m_y: ArrayLike = None  # Moments My
+    m_z: ArrayLike = None  # Moments Mz

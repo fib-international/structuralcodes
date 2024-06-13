@@ -585,6 +585,53 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
+    def calculate_interaction_domain_2(
+        self, theta: float = 0, n_axial: int = 100
+    ) -> s_res.NmInteractionDomain:
+        """Calculate the NM interaction domain (attempt to make it faster).
+
+        Arguments:
+        theta (float, default = 0): inclination of n.a. respect to y axis
+        n_axial (int, default = 100): number of discretization for axial load
+
+        Return:
+        (NmInteractionDomain)
+        """
+        # Prepare the results
+        res = s_res.NmInteractionDomain()
+        res.theta = theta
+        # with this version really n_axial is not used unless we perform
+        # some resampling after computation?
+        res.n_axial = n_axial
+
+        # Get ultimate strain profiles for theta angle
+        strains = self._compute_ultimate_strain_profiles(theta=theta)
+
+        # integrate all strain profiles
+        forces = np.zeros_like(strains)
+        for i in range(strains.shape[0]):
+            N, My, Mz, tri = (
+                self.integrator.integrate_strain_response_on_geometry(
+                    geo=self.section.geometry,
+                    strain=strains[i, :],
+                    tri=self.triangulated_data,
+                )
+            )
+            if self.triangulated_data is None:
+                self.triangulated_data = tri
+            forces[i, 0] = N
+            forces[i, 1] = My
+            forces[i, 2] = Mz
+
+        # Save to results
+        res.strains = strains
+        res.forces = forces
+        res.m_z = forces[:, 2]
+        res.m_y = forces[:, 1]
+        res.n = forces[:, 0]
+
+        return res
+
     def _compute_ultimate_strain_profiles(self, theta: float = 0):
         """Return an array of ultimate strain profiles.
 
@@ -694,6 +741,35 @@ class GenericSectionCalculator(SectionCalculator):
         # Save to results
         res.strains = strains
         res.forces = forces
+
+        return res
+
+    def calculate_mm_interaction_domain(
+        self, n: float = 0, n_theta: int = 32
+    ) -> s_res.MmInteractionDomain:
+        """Calculate the My-Mz interaction domain.
+
+        Arguments:
+        n (float, default = 0): axial force
+        n_theta (int, default = 32): number of discretization for theta
+
+        Return:
+        (MmInteractionDomain)
+        """
+        # Prepare the results
+        res = s_res.NmInteractionDomain()
+        res.n_theta = n_theta
+        res.n = n
+        # Create array of thetas
+        res.theta = np.linspace(0, np.pi * 2, n_theta)
+        # Initialize the result's arrays
+        res.m_y = np.zeros_like(res.theta)
+        res.m_z = np.zeros_like(res.theta)
+        # Compute strength for given angle of NA
+        for i, th in enumerate(res.theta):
+            res_bend_strength = self.calculate_bending_strength(theta=th, n=n)
+            res.m_y[i] = res_bend_strength.m_y
+            res.m_z[i] = res_bend_strength.m_z
 
         return res
 
