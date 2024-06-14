@@ -26,8 +26,8 @@ from structuralcodes.materials.constitutive_laws import (
 )
 def test_elastic_floats(E, strain, expected):
     """Test the elastic material."""
-    assert math.isclose(Elastic(E).get_stress(strain), expected)
-    assert math.isclose(Elastic(E).get_tangent(), E)
+    assert math.isclose(Elastic(E).get_stress(strain)[0], expected)
+    assert math.isclose(Elastic(E).get_tangent(strain)[0], E)
     assert math.isclose(Elastic(E).get_ultimate_strain()[0], 100)
     assert math.isclose(Elastic(E).get_ultimate_strain()[1], -100)
 
@@ -126,7 +126,7 @@ def test_elasticplastic_input_correct():
 )
 def test_elasticplastic_get_tangent(E, fy, strain, expected):
     """Test the elasticPlastic material."""
-    assert math.isclose(ElasticPlastic(E, fy).get_tangent(strain), expected)
+    assert math.isclose(ElasticPlastic(E, fy).get_tangent(strain)[0], expected)
 
 
 @pytest.mark.parametrize(

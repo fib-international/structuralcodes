@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import typing as t
+import warnings
 from math import cos, sin
 
 import numpy as np
+from shapely import MultiPolygon
+from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
 from structuralcodes.core.base import Section, SectionCalculator
@@ -14,6 +17,7 @@ from structuralcodes.geometry import (
     PointGeometry,
     SurfaceGeometry,
 )
+from structuralcodes.materials.constitutive_laws import Elastic
 
 from .section_integrators import integrator_factory
 
@@ -96,9 +100,147 @@ class GenericSectionCalculator(SectionCalculator):
         """
         # It will use the algorithms for generic sections
         gp = s_res.GrossProperties()
-        # Here compute area, centroid and other stuff from gross properties
-        # 1. Computation of area
+
+        # Computation of perimeter using shapely
+        polygon = unary_union(
+            [geo.polygon for geo in self.section.geometry.geometries]
+        )
+        if isinstance(polygon, MultiPolygon):
+            gp.perimeter = 0.0
+            warnings.warn(
+                'Perimiter computation for a multi polygon is not defined.'
+            )
+
+        gp.perimeter = polygon.exterior.length
+
+        # Computation of area: this is taken directly from shapely
         gp.area = self.section.geometry.area
+        # Computation of surface area, reinforcement area, EA (axial rigidity)
+        # and mass: Morten -> problem with units! how do we deal with it?
+        for geo in self.section.geometry.geometries:
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.area_surface += geo.area
+            if geo.density is not None:
+                # this assumes area in mm2 and density in kg/m3
+                gp.mass += geo.area * geo.density * 1e-9
+
+        for geo in self.section.geometry.point_geometries:
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.area_reinforcement += geo.area
+            if geo.density is not None:
+                # this assumes area in mm2 and density in kg/m3
+                gp.mass += geo.area * geo.density * 1e-9
+
+        # Computation of area moments
+        #
+        # Implementation idea:
+        # Using integrator: we need to compute the following integrals:
+        # E Sy = integr(E*z*dA)
+        # E Sz = integr(E*y*dA)
+        # E Iyy = integr(E*z*z*dA)
+        # E Izz = integr(E*y*y*dA)
+        # E Iyz = integr(E*y*z*dA)
+        #
+        # The first can be imagined as computing axial force
+        # by integration of a E*z stress;
+        # since eps = eps_a + ky * z - kz * y
+        # E*z is the stress corresponding to an elastic material
+        # with stiffness E and strain equal to z (i.e. eps_a and kz = 0,
+        # ky = 1 )
+        #
+        # With the same idea we can integrate the other quantities.
+
+        def compute_area_moments(geometry, material=None):
+            # create a new dummy geometry from the original one
+            # with dummy material
+            geometry = geometry.from_geometry(
+                geo=geometry, new_material=material
+            )
+            # Integrate a dummy strain profile for getting first and
+            # second moment respect y axis and product moment
+            (
+                sy,
+                iyy,
+                iyz,
+                tri,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geometry,
+                [0, 1, 0],
+                tri=self.triangulated_data,
+                mesh_size=self.mesh_size,
+            )
+            if self.triangulated_data is None:
+                self.triangulated_data = tri
+            # Integrate a dummy strain profile for getting first
+            # and second moment respect z axis and product moment
+            (
+                sz,
+                izy,
+                izz,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geometry,
+                [0, 0, -1],
+                tri=self.triangulated_data,
+                mesh_size=self.mesh_size,
+            )
+            if abs(abs(izy) - abs(iyz)) > 1e-1:
+                error_str = 'Something went wrong with computation of '
+                error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
+                error_str += 'They should be equal but are not!'
+                raise RuntimeError(error_str)
+
+            return sy, sz, iyy, izz, iyz
+
+        # Create a dummy material for integration of area moments
+        # This is used for J, S etc, not for E_J E_S etc
+        dummy_mat = Elastic(E=1)
+        # Computation of moments of area (material-independet)
+        # Note: this could be un-meaningfull when many materials
+        # are combined
+        gp.sy, gp.sz, gp.iyy, gp.izz, gp.iyz = compute_area_moments(
+            geometry=self.section.geometry, material=dummy_mat
+        )
+
+        # Computation of moments of area times E
+        gp.e_sy, gp.e_sz, gp.e_iyy, gp.e_izz, gp.e_iyz = compute_area_moments(
+            geometry=self.section.geometry
+        )
+
+        # Compute Centroid coordinates
+        gp.cy = gp.e_sz / gp.ea
+        gp.cz = gp.e_sy / gp.ea
+
+        # Compute of moments of area relative to yz centroidal axes
+        translated_geometry = self.section.geometry.translate(
+            dx=-gp.cy, dy=-gp.cz
+        )
+        _, _, gp.iyy_c, gp.izz_c, gp.iyz_c = compute_area_moments(
+            geometry=translated_geometry, material=dummy_mat
+        )
+
+        # Computation of moments of area times E
+        _, _, gp.e_iyy_c, gp.e_izz_c, gp.e_iyz_c = compute_area_moments(
+            geometry=translated_geometry
+        )
+
+        # Compute principal axes of inertia and principal inertia
+        def find_principal_axes_moments(iyy, izz, iyz):
+            eigres = np.linalg.eig(np.array([[iyy, iyz], [iyz, izz]]))
+            max_idx = np.argmax(eigres[0])
+            min_idx = 0 if max_idx == 1 else 1
+            i11 = eigres[0][max_idx]
+            i22 = eigres[0][min_idx]
+            theta = np.arccos(np.dot(np.array([1, 0]), eigres[1][:, max_idx]))
+            return i11, i22, theta
+
+        gp.i11, gp.i22, gp.theta = find_principal_axes_moments(
+            gp.iyy_c, gp.izz_c, gp.iyz_c
+        )
+        gp.e_i11, gp.e_i22, gp.e_theta = find_principal_axes_moments(
+            gp.e_iyy_c, gp.e_izz_c, gp.e_iyz_c
+        )
+
         return gp
 
     def get_balanced_failure_strain(
