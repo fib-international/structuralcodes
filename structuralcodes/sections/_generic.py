@@ -581,37 +581,6 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_nm_interaction_domain_slow(
-        self, theta: float = 0, num_axial: int = 100
-    ) -> s_res.NMInteractionDomain:
-        """Calculate the NM interaction domain.
-
-        Arguments:
-        theta (float, default = 0): inclination of n.a. respect to y axis
-        n_axial (int, default = 100): number of discretization for axial load
-
-        Return:
-        (NmInteractionDomain)
-        """
-        # Prepare the results
-        res = s_res.NMInteractionDomain()
-        res.theta = theta
-        res.num_axial = num_axial
-        # Create an array of axial loads
-        res.n = np.linspace(self.n_min, self.n_max, num_axial)
-        # Initialize the result's arrays
-        res.m_y = np.zeros_like(res.n)
-        res.m_z = np.zeros_like(res.n)
-        # Compute strength for given angle of NA
-        for i, n_i in enumerate(res.n):
-            res_bend_strength = self.calculate_bending_strength(
-                theta=theta, n=n_i
-            )
-            res.m_y[i] = res_bend_strength.m_y
-            res.m_z[i] = res_bend_strength.m_z
-
-        return res
-
     def calculate_nm_interaction_domain(
         self, theta: float = 0, num_axial: int = 100
     ) -> s_res.NMInteractionDomain:
@@ -636,11 +605,11 @@ class GenericSectionCalculator(SectionCalculator):
 
         # integrate all strain profiles
         forces = np.zeros_like(strains)
-        for i in range(strains.shape[0]):
+        for i, strain in enumerate(strains):
             N, My, Mz, tri = (
                 self.integrator.integrate_strain_response_on_geometry(
                     geo=self.section.geometry,
-                    strain=strains[i, :],
+                    strain=strain,
                     tri=self.triangulated_data,
                 )
             )
@@ -759,11 +728,11 @@ class GenericSectionCalculator(SectionCalculator):
 
         # integrate all strain profiles
         forces = np.zeros_like(strains)
-        for i in range(strains.shape[0]):
+        for i, strain in enumerate(strains):
             N, My, Mz, tri = (
                 self.integrator.integrate_strain_response_on_geometry(
                     geo=self.section.geometry,
-                    strain=strains[i, :],
+                    strain=strain,
                     tri=self.triangulated_data,
                 )
             )

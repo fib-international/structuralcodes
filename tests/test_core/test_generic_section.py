@@ -113,40 +113,22 @@ def test_rectangular_section_mn_domain():
     sec_marin = GenericSection(geo)
 
     # Compute MN domain
-    # slow version
-    mn_res_marin_s = (
-        sec_marin.section_analyzer.calculate_nm_interaction_domain_slow(
-            theta=0
-        )
-    )
-    # fast version
-    mn_res_marin_f = (
-        sec_marin.section_analyzer.calculate_nm_interaction_domain(theta=0)
+    mn_res_marin = sec_marin.section_analyzer.calculate_nm_interaction_domain(
+        theta=0
     )
 
     # Use fiber integration
     sec_fiber = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
 
     # compute MN domain
-    # slow version
-    mn_res_fiber_s = (
-        sec_fiber.section_analyzer.calculate_nm_interaction_domain_slow(
-            theta=0
-        )
-    )
     # Fast version
-    mn_res_fiber_f = (
-        sec_fiber.section_analyzer.calculate_nm_interaction_domain(theta=0)
+    mn_res_fiber = sec_fiber.section_analyzer.calculate_nm_interaction_domain(
+        theta=0
     )
 
     assert math.isclose(
-        mn_res_marin_s.m_y.flat[np.abs(mn_res_marin_s.m_y).argmax()],
-        mn_res_fiber_s.m_y.flat[np.abs(mn_res_fiber_s.m_y).argmax()],
-        rel_tol=2e-2,
-    )
-    assert math.isclose(
-        mn_res_marin_f.m_y.flat[np.abs(mn_res_marin_f.m_y).argmax()],
-        mn_res_fiber_f.m_y.flat[np.abs(mn_res_fiber_f.m_y).argmax()],
+        mn_res_marin.m_y.flat[np.abs(mn_res_marin.m_y).argmax()],
+        mn_res_fiber.m_y.flat[np.abs(mn_res_fiber.m_y).argmax()],
         rel_tol=2e-2,
     )
 
