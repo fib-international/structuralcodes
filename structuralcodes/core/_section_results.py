@@ -1,7 +1,7 @@
 """Results."""
 
 # import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field, fields
 
 from numpy.typing import ArrayLike
 
@@ -11,36 +11,98 @@ class GrossProperties:
     """Simple dataclass for storing gross section properties."""
 
     # section areas
-    area: float = 0
-    area_concrete: float = 0
-    area_reinforcement: float = 0
+    area: float = field(default=0, metadata={'description': 'Total area'})
+    area_surface: float = field(
+        default=0, metadata={'description': 'Surface area'}
+    )
+    area_reinforcement: float = field(
+        default=0, metadata={'description': 'Reinforcement area'}
+    )
 
     # axial rigidity
-    ea: float = 0
+    ea: float = field(
+        default=0, metadata={'description': 'Axial rigidity (E * A)'}
+    )
+    # ea = {'value': 0, 'description': 'Axial rigidity (E_A)'}
 
     # section mass
-    mass: float = 0
+    mass: float = field(
+        default=0, metadata={'description': 'Mass per unit length'}
+    )
 
     # section perimeter
-    perimeter: float = 0
+    perimeter: float = field(default=0, metadata={'description': 'Perimeter'})
 
     # first moments of area
-    sy: float = 0
-    sz: float = 0
+    # global axes of section
+    sy: float = field(
+        default=0, metadata={'description': 'First moment of area (Sy)'}
+    )
+    sz: float = field(
+        default=0, metadata={'description': 'Second moment of area (Sz)'}
+    )
+
+    # first moments of area * E
+    # global axes of section
+    e_sy: float = field(default=0, metadata={'description': 'E * Sy'})
+    e_sz: float = field(default=0, metadata={'description': 'E * Sz'})
 
     # centroids
-    cy: float = 0
-    cz: float = 0
+    cy: float = field(
+        default=0, metadata={'description': 'Centroid y Coordinate'}
+    )
+    cz: float = field(
+        default=0, metadata={'description': 'Centroid z Coordinate'}
+    )
 
     # second moments of area
-    i_yy: float = 0  # strong axis
-    i_zz: float = 0  # weak axis
-    i_yz: float = 0
-    # TODO: principal axes i_11 i_22 and angle
+    # global axes of section
+    iyy: float = field(
+        default=0, metadata={'description': 'Second moment (Iyy)'}
+    )
+    izz: float = field(
+        default=0, metadata={'description': 'Second moment (Izz)'}
+    )
+    iyz: float = field(
+        default=0, metadata={'description': 'Product moment (Iyz)'}
+    )
+    # centroidal axes of section
+    iyy_c: float = field(
+        default=0, metadata={'description': 'Centroidal Second moment (Iyy_c)'}
+    )
+    izz_c: float = field(
+        default=0, metadata={'description': 'Centroidal Second moment (Izz_c)'}
+    )
+    iyz_c: float = field(
+        default=0,
+        metadata={'description': 'Centroidal Product moment (Iyz_c)'},
+    )
+    # principal axes of section
+    i11: float = field(
+        default=0, metadata={'description': 'Principal Second Moment (I11)'}
+    )
+    i22: float = field(
+        default=0, metadata={'description': 'Principal Second Moment (I22)'}
+    )
+    theta: float = field(
+        default=0, metadata={'description': 'Principal axis angle (theta)'}
+    )
 
     # section flexural rigidity
-    ei_yy: float = 0
-    ei_zz: float = 0
+    # global axes of section
+    e_iyy: float = field(default=0, metadata={'description': 'E * Iyy'})
+    e_izz: float = field(default=0, metadata={'description': 'E * Izz'})
+    e_iyz: float = field(default=0, metadata={'description': 'E * Iyz'})
+    # centroidal axes of section
+    e_iyy_c: float = field(default=0, metadata={'description': 'E * Iyy_c'})
+    e_izz_c: float = field(default=0, metadata={'description': 'E * Izz_c'})
+    e_iyz_c: float = field(default=0, metadata={'description': 'E * Iyz_c'})
+    # principal axes of section
+    e_i11: float = field(default=0, metadata={'description': 'E * I11'})
+    e_i22: float = field(default=0, metadata={'description': 'E * I22'})
+    e_theta: float = field(
+        default=0, metadata={'description': 'Principal axis angle (theta)'}
+    )
 
     def __format__(self, spec: str) -> str:
         """Defines the format for returning the string representation.
@@ -49,7 +111,13 @@ class GrossProperties:
         spec: the string specifying the format
         """
         output_string = 'Gross Concrete Section Properties:\n'
-        output_string += f'Total area: {self.area:{spec}}'
+        for f in fields(self):
+            value = getattr(self, f.name)
+            description = f.metadata.get(
+                'description', 'No description available'
+            )
+            output_string += f'{description}: {value:{spec}}\n'
+
         # etc. all other characteristics
         return output_string
 
