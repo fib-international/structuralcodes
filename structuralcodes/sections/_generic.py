@@ -170,11 +170,8 @@ class GenericSectionCalculator(SectionCalculator):
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 1, 0],
-                tri=self.triangulated_data,
                 mesh_size=self.mesh_size,
             )
-            if self.triangulated_data is None:
-                self.triangulated_data = tri
             # Integrate a dummy strain profile for getting first
             # and second moment respect z axis and product moment
             (
@@ -185,7 +182,7 @@ class GenericSectionCalculator(SectionCalculator):
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 0, -1],
-                tri=self.triangulated_data,
+                tri=tri,
                 mesh_size=self.mesh_size,
             )
             if abs(abs(izy) - abs(iyz)) > 1e-1:
@@ -194,7 +191,7 @@ class GenericSectionCalculator(SectionCalculator):
                 error_str += 'They should be equal but are not!'
                 raise RuntimeError(error_str)
 
-            return sy, sz, iyy, izz, iyz
+            return abs(sy), abs(sz), abs(iyy), abs(izz), abs(iyz)
 
         # Create a dummy material for integration of area moments
         # This is used for J, S etc, not for E_J E_S etc
@@ -501,8 +498,9 @@ class GenericSectionCalculator(SectionCalculator):
         y_n, y_p, strain = self.get_balanced_failure_strain(
             geom=self.section.geometry, yielding=False
         )
-        eps_p = strain[0] + strain[1] * y_p
-        eps_n = strain[0] + strain[1] * y_n
+        eps_p = strain[0] + strain[1] * y_p * (1 - 1e-8)
+        eps_n = strain[0] + strain[1] * y_n * (1 - 1e-8)
+
         n_min, _, _, tri = (
             self.integrator.integrate_strain_response_on_geometry(
                 self.section.geometry,
