@@ -5,6 +5,7 @@ import typing as t
 import warnings
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 import structuralcodes.core._section_results as s_res
 
@@ -100,6 +101,20 @@ class ConstitutiveLaw(abc.ABC):
         """Each constitutive law should provide a method to return the
         ultimate strain (positive and negative).
         """
+
+    def preprocess_strains_with_limits(self, eps: ArrayLike) -> ArrayLike:
+        """Preprocess strain arrays setting those strains sufficiently
+        near to ultimate strain limits to exactly ultimate strain limit.
+        """
+        eps = np.atleast_1d(np.asarray(eps))
+        eps_max, eps_min = self.get_ultimate_strain()
+
+        idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
+        eps[idxs] = eps_max
+        idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
+        eps[idxs] = eps_min
+
+        return eps
 
     def __marin__(self, **kwargs):
         """Function for getting the strain limits and coefficients

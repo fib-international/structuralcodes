@@ -130,13 +130,16 @@ class ElasticPlastic(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         sig = self._E * eps
         delta_sig = self._fy * (1 - self._Eh / self._E)
         sig[sig < -self._fy] = eps[sig < -self._fy] * self._Eh - delta_sig
         sig[sig > self._fy] = eps[sig > self._fy] * self._Eh + delta_sig
         if self._eps_su is not None:
-            sig[eps > (self._eps_su * 1.01)] = 0
-            sig[eps < (-self._eps_su * 1.01)] = 0  # pylint: disable=E1130
+            sig[eps > self._eps_su] = 0
+            sig[eps < -self._eps_su] = 0  # pylint: disable=E1130
         return sig
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
@@ -170,6 +173,7 @@ class ElasticPlastic(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # Understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
             if strain[0] > eps_sy_p and strain[0] <= eps_su_p:
                 # We are in the Hardening part positive
                 strains = None
@@ -260,6 +264,9 @@ class ParabolaRectangle(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         # Parabolic branch
         sig = self._fc * (1 - (1 - (eps / self._eps_0)) ** self._n)
         # Rectangle branch
@@ -304,6 +311,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
             if strain[0] > 0:
                 # We are in tensile branch
                 strains = None
@@ -326,7 +334,7 @@ class ParabolaRectangle(ConstitutiveLaw):
                     * (1 - strain[0] / self._eps_0)
                 )
                 coeff.append((a0, a1, 0.0))
-            elif strain[0] > self._eps_u:
+            elif strain[0] >= self._eps_u:
                 # We are in the constant branch
                 strains = None
                 coeff.append((self._fc,))
@@ -412,6 +420,9 @@ class Sargin(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given the strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         # Polynomial branch
         eta = eps / self._eps_c1
 
@@ -535,6 +546,9 @@ class UserDefined(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         return np.interp(eps, self._x, self._y, left=0, right=0)
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
@@ -576,6 +590,7 @@ class UserDefined(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
             found = False
             for i in range(len(self._x) - 1):
                 if self._x[i] <= strain[0] and self._x[i + 1] >= strain[0]:

@@ -498,8 +498,8 @@ class GenericSectionCalculator(SectionCalculator):
         y_n, y_p, strain = self.get_balanced_failure_strain(
             geom=self.section.geometry, yielding=False
         )
-        eps_p = strain[0] + strain[1] * y_p * (1 - 1e-8)
-        eps_n = strain[0] + strain[1] * y_n * (1 - 1e-8)
+        eps_p = strain[0] + strain[1] * y_p
+        eps_n = strain[0] + strain[1] * y_n
 
         n_min, _, _, tri = (
             self.integrator.integrate_strain_response_on_geometry(
