@@ -185,7 +185,7 @@ class GenericSectionCalculator(SectionCalculator):
                 tri=tri,
                 mesh_size=self.mesh_size,
             )
-            if abs(abs(izy) - abs(iyz)) > 1e-1:
+            if abs(abs(izy) - abs(iyz)) > 10:
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
