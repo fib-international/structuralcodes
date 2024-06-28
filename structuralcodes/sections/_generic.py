@@ -57,9 +57,16 @@ class GenericSection(Section):
         self.section_analyzer = GenericSectionCalculator(
             sec=self, integrator=integrator, **kwargs
         )
-        self.gross_properties = (
-            self.section_analyzer._calculate_gross_section_properties()
-        )
+        self._gross_properties = None
+
+    @property
+    def gross_properties(self) -> s_res.GrossProperties:
+        """Return the gross properties of the section."""
+        if self._gross_properties is None:
+            self._gross_properties = (
+                self.section_analyzer._calculate_gross_section_properties()
+            )
+        return self._gross_properties
 
 
 class GenericSectionCalculator(SectionCalculator):
