@@ -17,6 +17,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
+    Elastic,
     ElasticPlastic,
     ParabolaRectangle,
 )
@@ -438,3 +439,128 @@ def test_sub_geometries():
         translate(poly_2, xoff=100),
         normalize=True,
     )
+
+
+@pytest.mark.parametrize(
+    'w, h',
+    [
+        (100, 300),
+        (200, 500),
+        (400, 200),
+        (500, 300),
+    ],
+)
+def test_extents_calculation(w, h):
+    """Test extents calculation for SurfaceGeometry and CompoundGeometry."""
+    mat = Elastic(E=206000)
+    # Create a rectangle
+    geo_rect = SurfaceGeometry(
+        Polygon(
+            [
+                (-w / 2, -h / 2),
+                (w / 2, -h / 2),
+                (w / 2, h / 2),
+                (-w / 2, h / 2),
+            ]
+        ),
+        mat,
+    )
+    x_min, x_max, y_min, y_max = geo_rect.calculate_extents()
+    assert math.isclose(x_min, -w / 2, rel_tol=1e-5)
+    assert math.isclose(x_max, w / 2, rel_tol=1e-5)
+    assert math.isclose(y_min, -h / 2, rel_tol=1e-5)
+    assert math.isclose(y_max, h / 2, rel_tol=1e-5)
+
+    geo_rect = geo_rect.translate(w / 2, h / 2)
+    x_min, x_max, y_min, y_max = geo_rect.calculate_extents()
+    assert math.isclose(x_min, 0, abs_tol=1e-5)
+    assert math.isclose(x_max, w, rel_tol=1e-5)
+    assert math.isclose(y_min, 0, abs_tol=1e-5)
+    assert math.isclose(y_max, h, rel_tol=1e-5)
+
+    comp_geo = CompoundGeometry([geo_rect])
+    x_min, x_max, y_min, y_max = comp_geo.calculate_extents()
+    assert math.isclose(x_min, 0, abs_tol=1e-5)
+    assert math.isclose(x_max, w, rel_tol=1e-5)
+    assert math.isclose(y_min, 0, abs_tol=1e-5)
+    assert math.isclose(y_max, h, rel_tol=1e-5)
+
+
+@pytest.mark.parametrize(
+    'w, h, c',
+    [
+        (100, 300, 40),
+        (200, 500, 40),
+        (400, 200, 40),
+        (500, 300, 40),
+    ],
+)
+def test_property_reinforced_concrete(w, h, c):
+    """Test property reinforced_concrete."""
+    mat = Elastic(E=206000)
+    # Create a rectangle
+    geo_rect = SurfaceGeometry(
+        Polygon(
+            [
+                (-w / 2, -h / 2),
+                (w / 2, -h / 2),
+                (w / 2, h / 2),
+                (-w / 2, h / 2),
+            ]
+        ),
+        mat,
+    )
+    steel = Elastic(E=206000)
+    geo_rc = add_reinforcement_line(
+        geo_rect,
+        (-w / 2 + c, -h / 2 + c),
+        (w / 2 + c, -h / 2 + c),
+        20,
+        steel,
+        n=4,
+    )
+    assert not geo_rc.reinforced_concrete
+
+    geo_rect = SurfaceGeometry(
+        poly=Polygon(
+            [
+                (-w / 2, -h / 2),
+                (w / 2, -h / 2),
+                (w / 2, h / 2),
+                (-w / 2, h / 2),
+            ]
+        ),
+        mat=mat,
+        concrete=True,
+    )
+    geo_rc = add_reinforcement_line(
+        geo_rect,
+        (-w / 2 + c, -h / 2 + c),
+        (w / 2 + c, -h / 2 + c),
+        20,
+        steel,
+        n=4,
+    )
+    assert geo_rc.reinforced_concrete
+
+    mat = ConcreteMC2010(fck=35)
+    geo_rect = SurfaceGeometry(
+        poly=Polygon(
+            [
+                (-w / 2, -h / 2),
+                (w / 2, -h / 2),
+                (w / 2, h / 2),
+                (-w / 2, h / 2),
+            ]
+        ),
+        mat=mat,
+    )
+    geo_rc = add_reinforcement_line(
+        geo_rect,
+        (-w / 2 + c, -h / 2 + c),
+        (w / 2 + c, -h / 2 + c),
+        20,
+        steel,
+        n=4,
+    )
+    assert geo_rc.reinforced_concrete

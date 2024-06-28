@@ -7,6 +7,7 @@ import warnings
 from math import cos, sin
 
 import numpy as np
+from numpy.typing import ArrayLike
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -34,9 +35,9 @@ class GenericSection(Section):
         geometry: (SurfaceGeometry or CompoundGeometry)
             the geometry of the section
         name: (str) the name of the section
-        section_analyzer: (GenericSectionCalculator)
+        section_calculator: (GenericSectionCalculator)
             the object responsible for performing different
-            computations on the section (e.g. bending strength,
+            calculations on the section (e.g. bending strength,
             moment curvature, etc.)
         gross_properties: (GrossProperties)
             the results of gross properties computation
@@ -53,12 +54,19 @@ class GenericSection(Section):
             name = 'GenericSection'
         super().__init__(name)
         self.geometry = geometry
-        self.section_analyzer = GenericSectionCalculator(
+        self.section_calculator = GenericSectionCalculator(
             sec=self, integrator=integrator, **kwargs
         )
-        self.gross_properties = (
-            self.section_analyzer._calculate_gross_section_properties()
-        )
+        self._gross_properties = None
+
+    @property
+    def gross_properties(self) -> s_res.GrossProperties:
+        """Return the gross properties of the section."""
+        if self._gross_properties is None:
+            self._gross_properties = (
+                self.section_calculator._calculate_gross_section_properties()
+            )
+        return self._gross_properties
 
 
 class GenericSectionCalculator(SectionCalculator):
@@ -85,9 +93,12 @@ class GenericSectionCalculator(SectionCalculator):
         # Select the integrator if specified
         self.integrator = integrator_factory(integrator)()
         # Mesh size used for Fibre integrator
-        self.mesh_size = kwargs.get('mesh_size', 0.001)
+        self.mesh_size = kwargs.get('mesh_size', 0.01)
         # triangulated_data used for Fibre integrator
         self.triangulated_data = None
+        # Maximum and minimum axial load
+        self._n_max = None
+        self._n_min = None
 
     def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
         """Calculates the gross section properties of the GenericSection.
@@ -166,11 +177,8 @@ class GenericSectionCalculator(SectionCalculator):
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 1, 0],
-                tri=self.triangulated_data,
                 mesh_size=self.mesh_size,
             )
-            if self.triangulated_data is None:
-                self.triangulated_data = tri
             # Integrate a dummy strain profile for getting first
             # and second moment respect z axis and product moment
             (
@@ -181,16 +189,16 @@ class GenericSectionCalculator(SectionCalculator):
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 0, -1],
-                tri=self.triangulated_data,
+                tri=tri,
                 mesh_size=self.mesh_size,
             )
-            if abs(abs(izy) - abs(iyz)) > 1e-1:
+            if abs(abs(izy) - abs(iyz)) > 10:
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
                 raise RuntimeError(error_str)
 
-            return sy, sz, iyy, izz, iyz
+            return abs(sy), abs(sz), abs(iyy), abs(izz), abs(iyz)
 
         # Create a dummy material for integration of area moments
         # This is used for J, S etc, not for E_J E_S etc
@@ -327,13 +335,12 @@ class GenericSectionCalculator(SectionCalculator):
             _,
             tri,
         ) = self.integrator.integrate_strain_response_on_geometry(
-            geom, strain, mesh_size=self.mesh_size
+            geom, strain, tri=self.triangulated_data, mesh_size=self.mesh_size
         )
-        self.triangulated_data = tri
         # Check if there is equilibrium with this strain distribution
         chi_a = strain[1]
         dn_a = n_int - n
-        # It may occur that dn_a is already almost zero (in eqiulibrium)
+        # It may occur that dn_a is already almost zero (in equilibrium)
         if abs(dn_a) <= 1e-2:
             # return the equilibrium position
             return [strain[0], chi_a, 0]
@@ -488,6 +495,91 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return [eps_0_c, curv, 0]
 
+    def calculate_limit_axial_load(self):
+        """Compute maximum and minimum axial load.
+
+        Returns:
+            (float, float) Minimum and Maximum axial load.
+        """
+        # Find balanced failure to get strain limits
+        y_n, y_p, strain = self.get_balanced_failure_strain(
+            geom=self.section.geometry, yielding=False
+        )
+        eps_p = strain[0] + strain[1] * y_p
+        eps_n = strain[0] + strain[1] * y_n
+
+        n_min, _, _, tri = (
+            self.integrator.integrate_strain_response_on_geometry(
+                self.section.geometry,
+                [eps_n, 0, 0],
+                tri=self.triangulated_data,
+                mesh_size=self.mesh_size,
+            )
+        )
+        n_max, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
+            self.section.geometry, [eps_p, 0, 0], tri=tri
+        )
+
+        if self.triangulated_data is None:
+            self.triangulated_data = tri
+        return n_min, n_max
+
+    @property
+    def n_min(self) -> float:
+        """Return minimum axial load."""
+        if self._n_min is None:
+            self._n_min, self._n_max = self.calculate_limit_axial_load()
+        return self._n_min
+
+    @property
+    def n_max(self) -> float:
+        """Return maximum axial load."""
+        if self._n_max is None:
+            self._n_min, self._n_max = self.calculate_limit_axial_load()
+        return self._n_max
+
+    def check_axial_load(self, n: float):
+        """Check if axial load n is within section limits."""
+        if n < self.n_min or n > self.n_max:
+            error_str = f'Axial load {n} cannot be taken by section.\n'
+            error_str += f'n_min = {self.n_min} / n_max = {self.n_max}'
+            raise ValueError(error_str)
+
+    def _rotate_triangulated_data(self, theta: float):
+        """Rotate triangulated data of angle theta."""
+        rotated_triangulated_data = []
+        for tr in self.triangulated_data:
+            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            coords = np.vstack((tr[0], tr[1]))
+            coords_r = T @ coords
+            rotated_triangulated_data.append(
+                (coords_r[0, :], coords_r[1, :], tr[2], tr[3])
+            )
+        self.triangulated_data = rotated_triangulated_data
+
+    def integrate_strain_profile(
+        self, strain: ArrayLike
+    ) -> t.Tuple[float, float, float]:
+        """Integrate a strain profile returning internal forces.
+
+        Args:
+            strain: (Array like) represents the deformation plane
+                    the strain should have three entries representing
+                    respectively:
+                    axial strain (At 0,0 coordinates)
+                    curv_y
+                    curv_z
+
+        Returns:
+            (float, float, float) N, My and Mz
+        """
+        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+            geo=self.section.geometry,
+            strain=strain,
+            tri=self.triangulated_data,
+        )
+        return N, My, Mz
+
     def calculate_bending_strength(
         self, theta=0, n=0
     ) -> s_res.UltimateBendingMomentResults:
@@ -506,6 +598,12 @@ class GenericSectionCalculator(SectionCalculator):
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
+        if self.triangulated_data is not None:
+            # Rotate also triangulated data!
+            self._rotate_triangulated_data(-theta)
+
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -514,9 +612,12 @@ class GenericSectionCalculator(SectionCalculator):
             geo=rotated_geom, strain=strain, tri=self.triangulated_data
         )
 
-        # Rotate back to section CRS
-        T = np.array([[cos(-theta), sin(-theta)], [-sin(-theta), cos(-theta)]])
+        # Rotate back to section CRS TODO Check
+        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
         M = T @ np.array([[My], [Mz]])
+        if self.triangulated_data is not None:
+            # Rotate back also triangulated data!
+            self._rotate_triangulated_data(theta)
 
         # Create result object
         res = s_res.UltimateBendingMomentResults()
@@ -549,6 +650,12 @@ class GenericSectionCalculator(SectionCalculator):
         res.n = n
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
+        if self.triangulated_data is not None:
+            # Rotate also triangulated data!
+            self._rotate_triangulated_data(-theta)
+
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
         # Find ultimate curvature from the strain distribution corresponding
         # to failure and equilibrium with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -601,9 +708,7 @@ class GenericSectionCalculator(SectionCalculator):
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
-            T = np.array(
-                [[cos(-theta), sin(-theta)], [-sin(-theta), cos(-theta)]]
-            )
+            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
             M = T @ np.array([[My], [Mz]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
@@ -612,6 +717,9 @@ class GenericSectionCalculator(SectionCalculator):
             chi_y[i] = chi_mat[0, 0]
             chi_z[i] = chi_mat[1, 0]
 
+        if self.triangulated_data is not None:
+            # Rotate back also triangulated data!
+            self._rotate_triangulated_data(theta)
         res.chi_y = chi_y
         res.chi_z = chi_z
         res.eps_axial = eps_a
@@ -620,9 +728,198 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
+    def calculate_nm_interaction_domain(
+        self, theta: float = 0, num_axial: int = 100
+    ) -> s_res.NMInteractionDomain:
+        """Calculate the NM interaction domain (attempt to make it faster).
 
-# Use examples:
+        Arguments:
+        theta (float, default = 0): inclination of n.a. respect to y axis
+        n_axial (int, default = 100): number of discretization for axial load
 
-# sec = Section(...xxx...)
-# res = sec.section_analyzer.ultmateBendingStrength(n = -1000)
-# stress = sec.section_analyzer.compute_stress_distribution(res)
+        Return:
+        (NmInteractionDomain)
+        """
+        # Prepare the results
+        res = s_res.NMInteractionDomain()
+        res.theta = theta
+        # with this version really n_axial is not used unless we perform
+        # some resampling after computation?
+        res.num_axial = num_axial
+
+        # Get ultimate strain profiles for theta angle
+        strains = self._compute_ultimate_strain_profiles(theta=theta)
+
+        # integrate all strain profiles
+        forces = np.zeros_like(strains)
+        for i, strain in enumerate(strains):
+            N, My, Mz, tri = (
+                self.integrator.integrate_strain_response_on_geometry(
+                    geo=self.section.geometry,
+                    strain=strain,
+                    tri=self.triangulated_data,
+                )
+            )
+            if self.triangulated_data is None:
+                self.triangulated_data = tri
+            forces[i, 0] = N
+            forces[i, 1] = My
+            forces[i, 2] = Mz
+
+        # Save to results
+        res.strains = strains
+        res.forces = forces
+        res.m_z = forces[:, 2]
+        res.m_y = forces[:, 1]
+        res.n = forces[:, 0]
+
+        return res
+
+    def _compute_ultimate_strain_profiles(self, theta: float = 0):
+        """Return an array of ultimate strain profiles.
+
+        Args:
+        theta: (float) the angle of neutral axis
+        """
+        rotated_geom = self.section.geometry.rotate(-theta)
+
+        # Find yield failure
+        y_n, y_p, strain = self.get_balanced_failure_strain(
+            geom=rotated_geom, yielding=True
+        )
+        eps_p_y = strain[0] + strain[1] * y_p
+        eps_n_y = strain[0] + strain[1] * y_n
+        # Find balanced failure: this defines the transition
+        # between fields 2 and 3
+        y_n, y_p, strain = self.get_balanced_failure_strain(
+            geom=rotated_geom, yielding=False
+        )
+        eps_p_b = strain[0] + strain[1] * y_p
+        eps_n_b = strain[0] + strain[1] * y_n
+
+        # get h of the rotated geometry
+        _, _, min_y, _ = rotated_geom.calculate_extents()
+        h = y_n - min_y
+
+        # For generation of fields 1 and 2 pivot on positive strain
+        # Field 1: pivot on positive strain
+        n = 3
+        eps_n = np.linspace(eps_p_b, 0, n, endpoint=False)
+        eps_p = np.zeros_like(eps_n) + eps_p_b
+        # Field 2: pivot on positive strain
+        n = 10  # 10
+        eps_n = np.append(eps_n, np.linspace(0, eps_n_b, n, endpoint=False))
+        eps_p = np.append(eps_p, np.zeros(n) + eps_p_b)
+        # For fields 3-4-5 pivot on negative strain
+        # Field 3: pivot on negative strain
+        n = 40  # 40
+        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_p = np.append(
+            eps_p, np.linspace(eps_p_b, eps_p_y, n, endpoint=False)
+        )
+        # Field 4: pivot on negative strain
+        n = 10  # 6
+        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_p = np.append(eps_p, np.linspace(eps_p_y, 0, n, endpoint=False))
+        # Field 5: pivot on negative strain
+        n = 40  # 8
+        eps_p_lim = eps_n_b * (h - (y_n - y_p)) / h
+        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_p = np.append(eps_p, np.linspace(0, eps_p_lim, n, endpoint=False))
+        # Field 6: pivot on eps_n_y point or eps_n_b
+        n = 40  # 8
+        # If reinforced concrete section pivot on eps_n_y (default -0.002)
+        # otherwise pivot on eps_n_b (in top chord)
+        if self.section.geometry.reinforced_concrete:
+            z_pivot = y_n - (1 - eps_n_y / eps_n_b) * h
+            eps_p_6 = np.linspace(eps_p_lim, eps_n_y, n, endpoint=True)
+            eps_n_6 = (
+                -(eps_n_y - eps_p_6) * (z_pivot - y_n) / (z_pivot - y_p)
+                + eps_n_y
+            )
+        else:
+            eps_n_6 = np.zeros(n) + eps_n_b
+            eps_p_6 = np.linspace(eps_p_lim, eps_n_b, n, endpoint=False)
+        eps_n = np.append(eps_n, eps_n_6)
+        eps_p = np.append(eps_p, eps_p_6)
+
+        # rotate them
+        kappa_y = (eps_n - eps_p) / (y_n - y_p)
+        eps_a = eps_n - kappa_y * y_n
+        kappa_z = np.zeros_like(kappa_y)
+
+        # rotate back components to work in section CRS
+        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        components = np.vstack((kappa_y, kappa_z))
+        rotated_components = T @ components
+        return np.column_stack((eps_a, rotated_components.T))
+
+    def calculate_nmm_interaction_domain(
+        self, num_theta: int = 32, num_axial: int = 20
+    ) -> s_res.NMMInteractionDomain:
+        """Calculates the NMM interaction domain."""
+        res = s_res.NMMInteractionDomain()
+        res.num_theta = num_theta
+        # TODO: if we want to resample and structure better data we can
+        # use n_axial as the number of discretizations in axial direction
+        res.num_axial = num_axial
+
+        # cycle for all n_thetas
+        thetas = np.linspace(0, np.pi * 2, num_theta)
+        # Initialize an empty array with the correct shape
+        strains = np.empty((0, 3))
+        for theta in thetas:
+            # Get ultimate strain profiles for theta angle
+            strain = self._compute_ultimate_strain_profiles(theta=theta)
+            strains = np.vstack((strains, strain))
+
+        # integrate all strain profiles
+        forces = np.zeros_like(strains)
+        for i, strain in enumerate(strains):
+            N, My, Mz, tri = (
+                self.integrator.integrate_strain_response_on_geometry(
+                    geo=self.section.geometry,
+                    strain=strain,
+                    tri=self.triangulated_data,
+                )
+            )
+            if self.triangulated_data is None:
+                self.triangulated_data = tri
+            forces[i, 0] = N
+            forces[i, 1] = My
+            forces[i, 2] = Mz
+
+        # Save to results
+        res.strains = strains
+        res.forces = forces
+
+        return res
+
+    def calculate_mm_interaction_domain(
+        self, n: float = 0, num_theta: int = 32
+    ) -> s_res.MMInteractionDomain:
+        """Calculate the My-Mz interaction domain.
+
+        Arguments:
+        n (float, default = 0): axial force
+        n_theta (int, default = 32): number of discretization for theta
+
+        Return:
+        (MMInteractionDomain)
+        """
+        # Prepare the results
+        res = s_res.MMInteractionDomain()
+        res.num_theta = num_theta
+        res.n = n
+        # Create array of thetas
+        res.theta = np.linspace(0, np.pi * 2, num_theta)
+        # Initialize the result's arrays
+        res.m_y = np.zeros_like(res.theta)
+        res.m_z = np.zeros_like(res.theta)
+        # Compute strength for given angle of NA
+        for i, th in enumerate(res.theta):
+            res_bend_strength = self.calculate_bending_strength(theta=th, n=n)
+            res.m_y[i] = res_bend_strength.m_y
+            res.m_z[i] = res_bend_strength.m_z
+
+        return res

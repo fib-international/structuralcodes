@@ -25,23 +25,23 @@ class FiberIntegrator(SectionIntegrator):
         tri: dict[str:ArrayLike] = {}
         # 1. External boundary process
         # 1a. Get vertices, skipping the last one
-        vertices = np.stack(geo.polygon.exterior.xy, 1)[:-1, :]
+        vertices = np.column_stack(geo.polygon.exterior.xy)[:-1, :]
         n_vertices = vertices.shape[0]
         # 1b. Create segments
         node_i = np.arange(n_vertices)
         node_j = np.roll(node_i, -1)
-        segments = np.stack((node_i, node_j), 1)
+        segments = np.column_stack((node_i, node_j))
 
         # 2. Process holes
         holes = []
         for interior in geo.polygon.interiors:
             # 2a. Get vertices, skipping the last one
-            vertices_int = np.stack(interior.xy, 1)[:-1, :]
+            vertices_int = np.column_stack(interior.xy)[:-1, :]
             n_vertices_int = vertices_int.shape[0]
             # 2b. Create segments
             node_i = np.arange(n_vertices_int) + n_vertices
             node_j = np.roll(node_i, -1)
-            segments_int = np.stack((node_i, node_j), 1)
+            segments_int = np.column_stack((node_i, node_j))
             c = Polygon(interior)
             holes.append([c.centroid.x, c.centroid.y])
             # Append to the global arrays

@@ -19,6 +19,7 @@ from shapely.geometry import (
 from shapely.ops import split
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.materials.concrete import Concrete
 from structuralcodes.materials.constitutive_laws import Elastic
 
 # Useful classes and functions: where to put?????? (core?
@@ -327,6 +328,7 @@ class SurfaceGeometry:
         poly: Polygon,
         mat: t.Union[Material, ConstitutiveLaw],
         density: t.Optional[float] = None,
+        concrete: bool = False,
     ) -> None:
         """Initializes a SurfaceGeometry object.
 
@@ -358,8 +360,12 @@ class SurfaceGeometry:
         self._density = density
         if isinstance(mat, Material):
             self._density = mat.density
+            if isinstance(mat, Concrete):
+                concrete = True
             mat = mat.constitutive_law
+
         self.material = mat
+        self.concrete = concrete
 
     @property
     def area(self) -> float:
@@ -383,6 +389,18 @@ class SurfaceGeometry:
     def density(self) -> float:
         """Returns the density."""
         return self._density
+
+    def calculate_extents(self) -> tuple[float, float, float, float]:
+        """Calculate extents of SurfaceGeometry.
+
+        Calculates the minimum and maximum x and y values.
+
+        Returns:
+            Minimum and maximum x and y values (``x_min``, ``x_max``,
+            ``y_min``, ``y_max``)
+        """
+        min_x, min_y, max_x, max_y = self.polygon.bounds
+        return min_x, max_x, min_y, max_y
 
     def split(
         self, line: t.Union[LineString, t.Tuple[t.Tuple[float, float], float]]
@@ -655,6 +673,7 @@ class CompoundGeometry(Geometry):
                 for pg in self.point_geometries
             ]
             self.geom = MultiPolygon(geoms_representation)
+        self._reinforced_concrete = None
 
     # we can add here static methods like
     # from_dxf
@@ -666,12 +685,45 @@ class CompoundGeometry(Geometry):
         return str(self.geom._repr_svg_())
 
     @property
+    def reinforced_concrete(self) -> bool:
+        """Returns True if it is a Reinforced Concrete section."""
+        if self._reinforced_concrete is None:
+            self._reinforced_concrete = False
+            for geo in self.geometries:
+                if geo.concrete:
+                    self._reinforced_concrete = True
+                    break
+        return self._reinforced_concrete
+
+    @property
     def area(self) -> float:
         """Return the area of the compund geometry."""
         area = 0
         for geo in self.geometries:
             area += geo.area
         return area
+
+    def calculate_extents(self) -> tuple[float, float, float, float]:
+        """Calculate extents of CompundGeometry.
+
+        Calculates the minimum and maximum x and y-values.
+        Consideres only SurfaceGeometries and not points!
+
+        Returns:
+            Minimum and maximum x and y values (``x_min``, ``x_max``,
+            ``y_min``, ``y_max``)
+        """
+        min_x = 1e16
+        max_x = -1e16
+        min_y = 1e16
+        max_y = -1e16
+        for geo in self.geometries:
+            xmin, xmax, ymin, ymax = geo.calculate_extents()
+            min_x = min(min_x, xmin)
+            min_y = min(min_y, ymin)
+            max_x = max(max_x, xmax)
+            max_y = max(max_y, ymax)
+        return min_x, max_x, min_y, max_y
 
     def translate(self, dx: float = 0.0, dy: float = 0.0) -> CompoundGeometry:
         """Returns a new CompountGeometry that is translated by dx, dy.

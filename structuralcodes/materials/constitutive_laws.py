@@ -50,8 +50,7 @@ class Elastic(ConstitutiveLaw):
             [(a0, a1, a2), (a0)]
         """
         strains = None
-        y_na = -strain[0] / strain[1]
-        a0 = -self._E * y_na * strain[1]
+        a0 = self._E * strain[0]
         a1 = self._E * strain[1]
         coeff = [(a0, a1)]
         return strains, coeff
@@ -131,13 +130,16 @@ class ElasticPlastic(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         sig = self._E * eps
         delta_sig = self._fy * (1 - self._Eh / self._E)
         sig[sig < -self._fy] = eps[sig < -self._fy] * self._Eh - delta_sig
         sig[sig > self._fy] = eps[sig > self._fy] * self._Eh + delta_sig
         if self._eps_su is not None:
-            sig[eps > (self._eps_su * 1.01)] = 0
-            sig[eps < (-self._eps_su * 1.01)] = 0  # pylint: disable=E1130
+            sig[eps > self._eps_su] = 0
+            sig[eps < -self._eps_su] = 0  # pylint: disable=E1130
         return sig
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
@@ -166,26 +168,49 @@ class ElasticPlastic(ConstitutiveLaw):
         """
         strains = []
         coeff = []
-        y_na = -strain[0] / strain[1]
         eps_sy_p, eps_sy_n = self.get_ultimate_strain(yielding=True)
-        # y_yp = (strain[0] - eps_sy_p) / strain[1]
-        # y_yn = (strain[0] - eps_sy_n) / strain[1]
-        # Hardening part negative
         eps_su_p, eps_su_n = self.get_ultimate_strain()
-        strains.append((eps_su_n, eps_sy_n))
-        a0 = -self._Eh * y_na * strain[1] - self._fy * (1 - self._Eh / self._E)
-        a1 = self._Eh * strain[1]
-        coeff.append((a0, a1))
-        # Elastic part
-        strains.append((eps_sy_n, eps_sy_p))
-        a0 = -self._E * y_na * strain[1]
-        a1 = self._E * strain[1]
-        coeff.append((a0, a1))
-        # Hardening part positive
-        strains.append((eps_sy_p, eps_su_p))
-        a0 = -self._Eh * y_na * strain[1] + self._fy * (1 - self._Eh / self._E)
-        a1 = self._Eh * strain[1]
-        coeff.append((a0, a1))
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # Understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            if strain[0] > eps_sy_p and strain[0] <= eps_su_p:
+                # We are in the Hardening part positive
+                strains = None
+                a0 = self._Eh * strain[0] + self._fy * (1 - self._Eh / self._E)
+                a1 = self._Eh * strain[1]
+                coeff.append((a0, a1))
+            elif strain[0] < eps_sy_n and strain[0] >= eps_su_n:
+                # We are in the Hardening part negative
+                strains = None
+                a0 = self._Eh * strain[0] - self._fy * (1 - self._Eh / self._E)
+                a1 = self._Eh * strain[1]
+                coeff.append((a0, a1))
+            elif abs(strain[0]) <= self._eps_sy:
+                # We are in the elastic part
+                strains = None
+                a0 = self._E * strain[0]
+                a1 = self._E * strain[1]
+                coeff.append((a0, a1))
+            else:
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # Hardening part negative
+            strains.append((eps_su_n, eps_sy_n))
+            a0 = self._Eh * strain[0] - self._fy * (1 - self._Eh / self._E)
+            a1 = self._Eh * strain[1]
+            coeff.append((a0, a1))
+            # Elastic part
+            strains.append((eps_sy_n, eps_sy_p))
+            a0 = self._E * strain[0]
+            a1 = self._E * strain[1]
+            coeff.append((a0, a1))
+            # Hardening part positive
+            strains.append((eps_sy_p, eps_su_p))
+            a0 = self._Eh * strain[0] + self._fy * (1 - self._Eh / self._E)
+            a1 = self._Eh * strain[1]
+            coeff.append((a0, a1))
         return strains, coeff
 
     def get_ultimate_strain(
@@ -239,6 +264,9 @@ class ParabolaRectangle(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         # Parabolic branch
         sig = self._fc * (1 - (1 - (eps / self._eps_0)) ** self._n)
         # Rectangle branch
@@ -280,20 +308,63 @@ class ParabolaRectangle(ConstitutiveLaw):
         """
         strains = []
         coeff = []
-        y_na = -strain[0] / strain[1]
-        y_0 = (self._eps_0 - strain[0]) / strain[1]
-        # (strain[0] - self._eps_u) / strain[1]
-        # Parabolic part
-        strains.append((self._eps_0, 0))
-        y0na = y_0 - y_na
-        yna_y0na = y_na / y0na
-        a0 = -2 * self._fc * yna_y0na * (1 + yna_y0na / 2.0)
-        a1 = 2 * self._fc / y0na * (1 + yna_y0na)
-        a2 = -self._fc / y0na**2
-        coeff.append((a0, a1, a2))
-        # Constant part
-        strains.append((self._eps_u, self._eps_0))
-        coeff.append((self._fc,))
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            if strain[0] > 0:
+                # We are in tensile branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] > self._eps_0:
+                # We are in the parabolic branch
+                strains = None
+                a0 = (
+                    2
+                    * self._fc
+                    * strain[0]
+                    / self._eps_0
+                    * (1 - 0.5 * (strain[0] / self._eps_0))
+                )
+                a1 = (
+                    2
+                    * self._fc
+                    / self._eps_0
+                    * strain[1]
+                    * (1 - strain[0] / self._eps_0)
+                )
+                coeff.append((a0, a1, 0.0))
+            elif strain[0] >= self._eps_u:
+                # We are in the constant branch
+                strains = None
+                coeff.append((self._fc,))
+            else:
+                # We are in a branch of non-resisting concrete
+                # Too much compression
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # Parabolic part
+            strains.append((self._eps_0, 0))
+            a0 = (
+                2
+                * self._fc
+                * strain[0]
+                / self._eps_0
+                * (1 - 0.5 * (strain[0] / self._eps_0))
+            )
+            a1 = (
+                2
+                * self._fc
+                / self._eps_0
+                * strain[1]
+                * (1 - strain[0] / self._eps_0)
+            )
+            a2 = -self._fc * strain[1] ** 2 / self._eps_0**2
+            coeff.append((a0, a1, a2))
+            # Constant part
+            strains.append((self._eps_u, self._eps_0))
+            coeff.append((self._fc,))
         return strains, coeff
 
     def get_ultimate_strain(
@@ -349,6 +420,9 @@ class Sargin(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given the strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         # Polynomial branch
         eta = eps / self._eps_c1
 
@@ -472,6 +546,9 @@ class UserDefined(ConstitutiveLaw):
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
         eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
         return np.interp(eps, self._x, self._y, left=0, right=0)
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
@@ -510,15 +587,35 @@ class UserDefined(ConstitutiveLaw):
         """
         strains = []
         coeff = []
-        for i in range(len(self._x) - 1):
-            # For each branch of the linear piecewise function
-            stiffness = (self._y[i + 1] - self._y[i]) / (
-                self._x[i + 1] - self._x[i]
-            )
-            strains.append((self._x[i], self._x[i + 1]))
-            a0 = stiffness * (strain[0] - self._x[i]) + self._y[i]
-            a1 = stiffness * strain[1]
-            coeff.append((a0, a1))
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            found = False
+            for i in range(len(self._x) - 1):
+                if self._x[i] <= strain[0] and self._x[i + 1] >= strain[0]:
+                    strains = None
+                    stiffness = (self._y[i + 1] - self._y[i]) / (
+                        self._x[i + 1] - self._x[i]
+                    )
+                    a0 = stiffness * (strain[0] - self._x[i]) + self._y[i]
+                    a1 = stiffness * strain[1]
+                    coeff.append((a0, a1))
+                    found = True
+                    break
+            if not found:
+                strains = None
+                coeff.append((0.0,))
+        else:
+            for i in range(len(self._x) - 1):
+                # For each branch of the linear piecewise function
+                stiffness = (self._y[i + 1] - self._y[i]) / (
+                    self._x[i + 1] - self._x[i]
+                )
+                strains.append((self._x[i], self._x[i + 1]))
+                a0 = stiffness * (strain[0] - self._x[i]) + self._y[i]
+                a1 = stiffness * strain[1]
+                coeff.append((a0, a1))
 
         return strains, coeff
 

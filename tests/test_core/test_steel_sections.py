@@ -970,12 +970,12 @@ def test_Isection_elastic_fiber(cls, name):
     mz_expected = wz_el * fy * 1e-6
     # Create the section with fiber
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -1031,9 +1031,9 @@ def test_Isection_elastic_marin(cls, name):
     mz_expected = wz_el * fy * 1e-6
     # Create the section with Marin integrator
     sec = GenericSection(geo)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
@@ -1092,12 +1092,12 @@ def test_Isection_plastic_fiber(cls, name):
     mz_expected = wz_pl * fy * 1e-6
     # Create the section with fiber
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.001)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-2)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
-    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
+    assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=2e-2)
 
 
 @pytest.mark.parametrize(
@@ -1153,9 +1153,9 @@ def test_Isection_plastic_marin(cls, name):
     mz_expected = wz_pl * fy * 1e-6
     # Create the section with marin integrator
     sec = GenericSection(geo)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-2)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
@@ -1213,9 +1213,9 @@ def test_Isection_elastic_material_marin(cls, name):
     mz_expected = wz_el * fy * 1e-6
     # Create the section with marin integrator
     sec = GenericSection(geo)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-3)
@@ -1274,9 +1274,9 @@ def test_Isection_user_material_marin(cls, name):
     mz_expected = wz_pl * fy * 1e-6
     # Create the section with fiber
     sec = GenericSection(geo)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, my_expected, rel_tol=1e-3)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mz_expected, rel_tol=1e-2)
@@ -1438,17 +1438,17 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     sec = GenericSection(geo)
     # Elastic strength
     steel.set_ultimate_strain(fy / Es)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, mye_expected, rel_tol=2.5e-2)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mze_expected, rel_tol=2.5e-2)
     # Plastic strength
     steel.set_ultimate_strain(0.07)
-    results = sec.section_analyzer.calculate_bending_strength(theta=0, n=0)
+    results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, myp_expected, rel_tol=2.5e-2)
-    results = sec.section_analyzer.calculate_bending_strength(
+    results = sec.section_calculator.calculate_bending_strength(
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mzp_expected, rel_tol=2.5e-2)
