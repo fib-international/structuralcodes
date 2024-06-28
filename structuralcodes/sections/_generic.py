@@ -35,9 +35,9 @@ class GenericSection(Section):
         geometry: (SurfaceGeometry or CompoundGeometry)
             the geometry of the section
         name: (str) the name of the section
-        section_analyzer: (GenericSectionCalculator)
+        section_calculator: (GenericSectionCalculator)
             the object responsible for performing different
-            computations on the section (e.g. bending strength,
+            calculations on the section (e.g. bending strength,
             moment curvature, etc.)
         gross_properties: (GrossProperties)
             the results of gross properties computation
@@ -54,7 +54,7 @@ class GenericSection(Section):
             name = 'GenericSection'
         super().__init__(name)
         self.geometry = geometry
-        self.section_analyzer = GenericSectionCalculator(
+        self.section_calculator = GenericSectionCalculator(
             sec=self, integrator=integrator, **kwargs
         )
         self._gross_properties = None
@@ -64,7 +64,7 @@ class GenericSection(Section):
         """Return the gross properties of the section."""
         if self._gross_properties is None:
             self._gross_properties = (
-                self.section_analyzer._calculate_gross_section_properties()
+                self.section_calculator._calculate_gross_section_properties()
             )
         return self._gross_properties
 
@@ -923,10 +923,3 @@ class GenericSectionCalculator(SectionCalculator):
             res.m_z[i] = res_bend_strength.m_z
 
         return res
-
-
-# Use examples:
-
-# sec = Section(...xxx...)
-# res = sec.section_analyzer.ultmateBendingStrength(n = -1000)
-# stress = sec.section_analyzer.compute_stress_distribution(res)
