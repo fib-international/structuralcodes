@@ -632,15 +632,23 @@ class GenericSectionCalculator(SectionCalculator):
         return res
 
     def calculate_moment_curvature(
-        self, theta=0, n=0
+        self,
+        theta: float = 0.0,
+        n: float = 0.0,
+        chi_first: float = 1e-8,
+        num_pre_yield: int = 10,
+        num_post_yield: int = 10,
     ) -> s_res.MomentCurvatureResults:
         """Calculates the moment-curvature relation for given inclination of
         n.a. and axial load.
 
         Arguments:
         theta (float, default = 0): inclination of n.a. respect to y axis
-        n (float, default = 0): axial load applied to the section
-            (+: tension, -: compression)
+        n (float, default = 0): axial load applied to the section (+: tension,
+            -: compression)
+        chi_first (float, default = 1e-8): the first value of the curvature
+        num_pre_yield (int, default = 10): the number of points before yielding
+        num_post_yield (int, default = 10): the number of points after yielding
 
         Return:
         moment_curvature_result (MomentCurvatureResults)
@@ -670,16 +678,27 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(
                 'curvature at yield and ultimate cannot have opposite signs!'
             )
+
+        # Make sure the sign of the first curvature matches the sign of the
+        # yield curvature
+        chi_first *= -1.0 if chi_first * chi_yield < 0 else 1.0
+
+        # The first curvature should be less than the yield curvature
+        if abs(chi_first) >= abs(chi_yield):
+            chi_first = chi_yield / num_pre_yield
+
         # Define the array of curvatures
         if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
             # We don't want a plastic branch in the analysis
             # this is done to speed up analysis
-            chi = np.linspace(chi_yield / 10, chi_yield, 10)
+            chi = np.linspace(chi_first, chi_yield, num_pre_yield)
         else:
             chi = np.concatenate(
                 (
-                    np.linspace(chi_yield / 10, chi_yield, 10, endpoint=False),
-                    np.linspace(chi_yield, chi_ultimate, 100),
+                    np.linspace(
+                        chi_first, chi_yield, num_pre_yield, endpoint=False
+                    ),
+                    np.linspace(chi_yield, chi_ultimate, num_post_yield + 1),
                 )
             )
 
