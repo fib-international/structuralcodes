@@ -402,7 +402,7 @@ class GenericSectionCalculator(SectionCalculator):
         existence of at least one zero in the function dn vs. curv in order
         to apply the bisection algorithm.
         """
-        ITMAX = 20
+        ITMAX = 50
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
