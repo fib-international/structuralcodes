@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from shapely.geometry import LineString, Polygon
 
 from structuralcodes.codes import _CODE, get_design_codes, set_design_code
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
@@ -139,7 +140,7 @@ def calculate_cracking_moment(section: GenericSection, n=0, plot=False):
         mat = geom.material
         gamma_c = 1.5  # !!!! Temporary. gamma_c should be readable from ConstitutiveLaw class (TODO)
         if (
-            _CODE == None
+            _CODE is None
         ):  # should be the code of the material used to create the section
             set_design_code(get_design_codes()[1])
         if isinstance(mat, ParabolaRectangle):
@@ -179,18 +180,13 @@ def calculate_cracking_moment(section: GenericSection, n=0, plot=False):
     import copy
 
     sec = copy.deepcopy(section)
-    mat = None
     m_cracking_pos, m_cracking_neg = 0, 0
     if sec.geometry.reinforced_concrete:
         if isinstance(sec.geometry, SurfaceGeometry):
             modify_consitutive_law(sec.geometry)
-            # mat = sec.geometry.material
-            # print(f'SurfaceGeometry  = {mat}')
         elif isinstance(sec.geometry, CompoundGeometry):
             for i in range(len(sec.geometry.geometries)):
                 modify_consitutive_law(sec.geometry.geometries[i])
-                # mat = sec.geometry.geometries[i].material
-                # print(f'CompoundGeometry-geometries {i+1} = {mat}')
         else:
             raise ValueError(
                 'geometry must be SurfaceGeometry or CompoundGeometry'
@@ -226,3 +222,85 @@ def calculate_cracking_moment(section: GenericSection, n=0, plot=False):
             )
 
     return m_cracking_pos, m_cracking_neg
+
+
+def calculate_width_at_z(geometry: CompoundGeometry | GenericSection, z):
+    """Calculate the width of a section or a section part at a certain level of z.
+
+    Args:
+           geometry: the CompoundGeometry (part) or the whole section (GenericSection)
+           z: z value to evaluate the width in mm
+
+    Returns:
+           Returns the width at z value
+    """
+
+    def width_fibre(geometry, z):
+        # Create a horizontal line at the specified y-coordinate
+        min_y, min_z, max_y, max_z = geometry.bounds
+        horizontal_line = LineString([(min_y, z), (max_y, z)])
+
+        # Find the intersection of the horizontal line with the geometry
+        intersection = geometry.intersection(horizontal_line)
+
+        # If the intersection is a MultiLineString, get the total length
+        if intersection.is_empty:
+            return 0
+        elif intersection.geom_type == 'LineString':
+            return intersection.length
+        elif intersection.geom_type == 'MultiLineString':
+            return sum(segment.length for segment in intersection)
+        else:
+            return 0
+
+    width = 0
+    if isinstance(geometry, Polygon):
+        width = width_fibre(geometry, z)
+    elif isinstance(geometry, CompoundGeometry):
+        for g in geometry.geometries:
+            width += width_fibre(g.polygon, z)
+    elif isinstance(geometry, GenericSection):
+        for g in geometry.geometry.geometries:
+            width += width_fibre(g.polygon, z)
+
+    return width
+
+
+def effective_depth(section: GenericSection, neg_bending: bool = False):
+    """Calculate the width of a section or a section part at a certain level of z.
+
+    Args:
+           section (GenericSection).
+           neg_bending: If negative=True the function return 'd' for negative bending moments
+           z: z value to evaluate the width in mm
+
+    Returns:
+           Returns the efective depth 'd' in mm
+    """
+    if not section.geometry.reinforced_concrete:
+        raise TypeError('Not a reinforced concrete section')
+    min_y, max_y, min_z, max_z = section.geometry.calculate_extents()
+    res = section.section_calculator.calculate_bending_strength()
+    neutral_axe = -res.eps_a / res.chi_y
+    print('na. ', neutral_axe)
+    sum_a = 0
+    sum_az = 0
+    mid_z = 0.5 * (min_z + max_z)
+
+    for pg in section.geometry.point_geometries:
+        pg_z = pg._point.y
+        if (neg_bending and pg_z < mid_z) or (
+            not neg_bending and pg_z > mid_z
+        ):
+            sum_a += pg._area
+            sum_az += pg._area * pg_z
+
+    if (
+        sum_a == 0
+    ):  # To handle the case where sum_a is zero to avoid division by zero
+        return 0
+
+    if neg_bending:
+        return max_z - sum_az / sum_a
+    else:
+        return sum_az / sum_a
