@@ -127,6 +127,9 @@ def calculate_strain_profile(section: GenericSection, n_ed=0, m_ed=0):
 
 def calculate_cracking_moment(section: GenericSection, n=0, plot=False):
     """Calculate the cracking moment of a R.C section in N*mm.
+    A concrete material failing at fctm is used for the cracking moment
+    calculation. This method modify the constitutive law of concrete to reach
+    fctm in tension.
 
     Args:
         n [N]: Axial external load
