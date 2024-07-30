@@ -381,6 +381,11 @@ class Sargin(ConstitutiveLaw):
 
     The stresses and strains are assumed negative in compression
     and positive in tension.
+
+    References:
+    Sargin, M. (1971), "Stress-strain relationship for concrete and the
+    analysis of structural concrete section, Study No. 4,
+    Solid Mechanics Division, University of Waterloo, Ontario, Canada
     """
 
     __materials__: t.Tuple[str] = ('concrete',)
@@ -410,7 +415,7 @@ class Sargin(ConstitutiveLaw):
             if positive values are input for fc, eps_c1 and eps_cu1
             are input, they will be assumed negative.
         """
-        name = name if name is not None else 'ParabolaRectangleLaw'
+        name = name if name is not None else 'SarginLaw'
         super().__init__(name=name)
         self._fc = -abs(fc)
         self._eps_c1 = -abs(eps_c1)
@@ -459,6 +464,116 @@ class Sargin(ConstitutiveLaw):
         if yielding:
             return (100, self._eps_c1)
         return (100, self._eps_cu1)
+
+
+class Popovics(ConstitutiveLaw):
+    """Class for Popovics-Mander constitutive law.
+
+    The stresses and strains are assumed negative in compression
+    and positive in tension.
+
+    If the relation Ec = 5000 * sqrt(fc) is used for elastic modulus,
+    the constitutive law is identical to the one proposed by
+    Mander et al. (1988).
+
+    References:
+    Popovics, S., 1973, “A Numerical Approach to the Complete Stress-Strain
+    Curve of Concrete”, Cement and Concrete Research, 3(4), 583-599.
+
+    Mander, J.B., Priestley, M.J.N., Park, R., 1988, "Theoretical Stress-Strain
+    Model for Confined Concrete", Journal of Structural Engineering, 114(8),
+    1804-1826.
+    """
+
+    __materials__: t.Tuple[str] = ('concrete',)
+
+    def __init__(
+        self,
+        fc: float,
+        eps_c: float = -0.002,
+        eps_cu: float = -0.0035,
+        Ec: t.Optional[float] = None,
+        name: t.Optional[str] = None,
+    ) -> None:
+        """Initialize a Ppovics Material.
+
+        Arguments:
+            fc: (float) the strength of concrete in compression
+            eps_c: (float) peak strain of concrete in compression
+                optional, default value = -0.002
+            eps_cu: (float) ultimate strain of concrete in compression
+                optional, default value = -0.0035
+            E: (optional float) elastic modulus of concrete. If None,
+                the equation Ec = 5000 * fc**0.5 proposed by
+                Mander et al. (1988) is adopted (fc in MPa).
+                optional, default value = None.
+            name: (str) a name for the constitutive law,
+
+        Raises:
+            ValueError: if E is less or equal to 0
+        Notes:
+            if positive values are input for fc, eps_c and eps_cu
+            are input, they will be assumed negative.
+        """
+        name = name if name is not None else 'PopovicsLaw'
+        super().__init__(name=name)
+        self._fc = -abs(fc)
+        self._eps_c = -abs(eps_c)
+        self._eps_cu = -abs(eps_cu)
+        if Ec is None:
+            # fc in MPa, relation of Mander et al. (1988)
+            Ec = 5000 * abs(fc) ** 0.5
+        if Ec <= 0:
+            raise ValueError('Elastic modulus must be a positive number.')
+        E_sec = self._fc / self._eps_c
+        self._n = Ec / (Ec - E_sec)
+
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
+        """Return the stress given the strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
+        # Compression branch
+        eta = eps / self._eps_c
+
+        sig = self._fc * eta * self._n / (self._n - 1 + eta**self._n)
+
+        # Elsewhere stress is 0.0
+        sig[eps < self._eps_cu] = 0.0
+        sig[eps > 0] = 0.0
+
+        return sig
+
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+        """Return the tangent given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compression branch
+        eta = eps / self._eps_c
+
+        tangent = (
+            (1 - eta**self._n)
+            / (self._n - 1 + eta**self._n) ** 2
+            * self._n
+            * (self._n - 1)
+            * self._fc
+            / self._eps_c
+        )
+        # Elsewhere tangent is zero
+        tangent[eps < self._eps_cu] = 0.0
+        tangent[eps > 0] = 0.0
+
+        return tangent
+
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (100, self._eps_c)
+        return (100, self._eps_cu)
 
 
 class UserDefined(ConstitutiveLaw):
