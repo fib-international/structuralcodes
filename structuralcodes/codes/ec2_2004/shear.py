@@ -2,9 +2,7 @@
 
 import math
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                              GENERAL FUNCTIONS                              #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# General functions
 
 
 # Part of Equation (6.2).
@@ -17,8 +15,8 @@ def _k(d: float) -> float:
         d (float): The effective depth of the cross-section in mm.
 
     Returns:
-        float: Correction factor to account for the cross-sectional
-            size on the shear resistance.
+        float: Correction factor to account for the cross-sectional size on the
+        shear resistance.
     """
     return min(1.0 + math.sqrt(200.0 / d), 2.0)
 
@@ -30,16 +28,15 @@ def _rho_L(Asl: float, bw: float, d: float) -> float:
     Defined in EN 1992-1-1 (2005), Eq. (6.2).
 
     Args:
-        Asl (float): The cross-sectional area of the tensile
-            reinforcement, anchored at least (lbd + d) beyond the
-            considered cross-section, in mm2.
-        bw (float): The smallest width of the cross-section in tension
-            in mm.
+        Asl (float): The cross-sectional area of the tensile reinforcement,
+            anchored at least (lbd + d) beyond the considered cross-section, in
+            mm2.
+        bw (float): The smallest width of the cross-section in tension in mm.
         d (float): The effective depth of the cross-section in mm.
 
     Returns:
-        float: The maximum allowable reinforcement ratio of the
-            longitudinal reinforcement, unitless.
+        float: The maximum allowable reinforcement ratio of the longitudinal
+        reinforcement, unitless.
     """
     return min(Asl / (bw * d), 0.02)
 
@@ -51,62 +48,55 @@ def _sigma_cp(NEd: float, Ac: float, fcd: float) -> float:
     Defined in EN 1992-1-1 (2005), Eq. (6.2).
 
     Args:
-        NEd (float): The normal force in the cross-section due to
-            loading or prestress (NEd > 0 for compression) in N.
+        NEd (float): The normal force in the cross-section due to loading or
+            prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
         fcd (float): The design compressive strength in MPa.
 
     Returns:
-        float: The maximum allowable average prestress in the
-            cross-section in MPa.
+        float: The maximum allowable average prestress in the cross-section in
+        MPa.
     """
     return min(NEd / Ac, 0.2 * fcd)
 
 
 # Part of Equation (6.4)
 def _alpha_l(L_x, L_pt2) -> float:
-    """Compute the relative anchorage length for prestreched
-        prestressing steel.
+    """Compute the relative anchorage length for prestreched prestressing
+    steel.
 
     Defined in EN 1992-1-1 (2005), Eq. (6.4).
 
     Args:
-        L_x (float): Distance from the considered cross-section until
-            the starting point of the transference length of the
-            prestress steel.
+        L_x (float): Distance from the considered cross-section until the
+            starting point of the transference length of the prestress steel.
         L_pt2 (float): Maximum value of the transference length of the
             prestress steel, according to Eq. (8.18).
 
     Returns:
-        float: Fraction (relative anchorage length) for determining the
-            amount of prestress that may be used when determining
-            the shear resistance using Mohr's circle.
+        float: Fraction (relative anchorage length) for determining the amount
+        of prestress that may be used when determining the shear resistance
+        using Mohr's circle.
     """
     return min(L_x / L_pt2, 1.0)
 
 
 # Equation (6.7N)
 def _theta(theta: float, cot_min: float = 1.0, cot_max: float = 2.5) -> None:
-    """Check if the provided angle theta is within the bounds provided
-        by the code.
+    """Check if the provided angle theta is within the bounds provided by the
+    code.
 
     EN 1992-1-1 (2005). Eq. (6.7N)
 
     Args:
-        theta (float): The chosen angle of the compression strut in
-            degrees.
-
-    Kwargs:
-        cot_min (float): The minimum value for cot(theta). Default
-            value is 1.0. Different value might be provided in the
-            National Annexes.
-        cot_max (float): The maximum value for cot(theta). Default
-            value is 2.5. Different value might be provided in the
-            National Annexes.
+        theta (float): The chosen angle of the compression strut in degrees.
+        cot_min (float): The minimum value for cot(theta). Default value is
+            1.0. Different value might be provided in the National Annexes.
+        cot_max (float): The maximum value for cot(theta). Default value is
+            2.5. Different value might be provided in the National Annexes.
 
     Raises:
-        ValueError if the chosen angle is not within the given
-            bounds.
+        ValueError if the chosen angle is not within the given bounds.
     """
     # Use round to allow less precise angles (i.e. 21.8 degrees instead
     # of 21.801..... degrees for cot_max = 2.5).
@@ -128,24 +118,23 @@ def _theta(theta: float, cot_min: float = 1.0, cot_max: float = 2.5) -> None:
 
 # Equation (6.11N)
 def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
-    """Calculate factor that affects the maximum shear resistance of
-        the concrete based on the prestress.
+    """Calculate factor that affects the maximum shear resistance of the
+    concrete based on the prestress.
 
     EN 1992-1-1 (2005). Eq. (6.11N)
 
     Args:
-        NEd (float): The normal force in the cross-section due to
-            loading or prestress (NEd > 0 for compression) in N.
+        NEd (float): The normal force in the cross-section due to loading or
+            prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
         fcd (float): The design strength of the concrete in MPa.
 
     Returns:
-        float: Factor that affects the maximum shear resistance of the
-            concrete based on the level of prestress.
+        float: Factor that affects the maximum shear resistance of the concrete
+        based on the level of prestress.
 
     Raises:
-        ValueError: The applied prestress exceeds the concrete design
-            strength.
+        ValueError: The applied prestress exceeds the concrete design strength.
     """
     # No function call for sigma_cp, value is allowed to be higher than
     # 0.2fcd.
@@ -166,9 +155,7 @@ def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
     return value
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                               NORMAL CONCRETE                               #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Without shear reinforcement
 
 
 # Equation (6.2 a + b)
@@ -190,22 +177,19 @@ def VRdc(
     Args:
         fck (float): The characteristic compressive strength in MPa.
         d (float): The effective depth of the cross-section in mm.
-        Asl (float): The cross-sectional area of the tensile
-            reinforcement, anchored atleast (lbd + d) beyond the
-            considered cross-section, in mm2.
-        bw (float): The smallest width of the cross-section in tension
-            in mm.
-        NEd (float): The normal force in the cross-section due to
-            loading or prestress (NEd > 0 for compression) in N.
+        Asl (float): The cross-sectional area of the tensile reinforcement,
+            anchored atleast (lbd + d) beyond the considered cross-section, in
+            mm2.
+        bw (float): The smallest width of the cross-section in tension in mm.
+        NEd (float): The normal force in the cross-section due to loading or
+            prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
         fcd (float): The design compressive strength in MPa.
-
-    Kwargs:
-        k1 (float): Factor used to include the effect of the normal
-            stress into the shear resistance of the concrete. Default
-            value = 0.15, value might differ between National Annexes.
-        gamma_c (float): Partial factor for concrete. Default value =
-            1.5, value might differ between National Annexes.
+        k1 (float): Factor used to include the effect of the normal stress
+            into the shear resistance of the concrete. Default value = 0.15,
+            value might differ between National Annexes.
+        gamma_c (float): Partial factor for concrete. Default value = 1.5,
+            value might differ between National Annexes.
         alpha_cc (float): A factor for considering long-term effects on the
             strength, and effects that arise from the way the load is applied.
 
@@ -235,14 +219,13 @@ def vmin(fck: float, d: float) -> float:
         d (float): The effective depth of the cross-section in mm.
 
     Returns:
-        float: The minimal shear stress resistance of the concrete in
-            MPa.
+        float: The minimal shear stress resistance of the concrete in MPa.
     """
     return 0.035 * _k(d) ** (3.0 / 2.0) * fck ** (1 / 2)
 
 
 # Equation (6.4)
-def Vrdc_prin_stress(
+def VRdc_prin_stress(
     Iy: float,
     bw: float,
     S: float,
@@ -252,38 +235,35 @@ def Vrdc_prin_stress(
     L_x: float = None,
     L_pt2: float = None,
 ) -> float:
-    """Calculate the shear resistance in uncracked, prestressed
-    elements without shear reinforcement, value is determined via Mohr's
-    circle.
+    """Calculate the shear resistance in uncracked, prestressed elements
+    without shear reinforcement, value is determined via Mohr's circle.
 
-    The maximal value of the principle tensile stress does no
-        necessarily lay at the centre of gravity. If this is the
-        ase the minimum value of the shear resistance and
-        corresponding stress needs to be found at the relevant location.
+    The maximal value of the principle tensile stress does no necessarily lay
+    at the centre of gravity. If this is the ase the minimum value of the shear
+    resistance and corresponding stress needs to be found at the relevant
+    location.
 
     EN 1992-1-1 (2005), Eq. (6.4).
 
     Args:
-        Iy (float): The second moment of area of the considered
-            cross-section in mm4.
+        Iy (float): The second moment of area of the considered cross-section
+            in mm4.
         bw (float): The width of the cross-section at the centre of gravity.
-        S (float): The first moment of area of the considered
-            cross-section of the part above the centre of gravity, and
-            with respect to the centre of gravity in mm3.
+        S (float): The first moment of area of the considered cross-section of
+            the part above the centre of gravity, and with respect to the
+            centre of gravity in mm3.
         fctd (float): Design value of the tensile strength of the concrete.
-        NEd (float): The normal force in the cross-section due to
-            loading or prestress (NEd > 0 for compression) in N.
+        NEd (float): The normal force in the cross-section due to loading or
+            prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
-
-    Kwargs:
-        L_x (float): Distance from the considered cross-section until
-            the starting point of the transference length of the
-            prestress steel. This value should be provided when the
-            prestressing steel is prestreched. Default value is None.
+        L_x (float): Distance from the considered cross-section until the
+            starting point of the transference length of the prestress steel.
+            This value should be provided when the prestressing steel is
+            prestreched. Default value is None.
         L_pt2 (float): Maximum value of the transference length of the
             prestress steel, according to Eq. (8.18). This value should be
-            provided when the prestressing steel is prestreched. Default
-            value is None.
+            provided when the prestressing steel is prestreched. Default value
+            is None.
 
     Returns:
         float: The maximum allowable shear force in N for an uncracked,
@@ -305,31 +285,29 @@ def VEdmax_unreinf(
     fck: float,
     fcd: float,
 ) -> float:
-    """Calculate the maximum allowable shear force for cross-sections
-        without shear reinforcement.
+    """Calculate the maximum allowable shear force for cross-sections without
+    shear reinforcement.
 
     En 1992-1-1 (2005), Eq. (6.5).
 
     Args:
-        bw (float): The smallest width of the cross-section in tension
-            in mm.
+        bw (float): The smallest width of the cross-section in tension in mm.
         d (float): The effective depth of the cross-section in mm.
         fck (float): The characteristic compressive strength in MPa.
         fcd (float): The design compressive strength in MPa.
 
-    Return:
-        float: The maximum allowable shear force in the cross-section
-            in N. When a reduced shear force may be considered for the
-            calculations, the unreduced shear force has to comply to
-            this value.
+    Returns:
+        float: The maximum allowable shear force in the cross-section in N.
+        When a reduced shear force may be considered for the calculations, the
+        unreduced shear force has to comply to this value.
     """
     return 0.5 * bw * d * v(fck) * fcd
 
 
 # Equation (6.6N)
 def v(fck: float) -> float:
-    """Calculate a strength redcution factor for concrete cracked by
-        shear forces.
+    """Calculate a strength redcution factor for concrete cracked by shear
+    forces.
 
     EN 1992-1-1 (2005), Eq. (6.6N)
 
@@ -337,16 +315,16 @@ def v(fck: float) -> float:
         fck (float): The characteristic compressive strength in MPa.
 
     Returns:
-        float: A concrete reduction factor to account for concrete
-            cracked by shear forces.
+        float: A concrete reduction factor to account for concrete cracked by
+        shear forces.
     """
     return 0.6 * (1 - fck / 250.0)
 
 
 # Equation (6.10N)
 def v1(fck: float) -> float:
-    """Calculate a strength redcution factor for concrete cracked by
-        shear forces.
+    """Calculate a strength redcution factor for concrete cracked by shear
+    forces.
 
     EN 1992-1-1 (2005), Eq. (6.10N)
 
@@ -354,15 +332,13 @@ def v1(fck: float) -> float:
         fck (float): The characteristic compressive strength in MPa.
 
     Returns:
-        float: A concrete reduction factor to account for concrete
-            cracked by shear forces.
+        float: A concrete reduction factor to account for concrete cracked by
+        shear forces.
     """
     return 0.6 if fck <= 60 else max(0.9 - fck / 200.0, 0.5)
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                         SHEAR REINFORCEMENT                         #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# With shear reinforcement
 
 
 # Equation (6.8 & 6.13)
@@ -381,22 +357,18 @@ def VRds(
     EN 1992-1-1 (2005). Eq. (6.8)
 
     Args:
-        Asw (float): the cross-sectional area of the shear
-            reinforcement in mm2.
-        s (float): The centre-to-centre distance of the shear
-            reinforcement in mm.
+        Asw (float): the cross-sectional area of the shear reinforcement in
+            mm2.
+        s (float): The centre-to-centre distance of the shear reinforcement in
+            mm.
         z (float): The inner lever arm of internal forces in mm.
         theta (float): The angle of the compression strut in degrees.
-        fyk (float): The characteristic strength of the reinforcement
-            steel in MPa.
-
-    Kwargs:
-        alpha (float): The angle of the shear reinforcement with
-            respect to the neutral axis in degrees. Default value = 90
-            degrees.
-        gamma_s (float): Partial factor of the reinforcement steel.
-            Default value = 1.15. Value might differ between
-            National Annexes.
+        fyk (float): The characteristic strength of the reinforcement steel in
+            MPa.
+        alpha (float): The angle of the shear reinforcement with respect to the
+            neutral axis in degrees. Default value = 90 degrees.
+        gamma_s (float): Partial factor of the reinforcement steel. Default
+            value = 1.15. Value might differ between National Annexes.
 
     Returns:
         float: The shear resistance of the shear reinforcement in N.
@@ -436,20 +408,16 @@ def VRdmax(
     EN 1992-1-1 (2005). Eq. (6.9)
 
     Args:
-        bw (float): The smallest width of the cross-section in tension
-            in mm.
+        bw (float): The smallest width of the cross-section in tension in mm.
         z (float): The inner lever arm of internal forces in mm.
         fck (float): The characteristic compressive strength in MPa.
         theta (float): The angle of the compression strut in degrees.
-        NEd (float): The normal force in the cross-section due to
-            loading or prestress (NEd > 0 for compression) in N.
+        NEd (float): The normal force in the cross-section due to loading or
+            prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
         fcd (float): The design compressive strength in MPa.
-
-    Kwargs:
-        alpha (float): The angle of the shear reinforcement with
-            respect to the neutral axis in degrees. Default value = 90
-            degrees.
+        alpha (float): The angle of the shear reinforcement with respect to the
+            neutral axis in degrees. Default value = 90 degrees.
         limit_fyd (bool): Flag to indicate if the design yield stress is
             limited to 0.8 * fyk or not. This controls whether the stress
             reduction factor of concrete is given by Eq. (6.6) (False) or
@@ -489,27 +457,26 @@ def Asw_max(
     Ac: float,
     alpha: float = 90.0,
 ) -> float:
-    """Calculate the maximum cross-sectional area of the shear
-        reinforcement, based on the assumption 1/tan(theta) == 1.
+    """Calculate the maximum cross-sectional area of the shear reinforcement,
+    based on the assumption 1/tan(theta) == 1.
 
     EN 1992-1-1 (2005). Eq. (6.13)
 
     Args:
         fcd (float): The design strength of the concrete in MPa.
         fck (float): The characteristic compressive strength in MPa.
-        bw (float): The smallest width of the cross-section in tension
-            in mm.
-        s (float): The centre-to-centre distance of the shear
-            reinforcement in mm.
-        fwyd (float): The design strength of the shear reinforcement
-            steel in MPa.
-        NEd (float): The normal force in the cross-section due to
-            loading or prestress (NEd > 0 for compression) in N.
+        bw (float): The smallest width of the cross-section in tension in mm.
+        s (float): The centre-to-centre distance of the shear reinforcement in
+            mm.
+        fwyd (float): The design strength of the shear reinforcement steel in
+            MPa.
+        NEd (float): The normal force in the cross-section due to loading or
+            prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
 
     Returns:
         float: The maximum allowable cross-sectional area of the shear
-            reinforcement in mm2.
+        reinforcement in mm2.
 
     Raises:
         ValueError: When sigma_cp > fcd.
