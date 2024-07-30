@@ -32,6 +32,8 @@ def phi(
             the exposed circumference according to (B.6).
         f_cm (float): The mean concrete strength,
         RH (int): The relative humidity in percent, defaults to 50%.
+
+    Keyword Args:
         cement_class (str): The cement class, defaults to 'R'. Possible values:
             'R', 'N', 'S',
         t0: The age of the concrete at the time (in days) of loading.
@@ -175,6 +177,8 @@ def eps_cs(
         f_cm (float): The mean concrete strength.
         cement_class (str): The cement class, defaults to 'R'. Possible values:
             'R', 'N', 'S'.
+
+    Keyword Args:
         RH (int): The relative humidity in percent, defaults to 50.
         t_S (int): the number of days when shrinkage begins, default: 28 days.
         t (int): the concrete age at the time (in days) of evaluation, default:
@@ -211,6 +215,8 @@ def beta_RH(RH: int, RH_0: int = 100) -> float:
 
     Args:
         RH (int): The relative humidity in percent.
+
+    Keyword Args:
         RH_0 (int): The reference relative humidity, default: 100%.
 
     Returns:

@@ -90,6 +90,8 @@ def _theta(theta: float, cot_min: float = 1.0, cot_max: float = 2.5) -> None:
 
     Args:
         theta (float): The chosen angle of the compression strut in degrees.
+
+    Keyword Args:
         cot_min (float): The minimum value for cot(theta). Default value is
             1.0. Different value might be provided in the National Annexes.
         cot_max (float): The maximum value for cot(theta). Default value is
@@ -185,13 +187,13 @@ def VRdc(
             prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
         fcd (float): The design compressive strength in MPa.
+
+    Keyword Args:
         k1 (float): Factor used to include the effect of the normal stress
             into the shear resistance of the concrete. Default value = 0.15,
             value might differ between National Annexes.
         gamma_c (float): Partial factor for concrete. Default value = 1.5,
             value might differ between National Annexes.
-        alpha_cc (float): A factor for considering long-term effects on the
-            strength, and effects that arise from the way the load is applied.
 
     Returns:
         float: The concrete shear resistance in MPa.
@@ -256,6 +258,8 @@ def VRdc_prin_stress(
         NEd (float): The normal force in the cross-section due to loading or
             prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
+
+    Keyword Args:
         L_x (float): Distance from the considered cross-section until the
             starting point of the transference length of the prestress steel.
             This value should be provided when the prestressing steel is
@@ -365,6 +369,8 @@ def VRds(
         theta (float): The angle of the compression strut in degrees.
         fyk (float): The characteristic strength of the reinforcement steel in
             MPa.
+
+    Keyword Args:
         alpha (float): The angle of the shear reinforcement with respect to the
             neutral axis in degrees. Default value = 90 degrees.
         gamma_s (float): Partial factor of the reinforcement steel. Default
@@ -416,6 +422,8 @@ def VRdmax(
             prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
         fcd (float): The design compressive strength in MPa.
+
+    Keyword Args:
         alpha (float): The angle of the shear reinforcement with respect to the
             neutral axis in degrees. Default value = 90 degrees.
         limit_fyd (bool): Flag to indicate if the design yield stress is
@@ -473,6 +481,10 @@ def Asw_max(
         NEd (float): The normal force in the cross-section due to loading or
             prestress (NEd > 0 for compression) in N.
         Ac (float): The cross-sectional area of the concrete in mm2.
+
+    Keyword Args:
+        alpha (float): The angle of the shear reinforcement with respect to the
+            neutral axis in degrees. Default value = 90 degrees.
 
     Returns:
         float: The maximum allowable cross-sectional area of the shear

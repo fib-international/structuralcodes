@@ -405,6 +405,8 @@ def As_min_2(
         h (float): the overall depth of the section in mm.
         d (float): is the effective depth to the centroid of the outer layer of
             the reinforcement.
+
+    Keyword Args:
         delta_s (float, optional): value of prestressed stress in MPa if
             applicable.
         kc (float, optional): is a coefficient which takes account of the
@@ -811,6 +813,8 @@ def sr_max_close(
             of the bonded reinforcement.
         _k2 (float): Coefficient that takes into account the distribution of of
             the strain.
+
+    Keyword Args:
         _k3 (float, optional): Coefficient from the National Annex. If not
             specified then _k3=3.4.
         _k4 (float): Coefficient from the National Annex. If not specified then
