@@ -1,7 +1,10 @@
 """Functions from Section 9 of EN 1992-1-1:2023."""
 
 import math
-from typing import Tuple
+from typing import Literal, Tuple
+
+import numpy as np
+from scipy.interpolate import griddata
 
 from ._annexB_time_dependent import alpha_c
 from ._section5_materials import fcm, fctm
@@ -276,6 +279,120 @@ def wk_cal(
     return wk_cal_, k_1_r_, srm_cal_, epssm_epscm_
 
 
+def simpl_span_depth_ratio(
+    ss: Literal['ss', 'es', 'is', 'c'], wr: float, ll_tl: float
+) -> float:
+    """Interpolates or extrapolates the limiting span/effective depth ratios
+    (l/d) for reinforced concrete beams or slabs based on the structural system
+    ,mechanical reinforcement ratio, and load ratio.
+
+    EN1992-1-1:2023 Table (9.3)
+
+    This function adheres to the guidelines specified in Table 9.3 of the
+    standards, which outline the limits on l/d ratios for various conditions.
+    If the provided values of `wr` (mechanical reinforcement ratio) or `ll_tl`
+    (load ratio) fall outside the tabulated ranges, the function extrapolates
+    the necessary values.
+
+    Args:
+        ss (str): An integer corresponding to the structural system type:
+                  'ss' for simply supported beams/slabs,
+                  'es' for end spans or one-way spanning slab,
+                  'is' for interior spans or one-way spanning slab,
+                  'c' for cantilevers.
+        wr (float): The mechanical reinforcement ratio, expressed as a decimal
+                    (e.g., 0.1, 0.2, 0.3).
+        ll_tl (int): The percentage ratio of live load to total load
+            (e.g., 60, 45, 30).
+
+    Returns:
+        float: The interpolated or extrapolated l/d ratio.
+
+    Notes:
+        - The function assumes the quasi-permanent value of the live load with
+            ψ2 = 0.3.
+        - It uses linear interpolation; however, cubic or nearest interpolation
+            methods can also be applied.
+        - Deflection limits are set to l/250, in line with the standards.
+        - The `wr` and `ll_tl` values should ideally be within the bounds given
+            in the table. Extrapolation is possible but may lead to less
+            accurate results.
+        - `l/d` values from the table are conservative for flanged sections and
+            should be interpreted accordingly.
+    """
+    reinforcement_ratios = [0.3, 0.2, 0.1]
+    load_ratios = [60, 45, 30]
+
+    # Generate the points array using list comprehension
+    points = np.array(
+        [[wr, ll_tl] for wr in reinforcement_ratios for ll_tl in load_ratios]
+    )
+
+    # Define the corresponding l/d values
+    values = {
+        'ss': np.array(
+            [
+                # Simple supported beams
+                15,
+                14,
+                12,
+                17,
+                15,
+                13,
+                22,
+                19,
+                17,
+            ]
+        ),
+        'es': np.array(
+            [
+                20,
+                18,
+                16,
+                22,
+                20,
+                17,
+                29,
+                25,
+                22,
+            ]
+        ),
+        'is': np.array(
+            [
+                23,
+                21,
+                18,
+                26,
+                23,
+                20,
+                33,
+                29,
+                26,
+            ]
+        ),
+        'c': np.array(
+            [
+                7,
+                7,
+                6,
+                8,
+                7,
+                6,
+                10,
+                9,
+                8,
+            ]
+        ),
+    }
+    # Perform the interpolation or extrapolation
+    query_point = np.array([[wr, ll_tl]])
+    interpolated_value = griddata(
+        points, values[ss], query_point, method='linear'
+    )
+
+    return interpolated_value[0]
+
+
 def delta_simpl(
     delta_loads: float,
     delta_shr: float,
@@ -323,3 +440,34 @@ def delta_simpl(
         kS = 455 * rho_l**2 - 35 * rho_l + 1.6
         kI = zeta * Ig_Icr + (1 - zeta)
     return kI * (delta_loads + kS * delta_shr)
+
+
+def delta_gen(
+    alpha_I: float,
+    alpha_II: float,
+    load_type: Literal['short', 'cycle'],
+    sigma_sr_sigma_s: float,
+) -> float:
+    """General method for deflection calculations.
+
+    EN1992-1-1:2023 Eq. (9.28)
+
+    Args:
+        alpha_I (float): deformation parameter calculated for the uncracked
+            condition. Could be a strain, curvature or rotation.
+        alpha_II (float): deformation parameter calculated for the cracked
+            condition. Could be a strain, curvature or rotation.
+        load_type (str): used for getting the beta_parameter that takes
+            into consideration the type of the load. Short for 'short' loads
+            and 'cycle' for repeated loading.
+        sigma_sr_sigma_s (float): the ratio between the highest stress having
+            occurred up to the moment being analysed in the tension
+            reinforcement calculated on the basis of a cracked section and the
+            stress in the tension reinforcement calculated on the basis of
+            a chacked section under loading conditions causing first cracking.
+            Can be replaced by Mcr/M or Ncr/N where Mcr is the cracking moment
+            andNcr is the cracking force.
+    """
+    beta = 1.0 if load_type == 'short' else 0.5
+    zeta = max(0, 1 - beta * sigma_sr_sigma_s**2)
+    return (1 - zeta) * alpha_I + zeta * alpha_II
