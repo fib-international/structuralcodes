@@ -731,7 +731,7 @@ class GenericSectionCalculator(SectionCalculator):
     def calculate_nm_interaction_domain(
         self, theta: float = 0, num_axial: int = 100
     ) -> s_res.NMInteractionDomain:
-        """Calculate the NM interaction domain (attempt to make it faster).
+        """Calculate the NM interaction domain.
 
         Arguments:
         theta (float, default = 0): inclination of n.a. respect to y axis
