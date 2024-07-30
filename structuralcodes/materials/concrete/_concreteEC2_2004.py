@@ -1,45 +1,43 @@
-"""The concrete class for Model Code 2020 Concrete Material."""
+"""The concrete class for EC2 2004 Concrete Material."""
 
 import typing as t
 import warnings
 
-from structuralcodes.codes import mc2010
+from structuralcodes.codes import ec2_2004
 
 from ._concrete import Concrete
 
 
-class ConcreteMC2010(Concrete):
-    """Concrete implementation for MC 2010."""
+class ConcreteEC2_2004(Concrete):  # noqa: N801
+    """Concrete implementation for EC2 2004."""
 
     _fcm: t.Optional[float] = None
     _fctm: t.Optional[float] = None
-    _fctkmin: t.Optional[float] = None
-    _fctkmax: t.Optional[float] = None
-    _Gf: t.Optional[float] = None
+    _fctk_5: t.Optional[float] = None
+    _fctk_95: t.Optional[float] = None
+    _Ecm: t.Optional[float] = None
     _alpha_cc: t.Optional[float] = None
 
     def __init__(
         self,
         fck: float,
         name: t.Optional[str] = None,
-        density: float = 2400.0,
+        density: float = 2400,
         gamma_c: t.Optional[float] = None,
-        existing: bool = False,
         alpha_cc: t.Optional[float] = None,
         **kwargs,
-    ):
-        """Initializes a new instance of Concrete for MC 2010.
+    ) -> None:
+        """Initializes a new instance of Concrete for EC2 2004.
 
         Args:
             fck (float): Characteristic strength in MPa if concrete is not
                 existing.
 
         Keyword Args:
-            name (Optional(str)): A descriptive name for concrete.
-            density (float): Density of material in kg/m3 (default: 2400).
-            gamma_c (Optional(float)): The partial factor for concrete.
-            existing (bool): The material is of an existing structure
-                (default: False).
+            name (str): A descriptive name for concrete
+            density (float): Density of material in kg/m3 (default: 2400)
+            gamma_c (float, optional): partial factor of concrete
+                (default is 1.5)
             alpha_cc (float, optional): A factor for considering long-term
                 effects on the strength, and effects that arise from the way
                 the load is applied.
@@ -51,7 +49,7 @@ class ConcreteMC2010(Concrete):
             fck=fck,
             name=name,
             density=density,
-            existing=existing,
+            existing=False,
             gamma_c=gamma_c,
         )
         self._alpha_cc = alpha_cc
@@ -59,9 +57,9 @@ class ConcreteMC2010(Concrete):
     def _reset_attributes(self):
         self._fcm = None
         self._fctm = None
-        self._fctkmin = None
-        self._fctkmax = None
-        self._Gf = None
+        self._fctk_5 = None
+        self._fctk_95 = None
+        self._Ecm = None
 
     @property
     def fcm(self) -> float:
@@ -70,9 +68,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The mean compressive strength in MPa.
         """
-        if self._fcm is not None:
-            return self._fcm
-        return mc2010.fcm(self._fck)
+        if self._fcm is None:
+            self._fcm = ec2_2004.fcm(self._fck)
+        return self._fcm
 
     @fcm.setter
     def fcm(self, value: float):
@@ -103,9 +101,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The mean tensile strength in MPa
         """
-        if self._fctm is not None:
-            return self._fctm
-        return mc2010.fctm(self._fck)
+        if self._fctm is None:
+            self._fctm = ec2_2004.fctm(self._fck)
+        return self._fctm
 
     @fctm.setter
     def fctm(self, value: float):
@@ -121,71 +119,66 @@ class ConcreteMC2010(Concrete):
         self._fctm = abs(value)
 
     @property
-    def fctkmin(self) -> float:
-        """Returns fctkmin in MPa.
+    def fctk_5(self) -> float:
+        """Returns fctk_5 in MPa.
 
         Returns:
             float: The lower bound tensile strength in MPa
         """
-        if self._fctkmin is not None:
-            return self._fctkmin
+        if self._fctk_5 is not None:
+            return self._fctk_5
+        return ec2_2004.fctk_5(self.fctm)
 
-        return mc2010.fctkmin(self.fctm)
-
-    @fctkmin.setter
-    def fctkmin(self, value: float):
-        """Sets a user defined value for fctkmin.
+    @fctk_5.setter
+    def fctk_5(self, value: float):
+        """Sets a user defined value for fctk_5.
 
         Args:
-            value (float): the value of fctkmin in MPa
+            value (float): the value of fctk_5 in MPa
         """
-        self._fctkmin = abs(value)
+        self._fctk_5 = abs(value)
 
     @property
-    def fctkmax(self) -> float:
-        """Returns fctkmax in MPa.
+    def fctk_95(self) -> float:
+        """Returns fctk_95 in MPa.
 
         Returns:
             float: The upper bound tensile strength in MPa
         """
-        if self._fctkmax is not None:
-            return self._fctkmax
+        if self._fctk_95 is not None:
+            return self._fctk_95
 
-        return mc2010.fctkmax(self.fctm)
+        return ec2_2004.fctk_95(self.fctm)
 
-    @fctkmax.setter
-    def fctkmax(self, value: float):
-        """Sets a user defined value for fctkmax.
+    @fctk_95.setter
+    def fctk_95(self, value: float):
+        """Sets a user defined value for fctk_95.
 
         Args:
-            value (float): the value of fctkmax in MPa
+            value (float): the value of fctk_95 in MPa
         """
-        self._fctkmax = abs(value)
+        self._fctk_95 = abs(value)
 
     @property
-    def Gf(self) -> float:
-        """Fracture energy of concrete.
+    def Ecm(self) -> float:
+        """Returns Ecm in MPa.
 
         Returns:
-            float: The fracture energy in N/m
+            float: The upper bound tensile strength in MPa
         """
-        if self._Gf is not None:
-            return self._Gf
-        return mc2010.Gf(self._fck)
+        if self._Ecm is not None:
+            return self._Ecm
 
-    @Gf.setter
-    def Gf(self, value: float):
-        """Sets a user defined value for fracture energy Gf.
+        return ec2_2004.Ecm(self.fcm)
+
+    @Ecm.setter
+    def Ecm(self, value: float):
+        """Sets a user defined value for Ecm.
 
         Args:
-            value (float): the value of Gf in N/m
+            value (float): the value of Ecm in MPa
         """
-        self._Gf = abs(value)
-
-    @property
-    def gamma_c(self) -> float:
-        """The partial factor for concrete."""
-        return self._gamma_c or 1.5
+        self._Ecm = abs(value)
 
     def fcd(self) -> float:
         """Return the design compressive strength in MPa.
@@ -195,9 +188,16 @@ class ConcreteMC2010(Concrete):
         """
         # This method should perhaps become a property, but is left as a method
         # for now, to be consistent with other concretes.
-        return mc2010.fcd(
+        return ec2_2004.fcd(
             self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
         )
+
+    @property
+    def gamma_c(self) -> float:
+        """The partial factor for concrete."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._gamma_c or 1.5
 
     @property
     def alpha_cc(self) -> float:

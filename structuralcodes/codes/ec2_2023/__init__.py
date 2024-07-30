@@ -29,6 +29,7 @@ from ._section5_materials import (
     phi_50y_t0,
     phi_correction_factor,
     r_steel_stress_strain_params,
+    reinforcement_duct_props,
     sigma_c,
     sigma_p,
     sigma_s,
@@ -74,6 +75,7 @@ __all__ = [
     'phi_50y_t0',
     'phi_correction_factor',
     'r_steel_stress_strain_params',
+    'reinforcement_duct_props',
     'sigma_c',
     'sigma_p',
     'sigma_s',
@@ -92,6 +94,6 @@ __all__ = [
     'wk_cal2',
 ]
 
-__title__: str = 'EUROCODE 2 1992-1-1'
+__title__: str = 'EUROCODE 2 1992-1-1:2023'
 __year__: str = '2023'
-__materials__: t.Tuple[str] = ('concrete',)
+__materials__: t.Tuple[str] = ('concrete', 'reinforcement')

@@ -3,20 +3,24 @@
 import abc
 import typing as t
 
-from structuralcodes.core.base import Material
+from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.materials.constitutive_laws import ParabolaRectangle
 
 
 class Concrete(Material):
     """The abstract concrete material."""
 
     _fck: float
+    _gamma_c: t.Optional[float] = None
     _existing: bool
+    _constitutive_law: t.Optional[ConstitutiveLaw] = None
 
     def __init__(
         self,
         fck: float,
         name: t.Optional[str] = None,
         density: float = 2400,
+        gamma_c: t.Optional[float] = None,
         existing: t.Optional[bool] = False,
     ) -> None:
         """Initializes an abstract concrete material."""
@@ -29,6 +33,8 @@ class Concrete(Material):
                 'Existing concrete feature not implemented yet'
             )
         self._existing = existing
+        self._gamma_c = gamma_c
+        self._constitutive_law = None
 
     @property
     def fck(self) -> float:
@@ -45,4 +51,37 @@ class Concrete(Material):
     def _reset_attributes(self):
         """Each concrete should define its own _reset_attributes method
         This is because fck setting, reset the object arguments.
+        """
+
+    @property
+    def constitutive_law(self) -> ConstitutiveLaw:
+        """Returns the constitutive law object."""
+        if self._constitutive_law is None:
+            self._constitutive_law = ParabolaRectangle(
+                self.fcd(), name=self.name + '_ConstLaw'
+            )
+        return self._constitutive_law
+
+    @constitutive_law.setter
+    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
+        """Setter for constitutive law."""
+        if 'concrete' in constitutive_law.__materials__:
+            self._constitutive_law = constitutive_law
+        else:
+            raise ValueError(
+                'The constitutive law selected is not suitable '
+                'for being used with a concrete material.'
+            )
+
+    @property
+    @abc.abstractmethod
+    def gamma_c(self) -> float:
+        """Each concrete should implement its own getter for the partial factor
+        in order to interact with the globally set national annex.
+        """
+
+    @abc.abstractmethod
+    def fcd(self) -> float:
+        """Each concrete should implement its own method for calculating the
+        design compressive strength.
         """

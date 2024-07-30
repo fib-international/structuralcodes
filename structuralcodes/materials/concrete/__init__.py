@@ -5,21 +5,33 @@ import typing as t
 from structuralcodes.codes import _use_design_code
 
 from ._concrete import Concrete
+from ._concreteEC2_2004 import ConcreteEC2_2004
+from ._concreteEC2_2023 import ConcreteEC2_2023
 from ._concreteMC2010 import ConcreteMC2010
 
 __all__ = [
     'create_concrete',
     'Concrete',
     'ConcreteMC2010',
+    'ConcreteEC2_2023',
+    'ConcreteEC2_2004',
 ]
+
+CONCRETES: t.Dict[str, Concrete] = {
+    'fib Model Code 2010': ConcreteMC2010,
+    'EUROCODE 2 1992-1-1:2004': ConcreteEC2_2004,
+    'EUROCODE 2 1992-1-1:2023': ConcreteEC2_2023,
+}
 
 
 def create_concrete(
     fck: float,
     name: t.Optional[str] = None,
     density: float = 2400.0,
+    gamma_c: t.Optional[float] = None,
     existing: bool = False,
     design_code: t.Optional[str] = None,
+    **kwargs,
 ) -> t.Optional[Concrete]:
     """A factory function to create the correct type of concrete based on the
     desired design code.
@@ -30,13 +42,13 @@ def create_concrete(
 
     Keyword Args:
         density (float): Density of Concrete in kg/m3 (default: 2400)
+        gamma_c (Optional(float)): The partial factor for concrete.
         existing (bool): Boolean indicating if the concrete is of an
             existing structure (default: False)
         design_code (str): Optional string (default: None) indicating the
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
-            Currently available codes: 'mc2010'
 
     Raises:
         ValueError: if the design code is not valid or does not cover
@@ -57,6 +69,14 @@ def create_concrete(
         )
 
     # Create the proper concrete object
-    if code.__title__ == 'fib Model Code 2010':
-        return ConcreteMC2010(fck, name, density, existing)
+    current_concrete = CONCRETES.get(code.__title__, None)
+    if current_concrete is not None:
+        return current_concrete(
+            fck=fck,
+            name=name,
+            density=density,
+            gamma_c=gamma_c,
+            existing=existing,
+            **kwargs,
+        )
     return None

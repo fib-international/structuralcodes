@@ -296,3 +296,32 @@ def test_Gf_setter(test_input, expected):
     c.Gf = expected
 
     assert math.isclose(c.Gf, expected)
+
+
+def test_gamma_c():
+    """Test the gamma_c property."""
+    # Arrange
+    concrete = ConcreteMC2010(45)
+
+    # Assert
+    assert math.isclose(concrete.gamma_c, 1.5)
+
+
+@pytest.mark.parametrize(
+    'fck, alpha_cc, expected',
+    [
+        (35, 0.85, 19.8333),
+        (45, 0.85, 25.5),
+        (90, 0.85, 51.0),
+    ],
+)
+def test_fcd(fck, alpha_cc, expected):
+    """Test calculating the design compressive strength."""
+    # Arrange
+    concrete = ConcreteMC2010(fck, alpha_cc=alpha_cc)
+
+    # Act
+    fcd = concrete.fcd()
+
+    # Assert
+    assert math.isclose(fcd, expected, rel_tol=10e-5)

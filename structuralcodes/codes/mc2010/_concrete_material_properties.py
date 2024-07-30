@@ -187,3 +187,21 @@ def E_ci_t(_beta_e: npt.ArrayLike, _E_ci: float) -> np.ndarray:
             time 'time' (not 28 days) in MPa.
     """
     return _beta_e * _E_ci
+
+
+def fcd(fck: float, alpha_cc: float = 1.0, gamma_c: float = 1.5) -> float:
+    """The design compressive strength of concrete.
+
+    Defined in fib Model Code 2010 (2013), Eq. 7.2-11.
+
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+        alpha_cc (float): A factor for considering long-term effects on the
+            strength, and effects that arise from the way the load is applied.
+            Default value 1.0.
+        gamma_c (float): The partial factor of concrete. Default value 1.5.
+
+    Returns:
+        float: The design compressive strength of concrete in MPa
+    """
+    return abs(alpha_cc) * abs(fck) / abs(gamma_c)
