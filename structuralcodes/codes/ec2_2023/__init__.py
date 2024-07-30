@@ -48,6 +48,12 @@ from ._section9_sls import (
     wk_cal,
     wk_cal2,
 )
+from ._section_8_1_bending import (
+    MEd_min,
+    NRd0,
+    biaxial_resistant_ratio,
+    sigma_cd,
+)
 
 __all__ = [
     'A_phi_correction_exp',
@@ -92,6 +98,10 @@ __all__ = [
     'srm_cal',
     'wk_cal',
     'wk_cal2',
+    'MEd_min',
+    'NRd0',
+    'biaxial_resistant_ratio',
+    'sigma_cd',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2023'
