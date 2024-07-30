@@ -381,6 +381,11 @@ class Sargin(ConstitutiveLaw):
 
     The stresses and strains are assumed negative in compression
     and positive in tension.
+
+    References:
+    Sargin, M. (1971), "Stress-strain relationship for concrete and the
+    analysis of structural concrete section, Study No. 4,
+    Solid Mechanics Division, University of Waterloo, Ontario, Canada
     """
 
     __materials__: t.Tuple[str] = ('concrete',)
@@ -470,6 +475,14 @@ class Popovics(ConstitutiveLaw):
     If the relation Ec = 5000 * sqrt(fc) is used for elastic modulus,
     the constitutive law is identical to the one proposed by
     Mander et al. (1988).
+
+    References:
+    Popovics, S., 1973, “A Numerical Approach to the Complete Stress-Strain
+    Curve of Concrete”, Cement and Concrete Research, 3(4), 583-599.
+
+    Mander, J.B., Priestley, M.J.N., Park, R., 1988, "Theoretical Stress-Strain
+    Model for Confined Concrete", Journal of Structural Engineering, 114(8),
+    1804-1826.
     """
 
     __materials__: t.Tuple[str] = ('concrete',)
