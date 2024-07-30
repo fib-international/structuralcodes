@@ -85,8 +85,8 @@ class Concrete(Material):
         """
         if constitutive_law is None and constitutive_law_name is None:
             raise ValueError(
-                'At least a constitutive law or a string defining the'
-                ' constitutive law must be provided.'
+                'At least a constitutive law or a string defining the '
+                'constitutive law must be provided.'
             )
         if constitutive_law_name is not None:
             constitutive_law = create_constitutive_law(

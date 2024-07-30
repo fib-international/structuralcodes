@@ -5,6 +5,9 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
+from structuralcodes.materials.concrete import Concrete
+from structuralcodes.materials.reinforcement import Reinforcement
+
 from ..core.base import ConstitutiveLaw, Material
 
 
@@ -804,9 +807,21 @@ def create_constitutive_law(
         material (Material): The material containing the properties needed for
             the definition of the constitutive law
     """
-    const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name)
+    const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name.lower())
     if const_law is not None:
         # Here I should call const_law passing arguments needed by each one or
         # the material itself???????
         # const_law(xxxx)
-        pass
+        if isinstance(material, Concrete):
+            # It is a concrete
+            if constitutive_law_name.lower() == 'parabolarectangle':
+                fcd = material.fcd()
+                const_law(fcd)
+
+        elif isinstance(material, Reinforcement):
+            # Do somthing else
+            pass
+        else:
+            raise ValueError(
+                f'Material type not known ({type(material).__name__})'
+            )
