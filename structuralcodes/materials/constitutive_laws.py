@@ -5,7 +5,7 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ..core.base import ConstitutiveLaw
+from ..core.base import ConstitutiveLaw, Material
 
 
 class Elastic(ConstitutiveLaw):
@@ -776,3 +776,37 @@ class UserDefined(ConstitutiveLaw):
                 'set_ultimate_strain requires a single value or a tuple \
                 with  two values'
             )
+
+
+CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
+    'elastic': Elastic,
+    'elasticplastic': ElasticPlastic,
+    'parabolarectangle': ParabolaRectangle,
+    'popovics': Popovics,
+    'sargin': Sargin,
+}
+
+
+def get_constitutive_laws_list() -> t.List[str]:
+    """Returns a list with valid keywords for constitutive law factory."""
+    return list(CONSTITUTIVE_LAWS.keys())
+
+
+def create_constitutive_law(
+    constitutive_law_name: str, material: Material
+) -> ConstitutiveLaw:
+    """A factory function to create the constitutive law.
+
+    Args:
+        constitutive_law_name (str): a string defining a valid constitutive law
+            type. The available keys can be get with the method
+            `get_constitutive_laws_list`
+        material (Material): The material containing the properties needed for
+            the definition of the constitutive law
+    """
+    const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name)
+    if const_law is not None:
+        # Here I should call const_law passing arguments needed by each one or
+        # the material itself???????
+        # const_law(xxxx)
+        pass

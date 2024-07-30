@@ -4,7 +4,10 @@ import abc
 import typing as t
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
-from structuralcodes.materials.constitutive_laws import ParabolaRectangle
+from structuralcodes.materials.constitutive_laws import (
+    ParabolaRectangle,
+    create_constitutive_law,
+)
 
 
 class Concrete(Material):
@@ -63,8 +66,33 @@ class Concrete(Material):
         return self._constitutive_law
 
     @constitutive_law.setter
-    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
-        """Setter for constitutive law."""
+    def constitutive_law(
+        self,
+        constitutive_law: t.Optional[ConstitutiveLaw] = None,
+        constitutive_law_name: t.Optional[str] = None,
+    ) -> None:
+        """Setter for constitutive law.
+
+        Args:
+        consitutive_law (ConstitutiveLaw): a valid ConstitutiveLaw object
+                for concrete (optional)
+        constitutive_law_name (str): a string defining a valid constitutive law
+                type for concrete. If a name is provided a new constitutive law
+                of that class will be created ignoring if the user provided
+                also the constitutive_law argument
+                (valid options: 'elastic', 'parabolarectangle', 'sargin',
+                'popovics').
+        """
+        if constitutive_law is None and constitutive_law_name is None:
+            raise ValueError(
+                'At least a constitutive law or a string defining the'
+                ' constitutive law must be provided.'
+            )
+        if constitutive_law_name is not None:
+            constitutive_law = create_constitutive_law(
+                constitutive_law_name=constitutive_law_name, material=self
+            )
+
         if 'concrete' in constitutive_law.__materials__:
             self._constitutive_law = constitutive_law
         else:
