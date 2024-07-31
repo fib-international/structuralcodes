@@ -1,5 +1,7 @@
 """EC2-2023 Section 8.1 Bending Test."""
 
+from typing import List
+
 import pytest
 
 from structuralcodes.codes.ec2_2023 import _section_8_1_bending
@@ -121,3 +123,100 @@ def test_sigma_cd_errors(fcd, eps_c):
     """Tests the compressive stress concrete calculation raises Errors."""
     with pytest.raises(ValueError):
         _section_8_1_bending.sigma_cd(fcd, eps_c)
+
+
+@pytest.mark.parametrize(
+    'sigma_c2d, f_cd, ddg, expected',
+    [
+        (10.0, 30.0, 32.0, 40.0),  # Test case with sigma_c2d <= 0.6 * f_cd
+        (20.0, 30.0, 32.0, 77.467),  # Test case with sigma_c2d > 0.6 * f_cd
+        (10.0, 30.0, 16.0, 20.0),  # Test case with ddg < 32
+    ],
+)
+def test_delta_fcd_confined(
+    sigma_c2d: float, f_cd: float, ddg: float, expected: float
+):
+    """Test delta_fcd_confined."""
+    result = _section_8_1_bending.delta_fcd_confined(sigma_c2d, f_cd, ddg)
+    assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_conf, f_yd, b_cs, s, expected',
+    [
+        (500.0, 500.0, 200.0, 150.0, 16.67),
+    ],
+)
+def test_confinement_sigma_c2d_circular_square(
+    A_s_conf: float, f_yd: float, b_cs: float, s: float, expected: float
+):
+    """Test confinement_sigma_c2d_circular_square."""
+    result = _section_8_1_bending.confinement_sigma_c2d_circular_square(
+        A_s_conf, f_yd, b_cs, s
+    )
+    assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_conf, f_yd, b_csx, b_csy, s, expected',
+    [
+        (500.0, 500.0, 250.0, 300.0, 150.0, 11.11),
+    ],
+)
+def test_confinement_sigma_c2d_rectangular(
+    A_s_conf: float,
+    f_yd: float,
+    b_csx: float,
+    b_csy: float,
+    s: float,
+    expected: float,
+):
+    """Test test_confinement_sigma_c2d_rectangular."""
+    result = _section_8_1_bending.confinement_sigma_c2d_rectangular(
+        A_s_conf, f_yd, b_csx, b_csy, s
+    )
+    assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_confx, A_s_confy, f_yd, b_csx, b_csy, s, expected',
+    [
+        ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, 150.0, 2.22),
+    ],
+)
+def test_confinement_sigma_c2d_multiple(
+    A_s_confx: List[float],
+    A_s_confy: List[float],
+    f_yd: float,
+    b_csx: float,
+    b_csy: float,
+    s: float,
+    expected: float,
+):
+    """Test test_confinement_sigma_c2d_multiple."""
+    result = _section_8_1_bending.confinement_sigma_c2d_multiple(
+        A_s_confx, A_s_confy, f_yd, b_csx, b_csy, s
+    )
+    assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_confx, A_s_confy, f_yd, b_csy, b_csx, s, expected',
+    [
+        ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, 150.0, 2.22),
+    ],
+)
+def test_confinement_sigma_c2d_compression_zones(
+    A_s_confx: float,
+    A_s_confy: float,
+    f_yd: float,
+    b_csy: float,
+    b_csx: float,
+    s: float,
+    expected: float,
+):
+    """Test confinement_sigma_c2d_compression_zones."""
+    result = _section_8_1_bending.confinement_sigma_c2d_compression_zones(
+        A_s_confx, A_s_confy, f_yd, b_csy, b_csx, s
+    )
+    assert pytest.approx(result, 0.01) == expected

@@ -52,6 +52,11 @@ from ._section_8_1_bending import (
     MEd_min,
     NRd0,
     biaxial_resistant_ratio,
+    confinement_sigma_c2d_circular_square,
+    confinement_sigma_c2d_compression_zones,
+    confinement_sigma_c2d_multiple,
+    confinement_sigma_c2d_rectangular,
+    delta_fcd_confined,
     sigma_cd,
 )
 
@@ -102,6 +107,11 @@ __all__ = [
     'NRd0',
     'biaxial_resistant_ratio',
     'sigma_cd',
+    'delta_fcd_confined',
+    'confinement_sigma_c2d_circular_square',
+    'confinement_sigma_c2d_compression_zones',
+    'confinement_sigma_c2d_multiple',
+    'confinement_sigma_c2d_rectangular',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2023'
