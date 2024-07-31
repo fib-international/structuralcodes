@@ -220,3 +220,329 @@ def test_confinement_sigma_c2d_compression_zones(
         A_s_confx, A_s_confy, f_yd, b_csy, b_csx, s
     )
     assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'fcd, kconf_b, kconf_s, delta_fcd, expected',
+    [
+        (30, 0.5, 0.6, 5, 30 + 0.5 * 0.6 * 5),
+        (40, 0.7, 0.8, 10, 40 + 0.7 * 0.8 * 10),
+        (25, 1, 1, 15, 25 + 1 * 1 * 15),
+    ],
+)
+def test_fcd_c(fcd, kconf_b, kconf_s, delta_fcd, expected):
+    """Test fcd_c."""
+    assert _section_8_1_bending.fcd_c(
+        fcd, kconf_b, kconf_s, delta_fcd
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    'fcd, kconf_b, kconf_s, delta_fcd',
+    [
+        (-10, 0.5, 0.6, 5),
+        (30, -0.5, 0.6, 5),
+        (30, 0.5, -0.6, 5),
+        (30, 0.5, 0.6, -5),
+    ],
+)
+def test_fcd_c_raises_value_error(fcd, kconf_b, kconf_s, delta_fcd):
+    """Test fcd_c_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.fcd_c(fcd, kconf_b, kconf_s, delta_fcd)
+
+
+@pytest.mark.parametrize(
+    'bcs, b, expected',
+    [
+        (100, 200, (1 / 3) * (100 / 200) ** 2),
+        (150, 300, (1 / 3) * (150 / 300) ** 2),
+        (200, 400, (1 / 3) * (200 / 400) ** 2),
+    ],
+)
+def test_kconf_b_square_single(bcs, b, expected):
+    """Test kconf_b_square_single."""
+    assert _section_8_1_bending.kconf_b_square_single(bcs, b) == pytest.approx(
+        expected, rel=1e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'bcs, b',
+    [
+        (-100, 200),
+        (100, -200),
+    ],
+)
+def test_kconf_b_square_single_raises_value_error(bcs, b):
+    """Test kconf_b_square_single_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_b_square_single(bcs, b)
+
+
+@pytest.mark.parametrize(
+    's, bcs, expected',
+    [
+        (50, 200, max(1 - 50 / (2 * 200), 0) ** 2),
+        (30, 150, max(1 - 30 / (2 * 150), 0) ** 2),
+        (20, 100, max(1 - 20 / (2 * 100), 0) ** 2),
+    ],
+)
+def test_kconf_s_square_single(s, bcs, expected):
+    """Test kconf_s_square_single."""
+    assert _section_8_1_bending.kconf_s_square_single(s, bcs) == pytest.approx(
+        expected, rel=1e-5
+    )
+
+
+@pytest.mark.parametrize(
+    's, bcs',
+    [
+        (-50, 200),
+        (50, -200),
+    ],
+)
+def test_kconf_s_square_single_raises_value_error(s, bcs):
+    """Test kconf_s_square_single_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_s_square_single(s, bcs)
+
+
+@pytest.mark.parametrize(
+    'bcs, b, expected',
+    [
+        (100, 200, (100 / 200) ** 2),
+        (150, 300, (150 / 300) ** 2),
+        (200, 400, (200 / 400) ** 2),
+    ],
+)
+def test_kconf_b_circular(bcs, b, expected):
+    """Test kconf_b_circular."""
+    assert _section_8_1_bending.kconf_b_circular(bcs, b) == pytest.approx(
+        expected, rel=1e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'bcs, b',
+    [
+        (-100, 200),
+        (100, -200),
+    ],
+)
+def test_kconf_b_circular_raises_value_error(bcs, b):
+    """Test kconf_b_circular_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_b_circular(bcs, b)
+
+
+@pytest.mark.parametrize(
+    'bcsx, bcsy, b_i, bx, by, expected',
+    [
+        (
+            100,
+            200,
+            [50, 50],
+            400,
+            400,
+            (100 * 200 - (1 / 6) * (50**2 + 50**2)) / (400 * 400),
+        ),
+        (
+            150,
+            250,
+            [75, 75],
+            500,
+            500,
+            (150 * 250 - (1 / 6) * (75**2 + 75**2)) / (500 * 500),
+        ),
+    ],
+)
+def test_kconf_b_multiple(bcsx, bcsy, b_i, bx, by, expected):
+    """Test kconf_b_multiple."""
+    assert _section_8_1_bending.kconf_b_multiple(
+        bcsx, bcsy, b_i, bx, by
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    'bcsx, bcsy, b_i, bx, by',
+    [
+        (-100, 200, [50, 50], 400, 400),
+        (100, -200, [50, 50], 400, 400),
+        (100, 200, [-50, 50], 400, 400),
+        (100, 200, [50, 50], -400, 400),
+        (100, 200, [50, 50], 400, -400),
+    ],
+)
+def test_kconf_b_multiple_raises_value_error(bcsx, bcsy, b_i, bx, by):
+    """Test kconf_b_multiple_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_b_multiple(bcsx, bcsy, b_i, bx, by)
+
+
+@pytest.mark.parametrize(
+    's, bcsx, bcsy, expected',
+    [
+        (
+            50,
+            200,
+            200,
+            max((1 - 50 / (2 * 200)), 0) * max((1 - 50 / (2 * 200)), 0),
+        ),
+        (
+            30,
+            150,
+            150,
+            max((1 - 30 / (2 * 150)), 0) * max((1 - 30 / (2 * 150)), 0),
+        ),
+    ],
+)
+def test_kconf_s_multiple(s, bcsx, bcsy, expected):
+    """Test kconf_s_multiple."""
+    assert _section_8_1_bending.kconf_s_multiple(
+        s, bcsx, bcsy
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    's, bcsx, bcsy',
+    [
+        (-50, 200, 200),
+        (50, -200, 200),
+        (50, 200, -200),
+    ],
+)
+def test_kconf_s_multiple_raises_value_error(s, bcsx, bcsy):
+    """Test kconf_s_multiple_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_s_multiple(s, bcsx, bcsy)
+
+
+@pytest.mark.parametrize(
+    'Ac_conf, Acc, b_i, expected',
+    [
+        (50000, 10000, [50, 50], (50000 - (1 / 6) * (50**2 + 50**2)) / 10000),
+        (
+            100000,
+            20000,
+            [75, 75],
+            (100000 - (1 / 6) * (75**2 + 75**2)) / 20000,
+        ),
+    ],
+)
+def test_kconf_b_bending(Ac_conf, Acc, b_i, expected):
+    """Test kconf_b_bending."""
+    assert _section_8_1_bending.kconf_b_bending(
+        Ac_conf, Acc, b_i
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    'Ac_conf, Acc, b_i',
+    [
+        (-50000, 10000, [50, 50]),
+        (50000, -10000, [50, 50]),
+        (50000, 10000, [-50, 50]),
+    ],
+)
+def test_kconf_b_bending_raises_value_error(Ac_conf, Acc, b_i):
+    """Test kconf_b_bending_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_b_bending(Ac_conf, Acc, b_i)
+
+
+@pytest.mark.parametrize(
+    's, xcs, bcsx, bcsy, expected',
+    [
+        (
+            50,
+            100,
+            200,
+            200,
+            max((1 - 50 / (4 * 100)), 0) * max((1 - 50 / (2 * 200)), 0),
+        ),
+        (
+            30,
+            75,
+            150,
+            150,
+            max((1 - 30 / (4 * 75)), 0) * max((1 - 30 / (2 * 150)), 0),
+        ),
+    ],
+)
+def test_kconf_s_bending(s, xcs, bcsx, bcsy, expected):
+    """Test kconf_s_bending."""
+    assert _section_8_1_bending.kconf_s_bending(
+        s, xcs, bcsx, bcsy
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    's, xcs, bcsx, bcsy',
+    [
+        (-50, 100, 200, 200),
+        (50, -100, 200, 200),
+        (50, 100, -200, 200),
+        (50, 100, 200, -200),
+    ],
+)
+def test_kconf_s_bending_raises_value_error(s, xcs, bcsx, bcsy):
+    """Test kconf_s_bending_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.kconf_s_bending(s, xcs, bcsx, bcsy)
+
+
+@pytest.mark.parametrize(
+    'epsc2, delta_fcd, fcd, expected',
+    [
+        (0.002, 5, 30, 0.002 * (1 + 5 * 5 / 30)),
+        (0.003, 10, 40, 0.003 * (1 + 5 * 10 / 40)),
+    ],
+)
+def test_epsc2_c(epsc2, delta_fcd, fcd, expected):
+    """Test epsc2_c."""
+    assert _section_8_1_bending.epsc2_c(
+        epsc2, delta_fcd, fcd
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    'epsc2, delta_fcd, fcd',
+    [
+        (-0.002, 5, 30),
+        (0.002, -5, 30),
+        (0.002, 5, -30),
+    ],
+)
+def test_epsc2_c_raises_value_error(epsc2, delta_fcd, fcd):
+    """Test epsc2_c_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.epsc2_c(epsc2, delta_fcd, fcd)
+
+
+@pytest.mark.parametrize(
+    'epscu, sigma_c2d, fcd, expected',
+    [
+        (0.003, 5, 30, 0.003 + 0.2 * 5 / 30),
+        (0.004, 10, 40, 0.004 + 0.2 * 10 / 40),
+    ],
+)
+def test_epscu_c(epscu, sigma_c2d, fcd, expected):
+    """Test epscu_c."""
+    assert _section_8_1_bending.epscu_c(
+        epscu, sigma_c2d, fcd
+    ) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
+    'epscu, sigma_c2d, fcd',
+    [
+        (-0.003, 5, 30),
+        (0.003, -5, 30),
+        (0.003, 5, -30),
+    ],
+)
+def test_epscu_c_raises_value_error(epscu, sigma_c2d, fcd):
+    """Test epscu_c_raises_value_error."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.epscu_c(epscu, sigma_c2d, fcd)

@@ -317,3 +317,278 @@ def confinement_sigma_c2d_compression_zones(
         raise ValueError(f's must be non-negative. Got {s} instead.')
 
     return min((sum(A_s_confx) / b_csy), (sum(A_s_confy) / x_cs)) * f_yd / s
+
+
+def fcd_c(
+    fcd: float, kconf_b: float, kconf_s: float, delta_fcd: float
+) -> float:
+    """Calculate the average concrete strength increase in the confined areas.
+
+    EN1992-1-1:2023 Eq. (8.15)
+
+    Args:
+        fcd (float): The concrete design strength in MPa.
+        kconf_b (float): Effectiveness factor for the shape of the compression
+            zone and confinement reinforcement (non-dimensional).
+        kconf_s (float): Effectiveness factor for the spacing of the
+            confinement reinforcement (non-dimensional).
+        delta_fcd (float): The increase in concrete design strength due
+            to confinement in MPa.
+
+    Returns:
+        float: The average concrete strength increase in MPa
+    """
+    if fcd < 0:
+        raise ValueError(f'fcd must be non-negative. Got {fcd} instead.')
+    if kconf_b < 0:
+        raise ValueError(
+            f'kconf_b must be non-negative. Got {kconf_b} instead.'
+        )
+    if kconf_s < 0:
+        raise ValueError(
+            f'kconf_s must be non-negative. Got {kconf_s} instead.'
+        )
+    if delta_fcd < 0:
+        raise ValueError(
+            f'delta_fcd must be non-negative. Got {delta_fcd} instead.'
+        )
+
+    return fcd + kconf_b * kconf_s * delta_fcd
+
+
+def kconf_b_square_single(bcs: float, b: float) -> float:
+    """Calculate the kconf_b effectiveness factor for square
+        members in compression with single confinement reinforcement.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        bcs (float): Width of the confined section in mm.
+        b (float): Width of the unconfined section in mm.
+
+    Returns:
+        float: The effectiveness factor kconf_b (non-dimensional).
+    """
+    if bcs < 0:
+        raise ValueError(f'bcs must be non-negative. Got {bcs} instead.')
+    if b < 0:
+        raise ValueError(f'b must be non-negative. Got {b} instead.')
+
+    return (1 / 3) * (bcs / b) ** 2
+
+
+def kconf_s_square_single(s: float, bcs: float) -> float:
+    """Calculate the kconf_s effectiveness factor for square
+        members in compression with single confinement reinforcement.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        s (float): Spacing of the confinement reinforcement in mm.
+        bcs (float): Width of the confined section in mm.
+
+    Returns:
+        float: The effectiveness factor kconf_s (non-dimensional).
+    """
+    if s < 0:
+        raise ValueError(f's must be non-negative. Got {s} instead.')
+    if bcs < 0:
+        raise ValueError(f'bcs must be non-negative. Got {bcs} instead.')
+
+    return (max(1 - s / (2 * bcs), 0)) ** 2
+
+
+def kconf_b_circular(bcs: float, b: float) -> float:
+    """Calculate the kconf_b effectiveness factor for circular
+        members in compression with circular confinement reinforcement.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        bcs (float): Diameter of the confined section in mm.
+        b (float): Diameter of the unconfined section in mm.
+
+    Returns:
+        float: The effectiveness factor kconf_b (non-dimensional).
+    """
+    if bcs < 0:
+        raise ValueError(f'bcs must be non-negative. Got {bcs} instead.')
+    if b < 0:
+        raise ValueError(f'b must be non-negative. Got {b} instead.')
+
+    return (bcs / b) ** 2
+
+
+def kconf_b_multiple(
+    bcsx: float, bcsy: float, b_i: List[float], bx: float, by: float
+) -> float:
+    """Calculate the kconf_b effectiveness factor for square and rectangular
+        members in compression with multiple confinement reinforcement.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        bcsx (float): Width of the confined section in x-direction in mm.
+        bcsy (float): Width of the confined section in y-direction in mm.
+        b_i (List[float]): Distances between bends of straight segments in mm.
+        bx (float): Width of the unconfined section in x-direction in mm.
+        by (float): Width of the unconfined section in y-direction in mm.
+
+    Returns:
+        float: The effectiveness factor kconf_b.
+    """
+    if bcsx < 0:
+        raise ValueError(f'bcsx must be non-negative. Got {bcsx} instead.')
+    if bcsy < 0:
+        raise ValueError(f'b must be non-negative. Got {bcsy} instead.')
+    for value in b_i:
+        if value < 0:
+            raise ValueError(f'b_i must be non-negative. Got {b_i} instead.')
+    if bx < 0:
+        raise ValueError(f'bx must be non-negative. Got {bx} instead.')
+    if by < 0:
+        raise ValueError(f'by must be non-negative. Got {by} instead.')
+
+    sq_sum = 0
+    for item in b_i:
+        sq_sum += item**2
+
+    return (bcsx * bcsy - (1 / 6) * sq_sum) / (bx * by)
+
+
+def kconf_s_multiple(s: float, bcsx: float, bcsy: float) -> float:
+    """Calculate the kconf_s effectiveness factor for square and
+        rectangular members in compression with multiple
+        confinement reinforcement.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        s (float): Spacing of the confinement reinforcement in mm.
+        bcsx (float): Width of the confined section in x-direction in mm.
+        bcsy (float): Width of the confined section in y-direction in mm.
+
+    Returns:
+        float: The effectiveness factor kconf_s.
+    """
+    if s < 0:
+        raise ValueError(f's must be non-negative. Got {s} instead.')
+    if bcsx < 0:
+        raise ValueError(f'bcsx must be non-negative. Got {bcsx} instead.')
+    if bcsy < 0:
+        raise ValueError(f'bcsy must be non-negative. Got {bcsy} instead.')
+
+    return max((1 - s / (2 * bcsx)), 0) * max((1 - s / (2 * bcsy)), 0)
+
+
+def kconf_b_bending(Ac_conf: float, Acc: float, b_i: List[float]) -> float:
+    """Calculate the kconf_b effectiveness factor for compression
+        zones due to bending and axial force.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        Ac_conf (float): Confined area within the centrelines of the
+            confinement reinforcement and the neutral axis in mm2.
+        Acc (float): Compressive area mm2.
+        b_i (List[float]): Distances between bends of straight segments in mm.
+
+    Returns:
+        float: The effectiveness factor kconf_b.
+    """
+    if Ac_conf < 0:
+        raise ValueError(
+            f'Ac_conf must be non-negative. Got {Ac_conf} instead.'
+        )
+    if Acc < 0:
+        raise ValueError(f'Acc must be non-negative. Got {Acc} instead.')
+    for value in b_i:
+        if value < 0:
+            raise ValueError(f'b_i must be non-negative. Got {b_i} instead.')
+
+    sq_sum = 0
+    for item in b_i:
+        sq_sum += item**2
+
+    return (Ac_conf - (1 / 6) * sq_sum) / Acc
+
+
+def kconf_s_bending(s: float, xcs: float, bcsx: float, bcsy: float) -> float:
+    """Calculate the kconf_s effectiveness factor for
+        compression zones due to bending and axial force.
+
+    EN1992-1-1:2023 Table (8.1)
+
+    Args:
+        s (float): Spacing of the confinement reinforcement.
+        xcs (float): Distance to the neutral axis.
+        bcsx (float): Width of the confined section in x-direction.
+        bcsy (float): Width of the confined section in y-direction.
+
+    Returns:
+        float: The effectiveness factor kconf_s.
+    """
+    if s < 0:
+        raise ValueError(f's must be non-negative. Got {s} instead.')
+    if xcs < 0:
+        raise ValueError(f'xcs must be non-negative. Got {xcs} instead.')
+    if bcsx < 0:
+        raise ValueError(f'bcsx must be non-negative. Got {bcsx} instead.')
+    if bcsy < 0:
+        raise ValueError(f'bcsy must be non-negative. Got {bcsy} instead.')
+
+    xcs = min(xcs, bcsx / 2)
+    return max((1 - s / (4 * xcs)), 0) * max((1 - s / (2 * bcsy)), 0)
+
+
+def epsc2_c(epsc2: float, delta_fcd: float, fcd: float) -> float:
+    """Calculate the confined concrete strain limit at maximum stress.
+
+    EN1992-1-1:2023 Eq. (8.16)
+
+    Args:
+        epsc2 (float): The strain limit at maximum stress for
+            unconfined concrete.
+        delta_fcd (float): The increase in concrete design strength
+            due to confinement in MPa.
+        fcd (float): The concrete design strength in MPa.
+
+    Returns:
+        float: The confined concrete strain limit at maximum stress.
+    """
+    if epsc2 < 0:
+        raise ValueError(f'epsc2 must be non-negative. Got {epsc2} instead.')
+    if delta_fcd < 0:
+        raise ValueError(
+            f'delta_fcd must be non-negative. Got {delta_fcd} instead.'
+        )
+    if fcd < 0:
+        raise ValueError(f'fcd must be non-negative. Got {fcd} instead.')
+
+    return epsc2 * (1 + 5 * delta_fcd / fcd)
+
+
+def epscu_c(epscu: float, sigma_c2d: float, fcd: float) -> float:
+    """Calculate the confined concrete ultimate strain limit.
+
+    EN1992-1-1:2023 Eq. (8.17)
+
+    Args:
+        epscu (float): The ultimate strain limit for unconfined concrete.
+        sigma_c2d (float): The stress at maximum strain for confined concrete
+            in MPa.
+        fcd (float): The concrete design strength in MPa.
+
+    Returns:
+        float: The confined concrete ultimate strain limit.
+    """
+    if epscu < 0:
+        raise ValueError(f'epscu must be non-negative. Got {epscu} instead.')
+    if sigma_c2d < 0:
+        raise ValueError(
+            f'sigma_c2d must be non-negative. Got {sigma_c2d} instead.'
+        )
+    if fcd < 0:
+        raise ValueError(f'fcd must be non-negative. Got {fcd} instead.')
+
+    return epscu + 0.2 * sigma_c2d / fcd
