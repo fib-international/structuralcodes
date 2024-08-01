@@ -671,3 +671,181 @@ def test_eps_x_flang(Ftd, Ast, Es, expected):
     assert _section_8_2_shear.eps_x_flang(Ftd, Ast, Es) == pytest.approx(
         expected, rel=10e-4
     )
+
+
+@pytest.mark.parametrize(
+    'VEdi, Ai, expected',
+    [(1000, 200000, 5), (0, 100000, 0.0), (500, 250000, 2)],
+)
+def test_calculate_tau_edi(VEdi, Ai, expected):
+    """Test the basic functionality of calculate_tau_edi."""
+    assert _section_8_2_shear.tau_Edi(VEdi, Ai) == pytest.approx(
+        expected, rel=10e-2
+    )
+
+
+@pytest.mark.parametrize('VEdi, Ai', [(-1, 200000), (1000, -1)])
+def test_calculate_tau_edi_errors(VEdi, Ai):
+    """Test that errors are raised for invalid inputs in calculate_tau_edi."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.tau_Edi(VEdi, Ai)
+
+
+# Tests for calculate_tau_edi_composite
+@pytest.mark.parametrize(
+    'beta_new, VEd, z, bi, expected',
+    [
+        (0.5, 1000, 200, 1000, 2.5),
+        (1.0, 1000, 200, 1000, 5.0),
+    ],
+)
+def test_calculate_tau_edi_composite(beta_new, VEd, z, bi, expected):
+    """Test the basic functionality of calculate_tau_edi_composite."""
+    assert _section_8_2_shear.tau_Edi_composite(
+        beta_new, VEd, z, bi
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'beta_new, VEd, z, bi',
+    [
+        (-0.1, 1000, 200, 1000),
+        (0.5, -1, 200, 1000),
+        (0.5, 1000, 0, 1000),
+        (0.5, 1000, 200, -1),
+    ],
+)
+def test_calculate_tau_edi_composite_errors(beta_new, VEd, z, bi):
+    """Test that errors are raised for invalid inputs."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.tau_Edi_composite(beta_new, VEd, z, bi)
+
+
+@pytest.mark.parametrize(
+    'fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, expected',
+    [
+        (30, 5, 10000, 100, 500, 45, 0.1, 0.2, 1.5, 5.61),
+        (35, 0, 20000, 200, 550, 90, 0.2, 0.25, 1.5, 2.1638),
+        (40, 12, 15000, 150, 600, 135, 0.15, 0.3, 1.5, 1.2626),
+    ],
+)
+def test_tau_rdi(
+    fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, expected
+):
+    """Test the basic functionality and expected results of tau_Rdi."""
+    assert math.isclose(
+        _section_8_2_shear.tau_Rdi(
+            fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c
+        ),
+        expected,
+        rel_tol=1e-3,
+    )
+
+
+# Test cv1 function
+@pytest.mark.parametrize(
+    'surface_roughness, tensile_stress, expected',
+    [
+        ('very smooth', False, 0.01),
+        ('smooth', True, 0),  # Test with tensile stress
+        ('rough', False, 0.15),
+        ('very rough', False, 0.19),
+        ('keyed', False, 0.37),
+    ],
+)
+def test_cv1(surface_roughness, tensile_stress, expected):
+    """Test cv1 coefficient."""
+    assert (
+        _section_8_2_shear.cv1(surface_roughness, tensile_stress) == expected
+    )
+
+
+# Test mu_v function
+@pytest.mark.parametrize(
+    'surface_roughness, expected',
+    [
+        ('very smooth', 0.5),
+        ('smooth', 0.6),
+        ('rough', 0.7),
+        ('very rough', 0.9),
+        ('keyed', 0.9),
+    ],
+)
+def test_mu_v(surface_roughness, expected):
+    """Test mu_v."""
+    assert _section_8_2_shear.mu_v(surface_roughness) == expected
+
+
+# Test cv2 function
+@pytest.mark.parametrize(
+    'surface_roughness, tensile_stress, expected',
+    [
+        ('very smooth', False, 0),
+        ('smooth', True, 0),  # Test with tensile stress
+        ('rough', False, 0.08),
+        ('very rough', False, 0.15),
+    ],
+)
+def test_cv2(surface_roughness, tensile_stress, expected):
+    """Test cv2."""
+    assert (
+        _section_8_2_shear.cv2(surface_roughness, tensile_stress) == expected
+    )
+
+
+# Test kv function
+@pytest.mark.parametrize(
+    'surface_roughness, expected',
+    [
+        ('very smooth', 0),
+        ('smooth', 0.5),
+        ('rough', 0.5),
+        ('very rough', 0.5),
+    ],
+)
+def test_kv(surface_roughness, expected):
+    """Test kv."""
+    assert _section_8_2_shear.kv(surface_roughness) == expected
+
+
+# Test kdowel function
+@pytest.mark.parametrize(
+    'surface_roughness, expected',
+    [
+        ('very smooth', 1.5),
+        ('smooth', 1.1),
+        ('rough', 0.9),
+        ('very rough', 0.9),
+    ],
+)
+def test_kdowel(surface_roughness, expected):
+    """Test kdowel."""
+    assert _section_8_2_shear.kdowel(surface_roughness) == expected
+
+
+@pytest.mark.parametrize(
+    'cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, expected',
+    [
+        (0.1, 30, 1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0, 0.6251),
+    ],
+)
+def test_shear_stress_resistance(
+    cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, expected
+):
+    """Test the shear stress resistance calculation."""
+    result = _section_8_2_shear.tau_Rdi_ny(
+        cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel
+    )
+    assert result == pytest.approx(expected, rel=10e-3)
+
+
+@pytest.mark.parametrize(
+    'tmin, fctm, fyk, expected',
+    [
+        (200, 2.9, 500, 1.16),
+    ],
+)
+def test_min_interface_reinforcement(tmin, fctm, fyk, expected):
+    """Test the minimum interface reinforcement calculation."""
+    result = _section_8_2_shear.as_min(tmin, fctm, fyk)
+    assert result == pytest.approx(expected, rel=10e-3)

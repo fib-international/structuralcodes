@@ -1516,3 +1516,342 @@ def eps_x_flang(Ftd: float, Ast: float, Es: float) -> float:
         raise ValueError(f'Ast must be positive. Got {Es}')
 
     return Ftd * 1000 / (Ast * Es)
+
+
+def tau_Edi(VEdi: float, Ai: float) -> float:
+    """Calculate the design value of the shear stress at an interface.
+
+    EN1992-1-1:2023 Eq. (8.74)
+
+    Args:
+        VEdi (float): Shear force acting parallel to the interface in kN.
+        Ai (float): Area of the interface in mm2.
+
+    Returns:
+        float: Shear stress at the interface in MPa.
+
+    Raises:
+        ValueError: If any input value is negative.
+    """
+    if VEdi < 0:
+        raise ValueError(f'VEdi must not be negative. Got {VEdi}')
+    if Ai < 0:
+        raise ValueError(f'Ai must not be negative. Got {Ai}')
+
+    return VEdi * 1000 / Ai
+
+
+def tau_Edi_composite(
+    beta_new: float, VEd: float, z: float, bi: float
+) -> float:
+    """Calculate the longitudinal shear stress between concrete
+        interfaces due to composite action.
+
+    EN1992-1-1:2023 Eq. (8.75).
+
+    Args:
+        beta_new (float): Ratio of the longitudinal force in the new concrete
+            to the total longitudinal force, dimensionless.
+        VEd (float): Shear force acting perpendicular to the interface in kN.
+        z (float): Lever arm of the composite section in mm.
+        bi (float): Width of the interface in mm.
+
+    Returns:
+        float: Longitudinal shear stress at the interface in MPa.
+
+    Raises:
+        ValueError: If any input value is negative
+            or zero when it should not be.
+    """
+    if beta_new < 0:
+        raise ValueError(f'beta_new must not be negative. Got {beta_new}')
+    if VEd < 0:
+        raise ValueError(f'Ved must not be negative. Got {VEd}')
+    if z <= 0:
+        raise ValueError(f'z must be positive. Got {z}')
+    if bi < 0:
+        raise ValueError(f'bi must not be negative. Got {bi}')
+
+    return beta_new * VEd * 1000 / (z * bi)
+
+
+def tau_Rdi(
+    fck: float,
+    sigma_n: float,
+    Ai: float,
+    Asi: float,
+    fyd: float,
+    alpha_deg: float,
+    cv1: float,
+    mu_v: float,
+    gamma_c: float,
+) -> float:
+    """Calculate the design shear stress resistance at the
+        interface for scenarios without reinforcement or where
+            reinforcement is sufficiently anchored.
+
+    EN1992-1-1:2023 Eq. (8.76)
+
+    Args:
+        fck (float): Lowest compressive strength of the
+            concretes at the interface in MPa.
+        sigma_n (float): Compressive or tensile stress
+            over the interface area in MPa.
+        Ai (float): Area of the interface in mm2
+        Asi (float): Cross-sectional area of
+            bonded reinforcement crossing the interface in mm2.
+        fyd (float): Design yield strength of the reinforcement in MPa.
+        alpha_deg (float): Angle of reinforcement
+            crossing the interface in degrees.
+        cv1 (float): Coefficient depending on the
+            roughness of the interface, dimensionless.
+        mu_v (float): Friction coefficient depending
+            on the roughness of the interface, dimensionless.
+        gamma_c (float): safety factory for concrete.
+
+    Returns:
+        float: Shear stress resistance at the interface in MPa.
+
+    Raises:
+        ValueError: If any input value is negative or outside expected ranges.
+    """
+    if fck < 0 or Ai < 0 or Asi < 0 or fyd < 0 or gamma_c < 0:
+        raise ValueError('Input values must not be negative.')
+    if not (35 <= alpha_deg <= 135):
+        raise ValueError('Alpha must be between 35 and 135 degrees.')
+
+    sigma_n = max(0, min(sigma_n, 0.6 * fck / gamma_c))
+
+    alpha_rad = math.radians(alpha_deg)
+    rho_i = Asi / Ai
+
+    tau_rdi = (
+        cv1 * math.sqrt(fck) / gamma_c
+        + mu_v * sigma_n
+        + rho_i * fyd * (mu_v * math.sin(alpha_rad) + math.cos(alpha_rad))
+    )
+
+    # Limiting tau_rdi according to the specification
+    return min(tau_rdi, 0.30 * fck + rho_i * fyd * math.cos(alpha_rad))
+
+
+def cv1(
+    surface_roughness: Literal[
+        'very smooth', 'smooth', 'rough', 'very rough', 'keyed'
+    ],
+    tensile_stress: bool = False,
+) -> float:
+    """Get the cv1 coefficient based on the
+        surface roughness and tensile stress condition.
+
+    EC1992-1-1:2023 Table (8.2)
+
+    Args:
+        surface_roughness (str): Description of the surface roughness.
+        tensile_stress (bool): True if tensile stresses are present.
+
+    Returns:
+        float: The cv1 coefficient.
+
+    Raises:
+        ValueError: If an unknown surface roughness is provided.
+    """
+    if tensile_stress:
+        return 0
+
+    coefficients = {
+        'very smooth': 0.01,
+        'smooth': 0.08,
+        'rough': 0.15,
+        'very rough': 0.19,
+        'keyed': 0.37,
+    }
+    return coefficients[surface_roughness]
+
+
+def mu_v(
+    surface_roughness: Literal[
+        'very smooth', 'smooth', 'rough', 'very rough', 'keyed'
+    ],
+) -> float:
+    """Get the mu_v coefficient based on the surface roughness.
+
+    EC1992-1-1:2023 Table (8.2)
+
+    Args:
+        surface_roughness (str): Description of the surface roughness.
+
+    Returns:
+        float: The mu_v coefficient.
+
+    Raises:
+        ValueError: If an unknown surface roughness is provided.
+    """
+    coefficients = {
+        'very smooth': 0.5,
+        'smooth': 0.6,
+        'rough': 0.7,
+        'very rough': 0.9,
+        'keyed': 0.9,
+    }
+    return coefficients[surface_roughness]
+
+
+def cv2(
+    surface_roughness: Literal['very smooth', 'smooth', 'rough', 'very rough'],
+    tensile_stress: bool = False,
+) -> float:
+    """Get the cv2 coefficient based on the
+        surface roughness and tensile stress condition.
+
+    EC1992-1-1:2023 Table (8.2)
+
+    Args:
+        surface_roughness (str): Description of the surface roughness.
+        tensile_stress (bool): True if tensile stresses are present.
+
+    Returns:
+        float: The cv2 coefficient, or None for keyed surfaces.
+
+    Raises:
+        ValueError: If an unknown surface roughness is provided.
+    """
+    if tensile_stress:
+        return 0
+
+    coefficients = {
+        'very smooth': 0,
+        'smooth': 0,
+        'rough': 0.08,
+        'very rough': 0.15,
+    }
+    return coefficients[surface_roughness]
+
+
+def kv(
+    surface_roughness: Literal['very smooth', 'smooth', 'rough', 'very rough'],
+) -> float:
+    """Get the kv coefficient based on the surface roughness.
+
+    EC1992-1-1:2023 Table (8.2)
+
+    Args:
+        surface_roughness (str): Description of the surface roughness.
+
+    Returns:
+        float: The kv coefficient, or None for keyed surfaces.
+
+    Raises:
+        ValueError: If an unknown surface roughness is provided.
+    """
+    coefficients = {
+        'very smooth': 0,
+        'smooth': 0.5,
+        'rough': 0.5,
+        'very rough': 0.5,
+    }
+    return coefficients[surface_roughness]
+
+
+def kdowel(
+    surface_roughness: Literal['very smooth', 'smooth', 'rough', 'very rough'],
+) -> float:
+    """Get the kdowel coefficient based on the surface roughness.
+
+    EC1992-1-1:2023 Table (8.2)
+
+    Args:
+        surface_roughness (str): Description of the surface roughness.
+
+    Returns:
+        float: The kdowel coefficient, or None for keyed surfaces.
+
+    Raises:
+        ValueError: If an unknown surface roughness is provided.
+    """
+    coefficients = {
+        'very smooth': 1.5,
+        'smooth': 1.1,
+        'rough': 0.9,
+        'very rough': 0.9,
+    }
+    return coefficients[surface_roughness]
+
+
+def tau_Rdi_ny(
+    cv2: float,
+    fck: float,
+    gamma_c: float,
+    mu_v: float,
+    sigma_n: float,
+    kv: float,
+    rho_i: float,
+    fyd: float,
+    kdowel: float,
+) -> float:
+    """Calculate the shear stress resistance at the interface when yielding
+         is not ensured at the interface.
+
+    EN 1992-1-1:2022 Eq. (8.77)
+
+    Args:
+        cv2 (float): Coefficient depending on the roughness
+            of the interface (unitless).
+        fck (float): Concrete compressive resistance in MPa.
+        gamma_c (float): Partial safety factor for concrete (unitless).
+        mu_v (float): Coefficient mu_v from the Eurocode (unitless).
+        sigma_n (float): Normal stress in the interface MPa.
+        kv (float): Coefficient kv from the Eurocode (unitless).
+        rho_i (float): Reinforcement ratio at the interface (unitless).
+        fyd (float): Design yield strength of reinforcement MPa.
+        kdowel (float): Coefficient for dowel action of
+            reinforcement (unitless).
+
+    Returns:
+        float: Shear stress resistance τRdi MPa.
+
+    Raises:
+        ValueError: If any of the dimensions or resistances are negative.
+    """
+    if any(x < 0 for x in [fck, gamma_c, kv, rho_i, fyd, kdowel]):
+        raise ValueError('Dimensions and resistances must not be negative.')
+
+    sigma_n = max(0, sigma_n)
+    tau_rdi = (
+        cv2 * math.sqrt(fck) / gamma_c
+        + mu_v * sigma_n
+        + kv * rho_i * fyd * mu_v
+        + kdowel * rho_i * math.sqrt(fyd * fck / gamma_c)
+    )
+    return min(
+        tau_rdi, 0.25 * fck / gamma_c
+    )  # Cap τRdi according to the formula
+
+
+def as_min(tmin: float, fctm: float, fyk: float) -> float:
+    """Calculate the minimum interface reinforcement per unit
+        length along the edge of composite slabs.
+
+    EN 1992-1-1:2022 Eq. (8.78).
+
+    Args:
+        tmin (float): Smaller value of the thickness of new
+            and old concrete layers in mm.
+        fctm (float): Mean tensile strength of the respective
+            concrete layer in MPa.
+        fyk (float): Characteristic yield strength of the reinforcement in MPa.
+
+    Returns:
+        float: Minimum interface reinforcement per unit length in mm/mm.
+
+    Raises:
+        ValueError: If any input is negative or zero where it shouldn't be.
+    """
+    if tmin <= 0:
+        raise ValueError(f'tmin must be positive. Got {tmin}')
+    if fctm <= 0:
+        raise ValueError(f'fctm must be positive. Got {fctm}')
+    if fyk <= 0:
+        raise ValueError(f'fyk must be positive. Got {fyk}')
+
+    return tmin * fctm / fyk
