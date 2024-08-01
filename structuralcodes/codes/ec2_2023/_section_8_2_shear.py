@@ -1,4 +1,5 @@
 import math
+from typing import List, Literal
 
 
 def tao_Ed(VEd: float, bw: float, d: float) -> float:
@@ -562,3 +563,956 @@ def rho_l_planar(
         )
 
     return rho_l
+
+
+def cot_theta_min(
+    NEd: float,
+    VEd: float,
+    x: float,
+    d: float,
+) -> float:
+    """Calculate the minimum cotangent of the compression field inclination
+        angle, θmin, according to the conditions provided.
+
+    EN1992-1-1:2023 Eq. (8.41)
+
+    Args:
+        NEd (float): Axial force in the member in kN.
+        VEd (float): Shear force in the member in kN.
+        x (float): Depth of the compression chord in mm.
+        d (float): Effective depth of the member in mm.
+
+    Returns:
+        float: Minimum cotangent of the compression field inclination angle.
+
+    Raises:
+        ValueError: If any of the dimensions or forces are negative,
+            or if d is zero.
+    """
+    if d <= 0 or x < 0:
+        raise ValueError(
+            'Dimensions and forces must be positive, and d must not be zero.'
+        )
+
+    if NEd > 0:
+        cot_theta_min_value = 2.5 - 0.1 * NEd / abs(VEd)
+        return max(cot_theta_min_value, 1.0)
+    if NEd < 0:
+        return 3.0
+
+    return 2.5  # NEd == 0
+
+
+def tau_Rd_sy(rho_w: float, fywd: float, cot_theta: float) -> float:
+    """Calculate the shear stress resistance of yielding shear reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.42)
+
+    Args:
+        rho_w (float): Shear reinforcement ratio (unitless).
+        fywd (float): Design yield strength of the shear reinforcement in MPa.
+        cot_theta (float): Cotangent of the angle of the compression field.
+
+    Returns:
+        float: Shear stress resistance in MPa.
+
+    Raises:
+        ValueError: If rho_w or fywd is negative.
+    """
+    if rho_w < 0 or fywd < 0:
+        raise ValueError(
+            'Shear reinforcement ratio and yield strength must not be negative'
+        )
+
+    return rho_w * fywd * cot_theta
+
+
+def rho_w(Asw: float, bw: float, s: float) -> float:
+    """Calculate the shear reinforcement ratio ρw.
+
+    EN1992-1-1:2023 Eq. (8.43)
+
+    Args:
+        Asw (float): Area of shear reinforcement in mm2.
+        bw (float): Width of the web in mm.
+        s (float): Spacing of the shear reinforcement in mm.
+
+    Returns:
+        float: Shear reinforcement ratio, unitless.
+
+    Raises:
+        ValueError: If Asw, bw, or s is negative or zero.
+
+    """
+    if Asw <= 0 or bw <= 0 or s <= 0:
+        raise ValueError('Asw, bw, and s must be positive and non-zero.')
+
+    return Asw / (bw * s)
+
+
+def sigma_cd(
+    tau_Ed: float, cot_theta: float, tan_theta: float, nu: float, f_cd: float
+) -> float:
+    """Calculate the stress in the compression field σcd and verify it.
+
+    EN1992-1-1:2023 Eq. (8.44)
+
+    Args:
+        tau_Ed (float): Design value of the shear stress in MPa.
+        cot_theta (float): Cotangent of the angle of the compression field.
+        tan_theta (float): Tangent of the angle of the compression field.
+        nu (float): Coefficient (usually 0.5 as per the note).
+        f_cd (float): Design value of the concrete compressive strength in MPa.
+
+    Returns:
+        float: Stress in the compression field σcd in MPa.
+
+    Raises:
+        ValueError: If any of the parameters are negative.
+    """
+    if tau_Ed < 0 or cot_theta < 0 or tan_theta < 0 or nu < 0 or f_cd < 0:
+        raise ValueError('All parameters must be positive.')
+
+    sigma_cd_value = tau_Ed * (cot_theta + tan_theta)
+    return min(sigma_cd_value, nu * f_cd)
+
+
+def tau_Rd(
+    rho_w: float, fywd: float, cot_theta: float, nu: float, f_cd: float
+) -> float:
+    """Calculate the shear stress resistance τRd considering the simultaneous
+        yielding of the shear reinforcement and failure of the compression
+        field.
+
+    EN1992-1-1:2023 Eq. (8.42) and (8.44)
+
+    Args:
+        rho_w (float): Shear reinforcement ratio, unitless.
+        fywd (float): Design yield strength of the shear reinforcement in MPa.
+        cot_theta (float): Cotangent of the angle of the compression field.
+        nu (float): Coefficient (usually 0.5 as per the note).
+        f_cd (float): Design value of the concrete compressive strength in MPa.
+
+    Returns:
+        float: Shear stress resistance τRd in MPa.
+
+    Raises:
+        ValueError: If any of the parameters are negative.
+    """
+    if rho_w < 0 or fywd < 0 or cot_theta < 0 or nu < 0 or f_cd < 0:
+        raise ValueError('All parameters must be positive.')
+
+    tau_Rd_value = rho_w * fywd * cot_theta
+    return min(tau_Rd_value, nu * f_cd / 2)
+
+
+def cot_theta(
+    nu: float, f_cd: float, rho_w: float, fywd: float, cot_theta_min: float
+) -> float:
+    """Calculate the cotangent of the angle of the compression field
+        considering the simultaneous yielding of the shear reinforcement and
+        failure of the compression field.
+
+    EN1992-1-1:2023 Eq. (8.44)
+
+    Args:
+        nu (float): Coefficient (usually 0.5 as per the note).
+        f_cd (float): Design value of the concrete compressive strength in MPa.
+        rho_w (float): Shear reinforcement ratio, unitless.
+        fywd (float): Design yield strength of the shear reinforcement in MPa.
+        cot_theta_min (float): Value of cot_theta_min.
+
+    Returns:
+        float: Cotangent of the angle of the compression field.
+
+    Raises:
+        ValueError: If any of the parameters are negative.
+    """
+    if nu < 0 or f_cd < 0 or rho_w < 0 or fywd < 0:
+        raise ValueError('All parameters must be positive.')
+
+    cot_theta_value = (nu * f_cd) / (rho_w * fywd) - 1
+    return min(max(cot_theta_value, 1.0), cot_theta_min)
+
+
+def epsilon_xt(Ftd: float, Est: float, Ast: float) -> float:
+    """Calculate εxt.
+
+    EN1992-1-1:2023 Eq. (8.47)
+
+    Args:
+        Ftd (float): Tensile force in the flexural tension chord in kN
+        Est (float): Modulus of elasticity of the steel in the
+            tension chord in MPa
+        Ast (float): Area of the longitudinal reinforcement in the
+            flexural tension chord in mm2
+
+    Returns:
+        float: εxt (strain)
+    """
+    if Est < 0:
+        raise ValueError(f'Est must not be negative. Got {Est}')
+    if Ast < 0:
+        raise ValueError(f'Ast must not be negative. Got {Ast}')
+    return abs(Ftd) * 1000 / (Est * Ast)
+
+
+def epsilon_xc_comp(Fcd: float, Ecc: float, Acc: float) -> float:
+    """Calculate εxc for compression.
+
+    EN1992-1-1:2023 Eq. (8.48)
+
+    Args:
+        Fcd (float): Compressive force in the flexural compression chord in kN
+        Ecc (float): Modulus of elasticity of the concrete in the
+            compression chord in MPa
+        Acc (float): Area of the flexural compression
+            chord in mm2
+
+    Returns:
+        float: εxc (strain)
+    """
+    if Acc < 0:
+        raise ValueError(f'Acc must not be negative. Got {Acc}')
+    if Ecc < 0:
+        raise ValueError(f'Ecc must not be negative. Got {Ecc}')
+    return abs(Fcd) * 1000 / (Ecc * Acc)
+
+
+def epsilon_xc_tens(Fcd: float, Esc: float, Asc: float) -> float:
+    """Calculate εxc.
+
+    EN1992-1-1:2023 Eq. (8.49)
+
+    Args:
+        Fcd (float): Tensile force in the flexural compression chord kN
+        Esc (float): Modulus of elasticity of the steel in the
+            compression chord in MPa
+        Asc (float): Area of the longitudinal reinforcement in the flexural
+            compression chord mm2
+
+    Returns:
+        float: εxc (strain)
+    """
+    if Asc < 0:
+        raise ValueError(f'Acc must not be negative. Got {Asc}')
+    if Esc < 0:
+        raise ValueError(f'Esc must not be negative. Got {Esc}')
+    return abs(Fcd) * 1000 / (Esc * Asc)
+
+
+def epsilon_x(epsilon_xt: float, epsilon_xc: float) -> float:
+    """Calculate εx.
+
+    EN1992-1-1:2023 Eq. (8.46)
+
+    Args:
+        epsilon_xt (float): Strain in the flexural tension chord
+        epsilon_xc (float): Strain in the flexural compression chord
+
+    Returns:
+        float: εx (strain)
+    """
+    epsilon_x_value = (epsilon_xt + epsilon_xc) / 2
+    return max(epsilon_x_value, 0)
+
+
+def nu(epsilon_x: float, cot_theta: float) -> float:
+    """Calculate ν.
+
+    EN1992-1-1:2023 Eq. (8.45)
+
+    Args:
+        epsilon_x (float): Average strain of the bottom and top chords
+        cot_theta (float): cotan of the compression field
+            inclination to the member axis.
+
+    Returns:
+        float: ν (dimensionless factor)
+    """
+    if epsilon_x < 0:
+        raise ValueError(f'epsilon_x must not be negative. Got {epsilon_x}')
+
+    nu_value = 1 / (
+        1.0 + 110 * (epsilon_x + (epsilon_x + 0.001) * cot_theta**2)
+    )
+    return min(nu_value, 1.0)
+
+
+def Nvd(VEd: float, cot_theta: float) -> float:
+    """Calculate the additional tensile axial force NVd due to shear VEd.
+
+    EN1992-1-1:2023 Eq. (8.50)
+
+    Args:
+        VEd (float): Shear force in kN.
+        cot_theta (float): Cotangent of the angle.
+
+    Returns:
+        float: Additional tensile axial force NVd in kN.
+    """
+    return abs(VEd) * cot_theta
+
+
+def Ftd(
+    MEd: float,
+    z: float,
+    NVd: float,
+    NE: float,
+) -> float:
+    """Calculate the chord force Ftd.
+
+    Args:
+        MEd (float): Moment in kNm.
+        z (float): Lever arm in mm.
+        NVd (float): Additional tensile axial force in kN.
+        NE (float): Axial force in kN.
+
+    Returns:
+        float: Chord force Ftd in kN.
+
+    Raises:
+        ValueError: If any input is negative.
+
+    Reference:
+        EN1992-1-1:2023 Eq. (8.51)
+    """
+    return MEd * 1000 / z + (NVd + NE) / 2
+
+
+def Fcd(
+    MEd: float,
+    z: float,
+    NVd: float,
+    NE: float,
+) -> float:
+    """Calculate the chord force Fcd.
+
+    EN1992-1-1:2023 Eq. (8.52)
+
+    Args:
+        MEd (float): Moment in kNm.
+        z (float): Lever arm in mm.
+        NVd (float): Additional tensile axial force in kN.
+        NE (float): Axial force in kN.
+
+    Returns:
+        float: Chord force Fcd in kN.
+    """
+    return MEd * 1000 / z - (NVd + NE) / 2
+
+
+def k_duct(
+    duct_material: Literal['steel', 'plastic'],
+    is_grouted: bool,
+    wall_thickness: float,
+    duct_diameter: float,
+) -> float:
+    """Calculate the k_duct coefficient based on duct
+        material, filling, and wall thickness.
+
+    EN1992-1-1:2023 guidelines for k_duct
+
+    Args:
+        duct_material (str): Material of the duct ('steel' or 'plastic').
+        is_grouted (bool): True if the duct is grouted, False otherwise.
+        wall_thickness (float): Wall thickness of the duct in mm.
+        duct_diameter (float): Outer diameter of the duct in mm.
+
+    Returns:
+        float: Coefficient k_duct.
+
+    Raises:
+        ValueError: If wall_thickness or duct_diameter is negative.
+        ValueError: If duct_material is not 'steel' or 'plastic'.
+
+    """
+    if wall_thickness < 0:
+        raise ValueError(
+            f'Wall thickness must not be negative. Got {wall_thickness}'
+        )
+    if duct_diameter < 0:
+        raise ValueError(
+            f'Duct diameter must not be negative. Got {duct_diameter}'
+        )
+
+    max_thickness = max(0.035 * duct_diameter, 2.0)
+
+    if duct_material == 'steel' and is_grouted:
+        return 0.5
+    if duct_material == 'plastic':
+        if is_grouted:
+            if wall_thickness <= max_thickness:
+                return 0.8
+            return 1.2
+        return 1.2
+    raise ValueError(
+        'Invalid duct material. Expected "steel" or "plastic". '
+        + f'Got {duct_material}'
+    )
+
+
+def bw_nom(
+    bw: float,
+    duct_diameters: List[float],
+    k_duct: float,
+) -> float:
+    """Calculate the nominal web width considering the presence of ducts.
+
+    EN1992-1-1:2023 Eq. (8.54)
+
+    Args:
+        bw (float): Actual web width in mm.
+        duct_diameters (List[float]): List of duct diameters in mm
+            (each must be non-negative).
+        k_duct (float): Coefficient depending on the
+            material and filling of the duct.
+
+    Returns:
+        float: Nominal web width in mm.
+
+    Raises:
+        ValueError: If bw is negative or if any duct diameter is negative.
+        ValueError: If the sum of duct diameters exceeds bw/8.
+    """
+    if bw < 0:
+        raise ValueError(f'bw must not be negative. Got {bw}')
+    for d in duct_diameters:
+        if d < 0:
+            raise ValueError(f'Duct diameters must not be negative. Got {d}')
+
+    sum_phi_duct = sum(duct_diameters)
+    if sum_phi_duct > bw / 8:
+        raise ValueError(
+            'Sum of duct diameters exceeds bw/8.'
+            + f'Got sum {sum_phi_duct}, limit {bw/8}'
+        )
+
+    return bw - k_duct * sum_phi_duct
+
+
+def tau_rd(
+    nu: float,
+    f_cd: float,
+    cot_theta: float,
+    cot_beta_incl: float,
+    rho_w: float,
+    f_ywd: float,
+) -> float:
+    """Calculate the enhanced shear stress resistance τRd.
+
+    EN1992-1-1:2023 Eq. (8.55)
+
+    Args:
+        nu (float): The factor ν (unitless).
+        f_cd (float): Design value of concrete compressive strength in MPa.
+        cot_theta (float): Cotangent of the inclination of compression field.
+        cot_beta_incl (float): Cotangent of the inclination of load (cotβincl).
+        rho_w (float): Reinforcement ratio ρw.
+        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+
+    Returns:
+        float: Enhanced shear stress resistance τRd in MPa.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+    """
+    if f_cd < 0:
+        raise ValueError(f'f_cd must not be negative. Got {f_cd}')
+    if f_ywd < 0:
+        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+
+    tau_rd_value = (
+        nu * f_cd * (cot_theta - cot_beta_incl) / (1 + cot_theta**2)
+        + rho_w * f_ywd * cot_beta_incl
+    )
+    tau_rd_max = nu * f_cd * cot_theta / (1 + cot_theta**2)
+
+    return min(tau_rd_value, tau_rd_max)
+
+
+def sigma_swd(
+    Es: float, eps_x: float, f_ywd: float, cot_theta: float
+) -> float:
+    """Calculate the stress σswd in the shear reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.56)
+
+    Args:
+        Es (float): Modulus of elasticity of steel Es in MPa.
+        eps_x (float): Longitudinal strain εx.
+        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        cot_theta (float): Cotangent of the inclination of compression field.
+
+    Returns:
+        float: Stress σswd in the shear reinforcement in MPa.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+    """
+    if Es < 0:
+        raise ValueError(f'e_s must not be negative. Got {Es}')
+    if f_ywd < 0:
+        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+
+    sigma_swd_value = Es * (cot_theta**2 * (eps_x + 0.001) - 0.001)
+
+    return min(sigma_swd_value, f_ywd)
+
+
+def delta_MEd(
+    tau_ed: float,
+    rho_w: float,
+    f_ywd: float,
+    cot_theta: float,
+    z: float,
+    b_w: float,
+    a: float,
+    x: float,
+) -> float:
+    """Calculate the additional moment ΔMEd.
+
+    EN1992-1-1:2023 Eq. (8.57)
+
+    Args:
+        tau_ed (float): Shear stress τEd in MPa (should be positive).
+        rho_w (float): Reinforcement ratio ρw.
+        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        cot_theta (float): Cotangent of the inclination of compression field.
+        z (float): Lever arm z in mm (should be positive).
+        b_w (float): Width of the web bw in mm (should be positive).
+        a (float): Distance between the axis of the support and
+            the concentrated force in mm.
+        x (float): Distance between the support and the investigated
+            cross-section in mm.
+
+    Returns:
+        float: Additional moment ΔMEd in kNm.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+    """
+    if tau_ed < 0:
+        raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
+    if f_ywd < 0:
+        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+    if z < 0:
+        raise ValueError(f'z must not be negative. Got {z}')
+    if b_w < 0:
+        raise ValueError(f'b_w must not be negative. Got {b_w}')
+    if a < 0:
+        raise ValueError(f'a must not be negative. Got {a}')
+    if x < 0:
+        raise ValueError(f'x must not be negative. Got {x}')
+
+    return (
+        (tau_ed - rho_w * f_ywd * cot_theta) * z * b_w * (a / 2 - x)
+    ) / 1e6  # Convert to kNm
+
+
+def tau_rd_sy(
+    rho_w: float,
+    f_ywd: float,
+    cot_theta: float,
+    alpha_w: float,
+    cot_theta_min: float,
+) -> float:
+    """Calculate the shear stress resistance τRd,sy for inclined
+        shear reinforcement.
+
+    Args:
+        rho_w (float): Reinforcement ratio ρw.
+        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        cot_theta (float): Cotangent of the inclination of compression
+            field in radians (cotθ).
+        alpha_w (float): Angle of inclined shear reinforcement αw
+            in degrees (45° ≤ αw < 90°).
+        cot_theta_min (float): max value for cot_theta.
+
+    Returns:
+        float: Shear stress resistance τRd,sy in MPa.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+
+    Reference:
+        EN1992-1-1:2023 Eq. (8.58), (8.59)
+    """
+    if f_ywd < 0:
+        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+    if alpha_w < 45 or alpha_w >= 90:
+        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+
+    alpha_w_rad = math.radians(alpha_w)
+    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
+    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+
+    return rho_w * f_ywd * (cot_theta + cot_alpha_w) * math.sin(alpha_w_rad)
+
+
+def sigma_cd_s(
+    tau_ed: float,
+    cot_theta: float,
+    alpha_w: float,
+    nu: float,
+    f_cd: float,
+    cot_theta_min: float,
+) -> float:
+    """Calculate the compression stress σcd.
+
+    EN1992-1-1:2023 Eq. (8.58), (8.60)
+
+    Args:
+        tau_ed (float): Shear stress τEd in MPa.
+        cot_theta (float): Cotangent of the inclination of
+            compression field in radians (cotθ).
+        alpha_w (float): Angle of inclined shear reinforcement
+            αw in degrees (45° ≤ αw < 90°).
+        nu (float): The factor ν.
+        f_cd (float): Design value of concrete compressive strength in MPa.
+        cot_theta_min (float): max value for cot_theta.
+
+    Returns:
+        float: Compression stress σcd in MPa.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+    """
+    if tau_ed < 0:
+        raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
+    if f_cd < 0:
+        raise ValueError(f'f_cd must not be negative. Got {f_cd}')
+    if alpha_w < 45 or alpha_w >= 90:
+        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+
+    alpha_w_rad = math.radians(alpha_w)
+    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
+    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+
+    sigma_cd_value = tau_ed * (1 + cot_theta**2) / (cot_theta + cot_alpha_w)
+
+    return min(sigma_cd_value, nu * f_cd)
+
+
+def NVds(
+    VEd: float, cot_theta: float, alpha_w: float, cot_theta_min: float
+) -> float:
+    """Calculate the axial tensile force NVd.
+
+    EN1992-1-1:2023 Eq. (8.58), (8.61)
+
+    Args:
+        VEd (float): Design shear force VEd in kN (should be positive).
+        cot_theta (float): Cotangent of the nclination of
+            compression field in radians (cotθ).
+        alpha_w (float): Angle of inclined shear reinforcement
+            αw in degrees (45° ≤ αw < 90°).
+        cot_theta_min (float): max value for cot_theta.
+
+    Returns:
+        float: Axial tensile force NVd in kN.
+
+    Raises:
+        ValueError: If v_ed is negative.
+    """
+    if VEd < 0:
+        raise ValueError(f'VEd must not be negative. Got {VEd}')
+    if alpha_w < 45 or alpha_w >= 90:
+        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+
+    alpha_w_rad = math.radians(alpha_w)
+    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
+
+    return abs(VEd) * (cot_theta - cot_alpha_w)
+
+
+def tau_rd_incl(
+    nu: float,
+    f_cd: float,
+    cot_theta: float,
+    cot_beta_incl: float,
+    rho_w: float,
+    f_ywd: float,
+    alpha_w: float,
+    cot_theta_min: float,
+) -> float:
+    """Calculate the shear stress resistance τRd for members
+        with inclined shear reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.62)
+
+    Args:
+        nu (float): The factor ν (unitless).
+        f_cd (float): Design value of concrete compressive strength in MPa.
+        cot_theta (float): Cotangent of the inclination of
+            compression field in radians.
+        cot_beta_incl (float): Cotangent of the inclination of
+            load in radians (cotβincl).
+        rho_w (float): Reinforcement ratio ρw (unitless).
+        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        alpha_w (float): Angle of inclined shear reinforcement
+            αw in degrees (45° ≤ αw < 90°).
+        cot_theta_min (float): max value for cot_theta.
+
+    Returns:
+        float: Shear stress resistance τRd in MPa.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+
+    Reference:
+
+    """
+    if f_cd < 0:
+        raise ValueError(f'f_cd must not be negative. Got {f_cd}')
+    if f_ywd < 0:
+        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+    if alpha_w < 45 or alpha_w >= 90:
+        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+
+    alpha_w_rad = math.radians(alpha_w)
+    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
+    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+
+    tau_rd_value = nu * f_cd * (cot_theta - cot_beta_incl) / (
+        1 + cot_theta**2
+    ) + rho_w * f_ywd * (cot_beta_incl + cot_alpha_w) * math.sin(alpha_w_rad)
+
+    tau_rd_max = nu * f_cd * (cot_theta + cot_alpha_w) / (1 + cot_theta**2)
+
+    return min(tau_rd_value, tau_rd_max)
+
+
+def sigma_swd_v2(
+    Es: float, eps_x: float, cot_theta: float, alpha_w: float, f_ywd: float
+) -> float:
+    """Calculate the stress σswd in the shear
+        reinforcement for compression field inclinations.
+
+    EN1992-1-1:2023 Eq. (8.63)
+
+    Args:
+        Es (float): Modulus of elasticity of steel Es in MPa.
+        eps_x (float): Longitudinal strain εx (unitless).
+        cot_theta (float): Cotangent inclination of compression
+            field in radians.
+        alpha_w (float): Angle of inclined shear
+            reinforcement αw in degrees (45° ≤ αw < 90°).
+        f_ywd (float): Design yield strength of shear
+            reinforcement in MPa.
+
+    Returns:
+        float: Stress σswd in the shear reinforcement in MPa.
+
+    Raises:
+        ValueError: If any input parameter is negative where applicable.
+    """
+    if Es < 0:
+        raise ValueError(f'Es must not be negative. Got {Es}')
+    if f_ywd < 0:
+        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+
+    alpha_w_rad = math.radians(alpha_w)
+    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+
+    sigma_swd_value = Es * (
+        (eps_x + 0.001)
+        * ((cot_theta + cot_alpha_w) ** 2 / (1 + cot_alpha_w**2))
+        - 0.001
+    )
+
+    return min(sigma_swd_value, f_ywd)
+
+
+def tao_Rd_m(tau_rd: float, m_ed: float, m_rd: float) -> float:
+    """Calculate the shear stress resistance reduced
+        by the influence of transverse bending.
+
+    EN1992-1-1:2023 Eq. (8.64)
+
+    Args:
+        tau_rd (float): Shear resistance τRd in MPa.
+        m_ed (float): Applied transverse bending moment mEd in kNm.
+        m_rd (float): Bending resistance
+            without interaction with shear mRd in kNm.
+
+    Returns:
+        float: Reduced shear stress resistance τRdm in MPa.
+
+    Raises:
+        ValueError: If any of the input parameters are negative.
+    """
+    if tau_rd < 0:
+        raise ValueError(f'tau_rd must not be negative. Got {tau_rd}')
+    if m_ed < 0:
+        raise ValueError(f'm_ed must not be negative. Got {m_ed}')
+    if m_rd < 0:
+        raise ValueError(f'm_rd must not be negative. Got {m_rd}')
+
+    return tau_rd * (1 - (m_ed / m_rd))
+
+
+def tao_Ed_flang(
+    delta_Fd: float,
+    hf: float,
+    delta_x: float,
+) -> float:
+    """Calculate the longitudinal shear stress at
+        the junction between a flange and web.
+
+    EN1992-1-1:2023 Eq. (8.65)
+
+    Args:
+        delta_Fd (float): Change of axial
+            force in the flange over length Δx in kN.
+        hf (float): Thickness of the flange at the junction in mm.
+        delta_x (float): Length under consideration Δx in mm.
+
+    Returns:
+        float: Longitudinal shear stress τEd in MPa.
+
+    Raises:
+        ValueError: If any of the input parameters are negative.
+    """
+    if delta_Fd < 0:
+        raise ValueError(f'delta_fd must not be negative. Got {delta_Fd}')
+    if hf <= 0:
+        raise ValueError(f'hf must be positive. Got {hf}')
+    if delta_x <= 0:
+        raise ValueError(f'delta_x must be positive. Got {delta_x}')
+
+    return delta_Fd * 1000 / (hf * delta_x)
+
+
+def Ast_min_flang(tau_ed: float, sf: float, hf: float, fyd: float) -> float:
+    """Calculate the minimum transverse reinforcement in web/flanges.
+
+    EN1992-1-1:2023 Eq. (8.66)
+
+    Args:
+        tau_ed (float): Longitudinal shear stress τEd MPa.
+        sf (float): Spacing of reinforcement sf mm.
+        hf (float): Thickness of the flange at the junction mm.
+        fyd (float): Design yield strength of reinforcement fyd MPa.
+
+    Returns:
+        float: Minimum required transverse reinforcement area Asf in mm2.
+
+    Raises:
+        ValueError: If any of the input parameters are negative or
+            if cot_theta_f is out of the specified range.
+    """
+    if tau_ed < 0:
+        raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
+    if sf <= 0:
+        raise ValueError(f'sf must be positive. Got {sf}')
+    if hf <= 0:
+        raise ValueError(f'hf must be positive. Got {hf}')
+    if fyd < 0:
+        raise ValueError(f'fyd must not be negative. Got {fyd}')
+
+    return (tau_ed * sf * hf) / (fyd)
+
+
+def Asf_flang(
+    tau_ed: float, sf: float, hf: float, fyd: float, cot_theta_f: float
+) -> float:
+    """Calculate the transverse reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.69)
+
+    Args:
+        tau_ed (float): Longitudinal shear stress τEd MPa.
+        sf (float): Spacing of reinforcement sf mm.
+        hf (float): Thickness of the flange at the junction mm.
+        fyd (float): Design yield strength of reinforcement fyd MPa.
+        cot_theta_f (float): Cotangent of the inclination angle of the
+            compression field in the flange θf.
+
+    Returns:
+        float: Required transverse reinforcement area Asf in mm2.
+
+    Raises:
+        ValueError: If any of the input parameters are negative or
+            if cot_theta_f is out of the specified range.
+    """
+    if tau_ed < 0:
+        raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
+    if sf <= 0:
+        raise ValueError(f'sf must be positive. Got {sf}')
+    if hf <= 0:
+        raise ValueError(f'hf must be positive. Got {hf}')
+    if fyd < 0:
+        raise ValueError(f'fyd must not be negative. Got {fyd}')
+
+    return (tau_ed * sf * hf) / (fyd * cot_theta_f)
+
+
+def sigma_cd_flang(
+    tau_ed: float,
+    theta_f: float,
+    fcd: float,
+    nu: float = 0.5,
+) -> float:
+    """Computes the compression field stress in
+        the flange.
+
+    EN1992-1-1:2023 Eq. (8.70), (8.71)
+
+    Args:
+        tau_ed (float or int): Longitudinal shear stress τEd in MPa.
+        theta_f (float or int): Inclination angle of the
+            compression field in the flange θf (degrees).
+        fcd (float or int): Design compressive
+            strength of concrete fcd in MPa.
+        nu (float, optional): Strength reduction factor, default is 0.5.
+
+    Returns:
+        bool: The compression field stress in MPa
+
+    Raises:
+        ValueError: If any of the input parameters are
+            negative or if theta_f is out of the specified range.
+    """
+    if tau_ed < 0:
+        raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
+    if theta_f < 0:
+        raise ValueError(f'theta_f must not be negative. Got {theta_f}')
+    if fcd < 0:
+        raise ValueError(f'fcd must not be negative. Got {fcd}')
+    if nu <= 0:
+        raise ValueError(f'nu must be positive. Got {nu}')
+
+    theta_rad = math.radians(theta_f)
+    sigma_cd = tau_ed * (1 / math.tan(theta_rad) + math.tan(theta_rad))
+
+    return min(sigma_cd, nu * fcd)
+
+
+def eps_x_flang(Ftd: float, Ast: float, Es: float) -> float:
+    """Calculate the longitudinal strain in the tensile flange based
+        on the thickness of the tensile flange and the
+        distance from the neutral axis.
+
+    EN1992-1-1:2023 Eq. (8.72)
+
+    Args:
+        Ftd (float): force in the tension chord in kN.
+        As (float): Longitudinal reinforcement area in mm2.
+        Es (float): Steel modulus of elasticity in MPa.
+
+    Returns:
+        float: The longitudinal strain in the tensile flange (unitless).
+
+    Raises:
+        ValueError: If td is non-positive or if sst is non-positive.
+    """
+    if Ftd <= 0:
+        raise ValueError(f'Ftd must be positive. Got {Ftd}')
+    if Ast <= 0:
+        raise ValueError(f'Ast must be positive. Got {Ast}')
+    if Es <= 0:
+        raise ValueError(f'Ast must be positive. Got {Es}')
+
+    return Ftd * 1000 / (Ast * Es)

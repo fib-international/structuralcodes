@@ -292,3 +292,382 @@ def test_rho_l_planar(vEd_y, vEd_x, rho_l_x, rho_l_y, expected):
         expected,
         rel_tol=1e-2,
     )
+
+
+# Tests using pytest
+def test_cot_theta_min():
+    """Tests the function cot_theta_min with various scenarios."""
+    assert _section_8_2_shear.cot_theta_min(0, 100, 10, 400) == 2.5
+    assert _section_8_2_shear.cot_theta_min(0, 100, 10, 400) == 2.5
+    assert _section_8_2_shear.cot_theta_min(10, 100, 10, 400) == 2.49
+    assert _section_8_2_shear.cot_theta_min(100, 100, 50, 400) == 2.4
+
+
+def test_tau_Rd_sy():
+    """Tests the function tau_Rd_sy."""
+    assert _section_8_2_shear.tau_Rd_sy(0.01, 500, 2) == 10
+    assert _section_8_2_shear.tau_Rd_sy(0.02, 400, 2.5) == 20
+
+
+def test_rho_w():
+    """Tests the function rho_w."""
+    assert _section_8_2_shear.rho_w(100, 200, 50) == 0.01
+    assert _section_8_2_shear.rho_w(200, 200, 100) == 0.01
+
+
+def test_sigma_cd():
+    """Tests the function sigma_cd."""
+    assert _section_8_2_shear.sigma_cd(1, 2, 0.5, 0.5, 20) == 2.5
+
+
+def test_tau_Rd():
+    """Tests the function tau_Rd."""
+    assert _section_8_2_shear.tau_Rd(0.01, 500, 2, 0.5, 50) == 10
+    assert (
+        _section_8_2_shear.tau_Rd(0.01, 500, 3, 0.5, 20) == 5
+    )  # Limited by the compression field
+
+
+def test_cot_theta():
+    """Tests the function cot_theta."""
+    assert _section_8_2_shear.cot_theta(0.5, 20, 0.01, 500, 2) == 1
+    assert _section_8_2_shear.cot_theta(0.5, 40, 0.01, 500, 2) == 2
+
+
+@pytest.mark.parametrize(
+    'Ftd, Est, Ast, expected', [(500, 210000, 1000, 0.002380952380952381)]
+)
+def test_epsilon_xt(Ftd, Est, Ast, expected):
+    """Test εxt calculation."""
+    assert _section_8_2_shear.epsilon_xt(Ftd, Est, Ast) == pytest.approx(
+        expected
+    )
+
+
+@pytest.mark.parametrize(
+    'Fcd, Ecc, Acc, expected', [(500, 30000, 1000, 0.016666666666666666)]
+)
+def test_epsilon_xc_compression(Fcd, Ecc, Acc, expected):
+    """Test εxc calculation for compression."""
+    assert _section_8_2_shear.epsilon_xc_comp(Fcd, Ecc, Acc) == pytest.approx(
+        expected, rel=10e-3
+    )
+
+
+@pytest.mark.parametrize(
+    'Fcd, Esc, Asc, expected', [(500, 210000, 1000, 0.002380952380952381)]
+)
+def test_epsilon_xc_tension(Fcd, Esc, Asc, expected):
+    """Test εxc calculation for tension."""
+    assert _section_8_2_shear.epsilon_xc_tens(Fcd, Esc, Asc) == pytest.approx(
+        expected, rel=10e-3
+    )
+
+
+@pytest.mark.parametrize(
+    'epsilon_xt, epsilon_xc, expected', [(0.002, 0.001, 0.0015)]
+)
+def test_epsilon_x(epsilon_xt, epsilon_xc, expected):
+    """Test εx calculation."""
+    assert _section_8_2_shear.epsilon_x(
+        epsilon_xt, epsilon_xc
+    ) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize('epsilon_x, theta, expected', [(0.001, 2, 0.5025)])
+def test_nu(epsilon_x, theta, expected):
+    """Test ν calculation."""
+    assert _section_8_2_shear.nu(epsilon_x, theta) == pytest.approx(
+        expected, rel=10e-3
+    )
+
+
+@pytest.mark.parametrize(
+    'VEd, theta, expected',
+    [
+        (100, 2, 200),
+        (150, 1.5, 225),
+    ],
+)
+def test_calculate_nv(VEd, theta, expected):
+    """Test calculate_nv function with various inputs."""
+    assert _section_8_2_shear.Nvd(VEd, theta) == pytest.approx(
+        expected, rel=1e-6
+    )
+
+
+@pytest.mark.parametrize(
+    'MEd, z, NVd, NE, expected',
+    [
+        (200, 400, 100, 50, 575.0),
+        (300, 600, 150, 100, 625.0),
+    ],
+)
+def test_calculate_ftd(MEd, z, NVd, NE, expected):
+    """Test calculate_ftd function with various inputs."""
+    assert _section_8_2_shear.Ftd(MEd, z, NVd, NE) == pytest.approx(
+        expected, rel=1e-6
+    )
+
+
+@pytest.mark.parametrize(
+    'MEd, z, NVd, NE, expected',
+    [
+        (200, 400, 100, 50, 425.0),
+        (300, 600, 150, 100, 375.0),
+    ],
+)
+def test_calculate_fcd(MEd, z, NVd, NE, expected):
+    """Test calculate_fcd function with various inputs."""
+    assert _section_8_2_shear.Fcd(MEd, z, NVd, NE) == pytest.approx(
+        expected, rel=1e-6
+    )
+
+
+@pytest.mark.parametrize(
+    'duct_material, is_grouted, wall_thickness, duct_diameter, expected',
+    [
+        ('steel', True, 3.0, 50.0, 0.5),  # Grouted steel ducts
+        ('plastic', True, 1.0, 50.0, 0.8),  # Grouted plastic thin ducts
+        ('plastic', True, 5.0, 50.0, 1.2),  # Grouted plastic thick ducts
+        ('plastic', False, 1.0, 50.0, 1.2),  # Non-grouted plastic ducts
+    ],
+)
+def test_calculate_k_duct(
+    duct_material, is_grouted, wall_thickness, duct_diameter, expected
+):
+    """Test calculate_k_duct with various inputs."""
+    assert (
+        _section_8_2_shear.k_duct(
+            duct_material, is_grouted, wall_thickness, duct_diameter
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    'bw, duct_diameters, k_duct, expected',
+    [
+        (800, [50, 40], 0.5, 755.0),  # Grouted steel ducts
+        (800, [50, 40], 0.8, 728.0),  # Grouted plastic thin ducts
+        (800, [50, 40], 1.2, 692.0),  # Non-grouted or thick plastic ducts
+    ],
+)
+def test_calculate_nominal_web_width(bw, duct_diameters, k_duct, expected):
+    """Test calculate_nominal_web_width with various inputs."""
+    assert _section_8_2_shear.bw_nom(
+        bw, duct_diameters, k_duct
+    ) == pytest.approx(expected, rel=1e-6)
+
+
+@pytest.mark.parametrize(
+    'nu, f_cd, theta, beta_incl, rho_w, f_ywd, expected',
+    [
+        (0.6, 30, 1, 1.5, 0.01, 500, 3),
+        (0.5, 40, 1.5, 1, 0.02, 400, 9.2307),
+    ],
+)
+def test_tau_rd(nu, f_cd, theta, beta_incl, rho_w, f_ywd, expected):
+    """Test calculation of enhanced shear stress resistance τRd."""
+    assert math.isclose(
+        _section_8_2_shear.tau_rd(nu, f_cd, theta, beta_incl, rho_w, f_ywd),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'e_s, eps_x, f_ywd, cot_theta, expected',
+    [
+        (200000, 0.001, 500, 2, 500),
+        (210000, 0.002, 450, 1, 420),
+    ],
+)
+def test_sigma_swd(e_s, eps_x, f_ywd, cot_theta, expected):
+    """Test calculation of stress σswd in shear reinforcement."""
+    assert math.isclose(
+        _section_8_2_shear.sigma_swd(e_s, eps_x, f_ywd, cot_theta),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'tau_ed, rho_w, f_ywd, theta, z, b_w, a, x, expected',
+    [
+        (0.5, 0.01, 500, 1, 300, 200, 500, 250, 0),
+        (0.4, 0.02, 400, 0.7, 350, 250, 600, 200, -45.5),
+    ],
+)
+def test_delta_m_ed(tau_ed, rho_w, f_ywd, theta, z, b_w, a, x, expected):
+    """Test calculation of additional moment ΔMEd."""
+    assert math.isclose(
+        _section_8_2_shear.delta_MEd(
+            tau_ed, rho_w, f_ywd, theta, z, b_w, a, x
+        ),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'rho_w, f_ywd, theta, alpha_w, cot_theta_min, expected',
+    [
+        (0.01, 500, 1, 45, 1.5, 7.071),
+        (0.02, 450, 2, 60, 3, 20.088),
+    ],
+)
+def test_tau_rd_sy(rho_w, f_ywd, theta, alpha_w, cot_theta_min, expected):
+    """Test calculation of shear stress resistance τRd,sy."""
+    assert math.isclose(
+        _section_8_2_shear.tau_rd_sy(
+            rho_w, f_ywd, theta, alpha_w, cot_theta_min
+        ),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min, expected',
+    [
+        (0.5, 1, 45, 0.6, 30, 2, 0.5),
+        (0.7759, 2, 60, 0.5, 40, 2, 1.50522),
+    ],
+)
+def test_sigma_cd_s(tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min, expected):
+    """Test calculation of compression stress σcd."""
+    assert math.isclose(
+        _section_8_2_shear.sigma_cd_s(
+            tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min
+        ),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'v_ed, theta, alpha_w, cot_theta_min, expected',
+    [
+        (100, 0.3, 45, 1, -58.5786),
+        (80, 0.1, 50, 3, -29.8233),
+    ],
+)
+def test_n_vd(v_ed, theta, alpha_w, cot_theta_min, expected):
+    """Test calculation of axial tensile force NVd."""
+    assert math.isclose(
+        _section_8_2_shear.NVds(v_ed, theta, alpha_w, cot_theta_min),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'nu, f_cd, theta, beta_incl, rho_w, f_ywd, '
+    + 'alpha_w, cot_theta_min, expected',
+    [
+        (0.6, 30, 1, 3, 0.01, 500, 45, 2, -3.8578),
+        (0.5, 40, 0.7, 1, 0.02, 400, 60, 5, 6.9013),
+    ],
+)
+def test_tau_rd_incl(
+    nu, f_cd, theta, beta_incl, rho_w, f_ywd, alpha_w, cot_theta_min, expected
+):
+    """Test calculation of shear stress resistance τRd."""
+    assert math.isclose(
+        _section_8_2_shear.tau_rd_incl(
+            nu, f_cd, theta, beta_incl, rho_w, f_ywd, alpha_w, cot_theta_min
+        ),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'e_s, eps_x, theta, alpha_w, f_ywd, expected',
+    [
+        (200000, 0.001, 1, 45, 500, 500),  # Example values
+        (210000, 0.002, 2, 60, 450, 450),  # Example values
+    ],
+)
+def test_sigma_swd_v2(e_s, eps_x, theta, alpha_w, f_ywd, expected):
+    """Test calculation of stress σswd."""
+    assert math.isclose(
+        _section_8_2_shear.sigma_swd_v2(e_s, eps_x, theta, alpha_w, f_ywd),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'tau_rd, m_ed, m_rd, expected',
+    [
+        (5.0, 2.0, 10.0, 4.0),
+        (10.0, 3.0, 15.0, 8.0),
+    ],
+)
+def test_shear_stress_resistance_reduced(tau_rd, m_ed, m_rd, expected):
+    """Test calculation of reduced shear stress resistance."""
+    assert _section_8_2_shear.tao_Rd_m(tau_rd, m_ed, m_rd) == pytest.approx(
+        expected, rel=10e-2
+    )
+
+
+@pytest.mark.parametrize(
+    'delta_fd, hf, delta_x, expected',
+    [
+        (100.0, 200.0, 1000.0, 0.5),
+        (50.0, 150.0, 500.0, 0.666),
+    ],
+)
+def test_longitudinal_shear_stress(delta_fd, hf, delta_x, expected):
+    """Test calculation of longitudinal shear stress."""
+    assert _section_8_2_shear.tao_Ed_flang(
+        delta_fd, hf, delta_x
+    ) == pytest.approx(expected, rel=10e-2)
+
+
+@pytest.mark.parametrize(
+    'tau_ed, sf, hf, fyd, cot_theta_f, expected',
+    [
+        (3, 200.0, 200.0, 500.0, 1.0, 240),
+        (2, 150.0, 150.0, 400.0, 1.5, 75.0),
+    ],
+)
+def test_transverse_reinforcement_flange(
+    tau_ed, sf, hf, fyd, cot_theta_f, expected
+):
+    """Test calculation of transverse reinforcement in the flange."""
+    assert _section_8_2_shear.Asf_flang(
+        tau_ed, sf, hf, fyd, cot_theta_f
+    ) == pytest.approx(expected, rel=10e-2)
+
+
+@pytest.mark.parametrize(
+    'tau_ed, theta_f, fcd, nu, expected',
+    [
+        (5, 45.0, 30.0, 0.5, 10),
+        (3, 30.0, 25.0, 0.5, 6.9282),
+    ],
+)
+def test_sigma_cd_flang(tau_ed, theta_f, fcd, nu, expected):
+    """Test check of compression field stress in the flange."""
+    assert _section_8_2_shear.sigma_cd_flang(
+        tau_ed, theta_f, fcd, nu
+    ) == pytest.approx(expected, rel=10e-2)
+
+
+# Valid inputs
+@pytest.mark.parametrize(
+    'Ftd, Ast, Es, expected',
+    [
+        (100, 500, 200000, 0.001),
+        (50, 250, 210000, 0.0009523809523809524),
+        (200, 800, 205000, 0.0012195121951219512),
+    ],
+)
+def test_eps_x_flang(Ftd, Ast, Es, expected):
+    """Test eps_x_flang."""
+    assert _section_8_2_shear.eps_x_flang(Ftd, Ast, Es) == pytest.approx(
+        expected, rel=10e-4
+    )
