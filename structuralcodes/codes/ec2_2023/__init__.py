@@ -48,8 +48,22 @@ from ._section9_sls import (
     wk_cal,
     wk_cal2,
 )
+from ._section_8_3_torsion import (
+    VEd_i,
+    tau_t_i,
+    tau_t_rd,
+    tau_t_rd_max,
+    tau_t_rd_sl,
+    tau_t_rd_sw,
+)
 
 __all__ = [
+    'tau_t_rd_max',
+    'tau_t_rd',
+    'tau_t_rd_sl',
+    'tau_t_rd_sw',
+    'tau_t_i',
+    'VEd_i',
     'A_phi_correction_exp',
     'alpha_c_th',
     'alpha_s_th',
