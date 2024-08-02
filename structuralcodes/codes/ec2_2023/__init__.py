@@ -48,8 +48,22 @@ from ._section9_sls import (
     wk_cal,
     wk_cal2,
 )
+from ._section_8_4_punching import (
+    beta_e,
+    dv,
+    kpp_xy,
+    tau_Ed_punch,
+    tau_Ed_punch_d,
+    tau_Rd_punch,
+)
 
 __all__ = [
+    'dv',
+    'kpp_xy',
+    'tau_Rd_punch',
+    'tau_Ed_punch',
+    'tau_Ed_punch_d',
+    'beta_e',
     'A_phi_correction_exp',
     'alpha_c_th',
     'alpha_s_th',
