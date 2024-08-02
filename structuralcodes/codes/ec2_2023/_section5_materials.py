@@ -29,17 +29,17 @@ DUCTILITY_CLASSES = {
 def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Determines the mean strength of concrete from its characteristic value.
 
-    EN 1992-1-1:2023, Table 5.1
+    EN 1992-1-1:2023, Table 5.1.
 
     Args:
-        fck (float): is the characteristic compressive strength in MPa.
+        fck (float): Is the characteristic compressive strength in MPa.
 
     Keyword Args:
-        delta_s (float): the increment in MPa to compute the mean
-            compressive strength
+        delta_s (float): The increment in MPa to compute the mean compressive
+            strength.
 
     Returns:
-        float: the mean compressive strength in MPa
+        float: The mean compressive strength in MPa
     """
     return mc2010.fcm(fck, delta_f)
 
@@ -48,13 +48,13 @@ def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
     compressive strength.
 
-    EN 1992-1-1:2023, Table 5.1
+    EN 1992-1-1:2023, Table 5.1.
 
     Args:
-        fck (float): the characteristic compressive strength in MPa.
+        fck (float): The characteristic compressive strength in MPa.
 
     Returns:
-        float: the mean tensile strength in MPa.
+        float: The mean tensile strength in MPa.
     """
     if abs(fck) <= 50:
         return 0.3 * math.pow(abs(fck), 2 / 3)
@@ -64,13 +64,13 @@ def fctm(fck: float) -> float:
 def fctk_5(_fctm: float) -> float:
     """Compute the 5% mean concrete tensile strength fractile.
 
-    EN 1992-1-1:2023, Table 5.1
+    EN 1992-1-1:2023, Table 5.1.
 
     Args:
-        _fctm (float): the mean concrete tensile strength in MPa
+        _fctm (float): The mean concrete tensile strength in MPa.
 
     Returns:
-        float: the 5% mean concrete tensile strength fractile in MPa
+        float: The 5% mean concrete tensile strength fractile in MPa.
     """
     return abs(_fctm) * 0.7
 
@@ -78,13 +78,13 @@ def fctk_5(_fctm: float) -> float:
 def fctk_95(_fctm: float) -> float:
     """Compute the 95% mean concrete tensile strength fractile.
 
-    EN 1992-1-1:2023, Table 5.1
+    EN 1992-1-1:2023, Table 5.1.
 
     Args:
-        _fctm (float): the mean concrete tensile strength in MPa
+        _fctm (float): The mean concrete tensile strength in MPa.
 
     Returns:
-        float: the 5% mean concrete tensile strength fractile in MPa
+        float: The 5% mean concrete tensile strength fractile in MPa.
     """
     return abs(_fctm) * 1.3
 
@@ -92,22 +92,21 @@ def fctk_95(_fctm: float) -> float:
 def Ecm(_fcm: float, kE: float = 9500) -> float:
     """Computes the secant modulus between sigma_c=0 and sigma_c=0.4*fcm.
 
-    EN 1992-1-1:2023, Eq. (5.1)
+    EN 1992-1-1:2023, Eq. (5.1).
 
     Args:
-        _fcm (float): the mean compressibe strength in MPa
+        _fcm (float): The mean compressive strength in MPa.
 
     Keyword Args:
-        kE (float): coefficient relating the aggregates used
-            in concrete. Default value is 9500, but it can vary
-            from 5000 to 13000.
+        kE (float): Coefficient relating the aggregates used in concrete.
+            Default value is 9500, but it can vary from 5000 to 13000.
 
     Returns:
-        float: the secant concrete modulus in MPa
+        float: The secant concrete modulus in MPa.
 
     Raises:
-        ValueError: if _fcm is less than 0
-        ValueError: if kE is not between 5000 and 13000
+        ValueError: If _fcm is less than 0.
+        ValueError: If kE is not between 5000 and 13000.
     """
     if _fcm < 0:
         raise ValueError(f'_fcm={_fcm} cannot be less than 0')
@@ -122,18 +121,18 @@ def Ecm(_fcm: float, kE: float = 9500) -> float:
 def hn(Ac: float, u: float) -> float:
     """Computes the notional size of a given concrete cross-section.
 
-    EN 1992-1-1:2023, Table 5.2
+    EN 1992-1-1:2023, Table 5.2.
 
     Args:
-        Ac (float): the concrete cross-sectional area in (mm2)
-        u (float): the perimeter exposed to drying (mm)
+        Ac (float): The concrete cross-sectional area in (mm2).
+        u (float): The perimeter exposed to drying (mm).
 
     Returns:
-        float: the notional size (mm)
+        float: The notional size (mm).
 
     Raises:
-        ValueError: if Ac is less than 0
-        ValueError: if u is less than 0
+        ValueError: If Ac is less than 0.
+        ValueError: If u is less than 0.
     """
     if Ac < 0:
         raise ValueError(f'Ac={Ac} cannot be less than 0')
@@ -143,22 +142,24 @@ def hn(Ac: float, u: float) -> float:
     return 2 * Ac / u
 
 
-def A_phi_correction_exp(_hn: float, atm_conditions: str) -> float:
+def A_phi_correction_exp(
+    _hn: float, atm_conditions: t.Literal['dry', 'humid']
+) -> float:
     """Computes the correction exponent for the modification for the phi_50y_t0
     with respect the fck value.
 
-    EN 1992-1-1:2023, Table 5.2
+    EN 1992-1-1:2023, Table 5.2.
 
     Args:
-        _hn (float): the notional size in mm
-        atm_conditions (str): 'dry' or 'humid'
+        _hn (float): The notional size in mm.
+        atm_conditions (str): 'dry' or 'humid'.
 
     Returns:
-        (float): the correction exponent value
+        float: The correction exponent value.
 
     Raises:
-        ValueError: if _hn is less than 100 or greater than 1000
-        ValueError: if atm_conditions is not 'dry' or 'humid'
+        ValueError: If _hn is less than 100 or greater than 1000.
+        ValueError: If atm_conditions is not 'dry' or 'humid'.
     """
     if _hn < 100:
         raise ValueError(f'_hn={_hn} cannot be less than 100')
@@ -184,18 +185,18 @@ def A_phi_correction_exp(_hn: float, atm_conditions: str) -> float:
 def phi_correction_factor(fck: float, A_exponent: float) -> float:
     """Computes the correction factor for the computation of the phi_50y_t0.
 
-    EN 1992-1-1:2023able 5.2
+    EN 1992-1-1:2023, Table 5.2.
 
     Args:
-        fck (float): characteristic strength of concrete in MPa
-        A_exponent (float): the A correction exponent value
+        fck (float): Characteristic strength of concrete in MPa.
+        A_exponent (float): The A correction exponent value.
 
     Returns:
-        float: the correction factor value
+        float: The correction factor value.
 
     Raises:
-        ValueError: if fck is not between 12 and 100 MPa
-        ValueError: if A_exponent is not between 0.64 and 0.82
+        ValueError: If fck is not between 12 and 100 MPa.
+        ValueError: If A_exponent is not between 0.64 and 0.82.
     """
     if fck < 12:
         raise ValueError(f'fck={fck} cannot be less than 12')
@@ -210,29 +211,33 @@ def phi_correction_factor(fck: float, A_exponent: float) -> float:
 
 
 def phi_50y_t0(
-    t0: float, atm_conditions: str, _hn: float, strength_dev_class: str
+    t0: float,
+    atm_conditions: t.Literal['dry', 'humid'],
+    _hn: float,
+    strength_dev_class: t.Literal['CS', 'CN', 'CR', 'slow', 'normal', 'rapid'],
 ) -> float:
     """Computes the creep coefficient of plain concrete at 50 years of loading.
     Interpolation is linear between values.
 
-    EN 1992-1-1:2023, Table 5.2
+    EN 1992-1-1:2023, Table 5.2.
 
     Args:
-        t0 (float): age at loading [days]
-        atm_conditions (str): 'dry' or 'humid'
-        _hn (float): the notional size in mm
-        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
+        t0 (float): Age at loading [days].
+        atm_conditions (str): 'dry' or 'humid'.
+        _hn (float): The notional size in mm.
+        strength_dev_class (str): Strength development class 'CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'.
 
     Returns:
-        float: the creep coefficient
+        float: The creep coefficient.
 
     Raises:
-        ValueError: if t0 is less than 1
-        ValueError: if atm_conditions is not 'dry' or 'humid'
-        ValueError: if _hn is less than 100 or larger than 1000
-        ValueError: if strength_dev_class is not 'CS', 'CN',
-            'CR', 'slow', 'normal' or 'rapid'
-        ValueError: if combination of t0 and _hn is out of scope
+        ValueError: If t0 is less than 1.
+        ValueError: If atm_conditions is not 'dry' or 'humid'.
+        ValueError: If _hn is less than 100 or larger than 1000.
+        ValueError: If strength_dev_class is not 'CS', 'CN',
+            'CR', 'slow', 'normal' or 'rapid'.
+        ValueError: If combination of t0 and _hn is out of scope.
     """
     if t0 < 1:
         raise ValueError(f't0={t0} cannot be less than 1')
@@ -324,29 +329,33 @@ def phi_50y_t0(
 
 
 def eps_cs_50y(  # noqa: PLR0912
-    fck_28: float, atm_conditions: str, _hn: float, strength_dev_class: str
+    fck_28: float,
+    atm_conditions: t.Literal['dry', 'humid'],
+    _hn: float,
+    strength_dev_class: t.Literal['CS', 'CN', 'CR', 'slow', 'normal', 'rapid'],
 ) -> float:
     """Computes the nominal total shrinkage in ‰ for concrete after a duration
     of drying of 50 years.
 
-    EN 1992-1-1:2023, Table 5.3
+    EN 1992-1-1:2023, Table 5.3.
 
     Args:
-        fck_28 (float): characteristic strength at 28 days in MPa
-        atm_conditions (str): 'dry' or 'humid'
-        _hn (float): the notional size in mm
-        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
+        fck_28 (float): Characteristic strength at 28 days in MPa
+        atm_conditions (str): 'dry' or 'humid'.
+        _hn (float): The notional size in mm.
+        strength_dev_class (str): Strength development class 'CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'.
 
     Returns:
-        float: the nominal shrinkage value in ‰
+        float: The nominal shrinkage value in percent.
 
     Raises:
-        ValueError: if fck_28 is less than 20 MPa or larger than 80 MPa
-        ValueError: if atm_conditions is not 'dry' or 'humid'
-        ValueError: if _hn is less than 100 or larger than 1000
-        ValueError: if strength_dev_class is not CS', 'CN', 'CR',
-            'slow', 'normal' or 'rapid'
-        ValueError: if combination of fck_28 and _hn is out of scope
+        ValueError: If fck_28 is less than 20 MPa or larger than 80 MPa.
+        ValueError: If atm_conditions is not 'dry' or 'humid'.
+        ValueError: If _hn is less than 100 or larger than 1000.
+        ValueError: If strength_dev_class is not CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'.
+        ValueError: If combination of fck_28 and _hn is out of scope.
     """
     if fck_28 < 20:
         raise ValueError(f'fck_28={fck_28} cannot be less than 20')
@@ -500,21 +509,23 @@ def eps_cs_50y(  # noqa: PLR0912
 
 def eta_cc(fck: float, fck_ref: float = 40) -> float:
     """Computes the factor to measure the difference between the undistributed
-    compressibe strength of a cylinder and the effective compressive strength
+    compressive strength of a cylinder and the effective compressive strength
     in a structural member.
 
-    EN 1992-1-1:2023, Eq. (5.4)
+    EN 1992-1-1:2023, Eq. (5.4).
 
     Args:
-        fck (float): the characterisitic compressive strength in MPa
-        fck_ref (float, optional): the reference compressive strength MPa
+        fck (float): The characterisitic compressive strength in MPa.
+
+    Keyword Args:
+        fck_ref (float, optional): The reference compressive strength MPa.
 
     Returns:
-        float: the value of the factor eta_cc
+        float: The value of the factor eta_cc.
 
     Raises:
-        ValueError: if fck is less than 12 MPa
-        ValueError: if fkc_ref is less or equal to 0
+        ValueError: If fck is less than 12 MPa.
+        ValueError: If fkc_ref is less or equal to 0.
     """
     if fck < 12:
         raise ValueError(f'fck={fck} must be larger or equal than 12 MPa')
@@ -524,25 +535,30 @@ def eta_cc(fck: float, fck_ref: float = 40) -> float:
     return min(math.pow(fck_ref / fck, 1 / 3), 1)
 
 
-def k_tc(t_ref: float, t0: float, strength_dev_class: str) -> float:
+def k_tc(
+    t_ref: float,
+    t0: float,
+    strength_dev_class: t.Literal['CS', 'CN', 'CR', 'slow', 'normal', 'rapid'],
+) -> float:
     """Computes the factor for considering the effect of high sustained loads
     and of time of loading on concrete compressive strength.
 
-    EN 1992-1-1:2023, Eq. (5.3)
+    EN 1992-1-1:2023, Eq. (5.3).
 
     Args:
-        t_ref (float): the reference time in days
-        t0 (float): age at loading in days
-        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal', 'rapid'
+        t_ref (float): The reference time in days.
+        t0 (float): Age at loading in days.
+        strength_dev_class (str): Strength development class 'CS', 'CN', 'CR',
+            'slow', 'normal', 'rapid'.
 
     Returns:
-        float: the factor value
+        float: The factor value.
 
     Raises:
-        ValueError: if t_ref is less than 0
-        ValueError: if t0 is less than 0
-        ValueError if strength_dev_class is not
-            'CS', 'CN', 'CR', 'slow', 'normal', 'rapid'
+        ValueError: If t_ref is less than 0.
+        ValueError: If t0 is less than 0.
+        ValueError: If strength_dev_class is not 'CS', 'CN', 'CR', 'slow',
+            'normal', 'rapid'.
     """
     if t_ref < 0:
         raise ValueError(f't_ref={t_ref} must be larger than 0')
@@ -573,25 +589,24 @@ def k_tc(t_ref: float, t0: float, strength_dev_class: str) -> float:
 def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_c: float) -> float:
     """Computes the value of the design compressive strength of concrete.
 
-    EN 1992-1-1:2023, Eq. (5.3)
+    EN 1992-1-1:2023, Eq. (5.3).
 
     Args:
-        fck (float): characteristic compressive strength in MPa
-        _eta_cc (float): factor for measuring the difference between
-            the undistributed compressive strength of a cylinder and
-            the effective compressive strength in the real structural
-            member
-        _k_tc (float): factor for taking into consideration high
-            sustained loads and of time of loading
-        gamma_c (float): partial factor of concrete
+        fck (float): Characteristic compressive strength in MPa.
+        _eta_cc (float): Factor for measuring the difference between the
+            undistributed compressive strength of a cylinder and the effective
+            compressive strength in the real structural member.
+        _k_tc (float): Factor for taking into consideration high sustained
+            loads and of time of loading.
+        gamma_c (float): Partial factor of concrete.
 
     Returns:
-        float: the design compressive strength of concrete in MPa
+        float: The design compressive strength of concrete in MPa.
 
     Raises:
-        ValueError: if fck is less than 12 MPa
-        ValueError if _etc_cc is not between 0 and 1
-        ValueError: if gamma_c is less than 1
+        ValueError: If fck is less than 12 MPa.
+        ValueError: If _etc_cc is not between 0 and 1.
+        ValueError: If gamma_c is less than 1.
     """
     if fck < 12:
         raise ValueError(f'fck={fck} must be larger or equal than 12 MPa')
@@ -603,23 +618,27 @@ def fcd(fck: float, _eta_cc: float, _k_tc: float, gamma_c: float) -> float:
     return _eta_cc * _k_tc * fck / gamma_c
 
 
-def k_tt(t_ref: float, strength_dev_class: str) -> float:
+def k_tt(
+    t_ref: float,
+    strength_dev_class: t.Literal['CS', 'CN', 'CR', 'slow', 'normal', 'rapid'],
+) -> float:
     """Computes the factor for considering the effect of high sustained loads
     and of time of loading on concrete tensile strength.
 
-    EN 1992-1-1:2023, Eq. (5.5)
+    EN 1992-1-1:2023, Eq. (5.5).
 
     Args:
-        t_ref (float): the reference time in days
-        strength_dev_class (str): 'CS', 'CN', 'CR', 'slow', 'normal' or 'rapid'
+        t_ref (float): The reference time in days.
+        strength_dev_class (str): Strength development class 'CS', 'CN', 'CR',
+            'slow', 'normal' or 'rapid'.
 
     Returns:
-        float: the factor value
+        float: The factor value.
 
     Raises:
-        ValueError: if t_ref is less than 0
-        ValueError if strength_dev_class is not 'CS', 'CN', 'CR',
-            'slow', 'normal' or 'rapid'
+        ValueError: If t_ref is less than 0.
+        ValueError: If strength_dev_class is not 'CS', 'CN', 'CR', 'slow',
+            'normal' or 'rapid'.
     """
     if t_ref < 0:
         raise ValueError(f't_ref={t_ref} must be larger than 0')
@@ -645,20 +664,20 @@ def k_tt(t_ref: float, strength_dev_class: str) -> float:
 def fctd(_fctk_5: float, _k_tt: float, gamma_c: float) -> float:
     """Computes the value of the design tensile strength of concrete.
 
-    EN 1992-1-1:2023, Eq. (5.5)
+    EN 1992-1-1:2023, Eq. (5.5).
 
     Args:
-        fctk_5 (float): the 5% mean concrete tensile strength fractile in MPa
-        _k_tt (float): the factor for considering the effect of high sustained
-            loads and of time of loading on concrete tensile strength
-        gamma_c (float): partial factor of concrete
+        fctk_5 (float): The 5% mean concrete tensile strength fractile in MPa.
+        _k_tt (float): The factor for considering the effect of high sustained
+            loads and of time of loading on concrete tensile strength.
+        gamma_c (float): Partial factor of concrete.
 
     Returns:
-        float: the design tensile strength of concrete in MPa
+        float: The design tensile strength of concrete in MPa.
 
     Raises:
-        ValueError: if fctk_5 is less than 0
-        ValueError: gamma_c is less than 1
+        ValueError: If fctk_5 is less than 0.
+        ValueError: If gamma_c is less than 1.
     """
     if _fctk_5 < 0:
         raise ValueError(f'fctk_5={_fctk_5} must be larger or equal to 0')
@@ -672,16 +691,16 @@ def eps_c1(_fcm: float) -> float:
     """Computes the strain at maximum compressive strength of concrete (fcm)
     for the Sargin constitutive law.
 
-    EN 1992-1-1:2023, Eq. (5.9)
+    EN 1992-1-1:2023, Eq. (5.9).
 
     Args:
-        _fcm (float): the mean strength of concrete in MPa
+        _fcm (float): The mean strength of concrete in MPa.
 
     Returns:
-        float: the strain at maximum compressive strength of concrete
+        float: The strain at maximum compressive strength of concrete.
 
     Raises:
-        ValueError: if _fcm is less than 12+8MPa
+        ValueError: If _fcm is less than 12+8MPa.
     """
     if _fcm < 20:
         raise ValueError(f'_fcm={_fcm} must be larger or equal to 12+8MPa')
@@ -692,16 +711,16 @@ def eps_c1(_fcm: float) -> float:
 def eps_cu1(_fcm: float) -> float:
     """Computes the strain at concrete failure of concrete.
 
-    EN 1992-1-1:2023, Eq. (5.10)
+    EN 1992-1-1:2023, Eq. (5.10).
 
     Args:
-        _fcm (float): the mean strength of concrete in MPa
+        _fcm (float): The mean strength of concrete in MPa.
 
     Returns:
-        float: the maximum strength at failure of concrete
+        float: The maximum strength at failure of concrete.
 
     Raises:
-        ValueError: if _fcm is less than 12+8MPa
+        ValueError: If _fcm is less than 12+8MPa.
     """
     if _fcm < 20:
         raise ValueError(f'_fcm={_fcm} must be larger or equal to 12+8MPa')
@@ -715,27 +734,26 @@ def sigma_c(
     """Computes the compressive stress of concrete given a strain eps_c under
     short term uniaxial compression.
 
-    EN 1992-1-1:2023, Eq. (5.6)
+    EN 1992-1-1:2023, Eq. (5.6).
 
     Args:
-        _Ecm (float): the secant modulus between sigma_c=0 and
+        _Ecm (float): The secant modulus between sigma_c=0 and
             sigma_c=0.4*fcm in MPa
-        _fcm (float): the mean compressive strength of concrete
-            in MPa
-        _eps_c (float): the strain of concrete
-        _eps_c1 (float): the strain of concrete at stress _fcm
-        _eps_cu1 (float): the strain at failure of concrete
+        _fcm (float): The mean compressive strength of concrete in MPa.
+        _eps_c (float): The strain of concrete.
+        _eps_c1 (float): The strain of concrete at stress _fcm.
+        _eps_cu1 (float): The strain at failure of concrete.
 
     Returns:
-        float: the compressive stress of concrete in MPa
+        float: The compressive stress of concrete in MPa.
 
     Raises:
-        ValueError: if _Ecm is less or equal to 0
-        ValueError: if _fcm is less than 12+8MPa
-        ValueError: if _eps_c is less than 0
-        ValueError: if _eps_c1 is less or equal to 0
-        ValueError: if _eps_cu1 is less or equal than 0
-        ValueError: if _eps_c is larger than _eps_cu1
+        ValueError: If _Ecm is less or equal to 0.
+        ValueError: If _fcm is less than 12+8MPa.
+        ValueError: If _eps_c is less than 0.
+        ValueError: If _eps_c1 is less or equal to 0.
+        ValueError: If _eps_cu1 is less or equal than 0.
+        ValueError: If _eps_c is larger than _eps_cu1.
     """
     if _Ecm <= 0:
         raise ValueError(f'_Ecm={_Ecm} must be larger than 0')
@@ -762,21 +780,20 @@ def sigma_c(
     return n / d * _fcm
 
 
-def weight_c(concrete_type: str) -> float:
+def weight_c(concrete_type: t.Literal['nc', 'npc']) -> float:
     """Returns the mean unit weight of concrete in kN/m3.
 
-    EN 1992-1-1:2023, 5.1.6-5
+    EN 1992-1-1:2023, 5.1.6-5.
 
     Args:
-        concrete_type (str):
-            'nc' for normal concrete
-            'npc' for normal plain concrete
+        concrete_type (str): 'nc' for normal concrete, or 'npc' for normal
+            plain concrete.
 
     Returns:
-        float: mean unit weight in kN/m3
+        float: Mean unit weight in kN/m3.
 
     Raises:
-        ValueError: if concrete_type is not 'nc' or 'npc'
+        ValueError: If concrete_type is not 'nc' or 'npc'.
     """
     concrete_type = concrete_type.lower().strip()
 
@@ -795,55 +812,23 @@ def alpha_c_th() -> float:
     """Returns the linear coefficient of thermal expansion in 1/Cº for
     concrete.
 
-    EN 1992-1-1:2023, 5.1.6-6
+    EN 1992-1-1:2023, 5.1.6-6.
 
     Returns:
-        float: the linear coefficient of thermal expansion in 1/Cº
-            for concrete
+        float: The linear coefficient of thermal expansion in 1/Cº for
+        concrete.
     """
     return 10 * 10e-6
-
-
-def r_steel_stress_strain_params(
-    ductility_class: str,
-) -> t.Tuple[float, float]:
-    """Returns the properties that define the stress-strain diagram for
-    reinforced steel k and eps_uk.
-
-    EN 1992-1-1:2023, Table 5.5
-
-    Args:
-        ductility_class (str): 'A', 'B' or 'C'
-
-    Returns:
-        Tuple(float, float): with the characteristic value k
-            and the characteristic strain at maximum force eps_uk
-
-    Raises:
-        ValueError: if ductility class is not 'A', 'B' or 'C'
-    """
-    ductility_class = ductility_class.upper().strip()
-
-    if ductility_class == 'A':
-        return (1.05, 0.025)
-    if ductility_class == 'B':
-        return (1.08, 0.05)
-    if ductility_class == 'C':
-        return (1.25, 0.075)
-    raise ValueError(
-        f'ductility_class={ductility_class} can only '
-        + 'take as values "A", "B" or "C'
-    )
 
 
 def Es() -> float:
     """Returns the value of the modulus of elasticity for weldable reinforcing
     steel.
 
-    EN 1992-1-1:2023, 5.2.4-3
+    EN 1992-1-1:2023, 5.2.4-3.
 
     Returns:
-        float: modulus of elasticity in MPa
+        float: Modulus of elasticity in MPa.
     """
     return 200000
 
@@ -855,8 +840,8 @@ def alpha_s_th() -> float:
     EN 1992-1-1:2023, 5.2.4-5
 
     Returns:
-        float: the linear coefficient of thermal expansion in 1/Cº
-            for weldable reinforce steel
+        float: The linear coefficient of thermal expansion in 1/Cº for weldable
+        reinforcement steel.
     """
     return 10 * 10e-6
 
@@ -865,10 +850,10 @@ def weight_s() -> float:
     """Returns the mean unit weight of reinforced steel for the purposes of
     design in kN/m3.
 
-    EN 1992-1-1:2023.2.4-4
+    EN 1992-1-1:2023.2.4-4.
 
     Returns:
-        float: the mean unit weight in kN/m3
+        float: The mean unit weight in kN/m3.
     """
     return 78.5
 
@@ -876,18 +861,18 @@ def weight_s() -> float:
 def fyd(fyk: float, gamma_s: float) -> float:
     """Design value for the yielding stress for welding reinforcing steel.
 
-    EN 1992-1-1:2023, Eq (5.11)
+    EN 1992-1-1:2023, Eq (5.11).
 
     Args:
-        fyk (float): characteristic yield stress for the steel in MPa
-        gamma_s (float): safety coefficient
+        fyk (float): Characteristic yield stress for the steel in MPa.
+        gamma_s (float): Safety coefficient.
 
     Returns:
-        float: design yielding stress for steel in MPa
+        float: Design yielding stress for steel in MPa.
 
     Raises:
-        ValueError: if fyk is less than 0
-        ValueError: if gamma_s is less than 1
+        ValueError: If fyk is less than 0.
+        ValueError: If gamma_s is less than 1.
     """
     if fyk < 0:
         raise ValueError(f'fyk={fyk} cannot be less than 0')
@@ -900,19 +885,18 @@ def fyd(fyk: float, gamma_s: float) -> float:
 def eps_ud(eps_uk: float, gamma_s: float) -> float:
     """Design value for the ultimate limit strain welding reinforcing steel.
 
-    EN 1992-1-1:2023, 5.2.4-2
+    EN 1992-1-1:2023, 5.2.4-2.
 
     Args:
-        eps_uk (float): characteristic ultimate limit
-            strain
-        gamma_s (float): safety coefficient
+        eps_uk (float): Characteristic ultimate limit strain.
+        gamma_s (float): Safety coefficient.
 
     Returns:
-        float: design ultimate strain limit
+        float: Design ultimate strain limit.
 
     Raises:
-        ValueError: if eps_uk is less than 0
-        ValueError: if gamma_s is less than 1
+        ValueError: If eps_uk is less than 0.
+        ValueError: If gamma_s is less than 1.
     """
     if eps_uk < 0:
         raise ValueError(f'eps_uk={eps_uk} must be equal or larger to 0')
@@ -928,32 +912,30 @@ def sigma_s(
     """Compute the stress for welded reinforcing steel in MPa for a given
     strain.
 
-    EN 1992-1-1:2023, 5.2.4
+    EN 1992-1-1:2023, 5.2.4.
 
     Args:
-        eps (float): the strain value
-        fy (float): the yielding stress in MPa.
-            fyd: for the design strength
-            fyk: for the characteristic strength
-        k (float): curve parameter. Ratio between the ultimate
-            stress and the yielding stress.
-            k = 1 for horizontal post-elastic branch without
-            strain limit
-        eps_u (float): ultimate strain at failure
-            eps_ud: for the design ultimate strain
-            eps_uk: for the characteristic ultimate strain
+        eps (float): The strain value.
+        fy (float): The yielding stress in MPa. Use fyd for the design
+            strength, and fyk for the characteristic strength.
+        k (float): Curve parameter. Ratio between the ultimate stress and the
+            yielding stress. k = 1 for horizontal post-elastic branch without
+            strain limit.
+        eps_u (float): Ultimate strain at failure. Use eps_ud for the design
+            ultimate strain, and eps_uk for the characteristic ultimate strain.
 
     Keyword Args:
-        _Es (float): the modulus of elasticity for reinforcing steel
+        _Es (float): The modulus of elasticity for reinforcing steel.
+
     Returns:
-        float: stre nominal stress in MPa
+        float: The nominal stress in MPa.
 
     Raises:
-        ValueError: if eps is less than 0 or larger than eps_uk
-        ValueError: if _Es is less or equal to 0
-        ValueError: if fy is less or equal to 0
-        ValueError: if k is less than 1
-        ValueError: if eps_u is less or equal to 0 and k > 1
+        ValueError: If eps is less than 0 or larger than eps_uk.
+        ValueError: If _Es is less or equal to 0.
+        ValueError: If fy is less or equal to 0.
+        ValueError: If k is less than 1.
+        ValueError: If eps_u is less or equal to 0 and k > 1.
     """
     if eps < 0:
         raise ValueError(f'eps={eps} must be larger or equal to 0')
@@ -983,27 +965,39 @@ def sigma_s(
 
 
 def p_steel_stress_params(
-    prestress_class: str, element: str
+    prestress_class: t.Literal[
+        'Y1560',
+        'Y1670',
+        'Y1770',
+        'Y1860',
+        'Y1770',
+        'Y1860',
+        'Y1960',
+        'Y2060',
+        'Y1030',
+        'Y1050',
+        'Y1100',
+        'Y1230',
+    ],
+    element: t.Literal['W', 'S', 'B'],
 ) -> t.Tuple[float, float]:
     """Computes the stress-diagram parameters fp01k and fpk.
 
-    EN 1992-1-1:2023, 5.3.3
+    EN 1992-1-1:2023, 5.3.3.
 
     Args:
-        prestress_class (str): possible values: Y1560, 1670,
+        prestress_class (str): Possible values: Y1560, Y1670,
             Y1770, Y1860, Y1770, Y1860, Y1960, Y2060,
             Y1030, Y1050, Y1100 and Y1230
-        element (str):
-            'W' for Wires
-            'S' for Strands
-            'B' for Bars
+        element (str): Element type, 'W' for Wires, 'S' for Strands, and 'B'
+            for Bars.
 
     Returns:
-        Tuple(float, float): with the value of fp01k and fpk in MPa
+        Tuple(float, float): With the value of fp01k and fpk in MPa.
 
     Raises:
-        ValueError: if combination of prestress_class and element
-            is not a possible value from the range
+        ValueError: If combination of prestress_class and element is not a
+            possible value from the range.
     """
     prestress_class = prestress_class.upper().strip()
     element = element.upper().strip()
@@ -1044,19 +1038,19 @@ def p_steel_stress_params(
 def fpd(fp01k: float, gamma_P: float) -> float:
     """Computes the design value for the prestressing steel stress.
 
-    EN 1992-1-1:2023, 5.3.3
+    EN 1992-1-1:2023, 5.3.3.
 
     Args:
-        fp01k (float): the 0.1% proof stress in MPa
-        gamma_P (float): the safety coefficient
+        fp01k (float): The 0.1% proof stress in MPa.
+        gamma_P (float): The safety coefficient.
 
     Returns:
-        float: the design value for the design prestressing
-            steel stress in MPa
+        float: The design value for the design prestressing steel stress in
+        MPa.
 
     Raises:
-        ValueError: if fp01k is less than 0
-        ValueError: if gamma_P is less than 1
+        ValueError: If fp01k is less than 0.
+        ValueError: If gamma_P is less than 1.
     """
     if fp01k < 0:
         raise ValueError(f'fp01k={fp01k} must be larger or equal to 0')
@@ -1075,32 +1069,27 @@ def sigma_p(
 ) -> float:
     """Computes the stress for prestressing steel as a function of the strain.
 
-    EN 1992-1-1:2023, 5.3.3
+    EN 1992-1-1:2023, 5.3.3.
 
     Args:
-        eps (float): strain value
-        fpy (float): yielding stress of the steel in MPa
-            fd for design stress values
-            fp01k for nominal stress values
-        fpu (float): the maximum stress at eps_u in MPa
-            fpd: for design stress values
-            fpk: for nominal stress values
-            fpu == fpy for horizontal post-elastic branch without
-            strain limit.
+        eps (float): Strain value.
+        fpy (float): Yielding stress of the steel in MPa. Use fd for design
+            stress values, and fp01k for nominal stress values.
+        fpu (float): The maximum stress at eps_u in MPa. Use fpd for design
+            stress values, fpk for nominal stress values, and fpu == fpy for
+            horizontal post-elastic branch without strain limit.
 
     Keyword Args:
-        eps_u (float): ultimate strain.
-            eps_uk = 0.035 for nominal ultimate strain
-            eps_ud for design ultimate strain
-        Ep (float): modulus of elasticity of prestressing steel
-            in MPa
+        eps_u (float): Ultimate strain. Use eps_uk = 0.035 for nominal ultimate
+            strain, and eps_ud for design ultimate strain.
+        Ep (float): Modulus of elasticity of prestressing steel in MPa.
 
     Raises:
-        ValueError: if eps is less than 0 or larger than eps_u
-        ValueError: if fpy is less or equal to 0
-        ValueError: if fpu is less than fpy
-        ValueError: if eps_u is lower or equal to 0
-        ValueError: if _Ep is less or equal to 0
+        ValueError: If eps is less than 0 or larger than eps_u.
+        ValueError: If fpy is less or equal to 0.
+        ValueError: If fpu is less than fpy.
+        ValueError: If eps_u is lower or equal to 0.
+        ValueError: If _Ep is less or equal to 0.
     """
     if eps < 0:
         raise ValueError(f'eps={eps} must be larger or equal to 0')
@@ -1133,7 +1122,7 @@ def reinforcement_duct_props(
     """Return a dict with the minimum characteristic ductility properties for
     reinforcement ductility class.
 
-    EUROCODE 2 1992-1-1:2023, Tab. 5.5
+    EUROCODE 2 1992-1-1:2023, Tab. 5.5.
 
     Args:
         fyk (float): The characteristic yield strength.

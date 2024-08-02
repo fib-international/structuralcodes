@@ -499,25 +499,6 @@ def test_alpha_c_th():
     )
 
 
-@pytest.mark.parametrize(
-    'ductility_class, expected_k, expected_eps_uk',
-    [('A', 1.05, 0.025), ('B', 1.08, 0.05), ('C', 1.25, 0.075)],
-)
-def test_r_steel_stress_strain_params(
-    ductility_class, expected_k, expected_eps_uk
-):
-    """Test r_steel_stress_strain retuns proper values."""
-    params = _section5_materials.r_steel_stress_strain_params(ductility_class)
-    assert math.isclose(params[0], expected_k, rel_tol=10e-5)
-    assert math.isclose(params[1], expected_eps_uk, rel_tol=10e-5)
-
-
-def test_r_steel_stress_strain_params_raises_errors():
-    """Test r_steel_stress_strain_params raises errors."""
-    with pytest.raises(ValueError):
-        _section5_materials.r_steel_stress_strain_params('asdf')
-
-
 def test_Es():
     """Test Es function."""
     assert math.isclose(_section5_materials.Es(), 200000, rel_tol=10e-5)
