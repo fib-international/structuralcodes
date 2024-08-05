@@ -290,20 +290,19 @@ def test_eps_c1_getter(fck):
     assert math.isclose(c.eps_c1, expected, rel_tol=1e-6)
 
 
-# TO SEE WITH MORTEN
-# eps_c1_parametrized = pytest.mark.parametrize(
-#     'test_input, expected',
-#     [(12, 1.8), (35, 2.25), (55, 2.5), (90, 2.8)],
-# )
+eps_c1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.8), (35, 2.25), (55, 2.5), (90, 2.8)],
+)
 
 
-# @eps_c1_parametrized
-# def test_eps_c1_setter(test_input, expected):
-#     """Test the eps_c1 setter."""
-#     c = ConcreteEC2_2004(fck=test_input)
-#     c.eps_c1 = expected * 1e-3
+@eps_c1_parametrized
+def test_eps_c1_setter(test_input, expected):
+    """Test the eps_c1 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_c1 = expected * 1e-3
 
-#     assert math.isclose(c.eps_c1, expected * 1e-3)
+    assert math.isclose(c.eps_c1, expected * 1e-3)
 
 
 @fck_parametrized

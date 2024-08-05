@@ -247,7 +247,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
                 'A suspect value is input for eps_c1 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_c1 = value
+        self._eps_c1 = value
 
     @property
     def eps_cu1(self) -> float:
