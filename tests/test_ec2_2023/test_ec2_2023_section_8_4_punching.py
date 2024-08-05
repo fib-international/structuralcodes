@@ -177,3 +177,78 @@ def test_kpp_xy(kpp_x, kpp_y, expected):
     """Test kpp_xy."""
     result = _section_8_4_punching.kpp_xy(kpp_x, kpp_y)
     assert result == pytest.approx(expected, rel=1e-3)
+
+
+@pytest.mark.parametrize(
+    'tau_Rd_c, tau_Ed, rho_w, f_ywd, d_v, phi_w, d_dg, k_pb, expected',
+    [
+        (0.5, 0.4, 0.01, 500, 200, 10, 20, 0.6, 5.0),
+        (0.6, 0.5, 0.02, 450, 250, 12, 16, 0.7, 9.0),
+    ],
+)
+def test_calculate_tau_Rd_cs(
+    tau_Rd_c, tau_Ed, rho_w, f_ywd, d_v, phi_w, d_dg, k_pb, expected
+):
+    """Test the calculation of punching shear resistance."""
+    result = _section_8_4_punching.tau_Rd_cs(
+        tau_Rd_c, tau_Ed, rho_w, f_ywd, d_v, phi_w, d_dg, k_pb
+    )
+    assert result == pytest.approx(expected, rel=1e-3)
+
+
+@pytest.mark.parametrize(
+    'Asw, sr, st, expected',
+    [
+        (100, 150, 200, 0.00333),
+        (150, 100, 250, 0.006),
+    ],
+)
+def test_calculate_rho_w(Asw, sr, st, expected):
+    """Test the calculation of vertical shear reinforcement ratio."""
+    result = _section_8_4_punching.rho_w(Asw, sr, st)
+    assert result == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'd_x, d_y, c_v, expected',
+    [
+        (300, 400, 50, 300),
+        (500, 500, 40, 460),
+    ],
+)
+def test_calculate_dv_out(d_x, d_y, c_v, expected):
+    """Test the calculation of dv,out for shear reinforcement."""
+    result = _section_8_4_punching.dv_out(d_x, d_y, c_v)
+    assert result == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'tau_Rd_c, b_0, d_v, reinforcement_type, expected',
+    [
+        (0.5, 300, 200, 'studs', 0.699),
+        (0.6, 250, 150, 'links_and_stirrups', 0.729),
+    ],
+)
+def test_calculate_tau_Rd_max(
+    tau_Rd_c, b_0, d_v, reinforcement_type, expected
+):
+    """Test the calculation of maximum punching shear resistance."""
+    result = _section_8_4_punching.tau_Rd_max_punch(
+        tau_Rd_c, b_0, d_v, reinforcement_type
+    )
+    assert result == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'b0_5, d_v, dv_out, eta_c, expected',
+    [
+        (2000, 250, 300, 1.2, 964.506),
+        (1800, 300, 350, 1.1, 1092.933),
+    ],
+)
+def test_calculate_b0_5_out(b0_5, d_v, dv_out, eta_c, expected):
+    """Test the calculation of the outer control perimeter
+    where shear reinforcement is not required.
+    """
+    result = _section_8_4_punching.b0_5_out(b0_5, d_v, dv_out, eta_c)
+    assert result == pytest.approx(expected, rel=1e-2)

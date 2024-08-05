@@ -356,3 +356,178 @@ def kpp_xy(kpp_x: float, kpp_y: float) -> float:
         raise ValueError(f'kpp_y must not be negative. Got {kpp_y}')
 
     return math.sqrt(kpp_x * kpp_y)
+
+
+def tau_Rd_cs(
+    tau_Rd_c: float,
+    tau_Ed: float,
+    rho_w: float,
+    f_ywd: float,
+    d_v: float,
+    phi_w: float,
+    d_dg: float,
+    k_pb: float,
+) -> float:
+    """Calculate the punching shear resistance of
+        slabs with shear reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.104), (8.105), (8.106)
+
+    Args:
+        tau_Rd_c (float): Punching shear stress resistance of slabs
+            without shear reinforcement in MPa.
+        tau_Ed (float): Design value of the shear stress in MPa.
+        rho_w (float): Vertical shear reinforcement ratio (dimensionless).
+        f_ywd (float): Yield strength of shear reinforcement in MPa.
+        d_v (float): Effective depth of the slab in mm.
+        phi_w (float): Diameter of the shear reinforcement in mm.
+        d_dg (float): Maximum aggregate size in mm.
+        k_pb (float): Coefficient related to the punching shear
+            resistance (dimensionless).
+
+    Returns:
+        float: Punching shear resistance of slabs with shear
+            reinforcement in MPa.
+
+    Raises:
+        ValueError: If any input is negative.
+    """
+    # Validate inputs
+    tau_Rd_c = abs(tau_Rd_c)
+    tau_Ed = abs(tau_Ed)
+    if any(x < 0 for x in [rho_w, f_ywd, d_v, phi_w, d_dg, k_pb]):
+        raise ValueError('Input values must not be negative.')
+
+    # Calculate ηc
+    eta_c = tau_Rd_c / tau_Ed
+
+    # Calculate ηs
+    eta_s = d_v / (150 * phi_w) + math.sqrt(15 * d_dg / d_v) * (
+        1 / (eta_c * k_pb)
+    ) ** (3 / 2)
+    eta_s = min(eta_s, 0.8)
+
+    # Calculate τRd,cs
+    tau_Rd_cs = eta_c * tau_Rd_c + eta_s * rho_w * f_ywd
+    return max(tau_Rd_cs, rho_w * f_ywd)
+
+
+def rho_w(Asw: float, sr: float, st: float) -> float:
+    """Calculate the vertical shear reinforcement ratio.
+
+    EN1992-1-1:2023 Eq. (8.107)
+
+    Args:
+        Asw (float): Area of one leg of shear reinforcement in mm2.
+        sr (float): Radial spacing of shear reinforcement in mm.
+        st (float): Average tangential spacing of perimeters of
+            shear reinforcement in mm.
+
+    Returns:
+        float: Vertical shear reinforcement ratio (dimensionless).
+
+    Raises:
+        ValueError: If any input is negative.
+    """
+    # Validate inputs
+    if any(x < 0 for x in [Asw, sr, st]):
+        raise ValueError('Input values must not be negative.')
+
+    # Calculate ρw
+    return Asw / (sr * st)
+
+
+def dv_out(d_x: float, d_y: float, c_v: float) -> float:
+    """Calculate the shear resisting effective depth of the
+        outer shear reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.108)
+
+    Args:
+        d_x (float): Effective depth in the x-direction in mm.
+        d_y (float): Effective depth in the y-direction in mm.
+        c_v (float): Concrete cover to the shear reinforcement in mm.
+
+    Returns:
+        float: Effective depth of the outer shear reinforcement in mm.
+
+    Raises:
+        ValueError: If any input is negative.
+    """
+    # Validate inputs
+    if any(x < 0 for x in [d_x, d_y, c_v]):
+        raise ValueError('Input values must not be negative.')
+
+    # Calculate dv,out
+    return (d_x + d_y) / 2 - c_v
+
+
+def tau_Rd_max_punch(
+    tau_Rd_c: float,
+    b_0: float,
+    d_v: float,
+    reinforcement_type: Literal['studs', 'links and stirrups'],
+) -> float:
+    """Calculate the maximum punching shear resistance.
+
+    EN1992-1-1:2023 Eq. (8.109), (8.110), (8.111)
+
+    Args:
+        tau_Rd_c (float): Punching shear stress resistance of
+            slabs without shear reinforcement in MPa.
+        b_0 (float): Control perimeter at a distance dv,out/2 in mm.
+        d_v (float): Effective depth of the slab in mm.
+        reinforcement_type (str): Type of shear reinforcement,
+            either 'studs' or 'links_and_stirrups'.
+
+    Returns:
+        float: Maximum punching shear resistance in MPa.
+
+    Raises:
+        ValueError: If any input is negative or reinforcement_type is invalid.
+    """
+    # Validate inputs
+    if any(x < 0 for x in [tau_Rd_c, b_0, d_v]):
+        raise ValueError('Input values must not be negative.')
+    if reinforcement_type not in ['studs', 'links_and_stirrups']:
+        raise ValueError(
+            "reinforcement_type must be either 'studs' or 'links_and_stirrups'"
+        )
+
+    # Calculate ηsys
+    if reinforcement_type == 'studs':
+        eta_sys = max(0.70 + 0.63 * (b_0 / d_v) ** (1 / 4), 1)
+    else:  # links_and_stirrups
+        eta_sys = max(0.50 + 0.63 * (b_0 / d_v) ** (1 / 4), 1)
+
+    # Calculate τRd,max
+    return eta_sys * tau_Rd_c
+
+
+def b0_5_out(b0_5: float, d_v: float, dv_out: float, eta_c: float) -> float:
+    """Calculate the outer control perimeter at which
+        shear reinforcement is not required.
+
+    EN1992-1-1:2023 Eq. (8.112)
+
+    Args:
+        b0_5 (float): Control perimeter located at a distance dv/2
+            from the face of the supporting area in mm.
+        d_v (float): Effective depth of the slab in mm.
+        dv_out (float): Shear-resisting effective depth
+            of the outer shear reinforcement in mm.
+        eta_c (float): Coefficient defined in Formula (8.105) (dimensionless).
+
+    Returns:
+        float: Outer control perimeter where shear reinforcement
+            is not required in mm.
+
+    Raises:
+        ValueError: If any input is negative.
+    """
+    # Validate inputs
+    if any(x < 0 for x in [b0_5, d_v, dv_out, eta_c]):
+        raise ValueError('Input values must not be negative.')
+
+    # Calculate b0,5,out
+    return b0_5 * ((d_v / dv_out) * (1 / eta_c)) ** 2

@@ -49,16 +49,30 @@ from ._section9_sls import (
     wk_cal2,
 )
 from ._section_8_4_punching import (
+    a_pd,
+    b0_5_out,
     beta_e,
     dv,
+    dv_out,
+    kpp,
     kpp_xy,
+    rho_w,
     tau_Ed_punch,
     tau_Ed_punch_d,
+    tau_Rd_cs,
+    tau_Rd_max_punch,
     tau_Rd_punch,
 )
 
 __all__ = [
     'dv',
+    'a_pd',
+    'b0_5_out',
+    'kpp',
+    'tau_Rd_max_punch',
+    'dv_out',
+    'tau_Rd_cs',
+    'rho_w',
     'kpp_xy',
     'tau_Rd_punch',
     'tau_Ed_punch',
