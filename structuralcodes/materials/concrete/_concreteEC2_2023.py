@@ -1,6 +1,7 @@
 """The concrete class for EC2 2023 Concrete Material."""
 
 import typing as t
+import warnings
 
 from structuralcodes.codes import ec2_2023
 
@@ -22,6 +23,10 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
     _fctk_95: t.Optional[float] = None
     _eps_c1: t.Optional[float] = None
     _eps_cu1: t.Optional[float] = None
+    _k_sargin: t.Optional[float] = None
+    _eps_c2: t.Optional[float] = None
+    _eps_cu2: t.Optional[float] = None
+    _n_parabolic_rectangular: t.Optional[float] = None
 
     def __init__(
         self,
@@ -90,6 +95,10 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         self._fctk_95 = None
         self._eps_c1 = None
         self._eps_cu1 = None
+        self._k_sargin = None
+        self._eps_c2 = None
+        self._eps_cu2 = None
+        self._n_parabolic_rectangular = None
 
     @property
     def fcm(self) -> float:
@@ -237,6 +246,21 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         self._eps_c1 = self._eps_c1 or ec2_2023.eps_c1(self.fcm)
         return self._eps_c1
 
+    @eps_c1.setter
+    def eps_c1(self, value: float):
+        """Sets a user defined value for strain at peak strenght
+        for Sargin constitutive law.
+
+        Args:
+            value (float): the new value for eps_c1, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_c1 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._esp_c1 = value
+
     @property
     def eps_cu1(self) -> float:
         """Returns the strain at concrete failure of concrete.
@@ -247,9 +271,161 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         self._eps_cu1 = self._eps_cu1 or ec2_2023.eps_cu1(self.fcm)
         return self._eps_cu1
 
+    @eps_cu1.setter
+    def eps_cu1(self, value: float):
+        """Sets the nominal ultimate strain for Sargin constitutive law.
+
+        Args:
+            value (float): the new value for eps_cu1, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_cu1 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._esp_cu1 = value
+
+    @property
+    def k_sargin(self) -> float:
+        """Returns the k coefficient for Sargin constitutive law.
+
+        Returns:
+            float: k coefficient for Sargin constitutive law.
+        """
+        self._k_sargin = self._k_sargin or ec2_2023.k_sargin(
+            _Ecm=self.Ecm,
+            _fcm=self.fcm,
+            _eps_c1=self.eps_c1,
+        )
+        return self._k_sargin
+
+    @k_sargin.setter
+    def k_sargin(self, value: float):
+        """Sets the the coefficient for Sargin constitutive law.
+
+        Args:
+            value (float): the new value for k, no units
+
+        Raises:
+            ValueError if value < 0
+        """
+        if value < 0:
+            raise ValueError(f'n should be a positive value ({value} given)')
+        self._k_sargin = value
+
+    @property
+    def eps_c2(self) -> float:
+        """Returns the strain at maximum compressive strength
+            of concrete (fcd) for the Parabola-rectangle constitutive law.
+
+        Returns:
+            float: the strain at maximum compressive strength of concrete
+        """
+        self._eps_c2 = self._eps_c2 or ec2_2023.eps_c2()
+        return self._eps_c2
+
+    @eps_c2.setter
+    def eps_c2(self, value: float):
+        """Sets the strain at maximum compressive strength
+            of concrete (fcd) for the Parabola-rectangle constitutive law.
+
+        Args:
+            value (float): the new value for eps_c2, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_c2 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._esp_c2 = value
+
+    @property
+    def eps_cu2(self) -> float:
+        """Returns the strain at concrete failure of concrete for the
+            Parabola-rectangle constitutive law.
+
+        Returns:
+            float: the maximum strain at failure of concrete
+        """
+        self._eps_cu2 = self._eps_cu2 or ec2_2023.eps_cu2()
+        return self._eps_cu2
+
+    @eps_cu2.setter
+    def eps_cu2(self, value: float):
+        """Sets the strain at concrete failure of concrete for the
+            Parabola-rectangle constitutive law.
+
+        Args:
+            value (float): the new value for eps_cu2, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_cu2 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._esp_cu2 = value
+
+    @property
+    def n_parabolic_rectangular(self) -> float:
+        """Returns the coefficient for Parabola-rectangle constitutive law.
+
+        Returns:
+        float: the exponent for Parabola-recangle law.
+        """
+        self._n_parabolic_rectangular = (
+            self._n_parabolic_rectangular
+            or ec2_2023.n_parabolic_rectangular(self.fck)
+        )
+        return self._n_parabolic_rectangular
+
+    @n_parabolic_rectangular.setter
+    def n_parabolic_rectangular(self, value: float):
+        """Sets the coefficient for Parabola-rectangle constitutive law.
+
+        Args:
+            value (float): the new value for n, no units
+
+        Raises:
+            ValueError if value < 0
+        """
+        if value < 0:
+            raise ValueError(f'n should be a positive value ({value} given)')
+        if value >= 5:
+            warnings.warn(
+                'A suspect value is input for eps_cu2 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._n_parabolic_rectangular = value
+
     @property
     def gamma_c(self) -> float:
         """The partial factor for concrete."""
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._gamma_c or 1.5
+
+    def __elastic__(self) -> dict:
+        """Returns kwargs for creating an elastic constitutive law."""
+        return {'E': self.Ecm}
+
+    def __parabolarectangle__(self) -> dict:
+        """Returns kwargs for creating a parabola rectangle const law."""
+        return {'fc': self.fcd(), 'eps_0': -0.002, 'eps_u': -0.0035, 'n': 2}
+
+    def __sargin__(self) -> dict:
+        """Returns kwargs for creating a Sargin const law."""
+        return {
+            'fc': self.fcd(),
+            'eps_c1': self.eps_c1,
+            'eps_cu1': self.eps_cu1,
+            'k': self.k_sargin,
+        }
+
+    def __popovics__(self) -> dict:
+        """Returns kwargs for creating a Sargin const law."""
+        return {
+            'fc': self.fcd(),
+            'eps_c': self.eps_c1,
+            'eps_cu': self.eps_cu1,
+            'Ec': self.Ecm,
+        }

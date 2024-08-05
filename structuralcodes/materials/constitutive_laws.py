@@ -5,9 +5,6 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from structuralcodes.materials.concrete import Concrete
-from structuralcodes.materials.reinforcement import Reinforcement
-
 from ..core.base import ConstitutiveLaw, Material
 
 
@@ -377,6 +374,114 @@ class ParabolaRectangle(ConstitutiveLaw):
         if yielding:
             return (100, self._eps_0)
         return (100, self._eps_u)
+
+
+class BilinearCompression(ConstitutiveLaw):
+    """Class for Bilinear Elastic-PerfectlyPlastic Constitutive Law for
+    Concrete (only compression behavior).
+    """
+
+    __materials__: t.Tuple[str] = ('concrete',)
+
+    def __init__(
+        self,
+        fc: float,
+        eps_c: float,
+        eps_cu: t.Optional[float] = None,
+        name: t.Optional[str] = None,
+    ) -> None:
+        """Initialize a BilinearCompression Material.
+
+        Args:
+            fc (float): compressive strength (negative number)
+            eps_c (float): strain at compressive strength (pure number)
+        eps_cu (float): ultimate strain (pure number)
+        """
+        name = name if name is not None else 'BilinearCompressionLaw'
+        super().__init__(name=name)
+        self._fc = -abs(fc)
+        self._eps_c = -abs(eps_c)
+        self._eps_cu = -abs(eps_cu)
+        self._E = self._fc / self._eps_c
+
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
+        """Return the stress given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
+        sig = self._E * eps
+        sig[sig < self._fc] = self._fc
+        sig[eps > 0] = 0
+        sig[eps < self._eps_cu] = 0
+        return sig
+
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+        """Return the tangent for given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        tangent = np.ones_like(eps) * self._E
+        tangent[eps < self._eps_c] = 0.0
+
+        return tangent
+
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin
+        integration in a simply formatted way.
+
+        Args:
+            strain: (float, float) tuple defining the strain
+                profile: eps = strain[0] + strain[1]*y
+        Returns:
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch we are
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            if strain[0] > 0:
+                # We are in tensile branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] > self._eps_0:
+                # We are in the linear branch
+                strains = None
+                a0 = self._E * strain[0]
+                a1 = self._E * strain[1]
+                coeff.append((a0, a1))
+            elif strain[0] >= self._eps_cu:
+                # We are in the constant branch
+                strains = None
+                coeff.append((self._fc,))
+            else:
+                # We are in a branch of non-resisting concrete
+                # Too much compression
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # linear part
+            strains.append((self._eps_c, 0))
+            a0 = self._E * strain[0]
+            a1 = self._E * strain[1]
+            coeff.append((a0, a1))
+            # Constant part
+            strains.append((self._eps_cu, self._eps_c))
+            coeff.append((self._fc,))
+        return strains, coeff
+
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (100, self._eps_c)
+        return (100, self._eps_cu)
 
 
 class Sargin(ConstitutiveLaw):
@@ -784,6 +889,8 @@ class UserDefined(ConstitutiveLaw):
 CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'elastic': Elastic,
     'elasticplastic': ElasticPlastic,
+    'elasticperfectlyplastic': ElasticPlastic,
+    'bilinearcompression': BilinearCompression,
     'parabolarectangle': ParabolaRectangle,
     'popovics': Popovics,
     'sargin': Sargin,
@@ -807,21 +914,24 @@ def create_constitutive_law(
         material (Material): The material containing the properties needed for
             the definition of the constitutive law
     """
+    law = None
     const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name.lower())
     if const_law is not None:
-        # Here I should call const_law passing arguments needed by each one or
-        # the material itself???????
-        # const_law(xxxx)
-        if isinstance(material, Concrete):
-            # It is a concrete
-            if constitutive_law_name.lower() == 'parabolarectangle':
-                fcd = material.fcd()
-                const_law(fcd)
-
-        elif isinstance(material, Reinforcement):
-            # Do somthing else
-            pass
+        method_name = f'__{constitutive_law_name}__'
+        # check if the material object has the special method needed
+        if hasattr(material, method_name):
+            print('The method is there!')
+            method = getattr(material, method_name)
+            if callable(method):
+                kwargs = method()
+                print(kwargs)
+                # create the constitutive law
+                law = const_law(**kwargs)
         else:
             raise ValueError(
-                f'Material type not known ({type(material).__name__})'
+                f'Constitutive law {constitutive_law_name} not available for'
+                f' material {material.__class__.__name__}'
             )
+    else:
+        raise ValueError(f'Unknown constitutive law: {constitutive_law_name}')
+    return law

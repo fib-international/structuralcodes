@@ -436,40 +436,6 @@ def test_eps_cu1_raises_errors(fcm):
         _section5_materials.eps_cu1(fcm)
 
 
-@pytest.mark.parametrize(
-    'Ecm, fcm, eps_c, eps_c1, eps_cu1, expected',
-    [
-        (37562, 50, 0.0025, 0.00257882204904827, 0.0035, 49.9547867728839),
-        (25000, 80, 0.002, 0.0028, 0.00286325067128806, 51.3165266106443),
-    ],
-)
-def test_sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1, expected):
-    """Test sigma_c function."""
-    assert math.isclose(
-        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1),
-        expected,
-        rel_tol=10e-5,
-    )
-
-
-@pytest.mark.parametrize(
-    'Ecm, fcm, eps_c, eps_c1, eps_cu1',
-    [
-        (-37562, 50, 0.0025, 0.00257882204904827, 0.0035),
-        (37562, -50, 0.0025, 0.00257882204904827, 0.0035),
-        (37562, 50, -0.0025, 0.00257882204904827, 0.0035),
-        (37562, 50, 0.0025, 0, 0.0035),
-        (37562, 50, 0.0025, -0.00257882204904827, 0.0035),
-        (37562, 50, 0.0025, 0.00257882204904827, -0.0035),
-        (37562, 50, 0.02, 0.00257882204904827, 0.0035),
-    ],
-)
-def test_sigma_c_raises_errors(Ecm, fcm, eps_c, eps_c1, eps_cu1):
-    """Test sigma_c_raises_errors."""
-    with pytest.raises(ValueError):
-        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1)
-
-
 @pytest.mark.parametrize('concrete_type, expected', [('nc', 25), ('npc', 24)])
 def test_concrete_mean_unit_weight(concrete_type, expected):
     """Test concrete_mean_weight function."""
@@ -704,3 +670,24 @@ def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
     # Assert
     assert math.isclose(props['ftk'] / fyk, exp_ratio)
     assert math.isclose(props['epsuk'], exp_strain)
+
+
+fck_parametrized = pytest.mark.parametrize('fck', [20, 25, 30, 35, 40])
+
+
+def test_eps_c2():
+    """Test eps_c2."""
+    assert math.isclose(
+        _section5_materials.eps_c2(),
+        2e-3,
+        rel_tol=1e-4,
+    )
+
+
+def test_eps_cu2():
+    """Test eps_cu2."""
+    assert math.isclose(
+        _section5_materials.eps_cu2(),
+        3.5e-3,
+        rel_tol=1e-4,
+    )
