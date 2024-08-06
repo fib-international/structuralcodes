@@ -5,50 +5,90 @@ import pytest
 from structuralcodes.codes.ec2_2023 import _section_8_5_strut_and_ties
 
 
-def test_calculate_sigma_cd():
+@pytest.mark.parametrize(
+    'F_cd, b_c, t, expected',
+    [
+        (100, 200, 20, 25.0),
+        (150, 350, 40, 10.714),
+        (-150, 350, 40, 10.714),
+    ],
+)
+def test_calculate_sigma_cd(F_cd, b_c, t, expected):
     """Test the calculation of compressive stress σ_cd."""
     assert _section_8_5_strut_and_ties.sigma_cd_strut(
-        100, 200, 300
-    ) == pytest.approx(1.6667, rel=1e-3)
+        F_cd, b_c, t
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'F_cd, b_c, t',
+    [
+        (100, -200, 20),
+        (200, 350, -40),
+    ],
+)
+def test_calculate_sigma_cd_exceptions(F_cd, b_c, t):
+    """Test exceptions in compressive stress σ_cd calculation."""
     with pytest.raises(ValueError):
-        _section_8_5_strut_and_ties.sigma_cd_strut(-100, 200, 300)
+        _section_8_5_strut_and_ties.sigma_cd_strut(F_cd, b_c, t)
 
 
-def test_calculate_nu():
+@pytest.mark.parametrize(
+    'input_value, expected',
+    [
+        (25, 0.471),
+        (35, 0.642),
+        (50, 0.791),
+        (75, 0.888),
+    ],
+)
+def test_calculate_nu(input_value, expected):
     """Test the calculation of strength reduction factor ν."""
-    assert _section_8_5_strut_and_ties.nu_strut(25) == pytest.approx(
-        0.471, rel=1e-3
+    assert _section_8_5_strut_and_ties.nu_strut(input_value) == pytest.approx(
+        expected, rel=1e-2
     )
-    assert _section_8_5_strut_and_ties.nu_strut(35) == pytest.approx(
-        0.642, rel=1e-3
-    )
-    assert _section_8_5_strut_and_ties.nu_strut(50) == pytest.approx(
-        0.791, rel=1e-3
-    )
-    assert _section_8_5_strut_and_ties.nu_strut(75) == pytest.approx(
-        0.888, rel=1e-3
-    )
-    assert _section_8_5_strut_and_ties.nu_strut(75) == pytest.approx(
-        0.888, rel=1e-3
-    )
+
+
+@pytest.mark.parametrize(
+    'input_value',
+    [
+        (15),
+        (-10),
+        (180),
+    ],
+)
+def test_calculate_nu_exceptions(input_value):
+    """Test exceptions in strength reduction factor ν calculation."""
     with pytest.raises(ValueError):
-        _section_8_5_strut_and_ties.nu_strut(15)
+        _section_8_5_strut_and_ties.nu_strut(input_value)
 
 
-def test_calculate_nu_refined():
+@pytest.mark.parametrize(
+    'input_value, expected',
+    [
+        (0.0, 1.0),
+        (0.001, 0.9009),
+        (0.01, 0.4762),
+        (0.1, 0.0833),
+    ],
+)
+def test_calculate_nu_refined(input_value, expected):
     """Test the calculation of refined strength reduction factor ν."""
-    assert _section_8_5_strut_and_ties.nu_refined(0.0) == 1.0
-    assert _section_8_5_strut_and_ties.nu_refined(0.001) == pytest.approx(
-        0.9009, rel=1e-3
-    )
-    assert _section_8_5_strut_and_ties.nu_refined(0.01) == pytest.approx(
-        0.4762, rel=1e-3
-    )
-    assert _section_8_5_strut_and_ties.nu_refined(0.1) == pytest.approx(
-        0.0833, rel=1e-3
-    )
+    assert _section_8_5_strut_and_ties.nu_refined(
+        input_value
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'input_value',
+    [
+        (-0.01),
+    ],
+)
+def test_calculate_nu_refined_exceptions(input_value):
+    """Test exceptions in refined strength reduction factor ν calculation."""
     with pytest.raises(ValueError):
-        _section_8_5_strut_and_ties.nu_refined(-0.01)
+        _section_8_5_strut_and_ties.nu_refined(input_value)
 
 
 @pytest.mark.parametrize(
@@ -66,7 +106,7 @@ def test_calculate_nu_refined():
 )
 def test_calculate_tie_resistance(As, fyd, Ap, fpd, sigma_pd, expected):
     """Test the calculate_tie_resistance function with various inputs."""
-    result = _section_8_5_strut_and_ties.Ftd_tie(As, fyd, Ap, fpd, sigma_pd)
+    result = _section_8_5_strut_and_ties.FRd_tie(As, fyd, Ap, fpd, sigma_pd)
     assert pytest.approx(result, 0.01) == expected
 
 

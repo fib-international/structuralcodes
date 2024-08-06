@@ -49,8 +49,8 @@ from ._section9_sls import (
     wk_cal2,
 )
 from ._section_8_5_strut_and_ties import (
+    FRd_tie,
     Ftd_conc,
-    Ftd_tie,
     nu_refined,
     nu_strut,
     nu_strut_no_crack,
@@ -60,7 +60,7 @@ from ._section_8_5_strut_and_ties import (
 __all__ = [
     'nu_strut',
     'Ftd_conc',
-    'Ftd_tie',
+    'FRd_tie',
     'nu_refined',
     'nu_strut_no_crack',
     'sigma_cd_strut',

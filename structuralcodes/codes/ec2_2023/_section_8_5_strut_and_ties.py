@@ -18,24 +18,22 @@ def sigma_cd_strut(F_cd: float, b_c: float, t: float) -> float:
         float: Compressive stress σ_cd in MPa.
 
     Raises:
-        ValueError: If F_cd, b_c, or t are not within valid ranges.
+        ValueError: If b_c or t are not within valid ranges.
     """
-    if F_cd < 0:
-        raise ValueError(f'F_cd must not be negative. Got {F_cd}')
     if b_c <= 0:
         raise ValueError(f'b_c must be positive. Got {b_c}')
     if t <= 0:
         raise ValueError(f't must be positive. Got {t}')
 
     # Convert F_cd from kN to N and calculate σ_cd in MPa
-    return F_cd * 1000 / (b_c * t)
+    return abs(F_cd) * 1000 / (b_c * t)
 
 
 def nu_strut(theta_cs: float) -> float:
     """Determine the strength reduction factor ν based on
         the smallest angle θ_cs.
 
-    EN1992-1-1:2023 Eqs. (8.115)
+    EN1992-1-1:2023 Eqs. (8.119)
 
     Args:
         theta_cs (float): Angle between the strut and the tie in degrees.
@@ -67,9 +65,6 @@ def nu_strut_no_crack() -> float:
 
     Returns:
         float: Strength reduction factor ν.
-
-    Raises:
-        ValueError: If θ_cs is not within the valid range.
     """
     return 1.0
 
@@ -98,7 +93,7 @@ def nu_refined(eps_1: float) -> float:
     return min(nu, 1.0)
 
 
-def Ftd_tie(
+def FRd_tie(
     As: float,
     fyd: float,
     Ap: float = 0.0,
@@ -113,11 +108,11 @@ def Ftd_tie(
         As (float): Cross-sectional area of non-prestressed
             reinforcement in mm2.
         fyd (float): Design yield strength of non-prestressed
+            reinforcement in MPa.
+        Ap (float, optional): Cross-sectional area of prestressed
+            reinforcement in mm2. Default is 0.0.
+        fpd (float, optional): Design strength of prestressed
             reinforcement in MPa. Default is 0.0.
-        Ap (float): Cross-sectional area of prestressed reinforcement in mm2.
-            Default is 0.0.
-        fpd (float): Design strength of prestressed reinforcement in MPa.
-            Default is 0.0.
         sigma_pd (float, optional): Stress in the prestressed reinforcement
             considered as an external action in MPa. Default is 0.0.
 
