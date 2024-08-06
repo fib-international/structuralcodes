@@ -162,6 +162,59 @@ def test_eps_cu1_property(default_concrete):
     )
 
 
+def test_k_sargin(default_concrete):
+    """Test for k property for Sargin law."""
+    expected = (
+        1.05
+        * default_concrete.Ecm
+        * default_concrete.eps_c1
+        / default_concrete.fcm
+    )
+    assert math.isclose(default_concrete.k_sargin, expected, rel_tol=0.001)
+
+
+def test_eps_c2_property(default_concrete):
+    """Test for eps_c2 property."""
+    expected = 0.002
+    assert math.isclose(default_concrete.eps_c2, expected)
+
+
+def test_eps_cu2_property(default_concrete):
+    """Test for eps_cu2 property."""
+    expected = 0.0035
+    assert math.isclose(default_concrete.eps_cu2, expected)
+
+
+def test_setter_properties(default_concrete):
+    """Test for setting properties to custom values."""
+    value = 2.0e-3
+    default_concrete.eps_c1 = value
+    assert math.isclose(default_concrete.eps_c1, value)
+
+    default_concrete.eps_c2 = value
+    assert math.isclose(default_concrete.eps_c2, value)
+
+    default_concrete.eps_c3 = value
+    assert math.isclose(default_concrete.eps_c3, value)
+
+    value = 3.5e-3
+    default_concrete.eps_cu1 = value
+    assert math.isclose(default_concrete.eps_cu1, value)
+
+    default_concrete.eps_cu2 = value
+    assert math.isclose(default_concrete.eps_cu2, value)
+
+    default_concrete.eps_cu3 = value
+    assert math.isclose(default_concrete.eps_cu3, value)
+
+    value = 1.5
+    default_concrete.n_parabolic_rectangular = value
+    assert math.isclose(default_concrete.n_parabolic_rectangular, value)
+
+    default_concrete.k_sargin = value
+    assert math.isclose(default_concrete.k_sargin, value)
+
+
 def test_reset_attributes(default_concrete):
     """Test resetting the attributes."""
     default_concrete._reset_attributes()
@@ -172,3 +225,7 @@ def test_reset_attributes(default_concrete):
     assert default_concrete._fctk_95 is None
     assert default_concrete._eps_c1 is None
     assert default_concrete._eps_cu1 is None
+    assert default_concrete._k_sargin is None
+    assert default_concrete._eps_c2 is None
+    assert default_concrete._eps_cu2 is None
+    assert default_concrete._n_parabolic_rectangular is None

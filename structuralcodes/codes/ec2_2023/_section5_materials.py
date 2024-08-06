@@ -709,57 +709,70 @@ def eps_cu1(_fcm: float) -> float:
     return min(2.8 + 14 * (1 - _fcm / 108) ** 4, 3.5) / 1000
 
 
-def sigma_c(
-    _Ecm: float, _fcm: float, _eps_c: float, _eps_c1: float, _eps_cu1: float
+def k_sargin(
+    _Ecm: float,
+    _fcm: float,
+    _eps_c1: float,
 ) -> float:
-    """Computes the compressive stress of concrete given a strain eps_c under
-    short term uniaxial compression.
+    """Computes the coefficient k for Sargin constitutive law in compression.
 
-    EN 1992-1-1:2023, Eq. (5.6)
+    EN 1992-1-1:2003, eq. (5.7)
 
     Args:
-        _Ecm (float): the secant modulus between sigma_c=0 and
-            sigma_c=0.4*fcm in MPa
-        _fcm (float): the mean compressive strength of concrete
+        _Ecm (float): the secant modulus between sigma_c=0 and sigma_c=0.4*fcm
             in MPa
-        _eps_c (float): the strain of concrete
-        _eps_c1 (float): the strain of concrete at stress _fcm
-        _eps_cu1 (float): the strain at failure of concrete
+        _fcm (float): the mean compressive strength of concrete in MPa
+        _eps_c1 (float): the strain of concrete at stress fcm
 
     Returns:
-        float: the compressive stress of concrete in MPa
+        float: the coefficient k for Sargin constitutive law
 
     Raises:
         ValueError: if _Ecm is less or equal to 0
         ValueError: if _fcm is less than 12+8MPa
-        ValueError: if _eps_c is less than 0
         ValueError: if _eps_c1 is less or equal to 0
-        ValueError: if _eps_cu1 is less or equal than 0
-        ValueError: if _eps_c is larger than _eps_cu1
     """
     if _Ecm <= 0:
         raise ValueError(f'_Ecm={_Ecm} must be larger than 0')
     if _fcm < 20:
         raise ValueError(f'_fcm={_fcm} must be larger or equal to 12+8MPa')
-    if _eps_c < 0:
-        raise ValueError(f'_eps_c={_eps_c} must be larger or equal to 0')
     if _eps_c1 <= 0:
         raise ValueError(f'_eps_c1={_eps_c1} must be larger than 0')
-    if _eps_cu1 < 0:
-        raise ValueError(f'_eps_cu1={_eps_cu1} must be larger or equal to 0')
-    if _eps_c > _eps_cu1:
-        raise ValueError(
-            f'Current strain value _eps_c={_eps_c} is larger than'
-            + f'the strain at failure _eps_cu1={_eps_cu1}'
-        )
+    return 1.05 * _Ecm * _eps_c1 / _fcm
 
-    k = 1.05 * _Ecm * _eps_c1 / _fcm
-    eta = _eps_c / _eps_c1
 
-    n = k * eta - eta**2
-    d = 1 + (k - 2) * eta
+def eps_c2() -> float:
+    """The strain at maximum compressive stress of concrete for the
+    parabolic-rectangular law.
 
-    return n / d * _fcm
+    EN 1992-1-1:2023, Eq. 8.4
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
+    """
+    return 2.0e-3
+
+
+def eps_cu2() -> float:
+    """The ultimate strain of the parabolic-rectangular law.
+
+    EN 1992-1-1:2023, Eq. 8.4
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
+    """
+    return 3.5e-3
+
+
+def n_parabolic_rectangular() -> float:
+    """The exponent in the parabolic-rectangular law.
+
+    EN 1992-1-1:2023, Eq. 8.4
+    Returns:
+        float: The exponent n, absolute value, no unit.
+    """
+    return 2.0
 
 
 def weight_c(concrete_type: str) -> float:
