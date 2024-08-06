@@ -410,7 +410,12 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
 
     def __parabolarectangle__(self) -> dict:
         """Returns kwargs for creating a parabola rectangle const law."""
-        return {'fc': self.fcd(), 'eps_0': -0.002, 'eps_u': -0.0035, 'n': 2}
+        return {
+            'fc': self.fcd(),
+            'eps_0': self.eps_c2,
+            'eps_u': self.eps_cu2,
+            'n': self.n_parabolic_rectangular,
+        }
 
     def __sargin__(self) -> dict:
         """Returns kwargs for creating a Sargin const law."""

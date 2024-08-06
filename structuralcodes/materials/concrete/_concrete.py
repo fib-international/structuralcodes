@@ -76,11 +76,10 @@ class Concrete(Material):
         """Setter for constitutive law.
 
         Args:
-        consitutive_law (ConstitutiveLaw): a valid ConstitutiveLaw object
-                for concrete (optional)
-        constitutive_law_name (str): a string defining a valid constitutive law
+        consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw object
+                for concrete or  a string defining a valid constitutive law
                 type for concrete.
-                (valid options: 'elastic', 'parabolarectangle',
+                (valid options for string: 'elastic', 'parabolarectangle',
                 'bilinearcompression', 'sargin', 'popovics').
         """
         if constitutive_law is None:

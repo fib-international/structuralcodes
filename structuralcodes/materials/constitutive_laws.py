@@ -913,6 +913,16 @@ def create_constitutive_law(
             `get_constitutive_laws_list`
         material (Material): The material containing the properties needed for
             the definition of the constitutive law
+
+    Note:
+        For working with this facotry function, the material classes
+        implementations need to provide special dunder methods (__elastic__,
+        __parabolarectangle__, etc.) needed for the specific material that
+        return the kwargs needed to create the corresponding constitutive
+        law object. If the special dunder method is not found an exception
+        will be raised.
+        If the consitutive law selected is not available for the specific
+        material, an exception will be raised.
     """
     law = None
     const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name.lower())
@@ -920,11 +930,10 @@ def create_constitutive_law(
         method_name = f'__{constitutive_law_name}__'
         # check if the material object has the special method needed
         if hasattr(material, method_name):
-            print('The method is there!')
             method = getattr(material, method_name)
             if callable(method):
+                # get the kwargs from the special dunder method
                 kwargs = method()
-                print(kwargs)
                 # create the constitutive law
                 law = const_law(**kwargs)
         else:

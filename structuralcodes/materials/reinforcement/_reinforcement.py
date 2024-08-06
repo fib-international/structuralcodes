@@ -113,10 +113,9 @@ class Reinforcement(Material):
         """Setter for constitutive law.
 
         Args:
-        consitutive_law (ConstitutiveLaw): a valid ConstitutiveLaw object
-                for reinforcement (optional)
-        constitutive_law_name (str): a string defining a valid constitutive law
-                type for reinforcement.
+        consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw object
+                for concrete or  a string defining a valid constitutive law
+                type for concrete.
                 (valid options: 'elastic', 'elasticperfectlyplastic',
                 'elasticplastic').
         """
