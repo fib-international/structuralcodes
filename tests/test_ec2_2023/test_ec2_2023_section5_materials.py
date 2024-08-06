@@ -672,9 +672,6 @@ def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
     assert math.isclose(props['epsuk'], exp_strain)
 
 
-fck_parametrized = pytest.mark.parametrize('fck', [20, 25, 30, 35, 40])
-
-
 def test_eps_c2():
     """Test eps_c2."""
     assert math.isclose(
@@ -691,3 +688,43 @@ def test_eps_cu2():
         3.5e-3,
         rel_tol=1e-4,
     )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, epsc1, expected',
+    [
+        (25787, 20, 0.0019, 2.57),
+        (27403, 24, 0.00202, 2.42),
+        (28848, 28, 0.00213, 2.3),
+        (30472, 33, 0.00225, 2.18),
+        (31939, 38, 0.00235, 2.08),
+        (33282, 43, 0.00245, 1.99),
+        (34525, 48, 0.00254, 1.92),
+        (35685, 53, 0.00263, 1.86),
+        (36773, 58, 0.00271, 1.8),
+        (37801, 63, 0.00279, 1.75),
+        (38776, 68, 0.0028, 1.68),
+        (40590, 78, 0.0028, 1.53),
+        (42256, 88, 0.0028, 1.41),
+        (43799, 98, 0.0028, 1.31),
+    ],
+)
+def test_k_sargin(Ecm, fcm, epsc1, expected):
+    """Test k_sargin function."""
+    assert math.isclose(
+        _section5_materials.k_sargin(Ecm, fcm, epsc1), expected, rel_tol=5e-3
+    )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, epsc1',
+    [
+        (-25787, 20, 0.0019),
+        (25787, 12, 0.0019),
+        (25787, 20, -0.0019),
+    ],
+)
+def test_k_sargin_raises_errors(Ecm, fcm, epsc1):
+    """Test k_sargin raises errors."""
+    with pytest.raises(ValueError):
+        _section5_materials.k_sargin(_Ecm=Ecm, _fcm=fcm, _eps_c1=epsc1)

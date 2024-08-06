@@ -268,7 +268,7 @@ class ConcreteMC2010(Concrete):
                 'A suspect value is input for eps_c1 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_c1 = value
+        self._eps_c1 = value
 
     @property
     def eps_cu1(self) -> float:
@@ -292,7 +292,7 @@ class ConcreteMC2010(Concrete):
                 'A suspect value is input for eps_cu1 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_cu1 = value
+        self._eps_cu1 = value
 
     @property
     def k_sargin(self) -> float:
@@ -342,7 +342,7 @@ class ConcreteMC2010(Concrete):
                 'A suspect value is input for eps_c2 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_c2 = value
+        self._eps_c2 = value
 
     @property
     def eps_cu2(self) -> float:
@@ -368,7 +368,7 @@ class ConcreteMC2010(Concrete):
                 'A suspect value is input for eps_cu2 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_cu2 = value
+        self._eps_cu2 = value
 
     @property
     def n_parabolic_rectangular(self) -> float:
@@ -426,7 +426,7 @@ class ConcreteMC2010(Concrete):
                 'A suspect value is input for eps_c3 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_c3 = value
+        self._eps_c3 = value
 
     @property
     def eps_cu3(self) -> float:
@@ -452,7 +452,7 @@ class ConcreteMC2010(Concrete):
                 'A suspect value is input for eps_cu3 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_cu3 = value
+        self._eps_cu3 = value
 
     def __elastic__(self) -> dict:
         """Returns kwargs for creating an elastic constitutive law."""

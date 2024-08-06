@@ -368,20 +368,19 @@ def test_eps_c1_getter(fck):
     assert math.isclose(c.eps_c1, expected, rel_tol=1e-6)
 
 
-# TO SEE WITH MORTEN
-# eps_c1_parametrized = pytest.mark.parametrize(
-#     'test_input, expected',
-#     [(12, 1.8), (35, 2.25), (55, 2.5), (90, 2.8)],
-# )
+eps_c1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.8), (35, 2.25), (55, 2.5), (90, 2.8)],
+)
 
 
-# @eps_c1_parametrized
-# def test_eps_c1_setter(test_input, expected):
-#     """Test the eps_c1 setter."""
-#     c = ConcreteEC2_2004(fck=test_input)
-#     c.eps_c1 = expected * 1e-3
+@eps_c1_parametrized
+def test_eps_c1_setter(test_input, expected):
+    """Test the eps_c1 setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.eps_c1 = expected * 1e-3
 
-#     assert math.isclose(c.eps_c1, expected * 1e-3)
+    assert math.isclose(c.eps_c1, expected * 1e-3)
 
 
 @fck_parametrized
@@ -392,12 +391,42 @@ def test_eps_cu1_getter(fck):
     assert math.isclose(c.eps_cu1, expected, rel_tol=1e-6)
 
 
+eps_cu1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.2), (90, 2.8)],
+)
+
+
+@eps_cu1_parametrized
+def test_eps_cu1_setter(test_input, expected):
+    """Test the eps_cu1 setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.eps_cu1 = expected * 1e-3
+
+    assert math.isclose(c.eps_cu1, expected * 1e-3)
+
+
 @fck_parametrized
 def test_k_getter(fck):
     """Test k getter."""
     c = ConcreteMC2010(fck=fck)
     expected = mc2010.k_sargin(fck=fck)
     assert math.isclose(c.k_sargin, expected, rel_tol=1e-6)
+
+
+k_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.4), (35, 1.6), (55, 1.3), (90, 1.2)],
+)
+
+
+@k_parametrized
+def test_k_setter(test_input, expected):
+    """Test the k_sargin setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.k_sargin = expected
+
+    assert math.isclose(c.k_sargin, expected)
 
 
 @fck_parametrized
@@ -408,12 +437,42 @@ def test_eps_c2_getter(fck):
     assert math.isclose(c.eps_c2, expected, rel_tol=1e-6)
 
 
+eps_c2_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 2.0), (35, 2.0), (55, 2.2), (90, 2.6)],
+)
+
+
+@eps_c2_parametrized
+def test_eps_c2_setter(test_input, expected):
+    """Test the eps_c2 setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.eps_c2 = expected * 1e-3
+
+    assert math.isclose(c.eps_c2, expected * 1e-3)
+
+
 @fck_parametrized
 def test_eps_cu2_getter(fck):
     """Test eps_cu2 getter."""
     c = ConcreteMC2010(fck=fck)
     expected = mc2010.eps_cu2(fck=fck)
     assert math.isclose(c.eps_cu2, expected, rel_tol=1e-6)
+
+
+eps_cu2_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.1), (90, 2.6)],
+)
+
+
+@eps_cu2_parametrized
+def test_eps_cu2_setter(test_input, expected):
+    """Test the eps_cu2 setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.eps_cu2 = expected * 1e-3
+
+    assert math.isclose(c.eps_cu2, expected * 1e-3)
 
 
 @fck_parametrized
@@ -424,6 +483,20 @@ def test_n_getter(fck):
     assert math.isclose(c.n_parabolic_rectangular, expected, rel_tol=1e-6)
 
 
+n_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 2), (35, 2), (55, 1.75), (90, 1.4)],
+)
+
+
+@n_parametrized
+def test_n_setter(test_input, expected):
+    """Test the n_parabolic_rettangular setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.n_parabolic_rectangular = expected
+    assert math.isclose(c.n_parabolic_rectangular, expected)
+
+
 @fck_parametrized
 def test_eps_c3_getter(fck):
     """Test eps_c3 getter."""
@@ -432,9 +505,39 @@ def test_eps_c3_getter(fck):
     assert math.isclose(c.eps_c3, expected, rel_tol=1e-6)
 
 
+eps_c3_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.75), (35, 1.75), (55, 1.8), (90, 2.3)],
+)
+
+
+@eps_c3_parametrized
+def test_eps_c3_setter(test_input, expected):
+    """Test the eps_c3 setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.eps_c3 = expected * 1e-3
+
+    assert math.isclose(c.eps_c3, expected * 1e-3)
+
+
 @fck_parametrized
 def test_eps_cu3_getter(fck):
     """Test eps_cu3 getter."""
     c = ConcreteMC2010(fck=fck)
     expected = mc2010.eps_cu3(fck=fck)
     assert math.isclose(c.eps_cu3, expected, rel_tol=1e-6)
+
+
+eps_cu3_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.1), (90, 2.6)],
+)
+
+
+@eps_cu3_parametrized
+def test_eps_cu3_setter(test_input, expected):
+    """Test the eps_cu3 setter."""
+    c = ConcreteMC2010(fck=test_input)
+    c.eps_cu3 = expected * 1e-3
+
+    assert math.isclose(c.eps_cu3, expected * 1e-3)

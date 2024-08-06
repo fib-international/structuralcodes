@@ -259,7 +259,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 'A suspect value is input for eps_c1 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_c1 = value
+        self._eps_c1 = value
 
     @property
     def eps_cu1(self) -> float:
@@ -283,7 +283,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 'A suspect value is input for eps_cu1 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_cu1 = value
+        self._eps_cu1 = value
 
     @property
     def k_sargin(self) -> float:
@@ -337,7 +337,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 'A suspect value is input for eps_c2 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_c2 = value
+        self._eps_c2 = value
 
     @property
     def eps_cu2(self) -> float:
@@ -363,7 +363,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 'A suspect value is input for eps_cu2 that should be a pure'
                 ' number without units. Plase check ({value} given).'
             )
-        self._esp_cu2 = value
+        self._eps_cu2 = value
 
     @property
     def n_parabolic_rectangular(self) -> float:
@@ -373,8 +373,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         float: the exponent for Parabola-recangle law.
         """
         self._n_parabolic_rectangular = (
-            self._n_parabolic_rectangular
-            or ec2_2023.n_parabolic_rectangular(self.fck)
+            self._n_parabolic_rectangular or ec2_2023.n_parabolic_rectangular()
         )
         return self._n_parabolic_rectangular
 
