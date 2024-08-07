@@ -37,7 +37,7 @@ def nu_strut(theta_cs: float) -> float:
 
     Args:
         theta_cs (float): Angle between the strut and the tie in degrees.
-            Must be between 20 and 90.
+            Must be between 0 and 90.
         transverse_cracking (bool): Indicates if the region has
             transverse cracking. Defaults to True.
 
@@ -47,13 +47,14 @@ def nu_strut(theta_cs: float) -> float:
     Raises:
         ValueError: If θ_cs is not within the valid range.
     """
-    if not 20 <= theta_cs <= 90:
+    if not 0 <= theta_cs <= 90:
         raise ValueError(
-            f'theta_cs must be between 20° and 90°. Got {theta_cs}'
+            f'theta_cs must be between 0° and 90°. Got {theta_cs}'
         )
 
     theta_rad = math.radians(theta_cs)
-    cot_theta = 1 / math.tan(theta_rad)
+    epsilon = 1e-10  # To avoid num error in edge case when theta=0
+    cot_theta = 1 / math.tan(theta_rad + epsilon)
     return 1 / (1.11 + 0.22 * (cot_theta**2))
 
 

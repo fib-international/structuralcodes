@@ -36,6 +36,7 @@ def test_calculate_sigma_cd_exceptions(F_cd, b_c, t):
 @pytest.mark.parametrize(
     'input_value, expected',
     [
+        (0, 0),
         (25, 0.471),
         (35, 0.642),
         (50, 0.791),
@@ -51,11 +52,7 @@ def test_calculate_nu(input_value, expected):
 
 @pytest.mark.parametrize(
     'input_value',
-    [
-        (15),
-        (-10),
-        (180),
-    ],
+    [(-10), (180)],
 )
 def test_calculate_nu_exceptions(input_value):
     """Test exceptions in strength reduction factor ν calculation."""
