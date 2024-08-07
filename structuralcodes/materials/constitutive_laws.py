@@ -306,6 +306,11 @@ class ParabolaRectangle(ConstitutiveLaw):
             [(0, -0.002), (-0.002, -0.003)]
             [(a0, a1, a2), (a0)]
         """
+        if self._n != 2:
+            # The constitutive law is not writtable as a polynomial,
+            # Call the generic distretizing method
+            return super().__marin__
+
         strains = []
         coeff = []
         if strain[1] == 0:
