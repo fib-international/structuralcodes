@@ -1,6 +1,7 @@
 """A collection of material properties for concrete."""
 
 import math
+import typing as t
 
 import numpy as np
 import numpy.typing as npt
@@ -27,14 +28,14 @@ def fcm(fck: float, delta_f: float = 8.0) -> float:
     """Compute the mean concrete compressive strength from the characteristic
     strength.
 
-    fib Model Code 2010, Eq. (5.1-1)
+    fib Model Code 2010, Eq. (5.1-1).
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
 
     Keyword Args:
-        delta_f (float): The difference between the mean and the
-        characteristic strength.
+        delta_f (float): The difference between the mean and the characteristic
+            strength.
 
     Returns:
         float: The mean compressive strength in MPa.
@@ -46,7 +47,7 @@ def fctm(fck: float) -> float:
     """Compute the mean concrete tensile strength from the characteristic
     compressive strength.
 
-    fib Model Code 2010, Eqs. (5.1-3a) and (5.1-3b)
+    fib Model Code 2010, Eqs. (5.1-3a) and (5.1-3b).
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -63,7 +64,7 @@ def fctkmin(_fctm: float) -> float:
     """Compute the lower bound value of the characteristic tensile strength
     from the mean tensile strength.
 
-    fib Model Code 2010, Eq. (5.1-4)
+    fib Model Code 2010, Eq. (5.1-4).
 
     Args:
         _fctm (float): The mean tensile strength in MPa.
@@ -78,7 +79,7 @@ def fctkmax(_fctm: float) -> float:
     """Compute the upper bound value of the characteristic tensile strength
     from the mean tensile strength.
 
-    fib Model Code 2010, Eq. (5.1-5)
+    fib Model Code 2010, Eq. (5.1-5).
 
     Args:
         _fctm (float): The mean tensile strength in MPa.
@@ -93,7 +94,7 @@ def Gf(fck: float) -> float:
     """Compute tensile fracture energy from characteristic compressive
     strength.
 
-    fib Model Code 2010, Eq. (5.1-9)
+    fib Model Code 2010, Eq. (5.1-9).
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -104,8 +105,12 @@ def Gf(fck: float) -> float:
     return 73 * fcm(fck) ** 0.18
 
 
-def E_ci(
-    _fcm: float, agg_type: str = 'quartzite', EC0: float = 21500
+def Eci(
+    _fcm: float,
+    agg_type: t.Literal[
+        'basalt', 'quartzite', 'limestone', 'sandstone'
+    ] = 'quartzite',
+    EC0: float = 21500,
 ) -> float:
     """Calculate the modulus of elasticity for normal weight concrete at 28
     days.
@@ -122,28 +127,30 @@ def E_ci(
         EC0 (float): Initial value of modulus of elasticity in MPa.
 
     Returns:
-        float: The modulus of elasticity for normal weight concrete
-            at 28 days in MPa.
+        float: The modulus of elasticity for normal weight concrete at 28 days
+        in MPa.
     """
     return EC0 * ALPHA_E[agg_type.lower()] * (_fcm / 10) ** (1 / 3)
 
 
-def beta_cc(time: npt.ArrayLike, _fcm: float, cem_class: str) -> np.ndarray:
+def beta_cc(
+    time: npt.ArrayLike,
+    _fcm: float,
+    cem_class: t.Literal[
+        '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'
+    ],
+) -> np.ndarray:
     """Calculate multiplication factor beta_cc, used to determine the
-        modulus of elasticity at an arbitrary time.
+    compressive strength at an arbitrary time.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-51.
 
     Args:
-        time (numpy.typing.ArrayLike): The time in days at which the modulus
-            of elasticity is to be determined.
-        _fcm The mean compressive strength of the concrete in
-            MPa.
-        cem_class (str): The cement strength class that is used.
-            The choices are:
-                '32.5 N',
-                '32.5 R', '42.5 N',
-                '42.5 R', '52.5 N', '52.5 R'.
+        time (numpy.typing.ArrayLike): The time in days at which the
+            compressive strength is to be determined.
+        _fcm (float): The mean compressive strength of the concrete in MPa.
+        cem_class (str): The cement strength class that is used. The choices
+            are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
         numpy.ndarray: Multiplication factor beta_cc.
@@ -154,13 +161,13 @@ def beta_cc(time: npt.ArrayLike, _fcm: float, cem_class: str) -> np.ndarray:
 
 
 def beta_e(_beta_cc: npt.ArrayLike) -> np.ndarray:
-    """Calculate multiplication factor beta_e, used to determine the
-        modulus of elasticity at an arbitrary time.
+    """Calculate multiplication factor beta_e, used to determine the modulus of
+    elasticity at an arbitrary time.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-57.
 
     Args:
-        _beta_cc (numpy.typing.ArrayLike): multiplication factor as defined in
+        _beta_cc (numpy.typing.ArrayLike): Multiplication factor as defined in
             the fib Model Code 2010 (2013), Eq. 5.1-51.
 
     Returns:
@@ -169,9 +176,9 @@ def beta_e(_beta_cc: npt.ArrayLike) -> np.ndarray:
     return np.sqrt(_beta_cc)
 
 
-def E_ci_t(_beta_e: npt.ArrayLike, _E_ci: float) -> np.ndarray:
-    """Calculate the modulus of elasticity for normal weight concrete
-        at time 'time' (not 28 days).
+def Eci_t(_beta_e: npt.ArrayLike, _Eci: float) -> np.ndarray:
+    """Calculate the modulus of elasticity for normal weight concrete at time
+    'time' (not 28 days).
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-56.
 
@@ -179,14 +186,14 @@ def E_ci_t(_beta_e: npt.ArrayLike, _E_ci: float) -> np.ndarray:
         _beta_e (numpy.typing.ArrayLike): Multiplication factor to determine
             the modulus of elasticity at an arbitrary time, as defined in fib
             Model Code 2010 (2013), Eq. 5.1-51.
-        _E_ci (float): Modulus of elasticity of normal weight concrete at 28
+        _Eci (float): Modulus of elasticity of normal weight concrete at 28
             days, as defined in fib Model Code 2010 (2013), Eq. 5.1-21.
 
     Returns:
         numpy.ndarray: The modulus of elasticity for normal weight concrete at
-            time 'time' (not 28 days) in MPa.
+        time 'time' (not 28 days) in MPa.
     """
-    return _beta_e * _E_ci
+    return _beta_e * _Eci
 
 
 def fcd(fck: float, alpha_cc: float = 1.0, gamma_c: float = 1.5) -> float:
@@ -196,12 +203,14 @@ def fcd(fck: float, alpha_cc: float = 1.0, gamma_c: float = 1.5) -> float:
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
+
+    Keyword Args:
         alpha_cc (float): A factor for considering long-term effects on the
             strength, and effects that arise from the way the load is applied.
             Default value 1.0.
         gamma_c (float): The partial factor of concrete. Default value 1.5.
 
     Returns:
-        float: The design compressive strength of concrete in MPa
+        float: The design compressive strength of concrete in MPa.
     """
     return abs(alpha_cc) * abs(fck) / abs(gamma_c)
