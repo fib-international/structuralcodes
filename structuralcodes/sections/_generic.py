@@ -53,6 +53,12 @@ class GenericSection(Section):
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
+        # Since only CompoundGeometry has the attribute geometries,
+        # if a SurfaceGeometry is input, we create a CompoundGeometry
+        # with only that geometry contained. After that all algorithms
+        # work as usal.
+        if isinstance(geometry, SurfaceGeometry):
+            geometry = CompoundGeometry([geometry])
         self.geometry = geometry
         self.section_calculator = GenericSectionCalculator(
             sec=self, integrator=integrator, **kwargs
