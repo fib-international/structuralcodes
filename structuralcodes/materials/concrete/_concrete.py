@@ -4,7 +4,10 @@ import abc
 import typing as t
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
-from structuralcodes.materials.constitutive_laws import ParabolaRectangle
+from structuralcodes.materials.constitutive_laws import (
+    ParabolaRectangle,
+    create_constitutive_law,
+)
 
 
 class Concrete(Material):
@@ -63,14 +66,43 @@ class Concrete(Material):
         return self._constitutive_law
 
     @constitutive_law.setter
-    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
-        """Setter for constitutive law."""
-        if 'concrete' in constitutive_law.__materials__:
-            self._constitutive_law = constitutive_law
+    def constitutive_law(
+        self,
+        constitutive_law: t.Union[
+            ConstitutiveLaw,
+            t.Literal['elastic', 'parabolarectangle', 'sargin', 'popovics'],
+        ],
+    ) -> None:
+        """Setter for constitutive law.
+
+        Args:
+        consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw object
+                for concrete or  a string defining a valid constitutive law
+                type for concrete.
+                (valid options for string: 'elastic', 'parabolarectangle',
+                'bilinearcompression', 'sargin', 'popovics').
+        """
+        if constitutive_law is None:
+            raise ValueError(
+                'At least a constitutive law or a string defining the '
+                'constitutive law must be provided.'
+            )
+        if isinstance(constitutive_law, str):
+            constitutive_law = create_constitutive_law(
+                constitutive_law_name=constitutive_law, material=self
+            )
+
+        if isinstance(constitutive_law, ConstitutiveLaw):
+            if 'concrete' in constitutive_law.__materials__:
+                self._constitutive_law = constitutive_law
+            else:
+                raise ValueError(
+                    'The constitutive law selected is not suitable '
+                    'for being used with a concrete material.'
+                )
         else:
             raise ValueError(
-                'The constitutive law selected is not suitable '
-                'for being used with a concrete material.'
+                f'The constitutive law {constitutive_law} could not be created'
             )
 
     @property

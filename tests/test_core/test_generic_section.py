@@ -71,6 +71,24 @@ def test_rectangular_section():
     n_min_fiber = sec.section_calculator.n_min
     n_max_fiber = sec.section_calculator.n_max
 
+    # Calculate moment-curvature for a given array of curvatures
+    res_mc_fiber_same_curvature = (
+        sec.section_calculator.calculate_moment_curvature(
+            theta=0, n=0, chi=res_mc_fiber.chi_y
+        )
+    )
+    assert math.isclose(
+        res_mc_fiber.m_y[-1], res_mc_fiber_same_curvature.m_y[-1]
+    )
+
+    # Calculate moment-curvature for a given array of curvatures, but with
+    # significant axial compression. This should raise a ValueError since we
+    # cannot find equilibrium.
+    with pytest.raises(ValueError):
+        sec.section_calculator.calculate_moment_curvature(
+            theta=0, n=0.95 * n_min_fiber, chi=res_mc_fiber.chi_y
+        )
+
     # check if axial limit forces are the same for marin and fiber
     assert math.isclose(n_min_marin, n_min_fiber, rel_tol=2e-2)
     assert math.isclose(n_max_marin, n_max_fiber, rel_tol=2e-2)
@@ -336,3 +354,42 @@ def test_u_section():
     res_fiber = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     assert math.isclose(res_marin.m_y, res_fiber.m_y, rel_tol=1e-2)
+
+
+def test_refined_moment_curvature():
+    """Test overriding defaults when calculating moment-curvature."""
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
+
+    # The section
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
+    geo = geo.translate(-100, -200)
+
+    # Create the section
+    sec = GenericSection(geo, integrator='fiber')
+
+    # Calculate default moment-curvature relation
+    res_default = sec.section_calculator.calculate_moment_curvature()
+
+    # Get the yield curvature. Since we are using default values, this is found
+    # at place 9 in the chi_y array
+    chi_yield = res_default.chi_y[9]
+
+    # Calculate moment-curvature relation with more points
+    res_more_points = sec.section_calculator.calculate_moment_curvature(
+        num_pre_yield=15, num_post_yield=33
+    )
+
+    # Calculate moment-curvature relation when providing a first curvature
+    # larger than the yield curvature
+    res_large_chi_first = sec.section_calculator.calculate_moment_curvature(
+        chi_first=1.5 * chi_yield
+    )
+
+    # Assert
+    assert len(res_more_points.chi_y) == 48
+    assert math.isclose(res_large_chi_first.chi_y[0], chi_yield / 10)

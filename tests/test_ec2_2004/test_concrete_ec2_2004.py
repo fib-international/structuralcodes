@@ -78,6 +78,14 @@ def test_properties_initialized_to_none():
     assert c._fctk_5 is None
     assert c._fctk_95 is None
     assert c._Ecm is None
+    assert c._eps_c1 is None
+    assert c._eps_cu1 is None
+    assert c._k_sargin is None
+    assert c._eps_c2 is None
+    assert c._eps_cu2 is None
+    assert c._n_parabolic_rectangular is None
+    assert c._eps_c3 is None
+    assert c._eps_cu3 is None
 
 
 def test_reset_properties():
@@ -89,6 +97,14 @@ def test_reset_properties():
     _ = c.fctk_5
     _ = c.fctk_95
     _ = c.Ecm
+    _ = c.eps_c1
+    _ = c.eps_cu1
+    _ = c.k_sargin
+    _ = c.eps_c2
+    _ = c.eps_cu2
+    _ = c.n_parabolic_rectangular
+    _ = c.eps_c3
+    _ = c.eps_cu3
 
     c._reset_attributes()
 
@@ -97,6 +113,14 @@ def test_reset_properties():
     assert c._fctk_5 is None
     assert c._fctk_95 is None
     assert c._Ecm is None
+    assert c._eps_c1 is None
+    assert c._eps_cu1 is None
+    assert c._k_sargin is None
+    assert c._eps_c2 is None
+    assert c._eps_cu2 is None
+    assert c._n_parabolic_rectangular is None
+    assert c._eps_c3 is None
+    assert c._eps_cu3 is None
 
 
 @fck_parametrized
@@ -256,3 +280,190 @@ def test_fcd(fck, alpha_cc, fcd):
         fcd,
         rel_tol=1e-4,
     )
+
+
+@fck_parametrized
+def test_eps_c1_getter(fck):
+    """Test eps_c1 getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.eps_c1(ec2_2004.fcm(fck=fck))
+    assert math.isclose(c.eps_c1, expected, rel_tol=1e-6)
+
+
+eps_c1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.8), (35, 2.25), (55, 2.5), (90, 2.8)],
+)
+
+
+@eps_c1_parametrized
+def test_eps_c1_setter(test_input, expected):
+    """Test the eps_c1 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_c1 = expected * 1e-3
+
+    assert math.isclose(c.eps_c1, expected * 1e-3)
+
+
+@fck_parametrized
+def test_eps_cu1_getter(fck):
+    """Test eps_cu1 getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.eps_cu1(fck=fck)
+    assert math.isclose(c.eps_cu1, expected)
+
+
+eps_cu1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.2), (90, 2.8)],
+)
+
+
+@eps_cu1_parametrized
+def test_eps_cu1_setter(test_input, expected):
+    """Test the eps_cu1 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_cu1 = expected * 1e-3
+
+    assert math.isclose(c.eps_cu1, expected * 1e-3)
+
+
+@fck_parametrized
+def test_k_getter(fck):
+    """Test k getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.k_sargin(
+        _Ecm=ec2_2004.Ecm(ec2_2004.fcm(fck=fck)),
+        _fcm=ec2_2004.fcm(fck=fck),
+        _eps_c1=ec2_2004.eps_c1(ec2_2004.fcm(fck=fck)),
+    )
+    assert math.isclose(c.k_sargin, expected, rel_tol=1e-6)
+
+
+k_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.4), (35, 1.6), (55, 1.3), (90, 1.2)],
+)
+
+
+@k_parametrized
+def test_k_setter(test_input, expected):
+    """Test the k_sargin setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.k_sargin = expected
+
+    assert math.isclose(c.k_sargin, expected)
+
+
+@fck_parametrized
+def test_eps_c2_getter(fck):
+    """Test eps_c2 getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.eps_c2(fck=fck)
+    assert math.isclose(c.eps_c2, expected, rel_tol=1e-6)
+
+
+eps_c2_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 2.0), (35, 2.0), (55, 2.2), (90, 2.6)],
+)
+
+
+@eps_c2_parametrized
+def test_eps_c2_setter(test_input, expected):
+    """Test the eps_c2 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_c2 = expected * 1e-3
+
+    assert math.isclose(c.eps_c2, expected * 1e-3)
+
+
+@fck_parametrized
+def test_eps_cu2_getter(fck):
+    """Test eps_cu2 getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.eps_cu2(fck=fck)
+    assert math.isclose(c.eps_cu2, expected, rel_tol=1e-6)
+
+
+eps_cu2_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.1), (90, 2.6)],
+)
+
+
+@eps_cu2_parametrized
+def test_eps_cu2_setter(test_input, expected):
+    """Test the eps_cu2 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_cu2 = expected * 1e-3
+
+    assert math.isclose(c.eps_cu2, expected * 1e-3)
+
+
+@fck_parametrized
+def test_n_getter(fck):
+    """Test n getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.n_parabolic_rectangular(fck=fck)
+    assert math.isclose(c.n_parabolic_rectangular, expected, rel_tol=1e-6)
+
+
+n_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 2), (35, 2), (55, 1.75), (90, 1.4)],
+)
+
+
+@n_parametrized
+def test_n_setter(test_input, expected):
+    """Test the n_parabolic_rettangular setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.n_parabolic_rectangular = expected
+    assert math.isclose(c.n_parabolic_rectangular, expected)
+
+
+@fck_parametrized
+def test_eps_c3_getter(fck):
+    """Test eps_c3 getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.eps_c3(fck=fck)
+    assert math.isclose(c.eps_c3, expected, rel_tol=1e-6)
+
+
+eps_c3_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.75), (35, 1.75), (55, 1.8), (90, 2.3)],
+)
+
+
+@eps_c3_parametrized
+def test_eps_c3_setter(test_input, expected):
+    """Test the eps_c3 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_c3 = expected * 1e-3
+
+    assert math.isclose(c.eps_c3, expected * 1e-3)
+
+
+@fck_parametrized
+def test_eps_cu3_getter(fck):
+    """Test eps_cu3 getter."""
+    c = ConcreteEC2_2004(fck=fck)
+    expected = ec2_2004.eps_cu3(fck=fck)
+    assert math.isclose(c.eps_cu3, expected, rel_tol=1e-6)
+
+
+eps_cu3_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.1), (90, 2.6)],
+)
+
+
+@eps_cu3_parametrized
+def test_eps_cu3_setter(test_input, expected):
+    """Test the eps_cu3 setter."""
+    c = ConcreteEC2_2004(fck=test_input)
+    c.eps_cu3 = expected * 1e-3
+
+    assert math.isclose(c.eps_cu3, expected * 1e-3)

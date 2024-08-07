@@ -44,7 +44,7 @@ class MarinIntegrator(SectionIntegrator):
         # and stress coefficients for each part.
         prepared_input = []
         # 1. Rotate section in order to have neutral axis horizontal
-        angle = atan2(strain[2], strain[1])
+        angle = -atan2(strain[2], strain[1])
 
         rotated_geom = geo.rotate(angle)
         # 2. Get y coordinate of neutral axis in this new CRS

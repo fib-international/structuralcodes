@@ -117,6 +117,23 @@ def eps_cu1(fck: float) -> float:
     )
 
 
+def k_sargin(
+    _Ecm: float,
+    _fcm: float,
+    _eps_c1: float,
+) -> float:
+    """Computation of k parameter for Sargin constitutive Law.
+
+    EN 1992-1-1:2004, Eq. (3.14)
+
+    Args:
+        Ecm (float): the mean elastic modulus of concrete in MPa.
+        fcm (float): the mean compressive strength in MPa.
+        eps_c1 (float): the strain corresponding to peak stress.
+    """
+    return 1.05 * _Ecm * abs(_eps_c1) / _fcm
+
+
 def eps_c2(fck: float) -> float:
     """The strain at maximum compressive stress of concrete for the
     parabolic-rectangular law.
@@ -133,7 +150,7 @@ def eps_c2(fck: float) -> float:
     """
     fck = abs(fck)
     return (
-        2.0 / 1000 if fck < 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
+        2.0 / 1000 if fck <= 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
     )
 
 
@@ -151,7 +168,9 @@ def eps_cu2(fck: float) -> float:
     """
     fck = abs(fck)
     return (
-        3.5 / 1000 if fck < 50 else (2.6 + 35 * ((90 - fck) / 100) ** 4) / 1000
+        3.5 / 1000
+        if fck <= 50
+        else (2.6 + 35 * ((90 - fck) / 100) ** 4) / 1000
     )
 
 
@@ -168,7 +187,7 @@ def n_parabolic_rectangular(fck: float) -> float:
         float: The exponent n, absolute value, no unit.
     """
     fck = abs(fck)
-    return 2.0 if fck < 50 else (1.4 + 23.4 * ((90 - fck) / 100) ** 4)
+    return 2.0 if fck <= 50 else (1.4 + 23.4 * ((90 - fck) / 100) ** 4)
 
 
 def eps_c3(fck: float) -> float:
@@ -185,7 +204,7 @@ def eps_c3(fck: float) -> float:
         unit.
     """
     fck = abs(fck)
-    return 1.75 / 1000 if fck < 50 else (1.75 + 0.55 * (fck - 50) / 40) / 1000
+    return 1.75 / 1000 if fck <= 50 else (1.75 + 0.55 * (fck - 50) / 40) / 1000
 
 
 def eps_cu3(fck: float) -> float:

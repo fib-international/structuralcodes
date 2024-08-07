@@ -214,3 +214,248 @@ def fcd(fck: float, alpha_cc: float = 1.0, gamma_c: float = 1.5) -> float:
         float: The design compressive strength of concrete in MPa.
     """
     return abs(alpha_cc) * abs(fck) / abs(gamma_c)
+
+
+def eps_c1(fck: float) -> float:
+    """The strain at maximum compressive stress of concrete (fcm) for the
+    Sargin constitutive law.
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-26 and Table 5.1-8
+
+    The value is computing using interpolation from Table 5.1-8
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
+
+    Raises:
+        ValueError: if fck is less than 12 or greater than 120
+    """
+    grade = np.array(
+        [12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120]
+    )
+    eps_c1 = np.array(
+        [
+            -1.9,
+            -2.0,
+            -2.1,
+            -2.2,
+            -2.3,
+            -2.3,
+            -2.4,
+            -2.5,
+            -2.6,
+            -2.6,
+            -2.7,
+            -2.7,
+            -2.8,
+            -2.9,
+            -3.0,
+            -3.0,
+            -3.0,
+        ]
+    )
+    if fck < grade.min() or fck > grade.max():
+        raise ValueError(
+            f'fck must be between {grade.min()} MPa and {grade.max()} MPa.'
+            ' fck = {fck} given.'
+        )
+    return np.interp(fck, grade, eps_c1) / 1000
+
+
+def eps_clim(fck: float) -> float:
+    """The ultimate strain for the Sargin constitutive law.
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-26 and Table 5.1-8
+
+    The value is computing using interpolation from Table 5.1-8
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
+    """
+    grade = np.array(
+        [12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120]
+    )
+    eps_clim = np.array(
+        [
+            -3.5,
+            -3.5,
+            -3.5,
+            -3.5,
+            -3.5,
+            -3.5,
+            -3.5,
+            -3.5,
+            -3.4,
+            -3.4,
+            -3.3,
+            -3.2,
+            -3.1,
+            -3.0,
+            -3.0,
+            -3.0,
+            -3.0,
+        ]
+    )
+    if fck < grade.min() or fck > grade.max():
+        raise ValueError(
+            f'fck must be between {grade.min()} MPa and {grade.max()} MPa.'
+            ' fck = {fck} given.'
+        )
+    return np.interp(fck, grade, eps_clim) / 1000
+
+
+def k_sargin(fck: float) -> float:
+    """The plasticity number k for Sargin constitutive Law.
+
+    Defined in fib Model Code 2010 (2013), Eq. 5.1-26 and Table 5.1-8
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The plasticity number k, absolute value, no unit.
+    """
+    grade = np.array(
+        [12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120]
+    )
+    k = np.array(
+        [
+            2.44,
+            2.36,
+            2.28,
+            2.15,
+            2.04,
+            1.92,
+            1.82,
+            1.74,
+            1.66,
+            1.61,
+            1.55,
+            1.47,
+            1.41,
+            1.36,
+            1.32,
+            1.24,
+            1.18,
+        ]
+    )
+    if fck < grade.min() or fck > grade.max():
+        raise ValueError(
+            f'fck must be between {grade.min()} MPa and {grade.max()} MPa.'
+            ' fck = {fck} given.'
+        )
+    return np.interp(fck, grade, k)
+
+
+def eps_cu1(fck: float) -> float:
+    """The nominal ultimate strain for the Sargin constitutive law.
+
+    Defined in fib Model Code 2010 (2013), Table 7.2-1 and Eq. 7.2-10
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
+    """
+    return eps_clim(fck)
+
+
+def eps_c2(fck: float) -> float:
+    """The strain at maximum compressive stress of concrete for the
+    parabolic-rectangular law.
+
+    Defined in fib Model Code 2010 (2013), Table 7.2-1
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
+    """
+    fck = abs(fck)
+    return (
+        2.0 / 1000 if fck <= 50 else (2.0 + 0.085 * (fck - 50) ** 0.53) / 1000
+    )
+
+
+def eps_cu2(fck: float) -> float:
+    """The ultimate strain of the parabolic-rectangular law.
+
+    Defined in fib Model Code 2010 (2013), Table 7.2-1
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
+    """
+    fck = abs(fck)
+    return (
+        3.5 / 1000
+        if fck <= 50
+        else (2.6 + 35 * ((90 - fck) / 100) ** 4) / 1000
+    )
+
+
+def n_parabolic_rectangular(fck: float) -> float:
+    """The exponent in the parabolic-rectangular law.
+
+    Defined in fib Model Code 2010 (2013), Table 7.2-1
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The exponent n, absolute value, no unit.
+    """
+    fck = abs(fck)
+    return 2.0 if fck <= 50 else (1.4 + 23.4 * ((90 - fck) / 100) ** 4)
+
+
+def eps_c3(fck: float) -> float:
+    """The strain at maximum compressive stress of the bi-linear law.
+
+    Defined in fib Model Code 2010 (2013), Table 7.2-1
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The strain at maximum compressive stress, absolute value, no
+        unit.
+    """
+    fck = abs(fck)
+    return 1.75 / 1000 if fck <= 50 else (1.75 + 0.55 * (fck - 50) / 40) / 1000
+
+
+def eps_cu3(fck: float) -> float:
+    """The ultimate strain of the bi-linear law.
+
+    Defined in fib Model Code 2010 (2013), Table 7.2-1
+
+    Args:
+        fck (float): The characteristic compressive strength of concrete in
+            MPa.
+
+    Returns:
+        float: The ultimate strain, absolute value, no unit.
+    """
+    return eps_cu2(fck)
