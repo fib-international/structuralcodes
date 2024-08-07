@@ -142,6 +142,9 @@ class GenericSectionCalculator(SectionCalculator):
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
 
+        # Add area of reinforcement to total area
+        gp.area += gp.area_reinforcement
+
         # Computation of area moments
         #
         # Implementation idea:
