@@ -309,7 +309,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         if self._n != 2:
             # The constitutive law is not writtable as a polynomial,
             # Call the generic distretizing method
-            return super().__marin__
+            return super().__marin__(strain=strain)
 
         strains = []
         coeff = []
