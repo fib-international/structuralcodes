@@ -267,8 +267,13 @@ class ParabolaRectangle(ConstitutiveLaw):
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
+        sig = np.zeros_like(eps)
         # Parabolic branch
-        sig = self._fc * (1 - (1 - (eps / self._eps_0)) ** self._n)
+        sig[(eps <= 0) & (eps >= self._eps_0)] = self._fc * (
+            1
+            - (1 - (eps[(eps <= 0) & (eps >= self._eps_0)] / self._eps_0))
+            ** self._n
+        )
         # Rectangle branch
         sig[eps < self._eps_0] = self._fc
         # Zero elsewhere
@@ -280,11 +285,13 @@ class ParabolaRectangle(ConstitutiveLaw):
         """Return the tangent given strain."""
         eps = np.atleast_1d(np.asarray(eps))
         # parabolic branch
-        tangent = (
+        tangent = np.zeros_like(eps)
+        tangent[(eps <= 0) & (eps >= self._eps_0)] = (
             self._n
             * self._fc
             / self._eps_0
-            * (1 - (eps / self._eps_0)) ** (self._n - 1)
+            * (1 - (eps[(eps <= 0) & (eps >= self._eps_0)] / self._eps_0))
+            ** (self._n - 1)
         )
         # Elsewhere tangent is zero
         tangent[eps < self._eps_0] = 0.0
