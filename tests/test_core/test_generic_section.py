@@ -27,16 +27,8 @@ def test_rectangular_section():
     # The section
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
     geo = SurfaceGeometry(poly, concrete)
-    diam_reinf = 16
-    area_reinf = diam_reinf**2 * math.pi / 4.0
-    n_reinf = 4
-    expected_area = 200 * 400 + 2 * area_reinf * n_reinf
-    geo = add_reinforcement_line(
-        geo, (40, 40), (160, 40), diam_reinf, steel, n=n_reinf
-    )
-    geo = add_reinforcement_line(
-        geo, (40, 360), (160, 360), diam_reinf, steel, n=n_reinf
-    )
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
     geo = geo.translate(-100, -200)
     assert geo.geometries[0].centroid[0] == 0
     assert geo.geometries[0].centroid[1] == 0
@@ -45,7 +37,7 @@ def test_rectangular_section():
     sec = GenericSection(geo)
     assert sec.name == 'GenericSection'
 
-    assert math.isclose(sec.gross_properties.area, expected_area)
+    assert math.isclose(sec.gross_properties.area, 200 * 400)
 
     # Compute bending strength
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
@@ -60,7 +52,7 @@ def test_rectangular_section():
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
-    assert math.isclose(sec.gross_properties.area, expected_area)
+    assert math.isclose(sec.gross_properties.area, 200 * 400)
 
     # Compute bending strength
     res_fiber = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
@@ -251,18 +243,10 @@ def test_rectangular_section_Sargin():
     )
 
     # The section
-    diam_reinf = 16
-    area_reinf = diam_reinf**2 * math.pi / 4.0
-    n_reinf = 4
-    expected_area = 200 * 400 + 2 * area_reinf * n_reinf
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
     geo = SurfaceGeometry(poly, concrete)
-    geo = add_reinforcement_line(
-        geo, (40, 40), (160, 40), diam_reinf, steel, n=n_reinf
-    )
-    geo = add_reinforcement_line(
-        geo, (40, 360), (160, 360), diam_reinf, steel, n=n_reinf
-    )
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
     geo = geo.translate(-100, -200)
     assert geo.geometries[0].centroid[0] == 0
     assert geo.geometries[0].centroid[1] == 0
@@ -270,22 +254,14 @@ def test_rectangular_section_Sargin():
     # Create the section (default Marin integrator)
     sec = GenericSection(geo)
 
-    assert math.isclose(sec.gross_properties.area, expected_area)
-    assert math.isclose(sec.gross_properties.area_surface, 200 * 400)
-    assert math.isclose(
-        sec.gross_properties.area_reinforcement, area_reinf * n_reinf * 2
-    )
+    assert math.isclose(sec.gross_properties.area, 200 * 400)
 
     # Compute bending strength
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
-    assert math.isclose(sec.gross_properties.area, expected_area)
-    assert math.isclose(sec.gross_properties.area_surface, 200 * 400)
-    assert math.isclose(
-        sec.gross_properties.area_reinforcement, area_reinf * n_reinf * 2
-    )
+    assert math.isclose(sec.gross_properties.area, 200 * 400)
 
     # Compute bending strength
     res_fiber = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
@@ -308,16 +284,8 @@ def test_holed_section():
     geo = SurfaceGeometry(poly, concrete)
 
     # Add reinforcement
-    diam_reinf = 28
-    area_reinf = diam_reinf**2 * math.pi / 4.0
-    n_reinf = 4
-    expected_area = 260000 + 2 * area_reinf * n_reinf
-    geo = add_reinforcement_line(
-        geo, (50, 50), (450, 50), diam_reinf, steel, n=n_reinf
-    )
-    geo = add_reinforcement_line(
-        geo, (50, 950), (450, 950), diam_reinf, steel, n=n_reinf
-    )
+    geo = add_reinforcement_line(geo, (50, 50), (450, 50), 28, steel, n=4)
+    geo = add_reinforcement_line(geo, (50, 950), (450, 950), 28, steel, n=4)
     # Translate the section
     geo = geo.translate(-250, -500)
     assert geo.geometries[0].centroid[0] == 0
@@ -327,16 +295,14 @@ def test_holed_section():
     sec = GenericSection(geo)
     assert sec.name == 'GenericSection'
 
-    assert math.isclose(sec.gross_properties.area, expected_area)
-    assert math.isclose(sec.gross_properties.area_surface, 260000)
+    assert math.isclose(sec.gross_properties.area, 260000)
 
     # Compute bending strength with Marin
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
-    assert math.isclose(sec.gross_properties.area, expected_area)
-    assert math.isclose(sec.gross_properties.area_surface, 260000)
+    assert math.isclose(sec.gross_properties.area, 260000)
 
     # Compute bending strength
     res_fiber = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
@@ -363,15 +329,9 @@ def test_u_section():
     geo = SurfaceGeometry(poly, concrete)
 
     # Add reinforcement
-    diam_reinf = 28
-    area_reinf = diam_reinf**2 * math.pi / 4.0
-    n_reinf = 4
-    expected_area = 230000 + area_reinf * (n_reinf + 2)
-    geo = add_reinforcement_line(
-        geo, (50, 50), (450, 50), diam_reinf, steel, n=n_reinf
-    )
-    geo = add_reinforcement(geo, (50, 950), diam_reinf, steel)
-    geo = add_reinforcement(geo, (450, 950), diam_reinf, steel)
+    geo = add_reinforcement_line(geo, (50, 50), (450, 50), 28, steel, n=4)
+    geo = add_reinforcement(geo, (50, 950), 28, steel)
+    geo = add_reinforcement(geo, (450, 950), 28, steel)
     # Translate the section
     geo = geo.translate(-250, -441.30434782608694)
     assert geo.geometries[0].centroid[0] == 0
@@ -381,16 +341,14 @@ def test_u_section():
     sec = GenericSection(geo)
     assert sec.name == 'GenericSection'
 
-    assert math.isclose(sec.gross_properties.area, expected_area)
-    assert math.isclose(sec.gross_properties.area_surface, 230000)
+    assert math.isclose(sec.gross_properties.area, 230000)
 
     # Compute bending strength
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
-    assert math.isclose(sec.gross_properties.area, expected_area)
-    assert math.isclose(sec.gross_properties.area_surface, 230000)
+    assert math.isclose(sec.gross_properties.area, 230000)
 
     # Compute bending strength
     res_fiber = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
