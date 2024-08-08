@@ -53,6 +53,12 @@ class GenericSection(Section):
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
+        # Since only CompoundGeometry has the attribute geometries,
+        # if a SurfaceGeometry is input, we create a CompoundGeometry
+        # with only that geometry contained. After that all algorithms
+        # work as usal.
+        if isinstance(geometry, SurfaceGeometry):
+            geometry = CompoundGeometry([geometry])
         self.geometry = geometry
         self.section_calculator = GenericSectionCalculator(
             sec=self, integrator=integrator, **kwargs
@@ -179,6 +185,8 @@ class GenericSectionCalculator(SectionCalculator):
                 [0, 1, 0],
                 mesh_size=self.mesh_size,
             )
+            # Change sign due to moment sign convention
+            iyz *= -1
             # Integrate a dummy strain profile for getting first
             # and second moment respect z axis and product moment
             (
@@ -192,13 +200,15 @@ class GenericSectionCalculator(SectionCalculator):
                 tri=tri,
                 mesh_size=self.mesh_size,
             )
+            # Change sign due to moment sign convention
+            izz *= -1
             if abs(abs(izy) - abs(iyz)) > 10:
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
                 raise RuntimeError(error_str)
 
-            return abs(sy), abs(sz), abs(iyy), abs(izz), abs(iyz)
+            return sy, sz, iyy, izz, iyz
 
         # Create a dummy material for integration of area moments
         # This is used for J, S etc, not for E_J E_S etc
