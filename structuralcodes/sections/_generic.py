@@ -136,7 +136,6 @@ class GenericSectionCalculator(SectionCalculator):
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
             gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
-            gp.area_surface += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
