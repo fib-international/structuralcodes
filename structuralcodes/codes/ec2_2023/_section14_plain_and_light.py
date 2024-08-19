@@ -346,3 +346,63 @@ def NRd_pl_simp(
         raise ValueError(f'phi must not be negative. Got {phi}')
 
     return b * h * fcd_pl / 1000 * phi
+
+
+def min_tw() -> bool:
+    """Minimum requirement for overall thickness of a cast in-situ
+        plain concrete wall.
+
+    EN1992-1-1:2023 14.6.1 (1)
+
+    Returns:
+        bool: the minimum thickness in mm.
+    """
+    return 120.0
+
+
+def min_footing_depth_ratio(
+    sigma_gd: float,
+    fctd_pl: float,
+) -> bool:
+    """Minimum footing depth for an axially loaded strip and pad footing.
+
+    EN1992-1-1:2023 Eq. (14.13)
+
+    Args:
+        sigma_gd (float): The design value of ground pressure in MPa.
+        fctd_pl (float): The design value of the tensile
+            strength of plain concrete in MPa.
+
+    Returns:
+        float: the minimum hf/af ratio for a pad footing where hf is
+            the footing depth and af is the distance from
+            the footing edge to the column or wall face
+
+    Raises:
+        ValueError: If any of the input values are negative.
+    """
+    if sigma_gd < 0:
+        raise ValueError(
+            f'sigma_gd (ground pressure) must not be negative. Got {sigma_gd}'
+        )
+    if fctd_pl < 0:
+        raise ValueError(
+            f'fctd_pl (tensile strength) must not be negative. Got {fctd_pl}'
+        )
+
+    return math.sqrt(3 * sigma_gd / fctd_pl) / 0.85
+
+
+def min_footing_depth_ratio_simp() -> bool:
+    """Minimum footing depth for an axially loaded strip and pad footing
+        with the simplified method.
+
+    EN1992-1-1:2023 Eq. (14.14)
+
+    Returns:
+        float: the minimum hf/af ratio for a pad footing where hf is
+            the footing depth and af is the distance from
+            the footing edge to the column or wall face
+            with the simplified method.
+    """
+    return 2.0

@@ -197,3 +197,30 @@ def test_e_tot(e0, ei, expected):
     """Test e_tot function with various input values."""
     result = _section14_plain_and_light.e_tot(e0, ei)
     assert result == pytest.approx(expected, rel=1e-2)
+
+
+def test_min_tw():
+    """Test min_tw."""
+    assert _section14_plain_and_light.min_tw() == 120
+
+
+@pytest.mark.parametrize(
+    'sigma_gd, fctd_pl, expected',
+    [
+        (0.3, 2.5, 0.7058),
+        (0.5, 3.0, 0.8318),
+        (0.4, 2.0, 0.9112),
+        (0.2, 2.5, 0.5763),
+    ],
+)
+def test_min_footing_depth_ratio(sigma_gd, fctd_pl, expected):
+    """Test min_footing_depth_ratio."""
+    result = _section14_plain_and_light.min_footing_depth_ratio(
+        sigma_gd, fctd_pl
+    )
+    assert result == pytest.approx(expected, rel=1e-2)
+
+
+def test_min_footing_depth_ratio_simp():
+    """Test min_footing_depth_ratio_simp."""
+    assert _section14_plain_and_light.min_footing_depth_ratio_simp() == 2.0
