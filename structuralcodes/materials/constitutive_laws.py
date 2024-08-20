@@ -5,7 +5,7 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ..core.base import ConstitutiveLaw
+from ..core.base import ConstitutiveLaw, Material
 
 
 class Elastic(ConstitutiveLaw):
@@ -267,8 +267,13 @@ class ParabolaRectangle(ConstitutiveLaw):
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
+        sig = np.zeros_like(eps)
         # Parabolic branch
-        sig = self._fc * (1 - (1 - (eps / self._eps_0)) ** self._n)
+        sig[(eps <= 0) & (eps >= self._eps_0)] = self._fc * (
+            1
+            - (1 - (eps[(eps <= 0) & (eps >= self._eps_0)] / self._eps_0))
+            ** self._n
+        )
         # Rectangle branch
         sig[eps < self._eps_0] = self._fc
         # Zero elsewhere
@@ -280,11 +285,13 @@ class ParabolaRectangle(ConstitutiveLaw):
         """Return the tangent given strain."""
         eps = np.atleast_1d(np.asarray(eps))
         # parabolic branch
-        tangent = (
+        tangent = np.zeros_like(eps)
+        tangent[(eps <= 0) & (eps >= self._eps_0)] = (
             self._n
             * self._fc
             / self._eps_0
-            * (1 - (eps / self._eps_0)) ** (self._n - 1)
+            * (1 - (eps[(eps <= 0) & (eps >= self._eps_0)] / self._eps_0))
+            ** (self._n - 1)
         )
         # Elsewhere tangent is zero
         tangent[eps < self._eps_0] = 0.0
@@ -306,6 +313,11 @@ class ParabolaRectangle(ConstitutiveLaw):
             [(0, -0.002), (-0.002, -0.003)]
             [(a0, a1, a2), (a0)]
         """
+        if self._n != 2:
+            # The constitutive law is not writtable as a polynomial,
+            # Call the generic distretizing method
+            return super().__marin__(strain=strain)
+
         strains = []
         coeff = []
         if strain[1] == 0:
@@ -376,11 +388,124 @@ class ParabolaRectangle(ConstitutiveLaw):
         return (100, self._eps_u)
 
 
+class BilinearCompression(ConstitutiveLaw):
+    """Class for Bilinear Elastic-PerfectlyPlastic Constitutive Law for
+    Concrete (only compression behavior).
+    """
+
+    __materials__: t.Tuple[str] = ('concrete',)
+
+    def __init__(
+        self,
+        fc: float,
+        eps_c: float,
+        eps_cu: t.Optional[float] = None,
+        name: t.Optional[str] = None,
+    ) -> None:
+        """Initialize a BilinearCompression Material.
+
+        Args:
+            fc (float): compressive strength (negative number)
+            eps_c (float): strain at compressive strength (pure number)
+        eps_cu (float): ultimate strain (pure number)
+        """
+        name = name if name is not None else 'BilinearCompressionLaw'
+        super().__init__(name=name)
+        self._fc = -abs(fc)
+        self._eps_c = -abs(eps_c)
+        self._eps_cu = -abs(eps_cu)
+        self._E = self._fc / self._eps_c
+
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
+        """Return the stress given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
+        sig = self._E * eps
+        sig[sig < self._fc] = self._fc
+        sig[eps > 0] = 0
+        sig[eps < self._eps_cu] = 0
+        return sig
+
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+        """Return the tangent for given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        tangent = np.ones_like(eps) * self._E
+        tangent[eps < self._eps_c] = 0.0
+
+        return tangent
+
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin
+        integration in a simply formatted way.
+
+        Args:
+            strain: (float, float) tuple defining the strain
+                profile: eps = strain[0] + strain[1]*y
+        Returns:
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch we are
+            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            if strain[0] > 0:
+                # We are in tensile branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] > self._eps_0:
+                # We are in the linear branch
+                strains = None
+                a0 = self._E * strain[0]
+                a1 = self._E * strain[1]
+                coeff.append((a0, a1))
+            elif strain[0] >= self._eps_cu:
+                # We are in the constant branch
+                strains = None
+                coeff.append((self._fc,))
+            else:
+                # We are in a branch of non-resisting concrete
+                # Too much compression
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # linear part
+            strains.append((self._eps_c, 0))
+            a0 = self._E * strain[0]
+            a1 = self._E * strain[1]
+            coeff.append((a0, a1))
+            # Constant part
+            strains.append((self._eps_cu, self._eps_c))
+            coeff.append((self._fc,))
+        return strains, coeff
+
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (100, self._eps_c)
+        return (100, self._eps_cu)
+
+
 class Sargin(ConstitutiveLaw):
     """Class for Sargin constitutive law.
 
     The stresses and strains are assumed negative in compression
     and positive in tension.
+
+    References:
+    Sargin, M. (1971), "Stress-strain relationship for concrete and the
+    analysis of structural concrete section, Study No. 4,
+    Solid Mechanics Division, University of Waterloo, Ontario, Canada
     """
 
     __materials__: t.Tuple[str] = ('concrete',)
@@ -410,7 +535,7 @@ class Sargin(ConstitutiveLaw):
             if positive values are input for fc, eps_c1 and eps_cu1
             are input, they will be assumed negative.
         """
-        name = name if name is not None else 'ParabolaRectangleLaw'
+        name = name if name is not None else 'SarginLaw'
         super().__init__(name=name)
         self._fc = -abs(fc)
         self._eps_c1 = -abs(eps_c1)
@@ -459,6 +584,116 @@ class Sargin(ConstitutiveLaw):
         if yielding:
             return (100, self._eps_c1)
         return (100, self._eps_cu1)
+
+
+class Popovics(ConstitutiveLaw):
+    """Class for Popovics-Mander constitutive law.
+
+    The stresses and strains are assumed negative in compression
+    and positive in tension.
+
+    If the relation Ec = 5000 * sqrt(fc) is used for elastic modulus,
+    the constitutive law is identical to the one proposed by
+    Mander et al. (1988).
+
+    References:
+    Popovics, S., 1973, “A Numerical Approach to the Complete Stress-Strain
+    Curve of Concrete”, Cement and Concrete Research, 3(4), 583-599.
+
+    Mander, J.B., Priestley, M.J.N., Park, R., 1988, "Theoretical Stress-Strain
+    Model for Confined Concrete", Journal of Structural Engineering, 114(8),
+    1804-1826.
+    """
+
+    __materials__: t.Tuple[str] = ('concrete',)
+
+    def __init__(
+        self,
+        fc: float,
+        eps_c: float = -0.002,
+        eps_cu: float = -0.0035,
+        Ec: t.Optional[float] = None,
+        name: t.Optional[str] = None,
+    ) -> None:
+        """Initialize a Ppovics Material.
+
+        Arguments:
+            fc: (float) the strength of concrete in compression
+            eps_c: (float) peak strain of concrete in compression
+                optional, default value = -0.002
+            eps_cu: (float) ultimate strain of concrete in compression
+                optional, default value = -0.0035
+            E: (optional float) elastic modulus of concrete. If None,
+                the equation Ec = 5000 * fc**0.5 proposed by
+                Mander et al. (1988) is adopted (fc in MPa).
+                optional, default value = None.
+            name: (str) a name for the constitutive law,
+
+        Raises:
+            ValueError: if E is less or equal to 0
+        Notes:
+            if positive values are input for fc, eps_c and eps_cu
+            are input, they will be assumed negative.
+        """
+        name = name if name is not None else 'PopovicsLaw'
+        super().__init__(name=name)
+        self._fc = -abs(fc)
+        self._eps_c = -abs(eps_c)
+        self._eps_cu = -abs(eps_cu)
+        if Ec is None:
+            # fc in MPa, relation of Mander et al. (1988)
+            Ec = 5000 * abs(fc) ** 0.5
+        if Ec <= 0:
+            raise ValueError('Elastic modulus must be a positive number.')
+        E_sec = self._fc / self._eps_c
+        self._n = Ec / (Ec - E_sec)
+
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
+        """Return the stress given the strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compute stress
+        # Compression branch
+        eta = eps / self._eps_c
+
+        sig = self._fc * eta * self._n / (self._n - 1 + eta**self._n)
+
+        # Elsewhere stress is 0.0
+        sig[eps < self._eps_cu] = 0.0
+        sig[eps > 0] = 0.0
+
+        return sig
+
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+        """Return the tangent given strain."""
+        eps = np.atleast_1d(np.asarray(eps))
+        # Preprocess eps array in order
+        eps = self.preprocess_strains_with_limits(eps=eps)
+        # Compression branch
+        eta = eps / self._eps_c
+
+        tangent = (
+            (1 - eta**self._n)
+            / (self._n - 1 + eta**self._n) ** 2
+            * self._n
+            * (self._n - 1)
+            * self._fc
+            / self._eps_c
+        )
+        # Elsewhere tangent is zero
+        tangent[eps < self._eps_cu] = 0.0
+        tangent[eps > 0] = 0.0
+
+        return tangent
+
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
+        """Return the ultimate strain (positive and negative)."""
+        if yielding:
+            return (100, self._eps_c)
+        return (100, self._eps_cu)
 
 
 class UserDefined(ConstitutiveLaw):
@@ -661,3 +896,63 @@ class UserDefined(ConstitutiveLaw):
                 'set_ultimate_strain requires a single value or a tuple \
                 with  two values'
             )
+
+
+CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
+    'elastic': Elastic,
+    'elasticplastic': ElasticPlastic,
+    'elasticperfectlyplastic': ElasticPlastic,
+    'bilinearcompression': BilinearCompression,
+    'parabolarectangle': ParabolaRectangle,
+    'popovics': Popovics,
+    'sargin': Sargin,
+}
+
+
+def get_constitutive_laws_list() -> t.List[str]:
+    """Returns a list with valid keywords for constitutive law factory."""
+    return list(CONSTITUTIVE_LAWS.keys())
+
+
+def create_constitutive_law(
+    constitutive_law_name: str, material: Material
+) -> ConstitutiveLaw:
+    """A factory function to create the constitutive law.
+
+    Args:
+        constitutive_law_name (str): a string defining a valid constitutive law
+            type. The available keys can be get with the method
+            `get_constitutive_laws_list`
+        material (Material): The material containing the properties needed for
+            the definition of the constitutive law
+
+    Note:
+        For working with this facotry function, the material classes
+        implementations need to provide special dunder methods (__elastic__,
+        __parabolarectangle__, etc.) needed for the specific material that
+        return the kwargs needed to create the corresponding constitutive
+        law object. If the special dunder method is not found an exception
+        will be raised.
+        If the consitutive law selected is not available for the specific
+        material, an exception will be raised.
+    """
+    law = None
+    const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name.lower())
+    if const_law is not None:
+        method_name = f'__{constitutive_law_name}__'
+        # check if the material object has the special method needed
+        if hasattr(material, method_name):
+            method = getattr(material, method_name)
+            if callable(method):
+                # get the kwargs from the special dunder method
+                kwargs = method()
+                # create the constitutive law
+                law = const_law(**kwargs)
+        else:
+            raise ValueError(
+                f'Constitutive law {constitutive_law_name} not available for'
+                f' material {material.__class__.__name__}'
+            )
+    else:
+        raise ValueError(f'Unknown constitutive law: {constitutive_law_name}')
+    return law

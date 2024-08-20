@@ -11,12 +11,23 @@ from ._concrete import Concrete
 class ConcreteMC2010(Concrete):
     """Concrete implementation for MC 2010."""
 
+    # computed values
     _fcm: t.Optional[float] = None
     _fctm: t.Optional[float] = None
+    _Eci: t.Optional[float] = None
     _fctkmin: t.Optional[float] = None
     _fctkmax: t.Optional[float] = None
     _Gf: t.Optional[float] = None
+    _Eci: t.Optional[float] = None
     _alpha_cc: t.Optional[float] = None
+    _eps_c1: t.Optional[float] = None
+    _eps_cu1: t.Optional[float] = None
+    _k_sargin: t.Optional[float] = None
+    _eps_c2: t.Optional[float] = None
+    _eps_cu2: t.Optional[float] = None
+    _n_parabolic_rectangular: t.Optional[float] = None
+    _eps_c3: t.Optional[float] = None
+    _eps_cu3: t.Optional[float] = None
 
     def __init__(
         self,
@@ -62,6 +73,15 @@ class ConcreteMC2010(Concrete):
         self._fctkmin = None
         self._fctkmax = None
         self._Gf = None
+        self._Eci = None
+        self._eps_c1 = None
+        self._eps_cu1 = None
+        self._k_sargin = None
+        self._eps_c2 = None
+        self._eps_cu2 = None
+        self._n_parabolic_rectangular = None
+        self._eps_c3 = None
+        self._eps_cu3 = None
 
     @property
     def fcm(self) -> float:
@@ -70,9 +90,8 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The mean compressive strength in MPa.
         """
-        if self._fcm is not None:
-            return self._fcm
-        return mc2010.fcm(self._fck)
+        self._fcm = self._fcm or mc2010.fcm(self._fck)
+        return self._fcm
 
     @fcm.setter
     def fcm(self, value: float):
@@ -97,15 +116,39 @@ class ConcreteMC2010(Concrete):
         self._fcm = abs(value)
 
     @property
+    def Eci(self) -> float:
+        """Returns the modulus of elasticity in MPa at the concrete age of 28
+        days.
+
+        It is assumed a normal concrete with quartzite aggregates (alfa_e = 1)
+        """
+        self._Eci = self._Eci or mc2010.E_ci(self.fcm)
+        return self._Eci
+
+    @Eci.setter
+    def Eci(self, value: float):
+        """Sets a user defined value for modulus of elasticity at the concrete
+        age of 28 days, Eci.
+
+        Args:
+            value (float): the value of Eci in MPa
+        """
+        if value < 1e4 or value > 1e5:
+            warnings.warn(
+                'A suspect value of Eci has been input.\n'
+                'Please check Eci that should be in MPa ({value} given).'
+            )
+        self._Eci = abs(value)
+
+    @property
     def fctm(self) -> float:
         """Returns fctm in MPa.
 
         Returns:
             float: The mean tensile strength in MPa
         """
-        if self._fctm is not None:
-            return self._fctm
-        return mc2010.fctm(self._fck)
+        self._fctm = self._fctm or mc2010.fctm(self._fck)
+        return self._fctm
 
     @fctm.setter
     def fctm(self, value: float):
@@ -127,10 +170,8 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The lower bound tensile strength in MPa
         """
-        if self._fctkmin is not None:
-            return self._fctkmin
-
-        return mc2010.fctkmin(self.fctm)
+        self._fctkmin = self._fctkmin or mc2010.fctkmin(self.fctm)
+        return self._fctkmin
 
     @fctkmin.setter
     def fctkmin(self, value: float):
@@ -148,10 +189,8 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The upper bound tensile strength in MPa
         """
-        if self._fctkmax is not None:
-            return self._fctkmax
-
-        return mc2010.fctkmax(self.fctm)
+        self._fctkmax = self._fctkmax or mc2010.fctkmax(self.fctm)
+        return self._fctkmax
 
     @fctkmax.setter
     def fctkmax(self, value: float):
@@ -169,9 +208,8 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The fracture energy in N/m
         """
-        if self._Gf is not None:
-            return self._Gf
-        return mc2010.Gf(self._fck)
+        self._Gf = self._Gf or mc2010.Gf(self._fck)
+        return self._Gf
 
     @Gf.setter
     def Gf(self, value: float):
@@ -205,3 +243,252 @@ class ConcreteMC2010(Concrete):
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._alpha_cc or 1.0
+
+    @property
+    def eps_c1(self) -> float:
+        """Returns the strain at maximum compressive strength
+            of concrete (fcm) for the Sargin constitutive law.
+
+        Returns:
+            float: the strain at maximum compressive strength of concrete
+        """
+        self._eps_c1 = self._eps_c1 or mc2010.eps_c1(self._fck)
+        return self._eps_c1
+
+    @eps_c1.setter
+    def eps_c1(self, value: float):
+        """Sets a user defined value for strain at peak strenght
+        for Sargin constitutive law.
+
+        Args:
+            value (float): the new value for eps_c1, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_c1 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._eps_c1 = value
+
+    @property
+    def eps_cu1(self) -> float:
+        """Returns the strain at concrete failure of concrete.
+
+        Returns:
+            float: the maximum strength at failure of concrete
+        """
+        self._eps_cu1 = self._eps_cu1 or mc2010.eps_cu1(self._fck)
+        return self._eps_cu1
+
+    @eps_cu1.setter
+    def eps_cu1(self, value: float):
+        """Sets the nominal ultimate strain for Sargin constitutive law.
+
+        Args:
+            value (float): the new value for eps_cu1, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_cu1 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._eps_cu1 = value
+
+    @property
+    def k_sargin(self) -> float:
+        """Returns the coefficient for Sargin constitutive law.
+
+        Returns:
+        float: the plastic coefficient for Sargin law.
+        """
+        self._k_sargin = self._k_sargin or mc2010.k_sargin(self._fck)
+        return self._k_sargin
+
+    @k_sargin.setter
+    def k_sargin(self, value: float):
+        """Sets the the coefficient for Sargin constitutive law.
+
+        Args:
+            value (float): the new value for k, no units
+
+        Raises:
+            ValueError if value < 0
+        """
+        if value < 0:
+            raise ValueError(f'n should be a positive value ({value} given)')
+        self._k_sargin = value
+
+    @property
+    def eps_c2(self) -> float:
+        """Returns the strain at maximum compressive strength
+            of concrete (fcd) for the Parabola-rectangle constitutive law.
+
+        Returns:
+            float: the strain at maximum compressive strength of concrete
+        """
+        self._eps_c2 = self._eps_c2 or mc2010.eps_c2(self.fck)
+        return self._eps_c2
+
+    @eps_c2.setter
+    def eps_c2(self, value: float):
+        """Sets the strain at maximum compressive strength
+            of concrete (fcd) for the Parabola-rectangle constitutive law.
+
+        Args:
+            value (float): the new value for eps_c2, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_c2 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._eps_c2 = value
+
+    @property
+    def eps_cu2(self) -> float:
+        """Returns the strain at concrete failure of concrete for the
+            Parabola-rectangle constitutive law.
+
+        Returns:
+            float: the maximum strain at failure of concrete
+        """
+        self._eps_cu2 = self._eps_cu2 or mc2010.eps_cu2(self.fck)
+        return self._eps_cu2
+
+    @eps_cu2.setter
+    def eps_cu2(self, value: float):
+        """Sets the strain at concrete failure of concrete for the
+            Parabola-rectangle constitutive law.
+
+        Args:
+            value (float): the new value for eps_cu2, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_cu2 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._eps_cu2 = value
+
+    @property
+    def n_parabolic_rectangular(self) -> float:
+        """Returns the coefficient for Parabola-rectangle constitutive law.
+
+        Returns:
+        float: the exponent for Parabola-recangle law.
+        """
+        self._n_parabolic_rectangular = (
+            self._n_parabolic_rectangular
+            or mc2010.n_parabolic_rectangular(self.fck)
+        )
+        return self._n_parabolic_rectangular
+
+    @n_parabolic_rectangular.setter
+    def n_parabolic_rectangular(self, value: float):
+        """Sets the coefficient for Parabola-rectangle constitutive law.
+
+        Args:
+            value (float): the new value for n, no units
+
+        Raises:
+            ValueError if value < 0
+        """
+        if value < 0:
+            raise ValueError(f'n should be a positive value ({value} given)')
+        if value >= 5:
+            warnings.warn(
+                'A suspect value is input for eps_cu2 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._n_parabolic_rectangular = value
+
+    @property
+    def eps_c3(self) -> float:
+        """Returns the strain at maximum compressive strength
+            of concrete (fcd) for the Bi-linear constitutive law.
+
+        Returns:
+            float: the strain at maximum compressive strength of concrete
+        """
+        self._eps_c3 = self._eps_c3 or mc2010.eps_c3(self.fck)
+        return self._eps_c3
+
+    @eps_c3.setter
+    def eps_c3(self, value: float):
+        """Sets the strain at maximum compressive strength
+            of concrete (fcd) for the Bi-linear constitutive law.
+
+        Args:
+            value (float): the new value for eps_c3, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_c3 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._eps_c3 = value
+
+    @property
+    def eps_cu3(self) -> float:
+        """Returns the strain at concrete failure of concrete for the
+            Bi-linear constitutive law.
+
+        Returns:
+            float: the maximum strain at failure of concrete
+        """
+        self._eps_cu3 = self._eps_cu3 or mc2010.eps_cu3(self.fck)
+        return self._eps_cu3
+
+    @eps_cu3.setter
+    def eps_cu3(self, value: float):
+        """Sets the strain at concrete failure of concrete for the
+            Bi-linear constitutive law.
+
+        Args:
+            value (float): the new value for eps_cu3, no units
+        """
+        if abs(value) >= 0.1:
+            warnings.warn(
+                'A suspect value is input for eps_cu3 that should be a pure'
+                ' number without units. Plase check ({value} given).'
+            )
+        self._eps_cu3 = value
+
+    def __elastic__(self) -> dict:
+        """Returns kwargs for creating an elastic constitutive law."""
+        return {'E': self.Eci}
+
+    def __bilinearcompression__(self) -> dict:
+        """Returns kwargs for Bi-linear constitutive law."""
+        return {
+            'fc': self.fcd(),
+            'eps_c': self.eps_c3,
+            'eps_cu': self.eps_cu3,
+        }
+
+    def __parabolarectangle__(self) -> dict:
+        """Returns kwargs for creating a parabola rectangle const law."""
+        return {
+            'fc': self.fcd(),
+            'eps_0': self.eps_c2,
+            'eps_u': self.eps_cu2,
+            'n': self.n_parabolic_rectangular,
+        }
+
+    def __sargin__(self) -> dict:
+        """Returns kwargs for creating a Sargin const law."""
+        return {
+            'fc': self.fcd(),
+            'eps_c1': self.eps_c1,
+            'eps_cu1': self.eps_cu1,
+            'k': self.k_sargin,
+        }
+
+    def __popovics__(self) -> dict:
+        """Returns kwargs for creating a Sargin const law."""
+        return {
+            'fc': self.fcd(),
+            'eps_c': self.eps_c1,
+            'eps_cu': self.eps_cu1,
+            'Ec': self.Eci,
+        }

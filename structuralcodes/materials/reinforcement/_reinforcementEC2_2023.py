@@ -51,6 +51,10 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
         """The design yield strength."""
         return ec2_2023.fyd(self.fyk, self.gamma_s)
 
+    def ftd(self) -> float:
+        """The design ultimate strength."""
+        return ec2_2023.fyd(self.ftk, self.gamma_s)
+
     def epsud(self) -> float:
         """The design ultimate strain."""
         return ec2_2023.eps_ud(self.epsuk, self.gamma_s)
@@ -61,3 +65,29 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._gamma_s or 1.15
+
+    def __elastic__(self) -> dict:
+        """Returns kwargs for creating an elastic constitutive law."""
+        return {'E': self.Es}
+
+    def __elasticperfectlyplastic__(self) -> dict:
+        """Returns kwargs for ElasticPlastic constitutive law with no strain
+        hardening.
+        """
+        return {
+            'E': self.Es,
+            'fy': self.fyd(),
+            'eps_su': self.epsud(),
+        }
+
+    def __elasticplastic__(self) -> dict:
+        """Returns kwargs for ElasticPlastic constitutive law with strain
+        hardening.
+        """
+        Eh = (self.ftd() - self.fyd()) / (self.epsuk - self.epsyd)
+        return {
+            'E': self.Es,
+            'fy': self.fyd(),
+            'Eh': Eh,
+            'eps_su': self.epsud(),
+        }
