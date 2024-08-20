@@ -7,9 +7,11 @@ import pytest
 from numpy.testing import assert_allclose
 
 from structuralcodes.materials.constitutive_laws import (
+    BilinearCompression,
     Elastic,
     ElasticPlastic,
     ParabolaRectangle,
+    Popovics,
     Sargin,
     UserDefined,
 )
@@ -401,4 +403,115 @@ def test_sargin(fc, eps_c1, eps_cu1, k):
 
     eps_max, eps_min = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, eps_c1)
+    assert math.isclose(eps_max, 100)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_c, eps_cu',
+    [
+        (12, 1.9e-3, 3.5e-3),
+        (16, 2.0e-3, 3.5e-3),
+        (20, 2.1e-3, 3.5e-3),
+        (25, 2.2e-3, 3.5e-3),
+        (30, 2.3e-3, 3.5e-3),
+        (35, 2.3e-3, 3.5e-3),
+        (40, 2.4e-3, 3.5e-3),
+        (45, 2.5e-3, 3.5e-3),
+        (50, 2.6e-3, 3.4e-3),
+        (55, 2.6e-3, 3.4e-3),
+        (60, 2.7e-3, 3.3e-3),
+        (70, 2.7e-3, 3.2e-3),
+        (80, 2.8e-3, 3.1e-3),
+        (90, 2.9e-3, 3.0e-3),
+        (100, 3.0e-3, 3.0e-3),
+        (110, 3.0e-3, 3.0e-3),
+        (120, 3.0e-3, 3.0e-3),
+    ],
+)
+def test_popovics(fc, eps_c, eps_cu):
+    """Test Popovics material."""
+    Ec = 5000 * abs(fc) ** 0.5
+    law = Popovics(fc=fc, eps_c=eps_c, eps_cu=eps_cu)
+
+    eps = np.linspace(0, eps_cu, 20)
+
+    # compute expected
+    Esec = fc / eps_c
+    n = Ec / (Ec - Esec)
+    sig_expected = -fc * (eps / eps_c) * n / (n - 1 + (eps / eps_c) ** n)
+    tan_expected = (
+        fc
+        * (1 - (eps / eps_c) ** n)
+        * n
+        * (n - 1)
+        / (n - 1 + (eps / eps_c) ** n) ** 2
+        / eps_c
+    )
+
+    # compute from Popovics
+    sig_computed = law.get_stress(-eps)
+    tan_computed = law.get_tangent(-eps)
+
+    # Compare the two
+    assert_allclose(sig_computed, sig_expected)
+    assert_allclose(tan_computed, tan_expected)
+
+    # Test getting ultimate strain
+    eps_max, eps_min = law.get_ultimate_strain()
+    assert math.isclose(eps_min, -eps_cu)
+    assert math.isclose(eps_max, 100)
+
+    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    assert math.isclose(eps_min, -eps_c)
+    assert math.isclose(eps_max, 100)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_c, eps_cu',
+    [
+        (12, 1.75e-3, 3.5e-3),
+        (16, 1.75e-3, 3.5e-3),
+        (20, 1.75e-3, 3.5e-3),
+        (25, 1.75e-3, 3.5e-3),
+        (30, 1.75e-3, 3.5e-3),
+        (35, 1.75e-3, 3.5e-3),
+        (40, 1.75e-3, 3.5e-3),
+        (45, 1.75e-3, 3.5e-3),
+        (50, 1.75e-3, 3.5e-3),
+        (55, 1.8e-3, 3.1e-3),
+        (60, 1.9e-3, 2.9e-3),
+        (70, 2.0e-3, 2.7e-3),
+        (80, 2.2e-3, 2.6e-3),
+        (90, 2.3e-3, 2.6e-3),
+    ],
+)
+def test_bilinearcompression(fc, eps_c, eps_cu):
+    """Test BilinearCompression material."""
+    law = BilinearCompression(fc=fc, eps_c=eps_c, eps_cu=eps_cu)
+
+    eps = np.linspace(0, eps_cu, 20)
+
+    # compute expected
+    E = fc / eps_c
+    sig_expected = E * eps
+    sig_expected[sig_expected > fc] = fc
+    tan_expected = np.zeros_like(sig_expected)
+    tan_expected[sig_expected < fc] = E
+    sig_expected *= -1
+
+    # compute from BilinearCompression
+    sig_computed = law.get_stress(-eps)
+    tan_computed = law.get_tangent(-eps)
+
+    # Compare the two
+    assert_allclose(sig_computed, sig_expected)
+    assert_allclose(tan_computed, tan_expected)
+
+    # Test getting ultimate strain
+    eps_max, eps_min = law.get_ultimate_strain()
+    assert math.isclose(eps_min, -eps_cu)
+    assert math.isclose(eps_max, 100)
+
+    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
