@@ -34,7 +34,7 @@ class ReinforcementMC2010(Reinforcement):
 
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
-            desnsity (float): Density of material in kg/m3 (default: 7850).
+            density (float): Density of material in kg/m3 (default: 7850).
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
