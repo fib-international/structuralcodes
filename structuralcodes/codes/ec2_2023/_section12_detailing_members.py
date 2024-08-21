@@ -959,16 +959,20 @@ def s_max_circular_col(n_bars: int, diameter: float) -> float:
     return min(diameter * math.pi / n_bars, 400)
 
 
-def s_max_col(s_max_col: float, fck: float, fcd: float) -> float:
+def s_max_col_int(
+    phi_l_max: float, h: float, b: float, long_bars_res: bool
+) -> float:
     """Calculate the maximum spacing of transverse
-        reinforcement for columns in the end region.
+        reinforcement for columns in the intermediate region.
 
     EN1992-1-1:2023 Table 12.3
 
     Args:
-        s_max_col (float): Maximum spacing of transverse reinforcement in mm.
-        fck (float): Characteristic compressive strength of concrete in MPa.
-        fcd (float): Design compressive strength of concrete in MPa.
+        phi_l_max (float): Maximum diameter of longitudinal bars in mm.
+        h (float): height of the column in mm.
+        b (float): width of the column in mm.
+        long_bars_res (bool): True if the longitudinal bars account
+            for column resistance. Otherwise False.
 
     Returns:
         float: Maximum spacing of transverse reinforcement in mm.
@@ -976,14 +980,184 @@ def s_max_col(s_max_col: float, fck: float, fcd: float) -> float:
     Raises:
         ValueError: If any input value is negative.
     """
+    if phi_l_max < 0:
+        raise ValueError(f'phi_l_max must not be negative. Got {phi_l_max}')
+    if h < 0:
+        raise ValueError(f'h must not be negative. Got {h}')
+    if b < 0:
+        raise ValueError(f'b must not be negative. Got {b}')
+    if long_bars_res:
+        return min(h, b, 400)
+
+    return min(20 * phi_l_max, h, b, 300)
+
+
+def s_max_col_end(s_max_col: float) -> float:
+    """Calculate the maximum spacing of transverse
+        reinforcement for columns in the end region.
+
+    EN1992-1-1:2023 Table 12.3
+
+    Args:
+        s_max_col (float): Maximum spacing of transverse reinforcement in mm.
+
+    Returns:
+        float: Maximum spacing of transverse reinforcement in mm.
+
+    Raises:
+        ValueError: If s_max_col is negative.
+    """
     if s_max_col < 0:
         raise ValueError(f's_max_col must not be negative. Got {s_max_col}')
-    if fck < 0:
-        raise ValueError(f'fck must not be negative. Got {fck}')
-    if fcd < 0:
-        raise ValueError(f'fcd must not be negative. Got {fcd}')
+    return 0.6 * s_max_col
 
-    if fck > 50:
-        confinement_min = 0.6 * s_max_col * fcd / fck
-        return min(s_max_col * 0.6, confinement_min)
-    return s_max_col * 0.6
+
+def As_wall_min_v(
+    Ac: float,
+    fctm: float,
+    fyk: float,
+    design_case: Literal['in_plane_stress', 'compression_bending'],
+) -> float:
+    """Calculate the minimum amount of vertical
+        reinforcement for walls and deep beams.
+
+    EN1992-1-1:2023 Table 12.4
+
+    Args:
+        Ac (float): Cross-sectional area of the wall or deep beam .
+        fctm (float): Mean tensile strength of concrete in MPa.
+        fyk (float): Characteristic yield strength of reinforcement in MPa.
+        design_case (str): Design case
+            ('in_plane_stress' or 'compression_bending').
+
+    Returns:
+        float: Minimum area of vertical reinforcement in mm2.
+
+    Raises:
+        ValueError: If any input value is negative or
+            if design_case is not recognized.
+    """
+    if Ac < 0:
+        raise ValueError(f'Ac must not be negative. Got {Ac}')
+    if fctm < 0:
+        raise ValueError(f'fctm must not be negative. Got {fctm}')
+    if fyk < 0:
+        raise ValueError(f'fyk must not be negative. Got {fyk}')
+
+    if design_case == 'in_plane_stress':
+        return 0.25 * Ac * fctm / fyk
+
+    # If compression_bending
+    return 0.001 * Ac
+
+
+def As_wall_min_h(
+    Ac: float,
+    As_v: float,
+    fctm: float,
+    fyk: float,
+    design_case: Literal['in_plane_stress', 'compression_bending'],
+) -> float:
+    """Calculate the minimum amount of horizontal reinforcement
+        for walls and deep beams.
+
+    EN1992-1-1:2023 Table 12.4
+
+    Args:
+        Ac (float): Cross-sectional area of the wall or deep beam in mm2.
+        As_v (float): Area of vertical reinforcement in mm2.
+        fctm (float): Mean tensile strength of concrete in MPa.
+        fyk (float): Characteristic yield strength of reinforcement in MPa.
+        design_case (str): Design case
+            ('in_plane_stress' or 'compression_bending').
+
+    Returns:
+        float: Minimum area of horizontal reinforcement in mm2.
+
+    Raises:
+        ValueError: If any input value is negative or if
+            design_case is not recognized.
+    """
+    if Ac < 0:
+        raise ValueError(f'Ac must not be negative. Got {Ac}')
+    if As_v < 0:
+        raise ValueError(f'As_v must not be negative. Got {As_v}')
+    if fctm < 0:
+        raise ValueError(f'fctm must not be negative. Got {fctm}')
+    if fyk < 0:
+        raise ValueError(f'fyk must not be negative. Got {fyk}')
+
+    if design_case == 'in_plane_stress':
+        return 0.25 * Ac * fctm / fyk
+    # If compression_bending
+    return 0.25 * As_v
+
+
+def s_max_wall_v(h: float) -> float:
+    """Calculate the maximum spacing of vertical reinforcement in walls.
+
+    EN1992-1-1:2023 Table 12.4
+
+    Args:
+        h (float): Thickness of the wall in mm.
+
+    Returns:
+        float: Maximum spacing of vertical reinforcement in mm.
+
+    Raises:
+        ValueError: If h is negative.
+    """
+    if h < 0:
+        raise ValueError(f'h must not be negative. Got {h}')
+
+    return min(3 * h, 400)
+
+
+def s_max_wall_h() -> float:
+    """Calculate the maximum spacing of horizontal reinforcement
+        in walls.
+
+    EN1992-1-1:2023 Table 12.4
+
+    Returns:
+        float: Maximum spacing of horizontal reinforcement in mm.
+    """
+    return 400
+
+
+def min_di_support_and_joint(
+    ch_i: float,
+    delta_a: float,
+    loop_type: Literal['horizontal_loops', 'vertical_bent'],
+    r_i: float = 0,
+) -> float:
+    """Calculate the nominal length di of a simple support or bearing
+        based on the type of loop and reinforcement.
+
+    EN1992-1-1:2023 12.10(5)
+
+    Args:
+        ch_i (float): Nominal cover (horizontal or vertical) in mm.
+        delta_a (float): Allowance for construction deviations in mm.
+        r_i (float, optional): Mandrel radius of bend of longitudinal
+            reinforcement in mm. Required if loop_type is "vertical_bent".
+        loop_type (str): Type of loop ('horizontal_loops', 'vertical_bent').
+
+    Returns:
+        float: Nominal length di in mm.
+
+    Raises:
+        ValueError: If any input value is negative.
+    """
+    if ch_i < 0:
+        raise ValueError(f'ch_i must not be negative. Got {ch_i}')
+    if delta_a < 0:
+        raise ValueError(f'delta_a must not be negative. Got {delta_a}')
+    if r_i < 0:
+        raise ValueError(f'r_i must not be negative. Got {r_i}')
+
+    if loop_type == 'horizontal_loops':
+        return ch_i + delta_a
+
+    # If vertical_bent
+    return ch_i + delta_a + r_i

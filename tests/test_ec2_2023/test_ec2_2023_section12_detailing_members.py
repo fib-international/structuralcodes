@@ -473,3 +473,140 @@ def test_hogging_reinforcement_vrd_hog(
     assert _section12_detailing_members.Vrd_hog_flat_slab(
         nhog, fck, gamma_c, phi, s, c
     ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'NEd, fyd, Ac, expected',
+    [
+        (1000, 500, 400000, 800.0),
+        (2000, 600, 500000, 1000.0),
+        (1500, 400, 300000, 600.0),
+    ],
+)
+def test_As_column_min(NEd, fyd, Ac, expected):
+    """Test minimum longitudinal reinforcement calculation."""
+    assert _section12_detailing_members.As_column_min(
+        NEd, fyd, Ac
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'h, b, expected',
+    [
+        (600, 300, 300.0),
+        (500, 500, 400.0),
+        (800, 450, 400.0),
+    ],
+)
+def test_s_max_poly_col(h, b, expected):
+    """Test maximum longitudinal spacing for polygonal cross-sections."""
+    assert _section12_detailing_members.s_max_poly_col(h, b) == pytest.approx(
+        expected, rel=1e-2
+    )
+
+
+@pytest.mark.parametrize(
+    'n_bars, diameter, expected',
+    [
+        (8, 300, 117.8),
+        (6, 400, 209.4),
+        (10, 500, 157.1),
+    ],
+)
+def test_s_max_circular_col(n_bars, diameter, expected):
+    """Test s_max_circular_col."""
+    assert _section12_detailing_members.s_max_circular_col(
+        n_bars, diameter
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'phi_l_max, h, b, long_bars_res, expected',
+    [
+        (16, 600, 300, True, 300.0),
+        (16, 600, 300, False, 300.0),
+        (20, 500, 500, True, 400.0),
+    ],
+)
+def test_s_max_col_int(phi_l_max, h, b, long_bars_res, expected):
+    """Test s_max_col_int."""
+    assert _section12_detailing_members.s_max_col_int(
+        phi_l_max, h, b, long_bars_res
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    's_max_col, expected',
+    [
+        (300, 180.0),
+        (250, 150.0),
+    ],
+)
+def test_s_max_col_end(s_max_col, expected):
+    """Test s_max_col_end."""
+    assert _section12_detailing_members.s_max_col_end(
+        s_max_col
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'Ac, fctm, fyk, design_case, expected',
+    [
+        (200000, 2.9, 500, 'in_plane_stress', 290.0),
+        (200000, 2.9, 500, 'compression_bending', 200.0),
+    ],
+)
+def test_As_wall_min_v(Ac, fctm, fyk, design_case, expected):
+    """Test As_wall_min_v."""
+    assert _section12_detailing_members.As_wall_min_v(
+        Ac, fctm, fyk, design_case
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'Ac, As_v, fctm, fyk, design_case, expected',
+    [
+        (200000, 300, 2.9, 500, 'in_plane_stress', 290.0),
+        (200000, 300, 2.9, 500, 'compression_bending', 75.0),
+    ],
+)
+def test_As_wall_min_h(Ac, As_v, fctm, fyk, design_case, expected):
+    """Test As_wall_min_h."""
+    assert _section12_detailing_members.As_wall_min_h(
+        Ac, As_v, fctm, fyk, design_case
+    ) == pytest.approx(expected, rel=1e-2)
+
+
+@pytest.mark.parametrize(
+    'h, expected',
+    [
+        (100, 300.0),
+        (150, 400.0),
+    ],
+)
+def test_s_max_wall_v(h, expected):
+    """Test s_max_wall_v."""
+    assert _section12_detailing_members.s_max_wall_v(h) == pytest.approx(
+        expected, rel=1e-2
+    )
+
+
+def test_s_max_wall_h():
+    """Test s_max_wall_h."""
+    assert _section12_detailing_members.s_max_wall_h() == pytest.approx(
+        400.0, rel=1e-2
+    )
+
+
+@pytest.mark.parametrize(
+    'ch_i, delta_a, r_i, loop_type, expected',
+    [
+        (40, 10, 'horizontal_loops', 0, 50.0),
+        (40, 10, 'vertical_bent', 20, 70.0),
+    ],
+)
+def test_min_di_support_and_joint(ch_i, delta_a, r_i, loop_type, expected):
+    """Test min_di_support_and_joint."""
+    assert _section12_detailing_members.min_di_support_and_joint(
+        ch_i, delta_a, r_i, loop_type
+    ) == pytest.approx(expected, rel=1e-2)
