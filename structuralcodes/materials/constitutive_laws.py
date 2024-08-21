@@ -9,7 +9,7 @@ from ..core.base import ConstitutiveLaw, Material
 
 
 class Elastic(ConstitutiveLaw):
-    """Class for elastic Constitutive Law."""
+    """Class for elastic constitutive law."""
 
     __materials__: t.Tuple[str] = (
         'concrete',
@@ -18,7 +18,14 @@ class Elastic(ConstitutiveLaw):
     )
 
     def __init__(self, E: float, name: t.Optional[str] = None) -> None:
-        """Initialize an Elastic Material."""
+        """Initialize an Elastic Material.
+
+        Arguments:
+            E (float): The elastic modulus.
+
+        Keyword Arguments:
+            name (str): A descriptive name for the constitutive law.
+        """
         name = name if name is not None else 'ElasticLaw'
         super().__init__(name=name)
         self._E = E
@@ -37,13 +44,12 @@ class Elastic(ConstitutiveLaw):
     def __marin__(
         self, strain: t.Tuple[float, float]
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
-        """Returns coefficients and strain limits for Marin
-        integration in a simply formatted way.
+        """Returns coefficients and strain limits for Marin integration in a
+        simply formatted way.
 
-        Args:
-            strain: (float, float) tuple defining the strain
-                profile: eps = strain[0] + strain[1]*y
-        Returns:
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
 
         Example:
             [(0, -0.002), (-0.002, -0.003)]
@@ -67,10 +73,10 @@ class Elastic(ConstitutiveLaw):
     ) -> None:
         """Set ultimate strains for Elastic Material if needed.
 
-        Args:
-            eps_su: float or (float, float) defining ultimate strain
-                if a single value is provided the same is adopted for
-                both positive and negative strains
+        Arguments:
+            eps_su (float or (float, float)): Defining ultimate strain if a
+                single value is provided the same is adopted for both positive
+                and negative strains.
         """
         if isinstance(eps_su, float):
             self._eps_su = (abs(eps_su), -abs(eps_su))
@@ -115,7 +121,17 @@ class ElasticPlastic(ConstitutiveLaw):
         eps_su: t.Optional[float] = None,
         name: t.Optional[str] = None,
     ) -> None:
-        """Initialize an Elastic-Plastic Material."""
+        """Initialize an Elastic-Plastic Material.
+
+        Arguments:
+            E (float): The elastic modulus.
+            fy (float): The yield strength.
+
+        Keyword Arguments:
+            Eh (float): The hardening modulus.
+            eps_su (float): The ultimate strain.
+            name (str): A descriptive name for the constitutive law.
+        """
         name = name if name is not None else 'ElasticPlasticLaw'
         super().__init__(name=name)
         if E > 0:
@@ -154,13 +170,12 @@ class ElasticPlastic(ConstitutiveLaw):
     def __marin__(
         self, strain: t.Tuple[float, float]
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
-        """Returns coefficients and strain limits for Marin
-        integration in a simply formatted way.
+        """Returns coefficients and strain limits for Marin integration in a
+        simply formatted way.
 
-        Args:
-            strain: (float, float) tuple defining the strain
-                profile: eps = strain[0] + strain[1]*y
-        Returns:
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
 
         Example:
             [(0, -0.002), (-0.002, -0.003)]
@@ -245,14 +260,15 @@ class ParabolaRectangle(ConstitutiveLaw):
         """Initialize a Parabola-Rectangle Material.
 
         Arguments:
-        fc: (float) the strength of concrete in compression
-        eps_0: (float) peak strain of concrete in compression
-               optional, default value = -0.002
-        eps_u: (float) ultimate strain of concrete in compression
-               optional, default value = -0.0035
-        n: (float) exponent for the pre-peak branch
-           optional, default value = 2
-        name: (str) a name for the constitutive law, optional
+            fc (float): The strength of concrete in compression.
+
+        Keyword Arguments:
+            eps_0 (float): Peak strain of concrete in compression. Default
+                value = -0.002.
+            eps_u (float): Ultimate strain of concrete in compression. Default
+                value = -0.0035.
+            n (float): Exponent for the pre-peak branch. Default value = 2.
+            name (str): A name for the constitutive law.
         """
         name = name if name is not None else 'ParabolaRectangleLaw'
         super().__init__(name=name)
@@ -294,13 +310,12 @@ class ParabolaRectangle(ConstitutiveLaw):
     def __marin__(
         self, strain: t.Tuple[float, float]
     ) -> t.Tuple[t.List[float], t.List[float]]:
-        """Returns coefficients and strain limits for Marin
-        integration in a simply formatted way.
+        """Returns coefficients and strain limits for Marin integration in a
+        simply formatted way.
 
-        Args:
-            strain: (float, float) tuple defining the strain
-                profile: eps = strain[0] + strain[1]*y
-        Returns:
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
 
         Example:
             [(0, -0.002), (-0.002, -0.003)]
@@ -392,10 +407,13 @@ class BilinearCompression(ConstitutiveLaw):
     ) -> None:
         """Initialize a BilinearCompression Material.
 
-        Args:
-            fc (float): compressive strength (negative number)
-            eps_c (float): strain at compressive strength (pure number)
-        eps_cu (float): ultimate strain (pure number)
+        Arguments:
+            fc (float): Compressive strength (negative number).
+            eps_c (float): Strain at compressive strength (pure number).
+
+        Keyword Arguments:
+            eps_cu (float): Ultimate strain (pure number).
+            name (str): A descriptive name for the constitutive law.
         """
         name = name if name is not None else 'BilinearCompressionLaw'
         super().__init__(name=name)
@@ -427,13 +445,12 @@ class BilinearCompression(ConstitutiveLaw):
     def __marin__(
         self, strain: t.Tuple[float, float]
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
-        """Returns coefficients and strain limits for Marin
-        integration in a simply formatted way.
+        """Returns coefficients and strain limits for Marin integration in a
+        simply formatted way.
 
-        Args:
-            strain: (float, float) tuple defining the strain
-                profile: eps = strain[0] + strain[1]*y
-        Returns:
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
 
         Example:
             [(0, -0.002), (-0.002, -0.003)]
@@ -487,8 +504,8 @@ class BilinearCompression(ConstitutiveLaw):
 class Sargin(ConstitutiveLaw):
     """Class for Sargin constitutive law.
 
-    The stresses and strains are assumed negative in compression
-    and positive in tension.
+    The stresses and strains are assumed negative in compression and positive
+    in tension.
 
     References:
     Sargin, M. (1971), "Stress-strain relationship for concrete and the
@@ -509,19 +526,22 @@ class Sargin(ConstitutiveLaw):
         """Initialize a Sargin Material.
 
         Arguments:
-            fc: (float) the strength of concrete in compression
-            eps_c1: (float) peak strain of concrete in compression
-                optional, default value = -0.0023
-            eps_u: (float) ultimate strain of concrete in compression
-                optional, default value = -0.0035
-            k: (float) plasticity numberm, default value = 2.04
-            name: (str) a name for the constitutive law,
+            fc (float): The strength of concrete in compression
+
+        Keyword Arguments:
+            eps_c1 (float): Peak strain of concrete in compression. Default
+                value = -0.0023.
+            eps_u (float): Ultimate strain of concrete in compression. Default
+                value = -0.0035.
+            k (float): Plasticity number. Default value = 2.04.
+            name (str): A name for the constitutive law.
 
         Raises:
-            ValueError: if k is less or equal to 0
-        Notes:
-            if positive values are input for fc, eps_c1 and eps_cu1
-            are input, they will be assumed negative.
+            ValueError: If k is less or equal to 0.
+
+        Note:
+            If positive values are input for fc, eps_c1 and eps_cu1 are input,
+            they will be assumed negative.
         """
         name = name if name is not None else 'SarginLaw'
         super().__init__(name=name)
@@ -577,12 +597,11 @@ class Sargin(ConstitutiveLaw):
 class Popovics(ConstitutiveLaw):
     """Class for Popovics-Mander constitutive law.
 
-    The stresses and strains are assumed negative in compression
-    and positive in tension.
+    The stresses and strains are assumed negative in compression and positive
+    in tension.
 
-    If the relation Ec = 5000 * sqrt(fc) is used for elastic modulus,
-    the constitutive law is identical to the one proposed by
-    Mander et al. (1988).
+    If the relation Ec = 5000 * sqrt(fc) is used for elastic modulus, the
+    constitutive law is identical to the one proposed by Mander et al. (1988).
 
     References:
     Popovics, S., 1973, “A Numerical Approach to the Complete Stress-Strain
@@ -603,25 +622,27 @@ class Popovics(ConstitutiveLaw):
         Ec: t.Optional[float] = None,
         name: t.Optional[str] = None,
     ) -> None:
-        """Initialize a Ppovics Material.
+        """Initialize a Popovics Material.
 
         Arguments:
-            fc: (float) the strength of concrete in compression
-            eps_c: (float) peak strain of concrete in compression
-                optional, default value = -0.002
-            eps_cu: (float) ultimate strain of concrete in compression
-                optional, default value = -0.0035
-            E: (optional float) elastic modulus of concrete. If None,
-                the equation Ec = 5000 * fc**0.5 proposed by
-                Mander et al. (1988) is adopted (fc in MPa).
-                optional, default value = None.
-            name: (str) a name for the constitutive law,
+            fc (float): the strength of concrete in compression
+
+        Keyword Arguments:
+            eps_c (float): Peak strain of concrete in compression. Default
+                value = -0.002.
+            eps_cu (float): Ultimate strain of concrete in compression. Default
+                value = -0.0035.
+            E (optional float): Elastic modulus of concrete. If None, the
+                equation Ec = 5000 * fc**0.5 proposed by Mander et al. (1988)
+                is adopted (fc in MPa). Default value = None.
+            name (str): A name for the constitutive law.
 
         Raises:
-            ValueError: if E is less or equal to 0
-        Notes:
-            if positive values are input for fc, eps_c and eps_cu
-            are input, they will be assumed negative.
+            ValueError: If E is less or equal to 0.
+
+        Note:
+            If positive values are input for fc, eps_c and eps_cu are input,
+            they will be assumed negative.
         """
         name = name if name is not None else 'PopovicsLaw'
         super().__init__(name=name)
@@ -687,11 +708,10 @@ class Popovics(ConstitutiveLaw):
 class UserDefined(ConstitutiveLaw):
     """Class for a user defined constitutive law.
 
-    The curve is defined with positive and optionally negative
-    values. After the last value, the stress can go to zero to simulate
-    failure (default), or be mantained constante, or the last tanget or
-    secant values may be mantained indefinetely. The flag parameter
-    controls this behavior.
+    The curve is defined with positive and optionally negative values. After
+    the last value, the stress can go to zero to simulate failure (default), or
+    be maintained constante, or the last tanget or secant values may be
+    maintained indefinetely. The flag parameter controls this behavior.
     """
 
     __materials__: t.Tuple[str] = ('concrete', 'steel', 'rebars')
@@ -706,16 +726,15 @@ class UserDefined(ConstitutiveLaw):
         """Initialize a UserDefined constitutive law.
 
         Arguments:
-            x, y: two arrayLike objects containing data for strain and stress
-                    (must be of same length)
-            name: (Optional) a name for the constitutive law
-            flag: (Optional) a flag specifying the behavior after the last
-                point.
-                Admissible values:
-                    0 (default): stress drops to zero after ultimate strain
-                    1: stress is mantained constant
-                    2: last tangent is used
-                    3: last secant is used
+            x (ArrayLike): Data for strains.
+            y (ArrayLike): Data for stresses. Must be of same length as x.
+
+        Keyword Arguments:
+            name (Optional, str): A name for the constitutive law.
+            flag (Optional): A flag specifying the behavior after the last
+                point. Admissible values: 0 (default): stress drops to zero
+                after ultimate strain, 1: stress is mantained constant, 2:
+                last tangent is used, 3: last secant is used.
         """
         name = name if name is not None else 'UserDefinedLaw'
         super().__init__(name=name)
@@ -796,13 +815,12 @@ class UserDefined(ConstitutiveLaw):
     def __marin__(
         self, strain: t.Tuple[float, float]
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
-        """Returns coefficients and strain limits for Marin
-        integration in a simply formatted way.
+        """Returns coefficients and strain limits for Marin integration in a
+        simply formatted way.
 
-        Args:
-            strain: (float, float) tuple defining the strain
-                profile: eps = strain[0] + strain[1]*y
-        Returns:
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
 
         Example:
             [(0, -0.002), (-0.002, -0.003)]
@@ -852,10 +870,10 @@ class UserDefined(ConstitutiveLaw):
     ) -> None:
         """Set ultimate strains for Elastic Material if needed.
 
-        Args:
-            eps_su: float or (float, float) defining ultimate strain
-                if a single value is provided the same is adopted for
-                both positive and negative strains
+        Arguments:
+            eps_su (float or (float, float)): Defining ultimate strain if a
+                single value is provided the same is adopted for both positive
+                and negative strains.
         """
         if isinstance(eps_su, float):
             self._ultimate_strain_p = abs(eps_su)
@@ -907,20 +925,21 @@ def create_constitutive_law(
 ) -> ConstitutiveLaw:
     """A factory function to create the constitutive law.
 
-    Args:
-        constitutive_law_name (str): a string defining a valid constitutive law
+    Arguments:
+        constitutive_law_name (str): A string defining a valid constitutive law
             type. The available keys can be get with the method
-            `get_constitutive_laws_list`
+            `get_constitutive_laws_list`.
         material (Material): The material containing the properties needed for
-            the definition of the constitutive law
+            the definition of the constitutive law.
 
     Note:
-        For working with this facotry function, the material classes
+        For working with this facotry function, the material class
         implementations need to provide special dunder methods (__elastic__,
         __parabolarectangle__, etc.) needed for the specific material that
         return the kwargs needed to create the corresponding constitutive
         law object. If the special dunder method is not found an exception
         will be raised.
+
         If the consitutive law selected is not available for the specific
         material, an exception will be raised.
     """
