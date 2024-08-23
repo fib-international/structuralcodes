@@ -24,13 +24,16 @@ class MarinIntegrator(SectionIntegrator):
 
         Calculate the stresses based on strains in a set of points.
 
-        Args:
+        Keyword Arguments:
             geo (CompoundGeometry): The geometry of the section.
-            strain (ArrayLike): The strains and curvatures of the section.
-                                given in the format (ea, ky, kz) which are
-                                strain at 0,0
-                                curvature y axis
-                                curvature z axis
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+            mesh_size: Percentage of area (number from 0 to 1) max for triangle
+                elements.
+
+        Returns:
+            Tuple(List, Dict): ...
         """
         # This method should do the following tasks:
         # - For each geo:
@@ -147,7 +150,14 @@ class MarinIntegrator(SectionIntegrator):
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
     ) -> t.Tuple[float, float, float]:
-        """Integrate stresses over the geometry."""
+        """Integrate stresses over the geometry.
+
+        Arguments:
+            prepared_input (List): The prepared input from .prepare_input().
+
+        Returns:
+            Tuple(float, float, float): The stress resultants N, Mx and My.
+        """
         # Set the stress resultants to zero
         N, Mx, My = 0.0, 0.0, 0.0
 
@@ -187,7 +197,18 @@ class MarinIntegrator(SectionIntegrator):
     def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
-        """Integrate the strain response with the Marin algorithm."""
+        """Integrate the strain response with the Marin algorithm.
+
+        Arguments:
+            geo (CompoundGeometry): The geometry of the section.
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+
+        Returns:
+            Tuple(Tuple(float, float, float), Dict): The stress resultants N,
+            Mx and My and the triangulation data.
+        """
         del kwargs
         # Prepare the general input based on the geometry and the input strains
         angle, prepared_input = self.prepare_input(geo, strain)
