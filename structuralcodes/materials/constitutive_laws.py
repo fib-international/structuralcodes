@@ -1,5 +1,7 @@
 """Collection of some standard constitutive laws."""
 
+from __future__ import annotations
+
 import typing as t
 
 import numpy as np

@@ -1,5 +1,7 @@
 """A collection of material properties for concrete."""
 
+from __future__ import annotations
+
 import math
 import typing as t
 

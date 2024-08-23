@@ -1,5 +1,7 @@
 """Abstract base class for section integrators."""
 
+from __future__ import annotations
+
 import abc
 
 from numpy.typing import ArrayLike
