@@ -113,7 +113,7 @@ class PointGeometry(Geometry):
         default it creates a new name each time.
 
         Arguments:
-            point (Union(Poin, ArrayLike)): A couple of coordinates or a
+            point (Union(Point, ArrayLike)): A couple of coordinates or a
                 shapely Point object.
             diameter (float): The diameter of the point.
             material (Union(Material, ConstitutiveLaw)): The material for the
