@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import typing as t
 import warnings
 from math import cos, sin
@@ -923,3 +924,90 @@ class GenericSectionCalculator(SectionCalculator):
             res.m_z[i] = res_bend_strength.m_z
 
         return res
+
+    def calculate_strain_profile(self, n_ed=0, my=0, mz=0):
+        """'Get the strain plane for a given axial force and biaxial bending .
+
+        Args:
+            n_ed [N]: Axial load
+            m_ed [N*m]: Bending moment My
+
+        Returns:
+            eps_a: strain at (0,0)
+            chi: curvature of the section
+        """
+
+        def interpolate(x1, x2, y1, y2, x):
+            if x2 - x1 == 0:
+                return y1
+            y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+            return y
+
+        # Rotate the section to work with uniaxial bending
+        theta = (
+            (math.pi / 2 if mz > 0 else -math.pi / 2)
+            if my == 0
+            else math.atan(mz / my)
+        )
+        m_ed = math.sqrt(my**2 + mz**2) * my / abs(my)
+        rotated_geom = self.section.geometry.rotate(-theta)
+        if self.triangulated_data is not None:
+            # Rotate also triangulated data!
+            self._rotate_triangulated_data(-theta)
+
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n_ed)
+
+        if m_ed < 0:
+            r = self.calculate_bending_strength(theta=0, n=n_ed)
+            m1, m2 = r.m_y, 0
+            chi1, chi2 = r.chi_y, 0
+        else:
+            r = self.calculate_bending_strength(theta=math.pi, n=n_ed)
+            m1, m2 = 0, r.m_y
+            chi1, chi2 = 0, -r.chi_y
+
+        chi = interpolate(m1, m2, chi1, chi2, m_ed)
+
+        # Previous position of strain at (0,0)
+        strain = [0, 0, 0]
+
+        ITMAX = 200
+        tolerance = 1000  # (1e-3 mkN)
+        iter = 0
+        My = 1e11
+
+        while abs(m_ed - My) > tolerance and iter < ITMAX:
+            strain = self.find_equilibrium_fixed_curvature(
+                rotated_geom, n_ed, chi, strain[0]
+            )
+            (
+                _,
+                My,
+                Mz,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geo=rotated_geom,
+                strain=strain,
+                tri=self.triangulated_data,
+            )
+
+            if My > m_ed:
+                m2 = My
+                chi2 = chi
+            else:
+                m1 = My
+                chi1 = chi
+
+            chi = interpolate(m1, m2, chi1, chi2, m_ed)
+            eps_a = strain[0]
+            iter += 1
+
+        if self.triangulated_data is not None:
+            # Rotate back triangulated data!
+            self._rotate_triangulated_data(theta)
+
+        if iter == ITMAX:
+            return None, None
+        else:
+            return eps_a, chi

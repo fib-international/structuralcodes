@@ -71,6 +71,106 @@ def draw_section(section, title='', reduction_reinf=None):
     plt.show()
 
 
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+
+def draw_section_response3D(
+    section, eps_a, chi_y, chi_z, lim_Sneg=None, lim_Spos=None, title=None
+):
+    """Draw the stress and strains of a cross section in 3D.
+
+    Args:
+        eps_a : strain at (0,0)
+        chi_y : curvature in Y axis
+        chi_z : curvature in Z axis
+        lim_Sneg, lim_Spos: limits of stress in the plot
+    """
+    fig = plt.figure(figsize=(12, 6))
+    ax = fig.add_subplot(121, projection='3d')
+    ax2 = fig.add_subplot(122, projection='3d')
+
+    if title is not None:
+        fig.suptitle(title)
+
+    ax.set_title('Section response - stress')
+    ax.set_xlabel('Stress [MPa]')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    ax2.set_title('Section response - strain')
+    ax2.set_xlabel('Strain [mm/m]')
+    ax2.set_ylabel('Y')
+    ax2.set_zlabel('Z')
+
+    if (lim_Sneg is not None) and (lim_Spos is not None):
+        ax.set_zlim(lim_Sneg, lim_Spos)
+        ax2.set_zlim(lim_Sneg, lim_Spos)
+    else:
+        lim_Sneg, lim_Spos = -1e11, 1e11
+
+    labels_stress = {}
+    labels_strain = {}
+
+    for g in section.geometry.geometries:
+        poly = g.polygon
+        y_min, z_min, y_max, z_max = poly.bounds
+        y_range = np.linspace(y_min, y_max, 10)
+        x, y = poly.exterior.xy
+        for y in y_range:
+            stress = [
+                get_stress_point(section, x[i], y[i], eps_a, chi_y, chi_z)
+                for i in range(len(x))
+            ]
+            eps = [
+                (eps_a + chi_y * y[i] + chi_z * z) * 1000
+                for i in range(len(x))
+            ]
+
+            ax.plot(x, y, stress, color='gray')
+            ax2.plot(x, y, eps, color='gray')
+
+            poly_verts = [list(zip(x, y, stress))]
+            poly_verts2 = [list(zip(x, y, eps))]
+
+            poly3d = Poly3DCollection(poly_verts, alpha=0.5, edgecolor='r')
+            poly3d2 = Poly3DCollection(poly_verts2, alpha=0.5, edgecolor='r')
+
+            ax.add_collection3d(poly3d)
+            ax2.add_collection3d(poly3d2)
+
+    for i, g in enumerate(section.geometry.point_geometries):
+        center = g._point
+        r = g._diameter / 2
+        poly = center.buffer(r)
+        x_min, y_min, x_max, y_max = poly.bounds
+        z_range = np.linspace(y_min, y_max, 3)
+
+        for z in z_range:
+            x, y = poly.exterior.xy
+            stress = [
+                get_stress_point(section, x[i], y[i], eps_a, chi_y, chi_z)
+                for i in range(len(x))
+            ]
+            eps = [
+                (eps_a + chi_y * y[i] + chi_z * z) * 1000
+                for i in range(len(x))
+            ]
+
+            ax.plot(x, y, stress, color='gray')
+            ax2.plot(x, y, eps, color='gray')
+
+            poly_verts = [list(zip(x, y, stress))]
+            poly_verts2 = [list(zip(x, y, eps))]
+
+            poly3d = Poly3DCollection(poly_verts, alpha=0.5, edgecolor='r')
+            poly3d2 = Poly3DCollection(poly_verts2, alpha=0.5, edgecolor='r')
+
+            ax.add_collection3d(poly3d)
+            ax2.add_collection3d(poly3d2)
+
+    plt.show()
+
+
 def draw_section_response(
     section, eps_a, chi_y, lim_Sneg=None, lim_Spos=None, title=None
 ):
@@ -96,7 +196,7 @@ def draw_section_response(
 
     labels_stress = {}
     labels_strain = {}
-    # Asumiendo que puedes obtener estos valores correctamente de tus objetos section y geometries
+
     for i, g in enumerate(section.geometry.geometries):
         poly = g.polygon
         x_min, y_min, x_max, y_max = poly.bounds
