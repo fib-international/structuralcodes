@@ -436,40 +436,6 @@ def test_eps_cu1_raises_errors(fcm):
         _section5_materials.eps_cu1(fcm)
 
 
-@pytest.mark.parametrize(
-    'Ecm, fcm, eps_c, eps_c1, eps_cu1, expected',
-    [
-        (37562, 50, 0.0025, 0.00257882204904827, 0.0035, 49.9547867728839),
-        (25000, 80, 0.002, 0.0028, 0.00286325067128806, 51.3165266106443),
-    ],
-)
-def test_sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1, expected):
-    """Test sigma_c function."""
-    assert math.isclose(
-        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1),
-        expected,
-        rel_tol=10e-5,
-    )
-
-
-@pytest.mark.parametrize(
-    'Ecm, fcm, eps_c, eps_c1, eps_cu1',
-    [
-        (-37562, 50, 0.0025, 0.00257882204904827, 0.0035),
-        (37562, -50, 0.0025, 0.00257882204904827, 0.0035),
-        (37562, 50, -0.0025, 0.00257882204904827, 0.0035),
-        (37562, 50, 0.0025, 0, 0.0035),
-        (37562, 50, 0.0025, -0.00257882204904827, 0.0035),
-        (37562, 50, 0.0025, 0.00257882204904827, -0.0035),
-        (37562, 50, 0.02, 0.00257882204904827, 0.0035),
-    ],
-)
-def test_sigma_c_raises_errors(Ecm, fcm, eps_c, eps_c1, eps_cu1):
-    """Test sigma_c_raises_errors."""
-    with pytest.raises(ValueError):
-        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1)
-
-
 @pytest.mark.parametrize('concrete_type, expected', [('nc', 25), ('npc', 24)])
 def test_concrete_mean_unit_weight(concrete_type, expected):
     """Test concrete_mean_weight function."""
@@ -704,3 +670,61 @@ def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
     # Assert
     assert math.isclose(props['ftk'] / fyk, exp_ratio)
     assert math.isclose(props['epsuk'], exp_strain)
+
+
+def test_eps_c2():
+    """Test eps_c2."""
+    assert math.isclose(
+        _section5_materials.eps_c2(),
+        2e-3,
+        rel_tol=1e-4,
+    )
+
+
+def test_eps_cu2():
+    """Test eps_cu2."""
+    assert math.isclose(
+        _section5_materials.eps_cu2(),
+        3.5e-3,
+        rel_tol=1e-4,
+    )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, epsc1, expected',
+    [
+        (25787, 20, 0.0019, 2.57),
+        (27403, 24, 0.00202, 2.42),
+        (28848, 28, 0.00213, 2.3),
+        (30472, 33, 0.00225, 2.18),
+        (31939, 38, 0.00235, 2.08),
+        (33282, 43, 0.00245, 1.99),
+        (34525, 48, 0.00254, 1.92),
+        (35685, 53, 0.00263, 1.86),
+        (36773, 58, 0.00271, 1.8),
+        (37801, 63, 0.00279, 1.75),
+        (38776, 68, 0.0028, 1.68),
+        (40590, 78, 0.0028, 1.53),
+        (42256, 88, 0.0028, 1.41),
+        (43799, 98, 0.0028, 1.31),
+    ],
+)
+def test_k_sargin(Ecm, fcm, epsc1, expected):
+    """Test k_sargin function."""
+    assert math.isclose(
+        _section5_materials.k_sargin(Ecm, fcm, epsc1), expected, rel_tol=5e-3
+    )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, epsc1',
+    [
+        (-25787, 20, 0.0019),
+        (25787, 12, 0.0019),
+        (25787, 20, -0.0019),
+    ],
+)
+def test_k_sargin_raises_errors(Ecm, fcm, epsc1):
+    """Test k_sargin raises errors."""
+    with pytest.raises(ValueError):
+        _section5_materials.k_sargin(_Ecm=Ecm, _fcm=fcm, _eps_c1=epsc1)

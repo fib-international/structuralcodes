@@ -54,6 +54,12 @@ class GenericSection(Section):
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
+        # Since only CompoundGeometry has the attribute geometries,
+        # if a SurfaceGeometry is input, we create a CompoundGeometry
+        # with only that geometry contained. After that all algorithms
+        # work as usal.
+        if isinstance(geometry, SurfaceGeometry):
+            geometry = CompoundGeometry([geometry])
         self.geometry = geometry
         self.section_calculator = GenericSectionCalculator(
             sec=self, integrator=integrator, **kwargs
@@ -131,7 +137,6 @@ class GenericSectionCalculator(SectionCalculator):
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
             gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
-            gp.area_surface += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
@@ -180,6 +185,8 @@ class GenericSectionCalculator(SectionCalculator):
                 [0, 1, 0],
                 mesh_size=self.mesh_size,
             )
+            # Change sign due to moment sign convention
+            iyz *= -1
             # Integrate a dummy strain profile for getting first
             # and second moment respect z axis and product moment
             (
@@ -193,13 +200,15 @@ class GenericSectionCalculator(SectionCalculator):
                 tri=tri,
                 mesh_size=self.mesh_size,
             )
+            # Change sign due to moment sign convention
+            izz *= -1
             if abs(abs(izy) - abs(iyz)) > 10:
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
                 raise RuntimeError(error_str)
 
-            return abs(sy), abs(sz), abs(iyy), abs(izz), abs(iyz)
+            return sy, sz, iyy, izz, iyz
 
         # Create a dummy material for integration of area moments
         # This is used for J, S etc, not for E_J E_S etc
@@ -633,15 +642,32 @@ class GenericSectionCalculator(SectionCalculator):
         return res
 
     def calculate_moment_curvature(
-        self, theta=0, n=0
+        self,
+        theta: float = 0.0,
+        n: float = 0.0,
+        chi_first: float = 1e-8,
+        num_pre_yield: int = 10,
+        num_post_yield: int = 10,
+        chi: t.Optional[ArrayLike] = None,
     ) -> s_res.MomentCurvatureResults:
         """Calculates the moment-curvature relation for given inclination of
         n.a. and axial load.
 
         Arguments:
         theta (float, default = 0): inclination of n.a. respect to y axis
-        n (float, default = 0): axial load applied to the section
-            (+: tension, -: compression)
+        n (float, default = 0): axial load applied to the section (+: tension,
+            -: compression)
+        chi_first (float, default = 1e-8): the first value of the curvature
+        num_pre_yield (int, default = 10): Number of points before yielding.
+            Note that the yield curvature will be at the num_pre_yield-th point
+            in the result array.
+        num_post_yield (int, default = 10): Number of points after yielding
+        chi (Optional[ArrayLike], default = None): An ArrayLike with curvatures
+            to calculate the moment response for. If chi is None, the array is
+            constructed from chi_first, num_pre_yield and num_post_yield. If
+            chi is not None, chi_first, num_pre_yield and num_post_yield are
+            disregarded, and the provided chi is used directly in the
+            calculations.
 
         Return:
         moment_curvature_result (MomentCurvatureResults)
@@ -657,32 +683,52 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Check if the section can carry the axial load
         self.check_axial_load(n=n)
-        # Find ultimate curvature from the strain distribution corresponding
-        # to failure and equilibrium with external axial force
-        strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
-        chi_ultimate = strain[1]
-        # Find the yielding curvature
-        strain = self.find_equilibrium_fixed_pivot(
-            rotated_geom, n, yielding=True
-        )
-        chi_yield = strain[1]
-        if chi_ultimate * chi_yield < 0:
-            # They cannot have opposite signs!
-            raise ValueError(
-                'curvature at yield and ultimate cannot have opposite signs!'
+
+        if chi is None:
+            # Find ultimate curvature from the strain distribution
+            # corresponding to failure and equilibrium with external axial
+            # force
+            strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
+            chi_ultimate = strain[1]
+            # Find the yielding curvature
+            strain = self.find_equilibrium_fixed_pivot(
+                rotated_geom, n, yielding=True
             )
-        # Define the array of curvatures
-        if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
-            # We don't want a plastic branch in the analysis
-            # this is done to speed up analysis
-            chi = np.linspace(chi_yield / 10, chi_yield, 10)
-        else:
-            chi = np.concatenate(
-                (
-                    np.linspace(chi_yield / 10, chi_yield, 10, endpoint=False),
-                    np.linspace(chi_yield, chi_ultimate, 100),
+            chi_yield = strain[1]
+            if chi_ultimate * chi_yield < 0:
+                # They cannot have opposite signs!
+                raise ValueError(
+                    'curvature at yield and ultimate cannot have opposite '
+                    'signs!'
                 )
-            )
+
+            # Make sure the sign of the first curvature matches the sign of the
+            # yield curvature
+            chi_first *= -1.0 if chi_first * chi_yield < 0 else 1.0
+
+            # The first curvature should be less than the yield curvature
+            if abs(chi_first) >= abs(chi_yield):
+                chi_first = chi_yield / num_pre_yield
+
+            # Define the array of curvatures
+            if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
+                # We don't want a plastic branch in the analysis
+                # this is done to speed up analysis
+                chi = np.linspace(chi_first, chi_yield, num_pre_yield)
+            else:
+                chi = np.concatenate(
+                    (
+                        np.linspace(
+                            chi_first,
+                            chi_yield,
+                            num_pre_yield - 1,
+                            endpoint=False,
+                        ),
+                        np.linspace(
+                            chi_yield, chi_ultimate, num_post_yield + 1
+                        ),
+                    )
+                )
 
         # prepare results
         eps_a = np.zeros_like(chi)
@@ -732,7 +778,7 @@ class GenericSectionCalculator(SectionCalculator):
     def calculate_nm_interaction_domain(
         self, theta: float = 0, num_axial: int = 100
     ) -> s_res.NMInteractionDomain:
-        """Calculate the NM interaction domain (attempt to make it faster).
+        """Calculate the NM interaction domain.
 
         Arguments:
         theta (float, default = 0): inclination of n.a. respect to y axis

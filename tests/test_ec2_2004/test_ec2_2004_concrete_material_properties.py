@@ -208,6 +208,40 @@ def test_eps_cu1(test_input, expect):
 @pytest.mark.parametrize(
     'test_input, expect',
     [
+        (12, 2.55),
+        (16, 2.41),
+        (20, 2.25),
+        (25, 2.07),
+        (30, 2.01),
+        (35, 1.87),
+        (40, 1.76),
+        (45, 1.71),
+        (50, 1.64),
+        (55, 1.58),
+        (60, 1.57),
+        (70, 1.49),
+        (80, 1.40),
+        (90, 1.32),
+    ],
+)
+def test_k(test_input, expect):
+    """Test the k function."""
+    # compute
+    fcm = _concrete_material_properties.fcm(test_input)
+    eps_c1 = _concrete_material_properties.eps_c1(fcm)
+    Ecm = _concrete_material_properties.Ecm(fcm)
+
+    # act
+    assert math.isclose(
+        _concrete_material_properties.k_sargin(Ecm, fcm, eps_c1),
+        expect,
+        rel_tol=2.8e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
         (12, 2.0e-3),
         (16, 2.0e-3),
         (20, 2.0e-3),
