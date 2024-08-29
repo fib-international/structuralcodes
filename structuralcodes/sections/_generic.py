@@ -442,6 +442,51 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return (eps_0_b, dn_b)
 
+    def _prefind_range_curvature_equilibriumYZ(
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv_y: float,
+        curv_z: float,
+        eps_0_a: float,
+        dn_a: float,
+    ):  # CMG - Work in progres !!!!!!!!!!!!!!
+        """Perfind range where the curvature equilibrium is located.
+
+        This algorithms quickly finds a position of NA that guaranteed the
+        existence of at least one zero in the function dn vs. curv in order
+        to apply the bisection algorithm.
+        """
+        ITMAX = 50
+        sign = -1 if dn_a > 0 else 1
+        found = False
+        it = 0
+        delta = 1e-3
+        while not found and it < ITMAX:
+            eps_0_b = eps_0_a + sign * delta * (it + 1)
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [eps_0_b, curv_y, curv_z], tri=self.triangulated_data
+            )
+            dn_b = n_int - n
+            if dn_a * dn_b < 0:
+                found = True
+            elif abs(dn_b) > abs(dn_a):
+                # we are driving aay from the solution, probably due
+                # to failure of a material
+                delta /= 2
+                it -= 1
+            it += 1
+        if it >= ITMAX and not found:
+            s = f'Last iteration reached a unbalance of: \
+                dn_a = {dn_a} dn_b = {dn_b})'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+        return (eps_0_b, dn_b)
+
     def find_equilibrium_fixed_curvature(
         self, geom: CompoundGeometry, n: float, curv: float, eps_0: float
     ):
@@ -504,6 +549,75 @@ class GenericSectionCalculator(SectionCalculator):
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return [eps_0_c, curv, 0]
+
+    def find_equilibrium_fixed_curvatureYZ(
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv_y,
+        curv_z: float,
+        eps_0: float,
+    ):  # CMG - Work in progres !!!!!!!!!!!!!!
+        """Find strain profile with equilibrium with fixed curvature.
+        Given curvature and external axial force, find the strain profile
+        that makes internal and external axial force in equilibrium.
+
+        Arguments:
+        geom: (CompounGeometry) the geometry
+        n: (float) the external axial load
+        curv_y: (float) the value of curvature along Y axis
+        curv_z: (float) the value of curvature along Z axis
+        eps_0: (float) a first attempt for neutral axis position
+        """
+        # Useful for Moment Curvature Analysis
+        # Number of maximum iteration for the bisection algorithm
+        ITMAX = 100
+        # Start from previous position of N.A.
+        eps_0_a = eps_0
+        # find internal axial force by integration
+        (
+            n_int,
+            _,
+            _,
+            tri,
+        ) = self.integrator.integrate_strain_response_on_geometry(
+            geom, [eps_0, curv_y, curv_z], tri=self.triangulated_data
+        )
+        if self.triangulated_data is None:
+            self.triangulated_data = tri
+        dn_a = n_int - n
+        # It may occur that dn_a is already almost zero (in eqiulibrium)
+        if abs(dn_a) <= 1e-2:
+            # return the equilibrium position
+            return [eps_0_a, curv_y, curv_z]
+        eps_0_b, dn_b = self._prefind_range_curvature_equilibriumYZ(
+            geom, n, curv_y, curv_z, eps_0_a, dn_a
+        )
+        # Found a range within there is the solution, apply bisection
+        it = 0
+        while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
+            eps_0_c = (eps_0_a + eps_0_b) / 2
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [eps_0_c, curv_y, curv_z, 0], tri=self.triangulated_data
+            )
+            dn_c = n_int - n
+            if dn_a * dn_c < 0:
+                dn_b = dn_c
+                eps_0_b = eps_0_c
+            else:
+                dn_a = dn_c
+                eps_0_a = eps_0_c
+            it += 1
+        if it >= ITMAX:
+            s = f'Last iteration reached a unbalance of: \
+                dn_c = {dn_c}'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+        return [eps_0_c, curv_y, curv_z]
 
     def calculate_limit_axial_load(self):
         """Compute maximum and minimum axial load.
@@ -971,7 +1085,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_strain_profile(self, n_ed=0, my=0, mz=0):
+    def calculate_strain_profile(self, n_ed=0, my_ed=0, mz_ed=0):
         """'Get the strain plane for a given axial force and biaxial bending .
 
         Args:
@@ -989,32 +1103,33 @@ class GenericSectionCalculator(SectionCalculator):
             y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
             return y
 
-        # Rotate the section to work with uniaxial bending
-        theta = (
-            (math.pi / 2 if mz > 0 else -math.pi / 2)
-            if my == 0
-            else math.atan(mz / my)
-        )
-        m_ed = math.sqrt(my**2 + mz**2) * my / abs(my)
-        rotated_geom = self.section.geometry.rotate(-theta)
-        if self.triangulated_data is not None:
-            # Rotate also triangulated data!
-            self._rotate_triangulated_data(-theta)
-
         # Check if the section can carry the axial load
         self.check_axial_load(n=n_ed)
 
-        if m_ed < 0:
+        # check n_ed, my_ed, mz_ed inside N-MY-MZ diagram
+        # TODO
+
+        # get range of My, Mz Chiy,Chiz for algoritm iteration
+        if my_ed < 0:
             r = self.calculate_bending_strength(theta=0, n=n_ed)
-            m1, m2 = r.m_y, 0
-            chi1, chi2 = r.chi_y, 0
+            my1, my2 = r.m_y, 0
+            chiy1, chiy2 = r.chi_y, 0
         else:
             r = self.calculate_bending_strength(theta=math.pi, n=n_ed)
-            m1, m2 = 0, r.m_y
-            chi1, chi2 = 0, -r.chi_y
+            my1, my2 = 0, r.m_y
+            chiy1, chiy2 = 0, -r.chi_y
 
-        chi = interpolate(m1, m2, chi1, chi2, m_ed)
+        if mz_ed < 0:
+            r = self.calculate_bending_strength(theta=math.pi / 2, n=n_ed)
+            mz1, mz2 = r.m_z, 0
+            chiz1, chiz2 = r.chi_z, 0
+        else:
+            r = self.calculate_bending_strength(theta=-math.pi / 2, n=n_ed)
+            mz1, mz2 = 0, r.m_z
+            chiz1, chiz2 = 0, -r.chi_z
 
+        chiy = interpolate(my1, my2, chiy1, chiy2, my_ed)
+        chiz = interpolate(mz1, mz2, chiz1, chiz2, mz_ed)
         # Previous position of strain at (0,0)
         strain = [0, 0, 0]
 
@@ -1022,10 +1137,13 @@ class GenericSectionCalculator(SectionCalculator):
         tolerance = 1000  # (1e-3 mkN)
         iter = 0
         My = 1e11
+        Mz = 1e11
 
-        while abs(m_ed - My) > tolerance and iter < ITMAX:
-            strain = self.find_equilibrium_fixed_curvature(
-                rotated_geom, n_ed, chi, strain[0]
+        while (
+            abs(my_ed - My) > tolerance or abs(mz_ed - Mz) > tolerance
+        ) and iter < ITMAX:
+            strain = self.find_equilibrium_fixed_curvatureYZ(
+                rotated_geom, n_ed, chiy, chiz, strain[0]
             )
             (
                 _,
@@ -1038,14 +1156,22 @@ class GenericSectionCalculator(SectionCalculator):
                 tri=self.triangulated_data,
             )
 
-            if My > m_ed:
-                m2 = My
-                chi2 = chi
+            if My > my_ed:
+                my2 = My
+                chiy2 = chiy
             else:
-                m1 = My
-                chi1 = chi
+                my1 = My
+                chiy1 = chiy
+            if Mz > mz_ed:
+                mz2 = Mz
+                chiz2 = chiz
+            else:
+                mz1 = Mz
+                chiz1 = chiz
 
-            chi = interpolate(m1, m2, chi1, chi2, m_ed)
+            chiy = interpolate(my1, my2, chiy1, chiy2, my_ed)
+            chiz = interpolate(mz1, mz2, chiz1, chiz2, mz_ed)
+
             eps_a = strain[0]
             iter += 1
 
@@ -1054,6 +1180,8 @@ class GenericSectionCalculator(SectionCalculator):
             self._rotate_triangulated_data(theta)
 
         if iter == ITMAX:
-            return None, None
+            return None, None, None
         else:
-            return eps_a, chi
+            chi_y = chi * cos(theta)
+            chi_z = chi * sin(theta)
+            return eps_a, chi_y, chi_z

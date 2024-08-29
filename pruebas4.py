@@ -107,9 +107,6 @@ from shapely.geometry import Polygon
 points = np.vstack((x, y)).T
 tri = Delaunay(points)
 
-x = np.array([0, 2, 1.5, 2, 0])
-y = np.array([0, 0, 1, 2, 2])
-z = np.array([0, 1, 2, 1, 0])
 
 # Graficar los puntos y la malla filtrada
 fig = plt.figure()
@@ -135,4 +132,34 @@ ax.set_ylim([y.min(), y.max()])
 ax.set_zlim([z.min(), z.max()])
 
 # Mostrar la gráfica
+plt.show()
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+# Definir los puntos del polígono 3D
+vertices = np.array(
+    [[0, 0, 2], [1, 0, 2], [1, 0.2, 1.5], [1, 0, 0], [1, 1, 0], [0, 0.2, 1.5]]
+)
+print(vertices.shape)
+# Crear la figura y el eje 3D
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Crear el polígono 3D
+poly = Poly3DCollection(
+    [vertices], facecolors='cyan', edgecolors='r', alpha=0.5
+)
+
+# Agregar el polígono al eje 3D
+ax.add_collection3d(poly)
+
+# Configurar los límites de los ejes
+ax.set_xlim([min(vertices[:, 0]), max(vertices[:, 0])])
+ax.set_ylim([min(vertices[:, 1]), max(vertices[:, 1])])
+ax.set_zlim([min(vertices[:, 2]), max(vertices[:, 2])])
+
+# Mostrar el gráfico
 plt.show()

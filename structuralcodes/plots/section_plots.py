@@ -5,6 +5,8 @@ import numpy as np
 from shapely import Point
 
 sys.path.append('../')
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
     Sargin,
@@ -71,9 +73,6 @@ def draw_section(section, title='', reduction_reinf=None):
     plt.show()
 
 
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-
 def draw_section_response3D(
     section, eps_a, chi_y, chi_z, lim_Sneg=None, lim_Spos=None, title=None
 ):
@@ -93,81 +92,77 @@ def draw_section_response3D(
         fig.suptitle(title)
 
     ax.set_title('Section response - stress')
-    ax.set_xlabel('Stress [MPa]')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+    ax.set_xlabel('Stress [MPa]')
 
     ax2.set_title('Section response - strain')
-    ax2.set_xlabel('Strain [mm/m]')
     ax2.set_ylabel('Y')
     ax2.set_zlabel('Z')
-
-    if (lim_Sneg is not None) and (lim_Spos is not None):
-        ax.set_zlim(lim_Sneg, lim_Spos)
-        ax2.set_zlim(lim_Sneg, lim_Spos)
-    else:
-        lim_Sneg, lim_Spos = -1e11, 1e11
-
-    labels_stress = {}
-    labels_strain = {}
+    ax2.set_xlabel('Strain [mm/m]')
 
     for g in section.geometry.geometries:
         poly = g.polygon
         y_min, z_min, y_max, z_max = poly.bounds
-        y_range = np.linspace(y_min, y_max, 10)
-        x, y = poly.exterior.xy
-        for y in y_range:
-            stress = [
-                get_stress_point(section, x[i], y[i], eps_a, chi_y, chi_z)
-                for i in range(len(x))
-            ]
-            eps = [
-                (eps_a + chi_y * y[i] + chi_z * z) * 1000
-                for i in range(len(x))
-            ]
 
-            ax.plot(x, y, stress, color='gray')
-            ax2.plot(x, y, eps, color='gray')
+        exterior_coords = np.array(poly.exterior.coords)
+        distances = np.sqrt(
+            np.sum(np.diff(exterior_coords, axis=0) ** 2, axis=1)
+        )
+        cumulative_distances = np.insert(np.cumsum(distances), 0, 0)
+        total_length = cumulative_distances[-1]
+        interpolated_distances = np.linspace(0, total_length, 50)
 
-            poly_verts = [list(zip(x, y, stress))]
-            poly_verts2 = [list(zip(x, y, eps))]
+        border_points = np.empty((50, 2))
+        for i, d in enumerate(interpolated_distances):
+            index = np.searchsorted(cumulative_distances, d) - 1
+            t = (d - cumulative_distances[index]) / distances[index]
+            border_points[i] = (1 - t) * exterior_coords[
+                index
+            ] + t * exterior_coords[index + 1]
 
-            poly3d = Poly3DCollection(poly_verts, alpha=0.5, edgecolor='r')
-            poly3d2 = Poly3DCollection(poly_verts2, alpha=0.5, edgecolor='r')
+        stress = [
+            get_stress_point(
+                section,
+                border_points[i, 0],
+                border_points[i, 1],
+                eps_a,
+                chi_y,
+                chi_z,
+            )
+            for i in range(len(border_points[:, 0]))
+        ]
 
-            ax.add_collection3d(poly3d)
-            ax2.add_collection3d(poly3d2)
+        stress = np.array(stress).reshape(-1, 1)
+        stress = np.where(stress == None, 0, stress)
+        vertices = np.hstack((stress, border_points))
+        print(vertices[0, :])
 
-    for i, g in enumerate(section.geometry.point_geometries):
-        center = g._point
-        r = g._diameter / 2
-        poly = center.buffer(r)
-        x_min, y_min, x_max, y_max = poly.bounds
-        z_range = np.linspace(y_min, y_max, 3)
+        # Crear la sombra ed la seccion
+        poly_section = Poly3DCollection(
+            [
+                np.hstack(
+                    (np.zeros((border_points.shape[0], 1)), border_points)
+                )
+            ],
+            facecolors='gray',
+            edgecolors='b',
+            alpha=0.5,
+        )
+        ax.add_collection3d(poly_section)
 
-        for z in z_range:
-            x, y = poly.exterior.xy
-            stress = [
-                get_stress_point(section, x[i], y[i], eps_a, chi_y, chi_z)
-                for i in range(len(x))
-            ]
-            eps = [
-                (eps_a + chi_y * y[i] + chi_z * z) * 1000
-                for i in range(len(x))
-            ]
+        # Crear el polígono 3D para tensiones
+        poly_stress = Poly3DCollection(
+            [vertices], facecolors='cyan', edgecolors='r', alpha=0.5
+        )
+        ax.add_collection3d(poly_stress)
 
-            ax.plot(x, y, stress, color='gray')
-            ax2.plot(x, y, eps, color='gray')
+        # Actualizar los límites de los ejes basados en los datos
+        ax.auto_scale_xyz(vertices[:, 0], vertices[:, 1], vertices[:, 2])
 
-            poly_verts = [list(zip(x, y, stress))]
-            poly_verts2 = [list(zip(x, y, eps))]
+        # Aquí iría un código similar para las deformaciones (strains)
 
-            poly3d = Poly3DCollection(poly_verts, alpha=0.5, edgecolor='r')
-            poly3d2 = Poly3DCollection(poly_verts2, alpha=0.5, edgecolor='r')
-
-            ax.add_collection3d(poly3d)
-            ax2.add_collection3d(poly3d2)
-
+    # Mostrar las figuras fuera del bucle
     plt.show()
 
 

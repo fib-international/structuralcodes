@@ -1,3 +1,5 @@
+import math
+
 from shapely import Polygon
 
 from structuralcodes import codes, materials
@@ -22,20 +24,29 @@ reinforcemnet = materials.reinforcement.create_reinforcement(
 # Create section
 poly = Polygon(((0, 0), (350, 0), (350, 500), (0, 500)))
 geo = SurfaceGeometry(poly, concrete)
-geo = add_reinforcement_line(geo, (50, 50), (300, 50), 12, reinforcemnet, n=3)
 geo = add_reinforcement_line(
-    geo, (50, 440), (300, 440), 20, reinforcemnet, n=6
+    geo, (50, 450), (300, 450), 12, reinforcemnet, n=3
 )
+geo = add_reinforcement_line(geo, (50, 50), (300, 50), 20, reinforcemnet, n=6)
 sec = GenericSection(geo)
 
 
 n = 0 * 1e3
-my = 200 * 1e6
-mz = 100 * 1e6
+my = 245 * 1e6  # Esfuerzos en coordenadas sin rotar
+mz = 102 * 1e6
+theta_deg = 30
+
+rot_sec = GenericSection(geo.rotate(theta_deg * math.pi / 180))
+res2 = rot_sec.section_calculator.calculate_bending_strength(0, 0)
+print('m_y', res2.m_y / 1e6)
+print('m_z', res2.m_z / 1e6)
+print('med', (res2.m_z**2 + res2.m_y**2) ** 0.5 / 1e6)
+
 res = sec.section_calculator.calculate_strain_profile(n, my, mz)
 print(res)
+if False:
+    draw_section_response3D(sec, res[0], res[1], res[2])
 
-draw_section_response3D(sec, res[0], res[1], 0)
 
 """
 #######################33
