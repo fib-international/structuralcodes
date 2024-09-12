@@ -196,6 +196,8 @@ class NMInteractionDomain:
     m_y: ArrayLike = None  # Moments My
     m_z: ArrayLike = None  # Moments Mz
 
+    strains: ArrayLike = None
+
 
 @dataclass
 class MMInteractionDomain:

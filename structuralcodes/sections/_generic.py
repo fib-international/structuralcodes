@@ -804,6 +804,7 @@ class GenericSectionCalculator(SectionCalculator):
                     geo=self.section.geometry,
                     strain=strain,
                     tri=self.triangulated_data,
+                    mesh_size=self.mesh_size,
                 )
             )
             if self.triangulated_data is None:
