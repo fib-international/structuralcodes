@@ -27,10 +27,12 @@ reinforcement = create_reinforcement(fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk)
 width = 250
 height = 500
 polygon = Polygon(
-    (-width / 2, -height / 2),
-    (width / 2, -height / 2),
-    (width / 2, height / 2),
-    (-width / 2, height / 2),
+    [
+        (-width / 2, -height / 2),
+        (width / 2, -height / 2),
+        (width / 2, height / 2),
+        (-width / 2, height / 2),
+    ]
 )  # We leverage shapely to create geometries
 geometry = SurfaceGeometry(
     polygon, concrete
