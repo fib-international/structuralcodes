@@ -29,9 +29,9 @@ def get_rebar_area(diameter: int) -> float:
     return diameter ** 2 / 4 * np.pi
 
 
-class RectangularCrossSection(GenericSection):
+"""class RectangularCrossSection(GenericSection):"""
 
-    """ A special case of GenericSection where the shape is rectangular, meant to both provide a more
+""" A special case of GenericSection where the shape is rectangular, meant to both provide a more
     user-friendly interaction with the code and run more optimized code where relevant.
 
     Attributes:
@@ -40,7 +40,7 @@ class RectangularCrossSection(GenericSection):
         :param steel: the material of the rebars. Defaults to B500NC
         :param name: name of the xs. Defaults to an RectangularCrossSection
     """
-    def __init__(self,
+"""def __init__(self,
                  height: float,
                  width: float,
                  concrete: Material,
@@ -101,7 +101,7 @@ class RectangularCrossSection(GenericSection):
 
     def get_rebar_area(self) -> float:
         return self.a_s_tot
-
+"""
 
 @dataclass(frozen=True)
 class StirrupsData:
@@ -179,6 +179,9 @@ class ReinforcementData:
         if self.diameter_right is None:
             object.__setattr__(self, 'diameter_right', self.diameter_corner)
 
+    def get_as_tot(self) -> float:
+        as_tot: float = [self.diameter_bottom, self.diameter_corner, self.diameter_left, self.diameter_right, self.diameter_top] * [self.number_bottom, 4, self.number_left, self.number_right, self.number_top]
+
 
 class RectangularRC(Section):
     """Class for RC rectangular cross section.
@@ -248,10 +251,12 @@ class RectangularRC(Section):
         self.height = height
         self.width = width
         self.cover = cover
+        self.geometry: SurfaceGeometry
+        self.create_geometry()
 
         # materials
-        self.concrete = concrete
-        self.reinforcement = reinforcement
+        self.concrete: Material = concrete
+        self.reinforcement: ElasticPlastic = reinforcement
         if confined_concrete is not None:
             if isinstance(confined_concrete, str):
                 # provided a string, check if it auto
@@ -280,14 +285,19 @@ class RectangularRC(Section):
             # If no stirrups are provided by default it is assumed the
             # diameter is 8 mm - The spacing is not significant
             stirrups_data = StirrupsData(8, 150)
-        self.stirrups_data = stirrups_data
+        self.stirrups_data: StirrupsData = stirrups_data
 
         # longitudinal reinforcement
-        self.reinforcement_data = reinforcement_data
+        self.reinforcement_data: ReinforcementData = reinforcement_data
         # arrange in the section the reinforcement
         self._arrange_reinforcement_in_section()
         # For now discretize in fibers here
         self._discretize_fibers(10, 25)
+
+    def create_geometry(self):
+        height, width = self.height, self.width
+        polygon: Polygon = Polygon(((0, 0), (width, 0), (width, height), (0, height), (0, 0)))
+        self.geometry = SurfaceGeometry(polygon, self.concrete)
 
     @property
     def area(self) -> float:
