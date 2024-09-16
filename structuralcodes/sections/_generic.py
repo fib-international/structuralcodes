@@ -141,7 +141,6 @@ class GenericSectionCalculator(SectionCalculator):
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
             gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
-            gp.area_surface += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
@@ -598,6 +597,7 @@ class GenericSectionCalculator(SectionCalculator):
             geo=self.section.geometry,
             strain=strain,
             tri=self.triangulated_data,
+            mesh_size=self.mesh_size,
         )
         return N, My, Mz
 
@@ -788,28 +788,144 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
+    def _process_num_strain_profiles(
+        self,
+        num: int = 35,
+        min_1: int = 1,
+        min_2: int = 2,
+        min_3: int = 15,
+        min_4: int = 10,
+        min_5: int = 3,
+        min_6: int = 4,
+    ):
+        """Return number of strain profiles for each field given the total
+        number of strain profiles.
+
+        If the total number of strain profiles is given by user, divide this
+        for every field according to a default pre-defined discretization
+        for each field (1, 2, 15, 10, 3, 4 for fields 1 to 6). For each field
+        if the user set a desired minimum number of strain profiles, guarantee
+        to create a number of strain profiles greater or equal to the desired
+        one. Therefore the function never return less strain profiles than
+        desired.
+
+        Arguments:
+            num (int): Total number of strain profiles (Optional, default =
+                35). If specified num and num_1, ..., num_6 the total number of
+                num may be different.
+            min_1 (int): Minimum number of strain profiles in field 1
+                (Optional, default = 1).
+            min_2 (int): Minimum number of strain profiles in field 2
+                (Optional, default = 2).
+            min_3 (int): Minimum number of strain profiles in field 3
+                (Optional, default = 15).
+            min_4 (int): Minimum number of strain profiles in field 4
+                (Optional, default = 10).
+            min_5 (int): Minimum number of strain profiles in field 5
+                (Optional, default = 3).
+            min_6 (int): Minimum number of strain profiles in field 6
+                (Optional, default = 4).
+
+        Return:
+            (int, int, int, int, int, int): 6-tuple of int number representing
+            number of strain profiles for each field.
+        """
+        n1_attempt = int(num / 35 * 1)
+        n2_attempt = int(num / 35 * 2)
+        n3_attempt = int(num / 35 * 15)
+        n4_attempt = int(num / 35 * 10)
+        n5_attempt = int(num / 35 * 3)
+        n6_attempt = int(num / 35 * 4)
+        num_1 = max(n1_attempt, min_1)
+        num_2 = max(n2_attempt, min_2)
+        num_3 = max(n3_attempt, min_3)
+        num_4 = max(n4_attempt, min_4)
+        num_5 = max(n5_attempt, min_5)
+        num_6 = max(n6_attempt, min_6)
+        return (num_1, num_2, num_3, num_4, num_5, num_6)
+
     def calculate_nm_interaction_domain(
-        self, theta: float = 0, num_axial: int = 100
+        self,
+        theta: float = 0,
+        num_1: int = 1,
+        num_2: int = 2,
+        num_3: int = 15,
+        num_4: int = 10,
+        num_5: int = 3,
+        num_6: int = 4,
+        num: t.Optional[int] = None,
+        type_1: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_2: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_3: t.Literal['linear', 'geometric', 'quadratic'] = 'geometric',
+        type_4: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_5: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_6: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
     ) -> s_res.NMInteractionDomain:
         """Calculate the NM interaction domain.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to y axis, default = 0.
-            num_axial (int): Number of discretization for axial load, default =
-                100.
+            theta (float): Inclination of n.a. respect to y axis
+                (Optional, default = 0).
+            num_1 (int): Number of strain profiles in field 1
+                (Optional, default = 1).
+            num_2 (int): Number of strain profiles in field 2
+                (Optional, default = 2).
+            num_3 (int): Number of strain profiles in field 3
+                (Optional, default = 15).
+            num_4 (int): Number of strain profiles in field 4
+                (Optional, default = 10).
+            num_5 (int): Number of strain profiles in field 5
+                (Optional, default = 3).
+            num_6 (int): Number of strain profiles in field 6
+                (Optional, default = 4).
+            num (int): Total number of strain profiles (Optional, default =
+                None). If specified num and num_1, ..., num_6 the total number
+                of num may be different.
+            type_1 (str): Type of spacing for field 1. 'linear' for a
+                linear spacing, 'geometric' for a geometric spacing 'quadratic'
+                for a quadratic spacing (default = 'linear').
+            type_2 (str): Type of spacing for field 2 (default = 'linear'). See
+                type_1 for options.
+            type_3 (str): Type of spacing for field 3 (default = 'geometric').
+                See type_1 for options.
+            type_4 (str): Type of spacing for field 4 (default = 'linear'). See
+                type_1 for options.
+            type_5 (str): Type of spacing for field 5 (default = 'linear'). See
+                type_1 for options.
+            type_6 (str): Type of spacing for field 6 (default = 'linear'). See
+                type_1 for options.
 
         Returns:
-            NMInteractionDomain: The calculation results.
+            (NmInteractionDomain)
         """
         # Prepare the results
         res = s_res.NMInteractionDomain()
         res.theta = theta
-        # with this version really n_axial is not used unless we perform
-        # some resampling after computation?
-        res.num_axial = num_axial
+
+        # Process num if given.
+        if num is not None:
+            num_1, num_2, num_3, num_4, num_5, num_6 = (
+                self._process_num_strain_profiles(
+                    num, num_1, num_2, num_3, num_4, num_5, num_6
+                )
+            )
 
         # Get ultimate strain profiles for theta angle
-        strains = self._compute_ultimate_strain_profiles(theta=theta)
+        strains = self._compute_ultimate_strain_profiles(
+            theta=theta,
+            num_1=num_1,
+            num_2=num_2,
+            num_3=num_3,
+            num_4=num_4,
+            num_5=num_5,
+            num_6=num_6,
+            type_1=type_1,
+            type_2=type_2,
+            type_3=type_3,
+            type_4=type_4,
+            type_5=type_5,
+            type_6=type_6,
+        )
 
         # integrate all strain profiles
         forces = np.zeros_like(strains)
@@ -819,6 +935,7 @@ class GenericSectionCalculator(SectionCalculator):
                     geo=self.section.geometry,
                     strain=strain,
                     tri=self.triangulated_data,
+                    mesh_size=self.mesh_size,
                 )
             )
             if self.triangulated_data is None:
@@ -829,18 +946,57 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Save to results
         res.strains = strains
-        res.forces = forces
         res.m_z = forces[:, 2]
         res.m_y = forces[:, 1]
         res.n = forces[:, 0]
 
         return res
 
-    def _compute_ultimate_strain_profiles(self, theta: float = 0):
+    def _compute_ultimate_strain_profiles(
+        self,
+        theta: float = 0,
+        num_1: int = 1,
+        num_2: int = 2,
+        num_3: int = 15,
+        num_4: int = 10,
+        num_5: int = 3,
+        num_6: int = 4,
+        type_1: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_2: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_3: t.Literal['linear', 'geometric', 'quadratic'] = 'geometric',
+        type_4: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_5: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_6: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+    ):
         """Return an array of ultimate strain profiles.
 
         Arguments:
             theta (float): The angle of neutral axis.
+            num_1 (int): Number of strain profiles in field 1
+                (Optional, default = 1).
+            num_2 (int): Number of strain profiles in field 2
+                (Optional, default = 2).
+            num_3 (int): Number of strain profiles in field 3
+                (Optional, default = 15).
+            num_4 (int): Number of strain profiles in field 4
+                (Optional, default = 10).
+            num_5 (int): Number of strain profiles in field 5
+                (Optional, default = 3).
+            num_6 (int): Number of strain profiles in field 6
+                (Optional, default = 4).
+            type_1 (literal): Type of spacing for field 1. 'linear' for a
+                linear spacing, 'geometric' for a geometric spacing 'quadratic'
+                for a quadratic spacing (Optional default = 'linear').
+            type_2 (literal): Type of spacing for field 2 (default = 'linear').
+                See type_1 for options.
+            type_3 (literal): Type of spacing for field 3 (default =
+                'geometric'). See type_1 for options.
+            type_4 (literal): Type of spacing for field 4 (default = 'linear').
+                See type_1 for options.
+            type_5 (literal): Type of spacing for field 5 (default = 'linear').
+                See type_1 for options.
+            type_6 (literal): Type of spacing for field 6 (default = 'linear').
+                See type_1 for options.
         """
         rotated_geom = self.section.geometry.rotate(-theta)
 
@@ -862,45 +1018,81 @@ class GenericSectionCalculator(SectionCalculator):
         _, _, min_y, _ = rotated_geom.calculate_extents()
         h = y_n - min_y
 
+        def _np_space(a, b, n, type, endpoint):
+            if n < 0:
+                raise ValueError(
+                    'Number of discretizations cannot be negative!'
+                )
+            if type.lower() == 'linear':
+                return np.linspace(a, b, n, endpoint=endpoint)
+            if type.lower() == 'geometric':
+                if b != 0 and a != 0:
+                    return np.geomspace(a, b, n, endpoint=endpoint)
+                small_value = 1e-10
+                if b == 0:
+                    b = small_value * np.sign(a)
+                    return np.append(
+                        np.geomspace(a, b, n - 1, endpoint=endpoint), 0
+                    )
+                if a == 0:
+                    a = small_value * np.sign(b)
+                    return np.insert(
+                        np.geomspace(a, b, n - 1, endpoint=endpoint), 0, 0
+                    )
+            if type.lower() == 'quadratic':
+                quadratic_spaced = (np.linspace(0, 1, n) ** 2) * (a - b) + b
+                return quadratic_spaced[::-1]
+            raise ValueError(f'Type of spacing not known: {type}')
+
         # For generation of fields 1 and 2 pivot on positive strain
         # Field 1: pivot on positive strain
-        n = 3
-        eps_n = np.linspace(eps_p_b, 0, n, endpoint=False)
+        eps_n = _np_space(eps_p_b, 0, num_1, type_1, endpoint=False)
         eps_p = np.zeros_like(eps_n) + eps_p_b
         # Field 2: pivot on positive strain
-        n = 10  # 10
-        eps_n = np.append(eps_n, np.linspace(0, eps_n_b, n, endpoint=False))
-        eps_p = np.append(eps_p, np.zeros(n) + eps_p_b)
+        eps_n = np.append(
+            eps_n, _np_space(0, eps_n_b, num_2, type_2, endpoint=False)
+        )
+        eps_p = np.append(eps_p, np.zeros(num_2) + eps_p_b)
         # For fields 3-4-5 pivot on negative strain
         # Field 3: pivot on negative strain
-        n = 40  # 40
-        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
+        eps_n = np.append(eps_n, np.zeros(num_3) + eps_n_b)
         eps_p = np.append(
-            eps_p, np.linspace(eps_p_b, eps_p_y, n, endpoint=False)
+            eps_p, _np_space(eps_p_b, eps_p_y, num_3, type_3, endpoint=False)
         )
         # Field 4: pivot on negative strain
-        n = 10  # 6
-        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
-        eps_p = np.append(eps_p, np.linspace(eps_p_y, 0, n, endpoint=False))
+        eps_n = np.append(eps_n, np.zeros(num_4) + eps_n_b)
+        eps_p = np.append(
+            eps_p, _np_space(eps_p_y, 0, num_4, type_4, endpoint=False)
+        )
         # Field 5: pivot on negative strain
-        n = 40  # 8
         eps_p_lim = eps_n_b * (h - (y_n - y_p)) / h
-        eps_n = np.append(eps_n, np.zeros(n) + eps_n_b)
-        eps_p = np.append(eps_p, np.linspace(0, eps_p_lim, n, endpoint=False))
+        eps_n = np.append(eps_n, np.zeros(num_5) + eps_n_b)
+        eps_p = np.append(
+            eps_p, _np_space(0, eps_p_lim, num_5, type_5, endpoint=False)
+        )
         # Field 6: pivot on eps_n_y point or eps_n_b
-        n = 40  # 8
         # If reinforced concrete section pivot on eps_n_y (default -0.002)
         # otherwise pivot on eps_n_b (in top chord)
         if self.section.geometry.reinforced_concrete:
             z_pivot = y_n - (1 - eps_n_y / eps_n_b) * h
-            eps_p_6 = np.linspace(eps_p_lim, eps_n_y, n, endpoint=True)
+            eps_p_6 = np.append(
+                _np_space(
+                    eps_p_lim, eps_n_y, num_6 - 1, type_6, endpoint=False
+                ),
+                eps_n_y,
+            )
             eps_n_6 = (
                 -(eps_n_y - eps_p_6) * (z_pivot - y_n) / (z_pivot - y_p)
                 + eps_n_y
             )
         else:
-            eps_n_6 = np.zeros(n) + eps_n_b
-            eps_p_6 = np.linspace(eps_p_lim, eps_n_b, n, endpoint=False)
+            eps_n_6 = np.zeros(num_6) + eps_n_b
+            eps_p_6 = np.append(
+                _np_space(
+                    eps_p_lim, eps_n_b, num_6 - 1, type_6, endpoint=False
+                ),
+                eps_n_b,
+            )
         eps_n = np.append(eps_n, eps_n_6)
         eps_p = np.append(eps_p, eps_p_6)
 
@@ -916,24 +1108,69 @@ class GenericSectionCalculator(SectionCalculator):
         return np.column_stack((eps_a, rotated_components.T))
 
     def calculate_nmm_interaction_domain(
-        self, num_theta: int = 32, num_axial: int = 20
+        self,
+        num_theta: int = 32,
+        num_1: int = 1,
+        num_2: int = 2,
+        num_3: int = 15,
+        num_4: int = 10,
+        num_5: int = 3,
+        num_6: int = 4,
+        num: t.Optional[int] = None,
+        type_1: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_2: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_3: t.Literal['linear', 'geometric', 'quadratic'] = 'geometric',
+        type_4: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_5: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        type_6: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
     ) -> s_res.NMMInteractionDomain:
         """Calculates the NMM interaction domain.
 
         Arguments:
-            num_theta (int): Number of discretization for n.a. inclination
-                respect to y axis, default = 32.
-            num_axial (int): Number of discretization for axial load, default =
-                20.
+            num_theta (int): Number of discretization of angle of neutral axis
+                (Optional, Default = 32).
+            num_1 (int): Number of strain profiles in field 1
+                (Optional, default = 1).
+            num_2 (int): Number of strain profiles in field 2
+                (Optional, default = 2).
+            num_3 (int): Number of strain profiles in field 3
+                (Optional, default = 15).
+            num_4 (int): Number of strain profiles in field 4
+                (Optional, default = 10).
+            num_5 (int): Number of strain profiles in field 5
+                (Optional, default = 3).
+            num_6 (int): Number of strain profiles in field 6
+                (Optional, default = 4).
+            num (int): Total number of strain profiles (Optional, default =
+                None). If specified num and num_1, ..., num_6 the total number
+                of num may be different.
+            type_1 (literal): Type of spacing for field 1. 'linear' for a
+                linear spacing, 'geometric' for a geometric spacing 'quadratic'
+                for a quadratic spacing (Optional default = 'linear').
+            type_2 (literal): Type of spacing for field 2 (default = 'linear').
+                See type_1 for options.
+            type_3 (literal): Type of spacing for field 3 (default =
+                'geometric'). See type_1 for options.
+            type_4 (literal): Type of spacing for field 4 (default = 'linear').
+                See type_1 for options.
+            type_5 (literal): Type of spacing for field 5 (default = 'linear').
+                See type_1 for options.
+            type_6 (literal): Type of spacing for field 6 (default = 'linear').
+                See type_1 for options.
 
         Returns:
-            NMMInteractionDomain: The calculation results.
+            (NMMInteractionDomain)
         """
         res = s_res.NMMInteractionDomain()
         res.num_theta = num_theta
-        # TODO: if we want to resample and structure better data we can
-        # use n_axial as the number of discretizations in axial direction
-        res.num_axial = num_axial
+
+        # Process num if given.
+        if num is not None:
+            num_1, num_2, num_3, num_4, num_5, num_6 = (
+                self._process_num_strain_profiles(
+                    num, num_1, num_2, num_3, num_4, num_5, num_6
+                )
+            )
 
         # cycle for all n_thetas
         thetas = np.linspace(0, np.pi * 2, num_theta)
@@ -941,7 +1178,21 @@ class GenericSectionCalculator(SectionCalculator):
         strains = np.empty((0, 3))
         for theta in thetas:
             # Get ultimate strain profiles for theta angle
-            strain = self._compute_ultimate_strain_profiles(theta=theta)
+            strain = self._compute_ultimate_strain_profiles(
+                theta=theta,
+                num_1=num_1,
+                num_2=num_2,
+                num_3=num_3,
+                num_4=num_4,
+                num_5=num_5,
+                num_6=num_6,
+                type_1=type_1,
+                type_2=type_2,
+                type_3=type_3,
+                type_4=type_4,
+                type_5=type_5,
+                type_6=type_6,
+            )
             strains = np.vstack((strains, strain))
 
         # integrate all strain profiles

@@ -11,9 +11,6 @@ class GrossProperties:
 
     # section areas
     area: float = field(default=0, metadata={'description': 'Total area'})
-    area_surface: float = field(
-        default=0, metadata={'description': 'Surface area'}
-    )
     area_reinforcement: float = field(
         default=0, metadata={'description': 'Reinforcement area'}
     )
@@ -196,6 +193,8 @@ class NMInteractionDomain:
     n: ArrayLike = None  # Axial loads
     m_y: ArrayLike = None  # Moments My
     m_z: ArrayLike = None  # Moments Mz
+
+    strains: ArrayLike = None
 
 
 @dataclass

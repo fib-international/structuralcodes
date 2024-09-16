@@ -6,10 +6,14 @@ import numpy as np
 import pytest
 from shapely import Polygon
 
+from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
 from structuralcodes.geometry import SurfaceGeometry
-from structuralcodes.materials.concrete import ConcreteMC2010
+from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import Sargin
-from structuralcodes.materials.reinforcement import ReinforcementMC2010
+from structuralcodes.materials.reinforcement import (
+    ReinforcementEC2_2004,
+    ReinforcementMC2010,
+)
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.sections._reinforcement import (
     add_reinforcement,
@@ -39,16 +43,26 @@ def test_rectangular_section():
 
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
+    # Compute max / min axial load
+    n_max_marin = sec.section_calculator.n_max
+    n_min_marin = sec.section_calculator.n_min
+
     # Compute bending strength
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
+
+    # Use integrate_strain_response
+    N, My, Mz = sec.section_calculator.integrate_strain_profile(
+        (res_marin.eps_a, res_marin.chi_y, res_marin.chi_z)
+    )
+
+    assert math.isclose(N, res_marin.n)
+    assert math.isclose(My, res_marin.m_y)
+    assert math.isclose(Mz, res_marin.m_z)
 
     # Compute moment curvature
     res_mc_marin = sec.section_calculator.calculate_moment_curvature(
         theta=0, n=0
     )
-
-    n_min_marin = sec.section_calculator.n_min
-    n_max_marin = sec.section_calculator.n_max
 
     # Use fiber integration
     sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
@@ -112,6 +126,44 @@ def test_rectangular_section():
         sec.section_calculator.calculate_moment_curvature(
             theta=0, n=n_max_marin * 1.5
         )
+
+
+@pytest.mark.parametrize('fck', [25, 35, 55, 65])
+@pytest.mark.parametrize('fyk', [450, 500, 550])
+@pytest.mark.parametrize(
+    'ductility_class',
+    ['a', 'b', 'c'],
+)
+def test_rectangular_section_parabola_rectangle(fck, fyk, ductility_class):
+    """Test a rectangular section with different concretes and n."""
+    # crete the materials to use
+    concrete = ConcreteEC2_2004(fck=fck)
+    props = reinforcement_duct_props(fyk=fyk, ductility_class=ductility_class)
+
+    steel = ReinforcementEC2_2004(
+        fyk=fyk, Es=200000, ftk=props['ftk'], epsuk=props['epsuk']
+    )
+
+    # The section
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
+    geo = geo.translate(-100, -200)
+
+    # Create the section with fiber integrator
+    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.001)
+
+    # Compute bending strength My-
+    res_fiber = sec_fiber.section_calculator.calculate_bending_strength()
+
+    # Create the section with default marin integrator
+    sec_marin = GenericSection(geo)
+
+    # Compute bending strength My-
+    res_marin = sec_marin.section_calculator.calculate_bending_strength()
+
+    assert math.isclose(res_fiber.m_y, res_marin.m_y, rel_tol=1e-3)
 
 
 def test_rectangular_section_mn_domain():
@@ -393,3 +445,44 @@ def test_refined_moment_curvature():
     # Assert
     assert len(res_more_points.chi_y) == 48
     assert math.isclose(res_large_chi_first.chi_y[0], chi_yield / 10)
+
+
+def test_refined_mn_domain():
+    """Test overriding defaults when calculating moment-curvature."""
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
+
+    # The section
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
+    geo = geo.translate(-100, -200)
+
+    # Create the section
+    sec = GenericSection(geo, integrator='fiber')
+
+    # Calculate default moment-curvature relation
+    res_default = sec.section_calculator.calculate_nm_interaction_domain()
+
+    # Specify more discretized domain
+    res_refined = sec.section_calculator.calculate_nm_interaction_domain(
+        num=100
+    )
+
+    # Specify detailed discretization for each field
+    res_detailed = sec.section_calculator.calculate_nm_interaction_domain(
+        num_1=2,
+        num_2=10,
+        num_3=40,
+        num_4=40,
+        num_5=10,
+        num_6=5,
+        type_4='geometric',
+    )
+
+    # Assertion
+    assert len(res_default.strains) == 35
+    assert len(res_refined.strains) >= 0.9 * 100
+    assert len(res_detailed.strains) == 107

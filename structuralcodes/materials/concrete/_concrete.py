@@ -4,10 +4,7 @@ import abc
 import typing as t
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
-from structuralcodes.materials.constitutive_laws import (
-    ParabolaRectangle,
-    create_constitutive_law,
-)
+from structuralcodes.materials.constitutive_laws import create_constitutive_law
 
 
 class Concrete(Material):
@@ -60,9 +57,7 @@ class Concrete(Material):
     def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the constitutive law object."""
         if self._constitutive_law is None:
-            self._constitutive_law = ParabolaRectangle(
-                self.fcd(), name=self.name + '_ConstLaw'
-            )
+            self.constitutive_law = 'parabolarectangle'
         return self._constitutive_law
 
     @constitutive_law.setter
