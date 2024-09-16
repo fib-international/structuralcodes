@@ -42,8 +42,6 @@ class GenericSection(Section):
             moment curvature, etc.)
         gross_properties: (GrossProperties)
             the results of gross properties computation
-        cracked_properties: (CrackedProperties)
-            the results of cracked properties computation
     """
 
     def __init__(
@@ -67,7 +65,6 @@ class GenericSection(Section):
             sec=self, integrator=integrator, **kwargs
         )
         self._gross_properties = None
-        self._cracked_properties = None
 
     @property
     def gross_properties(self) -> s_res.GrossProperties:
@@ -77,17 +74,6 @@ class GenericSection(Section):
                 self.section_calculator._calculate_gross_section_properties()
             )
         return self._gross_properties
-
-    @property
-    def cracked_properties(self) -> s_res.CrackedProperties:
-        """Return the cracked properties of the section for positive and
-        negative bending (n=0) with horizontal neutral axe.
-        """
-        if self._cracked_properties is None:
-            self._cracked_properties = (
-                self.section_calculator._calculate_cracked_section_properties()
-            )
-        return self._cracked_properties
 
 
 class GenericSectionCalculator(SectionCalculator):
@@ -275,101 +261,6 @@ class GenericSectionCalculator(SectionCalculator):
 
         return gp
 
-    def _calculate_cracked_section_properties(
-        self, n=0
-    ) -> s_res.CrackedProperties:
-        """Calculates the Cracked section properties of the reinforced concrete GenericSection.
-
-        This function is private and called when the section is created
-        It stores the result into the result object.
-
-        Returns:
-        CrackedProperties (CrackedSection)
-        """
-
-        def create_surface_geometries(polygons_list, material):
-            """Process shapely polygons to SurfaceGeometries."""
-            # Create an empty list to store SurfaceGeometry objects
-            surface_geometries = []
-
-            # Iterate over the list of polygons and create a SurfaceGeometry for each one
-            for polygon in polygons_list:
-                # Create a new SurfaceGeometry for the current polygon
-                surface_geometry = SurfaceGeometry(polygon, material)
-                # Add the new SurfaceGeometry to the list
-                surface_geometries.append(surface_geometry)
-
-            return surface_geometries
-
-        if not self.section.geometry.reinforced_concrete:
-            return None
-
-        for lower_compression_block in [True, False]:
-            # Determine parameters based on the compression side
-            theta_values = {True: 0, False: math.pi}
-            sign_factor = {
-                True: -1,
-                False: 1,
-            }  # ISSUE: I need it because my and chi follow different coordinate axes in the results of calculate_bending_strength. it looks like a bug. Ask Diego
-
-            # Calculate theta and curvature based on both cases
-            r = self.calculate_bending_strength(
-                theta=theta_values[lower_compression_block], n=n
-            )
-            curv = (
-                sign_factor[lower_compression_block] * r.chi_y / 10
-            )  # small curvature to get neutral axis
-
-            # Find the equilibrium with fixed curvature
-            eps = self.find_equilibrium_fixed_curvature(
-                self.section.geometry, n, curv, 0
-            )[0]
-            y = -eps / curv  # distance to neutral fibre
-
-            # Cutting concrete geometries and retaining the compressed block
-            cut_geom = CompoundGeometry(None, None)
-            for i, part in enumerate(self.section.geometry.geometries):
-                min_x, max_x, min_y, max_y = part.calculate_extents()
-                above_div, below_div = part.split(((min_x, y), 0))
-                subpart_poly = (
-                    below_div if lower_compression_block else above_div
-                )
-                # Convert to SurfaceGeometry
-                subpart_sg = create_surface_geometries(
-                    subpart_poly, part.material
-                )
-                if i == 0:
-                    cut_geom = CompoundGeometry(subpart_sg)
-                else:
-                    cut_geom += subpart_sg
-
-            # Add reinforcement geometries
-            for reinf in self.section.geometry.point_geometries:
-                cut_geom += reinf
-
-            # Define auxiliary cracked section
-            cracked_sec = GenericSection(cut_geom)
-            r = cracked_sec.gross_properties
-
-            # Store results for each case (True/False)
-            if lower_compression_block:
-                cp = s_res.CrackedProperties()
-                cp.ei_yy_1 = r.e_iyy
-                cp.ei_zz_1 = r.e_izz
-                cp.i_yy_1 = r.iyy
-                cp.i_zz_1 = r.izz
-                cp.i_yz_1 = r.iyz
-                cp.z_na_1 = y
-            else:
-                cp.ei_yy_2 = r.e_iyy
-                cp.ei_zz_2 = r.e_izz
-                cp.i_yy_2 = r.iyy
-                cp.i_zz_2 = r.izz
-                cp.i_yz_2 = r.iyz
-                cp.z_na_2 = y
-
-        return cp
-
     def get_balanced_failure_strain(
         self, geom: CompoundGeometry, yielding: bool = False
     ) -> t.Tuple[float, float, float]:
@@ -551,51 +442,6 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return (eps_0_b, dn_b)
 
-    def _prefind_range_curvature_equilibriumYZ(
-        self,
-        geom: CompoundGeometry,
-        n: float,
-        curv_y: float,
-        curv_z: float,
-        eps_0_a: float,
-        dn_a: float,
-    ):  # CMG - Work in progres !!!!!!!!!!!!!!
-        """Perfind range where the curvature equilibrium is located.
-
-        This algorithms quickly finds a position of NA that guaranteed the
-        existence of at least one zero in the function dn vs. curv in order
-        to apply the bisection algorithm.
-        """
-        ITMAX = 50
-        sign = -1 if dn_a > 0 else 1
-        found = False
-        it = 0
-        delta = 1e-3
-        while not found and it < ITMAX:
-            eps_0_b = eps_0_a + sign * delta * (it + 1)
-            (
-                n_int,
-                _,
-                _,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [eps_0_b, curv_y, curv_z], tri=self.triangulated_data
-            )
-            dn_b = n_int - n
-            if dn_a * dn_b < 0:
-                found = True
-            elif abs(dn_b) > abs(dn_a):
-                # we are driving aay from the solution, probably due
-                # to failure of a material
-                delta /= 2
-                it -= 1
-            it += 1
-        if it >= ITMAX and not found:
-            s = f'Last iteration reached a unbalance of: \
-                dn_a = {dn_a} dn_b = {dn_b})'
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return (eps_0_b, dn_b)
-
     def find_equilibrium_fixed_curvature(
         self, geom: CompoundGeometry, n: float, curv: float, eps_0: float
     ):
@@ -658,103 +504,6 @@ class GenericSectionCalculator(SectionCalculator):
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return [eps_0_c, curv, 0]
-
-    def find_equilibrium_fixed_curvatureYZ_2(
-        self,
-        geom: CompoundGeometry,
-        n: float,
-        curv_y,
-        curv_z: float,
-        eps_0: float,
-    ):  # CMG - Work in progres !!!!!!!!!!!!!!
-        """WIP"""
-        if curv_y == 0:
-            sign = 1 if curv_z > 0 else -1
-            theta = math.pi / 2 if curv_z > 0 else -math.pi / 2
-        else:
-            sign = np.sign(curv_y)
-            theta = math.atan(curv_z / curv_y)
-        rotated_geom = self.section.geometry.rotate(theta)
-        _sec = GenericSection(rotated_geom)
-        _sec.section_calculator.integrator = self.integrator
-        curv = (curv_y**2 + curv_z**2) ** 0.5 * sign
-        eps_0_c, curv, _ = (
-            _sec.section_calculator.find_equilibrium_fixed_curvature(
-                _sec.geometry, n, curv, eps_0
-            )
-        )
-        curv_y = curv * math.cos(theta)
-        curv_z = curv * math.sin(theta)
-        return [eps_0_c, curv_y, curv_z]
-
-    def find_equilibrium_fixed_curvatureYZ(
-        self,
-        geom: CompoundGeometry,
-        n: float,
-        curv_y,
-        curv_z: float,
-        eps_0: float,
-    ):  # CMG - Work in progres !!!!!!!!!!!!!!
-        """Find strain profile with equilibrium with fixed curvature.
-        Given curvature and external axial force, find the strain profile
-        that makes internal and external axial force in equilibrium.
-
-        Arguments:
-        geom: (CompounGeometry) the geometry
-        n: (float) the external axial load
-        curv_y: (float) the value of curvature along Y axis
-        curv_z: (float) the value of curvature along Z axis
-        eps_0: (float) a first attempt for neutral axis position
-        """
-        # Useful for Moment Curvature Analysis
-        # Number of maximum iteration for the bisection algorithm
-        ITMAX = 100
-        # Start from previous position of N.A.
-        eps_0_a = eps_0
-        # find internal axial force by integration
-        (
-            n_int,
-            _,
-            _,
-            tri,
-        ) = self.integrator.integrate_strain_response_on_geometry(
-            geom, [eps_0, curv_y, curv_z], tri=self.triangulated_data
-        )
-        if self.triangulated_data is None:
-            self.triangulated_data = tri
-        dn_a = n_int - n
-        # It may occur that dn_a is already almost zero (in eqiulibrium)
-        if abs(dn_a) <= 1e-2:
-            # return the equilibrium position
-            return [eps_0_a, curv_y, curv_z]
-        eps_0_b, dn_b = self._prefind_range_curvature_equilibriumYZ(
-            geom, n, curv_y, curv_z, eps_0_a, dn_a
-        )
-        # Found a range within there is the solution, apply bisection
-        it = 0
-        while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
-            eps_0_c = (eps_0_a + eps_0_b) / 2
-            (
-                n_int,
-                _,
-                _,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [eps_0_c, curv_y, curv_z, 0], tri=self.triangulated_data
-            )
-            dn_c = n_int - n
-            if dn_a * dn_c < 0:
-                dn_b = dn_c
-                eps_0_b = eps_0_c
-            else:
-                dn_a = dn_c
-                eps_0_a = eps_0_c
-            it += 1
-        if it >= ITMAX:
-            s = f'Last iteration reached a unbalance of: \
-                dn_c = {dn_c}'
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return [eps_0_c, curv_y, curv_z]
 
     def calculate_limit_axial_load(self):
         """Compute maximum and minimum axial load.
@@ -1260,7 +1009,7 @@ class GenericSectionCalculator(SectionCalculator):
 
             Args:
                 n_ed [N]: Axial load
-                m_ed [N*m]: Bending moment My
+                m_ed [N*m]: Resultant bending moment (My**2+Mz**2)**0.5
 
             Returns:
                 eps_a: strain at (0,0)
@@ -1392,7 +1141,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         rotated_geom = self.section.geometry.rotate(0)
         _sec = GenericSection(rotated_geom)
-        while ((alfa_2 - alfa_1) > 1e-4) and iter < ITMAX:
+        while ((alfa_2 - alfa_1) > 1e-3) and iter < ITMAX:
             print('calculate_strain_profile - iter ', iter)
             # rotated section
             rotated_geom = self.section.geometry.rotate(alfa)
