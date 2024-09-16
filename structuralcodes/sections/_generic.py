@@ -1,5 +1,7 @@
 """Generic class section implemenetation."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import typing as t
 import warnings
 from math import cos, sin

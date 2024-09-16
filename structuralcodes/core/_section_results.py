@@ -1,5 +1,7 @@
 """Results."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 from dataclasses import dataclass, field, fields
 
 from numpy.typing import ArrayLike

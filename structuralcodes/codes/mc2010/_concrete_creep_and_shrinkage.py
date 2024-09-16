@@ -8,6 +8,8 @@ Todo:
    (see 5.1.10.7 of [1])
 """
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import typing as t
 import warnings
 

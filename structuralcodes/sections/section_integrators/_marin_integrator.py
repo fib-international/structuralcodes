@@ -1,5 +1,7 @@
 """The Marin section integrator."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import typing as t
 from math import atan2, cos, sin
 

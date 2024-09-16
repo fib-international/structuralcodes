@@ -1,5 +1,7 @@
 """Abstract base classes."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import abc
 import typing as t
 import warnings
