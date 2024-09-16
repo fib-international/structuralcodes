@@ -63,7 +63,7 @@ def draw_section(section, title='', reduction_reinf=None):
         poly = center.buffer(r)
         x, y = poly.exterior.xy
         ax.fill(x, y, color=color)
-    ax.invert_yaxis()  # Invert Y axis
+    # ax.invert_yaxis()  # Invert Y axis
 
     # same scale in X and Y
     ax.set_aspect('equal', 'box')
@@ -182,7 +182,7 @@ def draw_section_response(
     ax.set_title('Section response - stress')
     ax.set_xlabel('Stress [MPa]')
     ax.set_ylabel('z')
-    ax.invert_yaxis()  # Invert axis
+    # ax.invert_yaxis()  # Invert axis
     if (lim_Sneg is not None) and (lim_Spos is not None):
         ax.set_xlim(lim_Sneg, lim_Spos)
     else:
@@ -249,7 +249,7 @@ def draw_section_response(
         r = g._diameter / 2
         poly = center.buffer(r)
         x_min, y_min, x_max, y_max = poly.bounds
-        z_range = [y_min, y_max]
+        z_range = [y_min + 1e-5, y_max - 1e-5]
 
         # stress
         stress = [
@@ -319,7 +319,7 @@ def draw_section_response(
     ax2.set_title('Section response - strain')
     ax2.set_xlabel('strain [mm/m]')
     ax2.set_ylabel('z')
-    ax2.invert_yaxis()  # Invert axis
+    # ax2.invert_yaxis()  # Invert axis
     ax2.invert_xaxis()
     plt.show()
     if abs(chi_y) > 0:

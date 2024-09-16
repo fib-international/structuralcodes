@@ -42,6 +42,8 @@ class GenericSection(Section):
             moment curvature, etc.)
         gross_properties: (GrossProperties)
             the results of gross properties computation
+        cracked_properties: (CrackedProperties)
+            the results of cracked properties computation
     """
 
     def __init__(
@@ -65,6 +67,7 @@ class GenericSection(Section):
             sec=self, integrator=integrator, **kwargs
         )
         self._gross_properties = None
+        self._cracked_properties = None
 
     @property
     def gross_properties(self) -> s_res.GrossProperties:
@@ -74,6 +77,17 @@ class GenericSection(Section):
                 self.section_calculator._calculate_gross_section_properties()
             )
         return self._gross_properties
+
+    @property
+    def cracked_properties(self) -> s_res.CrackedProperties:
+        """Return the cracked properties of the section for positive and
+        negative bending (n=0) with horizontal neutral axe.
+        """
+        if self._cracked_properties is None:
+            self._cracked_properties = (
+                self.section_calculator._calculate_cracked_section_properties()
+            )
+        return self._cracked_properties
 
 
 class GenericSectionCalculator(SectionCalculator):
@@ -260,6 +274,101 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         return gp
+
+    def _calculate_cracked_section_properties(
+        self, n=0
+    ) -> s_res.CrackedProperties:
+        """Calculates the Cracked section properties of the reinforced concrete GenericSection.
+
+        This function is private and called when the section is created
+        It stores the result into the result object.
+
+        Returns:
+        CrackedProperties (CrackedSection)
+        """
+
+        def create_surface_geometries(polygons_list, material):
+            """Process shapely polygons to SurfaceGeometries."""
+            # Create an empty list to store SurfaceGeometry objects
+            surface_geometries = []
+
+            # Iterate over the list of polygons and create a SurfaceGeometry for each one
+            for polygon in polygons_list:
+                # Create a new SurfaceGeometry for the current polygon
+                surface_geometry = SurfaceGeometry(polygon, material)
+                # Add the new SurfaceGeometry to the list
+                surface_geometries.append(surface_geometry)
+
+            return surface_geometries
+
+        if not self.section.geometry.reinforced_concrete:
+            return None
+
+        for lower_compression_block in [True, False]:
+            # Determine parameters based on the compression side
+            theta_values = {True: 0, False: math.pi}
+            sign_factor = {
+                True: -1,
+                False: 1,
+            }  # ISSUE: I need it because my and chi follow different coordinate axes in the results of calculate_bending_strength. it looks like a bug. Ask Diego
+
+            # Calculate theta and curvature based on both cases
+            r = self.calculate_bending_strength(
+                theta=theta_values[lower_compression_block], n=n
+            )
+            curv = (
+                sign_factor[lower_compression_block] * r.chi_y / 10
+            )  # small curvature to get neutral axis
+
+            # Find the equilibrium with fixed curvature
+            eps = self.find_equilibrium_fixed_curvature(
+                self.section.geometry, n, curv, 0
+            )[0]
+            y = -eps / curv  # distance to neutral fibre
+
+            # Cutting concrete geometries and retaining the compressed block
+            cut_geom = CompoundGeometry(None, None)
+            for i, part in enumerate(self.section.geometry.geometries):
+                min_x, max_x, min_y, max_y = part.calculate_extents()
+                above_div, below_div = part.split(((min_x, y), 0))
+                subpart_poly = (
+                    below_div if lower_compression_block else above_div
+                )
+                # Convert to SurfaceGeometry
+                subpart_sg = create_surface_geometries(
+                    subpart_poly, part.material
+                )
+                if i == 0:
+                    cut_geom = CompoundGeometry(subpart_sg)
+                else:
+                    cut_geom += subpart_sg
+
+            # Add reinforcement geometries
+            for reinf in self.section.geometry.point_geometries:
+                cut_geom += reinf
+
+            # Define auxiliary cracked section
+            cracked_sec = GenericSection(cut_geom)
+            r = cracked_sec.gross_properties
+
+            # Store results for each case (True/False)
+            if lower_compression_block:
+                cp = s_res.CrackedProperties()
+                cp.ei_yy_1 = r.e_iyy
+                cp.ei_zz_1 = r.e_izz
+                cp.i_yy_1 = r.iyy
+                cp.i_zz_1 = r.izz
+                cp.i_yz_1 = r.iyz
+                cp.z_na_1 = y
+            else:
+                cp.ei_yy_2 = r.e_iyy
+                cp.ei_zz_2 = r.e_izz
+                cp.i_yy_2 = r.iyy
+                cp.i_zz_2 = r.izz
+                cp.i_yz_2 = r.iyz
+                cp.z_na_2 = y
+
+        return cp
 
     def get_balanced_failure_strain(
         self, geom: CompoundGeometry, yielding: bool = False
@@ -549,6 +658,34 @@ class GenericSectionCalculator(SectionCalculator):
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return [eps_0_c, curv, 0]
+
+    def find_equilibrium_fixed_curvatureYZ_2(
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv_y,
+        curv_z: float,
+        eps_0: float,
+    ):  # CMG - Work in progres !!!!!!!!!!!!!!
+        """WIP"""
+        if curv_y == 0:
+            sign = 1 if curv_z > 0 else -1
+            theta = math.pi / 2 if curv_z > 0 else -math.pi / 2
+        else:
+            sign = np.sign(curv_y)
+            theta = math.atan(curv_z / curv_y)
+        rotated_geom = self.section.geometry.rotate(theta)
+        _sec = GenericSection(rotated_geom)
+        _sec.section_calculator.integrator = self.integrator
+        curv = (curv_y**2 + curv_z**2) ** 0.5 * sign
+        eps_0_c, curv, _ = (
+            _sec.section_calculator.find_equilibrium_fixed_curvature(
+                _sec.geometry, n, curv, eps_0
+            )
+        )
+        curv_y = curv * math.cos(theta)
+        curv_z = curv * math.sin(theta)
+        return [eps_0_c, curv_y, curv_z]
 
     def find_equilibrium_fixed_curvatureYZ(
         self,
@@ -1090,11 +1227,11 @@ class GenericSectionCalculator(SectionCalculator):
 
         Args:
             n_ed [N]: Axial load
-            m_ed [N*m]: Bending moment My
-
+            my_ed [N*m]: Bending moment My
+            mz_ed [N*m]: Bending moment My
         Returns:
             eps_a: strain at (0,0)
-            chi: curvature of the section
+            chiy,chiz: curvatures of the section
         """
 
         def interpolate(x1, x2, y1, y2, x):
@@ -1103,85 +1240,184 @@ class GenericSectionCalculator(SectionCalculator):
             y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
             return y
 
+        def angle(x, y):
+            """Obtain the angle of the vector with respect to (1,0) in counterclockwise direction."""
+            angle = math.atan2(y, x)
+
+            # check angle between [0, 2π]
+            if angle < 0:
+                angle += 2 * math.pi
+
+            # Degrees
+            angle_deg = math.degrees(angle)
+
+            return angle  # , angle_deg
+
+        def calculate_strain_profile_uniaxial(
+            section: GenericSection, n_ed=0, m_ed=0
+        ):
+            """'Get the strain plane for horizontal neutral axe.
+
+            Args:
+                n_ed [N]: Axial load
+                m_ed [N*m]: Bending moment My
+
+            Returns:
+                eps_a: strain at (0,0)
+                chi: curvature of the section
+            """
+            sec_geom = section.geometry
+
+            if m_ed < 0:
+                r = section.section_calculator.calculate_bending_strength(
+                    theta=0, n=n_ed
+                )
+                m1, m2 = r.m_y, 0
+                chi1, chi2 = r.chi_y, 0
+                e1, e2 = r.eps_a, 0
+            else:
+                r = section.section_calculator.calculate_bending_strength(
+                    theta=math.pi, n=n_ed
+                )
+                m1, m2 = 0, r.m_y
+                chi1, chi2 = 0, -r.chi_y
+                e1, e2 = 0, r.eps_a
+
+            chi = interpolate(m1, m2, chi1, chi2, m_ed)
+
+            strain = [interpolate(m1, m2, e1, e2, m_ed), 0, 0]
+
+            ITMAX = 100
+            tolerance = 1000  # (1e-3 mkN)
+            iter = 0
+            M_ = 1e11
+
+            # Stop if the ultimate curvature is exceeded
+            if chi >= chi2:
+                return e2, chi2
+            elif chi <= chi1:
+                return e1, chi1
+
+            while abs(m_ed - M_) > tolerance and iter < ITMAX:
+                strain = section.section_calculator.find_equilibrium_fixed_curvature(
+                    sec_geom, n_ed, chi, strain[0]
+                )
+                (
+                    _,
+                    My,
+                    Mz,
+                    _,
+                ) = section.section_calculator.integrator.integrate_strain_response_on_geometry(
+                    geo=sec_geom,
+                    strain=strain,
+                    tri=section.section_calculator.triangulated_data,
+                )
+
+                M_ = (My**2 + Mz**2) ** 0.5
+
+                if m_ed < M_:
+                    m2 = M_
+                    chi2 = chi
+                else:
+                    m1 = M_
+                    chi1 = chi
+
+                chi = interpolate(m1, m2, chi1, chi2, m_ed)
+                eps_a = strain[0]
+                iter += 1
+                print(
+                    'calculate_strain_profile_uniaxial - iter ',
+                    iter,
+                    ' - m_ed',
+                    round(m_ed / 1e6, 1),
+                    'M',
+                    round(M_ / 1e6, 1),
+                    'chi1',
+                    round(chi1 * 1e6, 1),
+                    'chi2',
+                    round(chi2 * 1e6, 1),
+                )
+            if iter == ITMAX:
+                return None, None
+            else:
+                return eps_a, chi
+
         # Check if the section can carry the axial load
         self.check_axial_load(n=n_ed)
 
-        # check n_ed, my_ed, mz_ed inside N-MY-MZ diagram
-        # TODO
+        # obtain the boundaries of theta (angle of moments) corresponding to the quadrants of the alpha angle
+        res = self.calculate_bending_strength(math.pi, n_ed)
+        theta_0 = angle(res.m_y, res.m_z)
 
-        # get range of My, Mz Chiy,Chiz for algoritm iteration
-        if my_ed < 0:
-            r = self.calculate_bending_strength(theta=0, n=n_ed)
-            my1, my2 = r.m_y, 0
-            chiy1, chiy2 = r.chi_y, 0
+        res = self.calculate_bending_strength(3 * math.pi / 2, n_ed)
+        theta_1 = angle(res.m_y, res.m_z)
+
+        res = self.calculate_bending_strength(0, n_ed)
+        theta_2 = angle(res.m_y, res.m_z)
+
+        res = self.calculate_bending_strength(math.pi / 2, n_ed)
+        theta_3 = angle(res.m_y, res.m_z)
+
+        # Angle of moments: theta
+        theta = angle(my_ed, mz_ed)
+
+        # get first attemp of alfa for iterations and quadrant of aplication
+        if (theta_0 <= theta < theta_1) or (0 <= theta < theta_1):
+            alfa_1 = 0
+            alfa_2 = math.pi / 2
+            # alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
+            if theta_0 <= theta_1:  # theta_0>0
+                alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
+            else:  # theta_0<0
+                alfa = interpolate(
+                    theta_0 - 2 * math.pi, theta_1, alfa_1, alfa_2, theta
+                )
+        elif theta_1 <= theta < theta_2:
+            alfa_1 = math.pi / 2
+            alfa_2 = math.pi
+            alfa = interpolate(theta_1, theta_2, alfa_1, alfa_2, theta)
+        elif theta_2 <= theta < theta_3:
+            alfa_1 = math.pi
+            alfa_2 = 3 * math.pi / 2
+            alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
         else:
-            r = self.calculate_bending_strength(theta=math.pi, n=n_ed)
-            my1, my2 = 0, r.m_y
-            chiy1, chiy2 = 0, -r.chi_y
+            alfa_1 = 3 * math.pi / 2
+            alfa_2 = 2 * math.pi
+            alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
 
-        if mz_ed < 0:
-            r = self.calculate_bending_strength(theta=math.pi / 2, n=n_ed)
-            mz1, mz2 = r.m_z, 0
-            chiz1, chiz2 = r.chi_z, 0
-        else:
-            r = self.calculate_bending_strength(theta=-math.pi / 2, n=n_ed)
-            mz1, mz2 = 0, r.m_z
-            chiz1, chiz2 = 0, -r.chi_z
-
-        chiy = interpolate(my1, my2, chiy1, chiy2, my_ed)
-        chiz = interpolate(mz1, mz2, chiz1, chiz2, mz_ed)
-        # Previous position of strain at (0,0)
-        strain = [0, 0, 0]
-
-        ITMAX = 200
-        tolerance = 1000  # (1e-3 mkN)
+        ITMAX = 50
         iter = 0
         My = 1e11
         Mz = 1e11
 
-        while (
-            abs(my_ed - My) > tolerance or abs(mz_ed - Mz) > tolerance
-        ) and iter < ITMAX:
-            strain = self.find_equilibrium_fixed_curvatureYZ(
-                rotated_geom, n_ed, chiy, chiz, strain[0]
-            )
-            (
-                _,
-                My,
-                Mz,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geo=rotated_geom,
-                strain=strain,
-                tri=self.triangulated_data,
-            )
+        rotated_geom = self.section.geometry.rotate(0)
+        _sec = GenericSection(rotated_geom)
+        while ((alfa_2 - alfa_1) > 1e-4) and iter < ITMAX:
+            print('calculate_strain_profile - iter ', iter)
+            # rotated section
+            rotated_geom = self.section.geometry.rotate(alfa)
+            _sec.geometry = rotated_geom
+            _sec.section_calculator.integrator = self.integrator
 
-            if My > my_ed:
-                my2 = My
-                chiy2 = chiy
+            # Momento resultante que será el MY que aplique a la sección rotada
+            m_ed = (my_ed**2 + mz_ed**2) ** 0.5  # * sign
+            # Se saca el plano deformación de la sección rotada para momento en Y rotado
+            eps_a, chi = calculate_strain_profile_uniaxial(_sec, n_ed, m_ed)
+
+            # Se descomponen las curvarutas, que pertenecerán a la sección original
+            chiy = abs(chi) * math.cos(alfa)
+            chiz = abs(chi) * math.sin(alfa)
+            # draw_section(section)
+            N, My, Mz = self.integrate_strain_profile((eps_a, chiy, chiz))
+
+            if angle(My, Mz) > angle(my_ed, mz_ed):
+                alfa_2 = alfa
             else:
-                my1 = My
-                chiy1 = chiy
-            if Mz > mz_ed:
-                mz2 = Mz
-                chiz2 = chiz
-            else:
-                mz1 = Mz
-                chiz1 = chiz
+                alfa_1 = alfa
 
-            chiy = interpolate(my1, my2, chiy1, chiy2, my_ed)
-            chiz = interpolate(mz1, mz2, chiz1, chiz2, mz_ed)
-
-            eps_a = strain[0]
+            alfa = 0.5 * (alfa_1 + alfa_2)
             iter += 1
-
-        if self.triangulated_data is not None:
-            # Rotate back triangulated data!
-            self._rotate_triangulated_data(theta)
-
         if iter == ITMAX:
             return None, None, None
         else:
-            chi_y = chi * cos(theta)
-            chi_z = chi * sin(theta)
-            return eps_a, chi_y, chi_z
+            return eps_a, chiy, chiz
