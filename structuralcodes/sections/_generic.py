@@ -1,7 +1,5 @@
 """Generic class section implemenetation."""
 
-from __future__ import annotations
-
 import typing as t
 import warnings
 from math import cos, sin
@@ -451,7 +449,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def find_equilibrium_fixed_curvature(
         self, geom: CompoundGeometry, n: float, curv: float, eps_0: float
-    ) -> t.List[float, float, float]:
+    ) -> t.Tuple[float, float, float]:
         """Find strain profile with equilibrium with fixed curvature.
 
         Given curvature and external axial force, find the strain profile that
@@ -464,7 +462,8 @@ class GenericSectionCalculator(SectionCalculator):
             eps_0 (float): A first attempt for neutral axis position.
 
         Returns:
-            List(float, float, float): The axial strain and the two curvatures.
+            Tuple(float, float, float): The axial strain and the two
+            curvatures.
         """
         # Useful for Moment Curvature Analysis
         # Number of maximum iteration for the bisection algorithm
@@ -514,7 +513,7 @@ class GenericSectionCalculator(SectionCalculator):
             s = f'Last iteration reached a unbalance of: \
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return [eps_0_c, curv, 0]
+        return eps_0_c, curv, 0
 
     def calculate_limit_axial_load(self):
         """Compute maximum and minimum axial load.

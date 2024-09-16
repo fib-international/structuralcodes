@@ -1,7 +1,5 @@
 """Abstract base classes."""
 
-from __future__ import annotations
-
 import abc
 import typing as t
 import warnings

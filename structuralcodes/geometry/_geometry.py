@@ -1,7 +1,5 @@
 """Generic class section implemenetation."""
 
-from __future__ import annotations
-
 import typing as t
 import warnings
 
@@ -82,9 +80,9 @@ class Geometry:
 
     @staticmethod
     def from_geometry(
-        geo: Geometry,
+        geo: 'Geometry',
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
-    ) -> Geometry:
+    ) -> 'Geometry':
         """Create a new geometry with a different material."""
         raise NotImplementedError(
             'This method should be implemented by subclasses'
@@ -123,7 +121,8 @@ class PointGeometry(Geometry):
                 the material is a Material object the density is taken from the
                 material.
             name (Optional(str)): The name to be given to the object.
-            group_label (Optional(str)): A label for grouping several objects.
+            group_label (Optional(str)): A label for grouping several objects
+                (default is None).
         """
         super().__init__(name, group_label)
         # I check if point is a shapely Point or an ArrayLike object
@@ -199,7 +198,7 @@ class PointGeometry(Geometry):
         """Returns the svg representation."""
         return str(self._point._repr_svg_())
 
-    def translate(self, dx: float = 0.0, dy: float = 0.0) -> PointGeometry:
+    def translate(self, dx: float = 0.0, dy: float = 0.0) -> 'PointGeometry':
         """Returns a new PointGeometry that is translated by dx, dy.
 
         Arguments:
@@ -223,7 +222,7 @@ class PointGeometry(Geometry):
         angle: float = 0.0,
         point: t.Union[t.Tuple[float, float], Point] = (0.0, 0.0),
         use_radians: bool = True,
-    ) -> PointGeometry:
+    ) -> 'PointGeometry':
         """Returns a new PointGeometry that is rotated by angle.
 
         Arguments:
@@ -247,9 +246,9 @@ class PointGeometry(Geometry):
 
     @staticmethod
     def from_geometry(
-        geo: PointGeometry,
+        geo: 'PointGeometry',
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
-    ) -> PointGeometry:
+    ) -> 'PointGeometry':
         """Create a new PointGeometry with a different material.
 
         Arguments:
@@ -421,7 +420,7 @@ class SurfaceGeometry:
 
     def split(
         self, line: t.Union[LineString, t.Tuple[t.Tuple[float, float], float]]
-    ) -> t.Tuple[t.List[SurfaceGeometry], t.List[SurfaceGeometry]]:
+    ) -> t.Tuple[t.List['SurfaceGeometry'], t.List['SurfaceGeometry']]:
         """Splits the geometry using a line.
 
         Arguments:
@@ -483,7 +482,7 @@ class SurfaceGeometry:
         # get the intersection
         return self.polygon.intersection(lines_polygon)
 
-    def __add__(self, other: Geometry) -> CompoundGeometry:
+    def __add__(self, other: Geometry) -> 'CompoundGeometry':
         """Add operator "+" for geometries.
 
         Arguments:
@@ -494,7 +493,7 @@ class SurfaceGeometry:
         """
         return CompoundGeometry([self, other])
 
-    def __sub__(self, other: Geometry) -> SurfaceGeometry:
+    def __sub__(self, other: Geometry) -> 'SurfaceGeometry':
         """Add operator "-" for geometries.
 
         Arguments:
@@ -523,7 +522,7 @@ class SurfaceGeometry:
         """Returns the svg representation."""
         return str(self.polygon._repr_svg_())
 
-    def translate(self, dx: float = 0.0, dy: float = 0.0) -> SurfaceGeometry:
+    def translate(self, dx: float = 0.0, dy: float = 0.0) -> 'SurfaceGeometry':
         """Returns a new SurfaceGeometry that is translated by dx, dy.
 
         Arguments:
@@ -542,9 +541,9 @@ class SurfaceGeometry:
     def rotate(
         self,
         angle: float = 0.0,
-        point: tuple[float, float] = (0.0, 0.0),
+        point: t.Tuple[float, float] = (0.0, 0.0),
         use_radians: bool = True,
-    ) -> SurfaceGeometry:
+    ) -> 'SurfaceGeometry':
         """Returns a new SurfaceGeometry that is rotated by angle.
 
         Arguments:
@@ -568,9 +567,9 @@ class SurfaceGeometry:
 
     @staticmethod
     def from_geometry(
-        geo: SurfaceGeometry,
+        geo: 'SurfaceGeometry',
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
-    ) -> SurfaceGeometry:
+    ) -> 'SurfaceGeometry':
         """Create a new SurfaceGeometry with a different material.
 
         Arguments:
@@ -735,7 +734,7 @@ class CompoundGeometry(Geometry):
             area += geo.area
         return area
 
-    def calculate_extents(self) -> tuple[float, float, float, float]:
+    def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of CompundGeometry.
 
         Calculates the minimum and maximum x and y-values.
@@ -759,7 +758,9 @@ class CompoundGeometry(Geometry):
             max_y = max(max_y, ymax)
         return min_x, max_x, min_y, max_y
 
-    def translate(self, dx: float = 0.0, dy: float = 0.0) -> CompoundGeometry:
+    def translate(
+        self, dx: float = 0.0, dy: float = 0.0
+    ) -> 'CompoundGeometry':
         """Returns a new CompountGeometry that is translated by dx, dy.
 
         Arguments:
@@ -779,9 +780,9 @@ class CompoundGeometry(Geometry):
     def rotate(
         self,
         angle: float = 0.0,
-        point: tuple[float, float] = (0.0, 0.0),
+        point: t.Tuple[float, float] = (0.0, 0.0),
         use_radians: bool = True,
-    ) -> CompoundGeometry:
+    ) -> 'CompoundGeometry':
         """Returns a new CompoundGeometry that is rotated by angle.
 
         Arguments:
@@ -802,7 +803,7 @@ class CompoundGeometry(Geometry):
             processed_geoms.append(pg.rotate(angle, point, use_radians))
         return CompoundGeometry(geometries=processed_geoms)
 
-    def __add__(self, other: Geometry) -> CompoundGeometry:
+    def __add__(self, other: Geometry) -> 'CompoundGeometry':
         """Add operator "+" for geometries.
 
         Arguments:
@@ -813,7 +814,7 @@ class CompoundGeometry(Geometry):
         """
         return CompoundGeometry([self, other])
 
-    def __sub__(self, other: Geometry) -> CompoundGeometry:
+    def __sub__(self, other: Geometry) -> 'CompoundGeometry':
         """Add operator "-" for geometries.
 
         Arguments:
@@ -835,9 +836,9 @@ class CompoundGeometry(Geometry):
 
     @staticmethod
     def from_geometry(
-        geo: CompoundGeometry,
+        geo: 'CompoundGeometry',
         new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
-    ) -> CompoundGeometry:
+    ) -> 'CompoundGeometry':
         """Create a new CompoundGeometry with a different material.
 
         Arguments:

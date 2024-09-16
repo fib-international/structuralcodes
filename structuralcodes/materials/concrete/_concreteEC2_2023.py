@@ -34,7 +34,9 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         name: t.Optional[str] = None,
         density: float = 2400.0,
         kE: float = 9500,
-        strength_dev_class: str = 'CN',
+        strength_dev_class: t.Literal[
+            'CS', 'CN', 'CR', 'slow', 'normal', 'rapid'
+        ] = 'CN',
         gamma_c: t.Optional[float] = None,
         existing: bool = False,
         **kwargs,

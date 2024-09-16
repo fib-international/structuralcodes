@@ -8,8 +8,6 @@ Todo:
    (see 5.1.10.7 of [1])
 """
 
-from __future__ import annotations
-
 import typing as t
 import warnings
 
@@ -264,7 +262,7 @@ def eps_cds0(
             are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
-        float: The notional drying shrinkage in mm/mm.
+        float: The notional drying shrinkage, no units.
     """
     return (
         (220 + 110 * _alpha_ds1[cem_class])
@@ -347,7 +345,7 @@ def eps_cds(
     Defined in fib Model Code 2010 (2013), Eqs. 5.1-77.
 
     Args:
-        _eps_cds0 (float):  The notional drying shrinkage in mm/mm, as defined
+        _eps_cds0 (float):  The notional drying shrinkage, no units, as defined
             in fib Model Code 2010 (2013), Eq. 5.1-80.
         _beta_ds (numpy.typing.ArrayLike): Multiplication factor used for
             calculating the drying shrinkage as a function of time, as defined
@@ -356,8 +354,8 @@ def eps_cds(
             drying shrinkage.
 
     Returns:
-        numpy.ndarray: The drying shrinkage strains for the given times in
-        mm/mm.
+        numpy.ndarray: The drying shrinkage strains for the given times, no
+        units.
     """
     return _eps_cds0 * _beta_rh * _beta_ds
 
@@ -379,7 +377,7 @@ def eps_cbs0(
             are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
-        float: The notional basic shrinkage in mm/mm.
+        float: The notional basic shrinkage, no units.
     """
     return (
         -_alpha_bs[cem_class] * ((0.1 * fcm) / (6 + 0.1 * fcm)) ** 2.5 * 1e-6

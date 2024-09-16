@@ -163,7 +163,7 @@ def beta_H(h_0: float, f_cm: float, RH: int) -> float:
 def eps_cs(
     h_0: float,
     f_cm: float,
-    cement_class: str,
+    cement_class: t.Literal['R', 'N', 'S'] = 'R',
     RH: int = 50,
     t_S: int = 28,
     t: int = 18263,

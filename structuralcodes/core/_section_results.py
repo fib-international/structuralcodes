@@ -1,7 +1,5 @@
 """Results."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field, fields
 
 from numpy.typing import ArrayLike
