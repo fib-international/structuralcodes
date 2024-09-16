@@ -777,41 +777,41 @@ class GenericSectionCalculator(SectionCalculator):
 
     def _process_num_strain_profiles(
         self,
-        num: int,
-        min_1: int = 2,
+        num: int = 35,
+        min_1: int = 1,
         min_2: int = 2,
         min_3: int = 15,
         min_4: int = 10,
         min_5: int = 3,
         min_6: int = 4,
     ):
-        """Return number of strain profiles for each field given the total numb
-        er of strain profiles.
+        """Return number of strain profiles for each field given the total
+        number of strain profiles.
 
         If the total number of strain profiles is given by user, divide this
         for every field according to a default pre-defined discretization
-        for each field (1, 2, 15, 10, 3, 4 for fields 1 to 6).
-        For each field if the user set a desired minimum number of strain
-        profiles, guarantee to create a number of strain profiles greater or
-        equal to the desired one. Therefore the function never return less
-        strain profiles than desired.
+        for each field (1, 2, 15, 10, 3, 4 for fields 1 to 6). For each field
+        if the user set a desired minimum number of strain profiles, guarantee
+        to create a number of strain profiles greater or equal to the desired
+        one. Therefore the function never return less strain profiles than
+        desired.
 
         Arguments:
-        num (int): Total number of strain profiles (Optional, default = None).
-            If specified num and num_1, ..., num_6 the total number of num
-            may be different.
-        min_1 (int): Minimum number of strain profiles in field 1
-            (Optional, default = 1).
-        min_2 (int): Minimum number of strain profiles in field 2
-            (Optional, default = 2).
-        min_3 (int): Minimum number of strain profiles in field 3
-            (Optional, default = 15).
-        min_4 (int): Minimum number of strain profiles in field 4
-            (Optional, default = 10).
-        min_5 (int): Minimum number of strain profiles in field 5
-            (Optional, default = 3).
-        min_6 (int): Minimum number of strain profiles in field 6
-            (Optional, default = 4).
+            num (int): Total number of strain profiles (Optional, default =
+                35). If specified num and num_1, ..., num_6 the total number of
+                num may be different.
+            min_1 (int): Minimum number of strain profiles in field 1
+                (Optional, default = 1).
+            min_2 (int): Minimum number of strain profiles in field 2
+                (Optional, default = 2).
+            min_3 (int): Minimum number of strain profiles in field 3
+                (Optional, default = 15).
+            min_4 (int): Minimum number of strain profiles in field 4
+                (Optional, default = 10).
+            min_5 (int): Minimum number of strain profiles in field 5
+                (Optional, default = 3).
+            min_6 (int): Minimum number of strain profiles in field 6
+                (Optional, default = 4).
 
         Return:
             (int, int, int, int, int, int): 6-tuple of int number representing
@@ -851,44 +851,39 @@ class GenericSectionCalculator(SectionCalculator):
         """Calculate the NM interaction domain.
 
         Arguments:
-        theta (float): Inclination of n.a. respect to y axis
-            (Optional, default = 0).
-        num_1 (int): Number of strain profiles in field 1
-            (Optional, default = 1).
-        num_2 (int): Number of strain profiles in field 2
-            (Optional, default = 2).
-        num_3 (int): Number of strain profiles in field 3
-            (Optional, default = 15).
-        num_4 (int): Number of strain profiles in field 4
-            (Optional, default = 10).
-        num_5 (int): Number of strain profiles in field 5
-            (Optional, default = 3).
-        num_6 (int): Number of strain profiles in field 6
-            (Optional, default = 4).
-        num (int): Total number of strain profiles (Optional, default = None).
-            If specified num and num_1, ..., num_6 the total number of num
-            may be different.
-        type_1 (literal): Type of spacing for field 1.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_2 (literal): Type of spacing for field 2.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_3 (literal): Type of spacing for field 3.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_4 (literal): Type of spacing for field 4.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_5 (literal): Type of spacing for field 5.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_6 (literal): Type of spacing for field 6.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
+            theta (float): Inclination of n.a. respect to y axis
+                (Optional, default = 0).
+            num_1 (int): Number of strain profiles in field 1
+                (Optional, default = 1).
+            num_2 (int): Number of strain profiles in field 2
+                (Optional, default = 2).
+            num_3 (int): Number of strain profiles in field 3
+                (Optional, default = 15).
+            num_4 (int): Number of strain profiles in field 4
+                (Optional, default = 10).
+            num_5 (int): Number of strain profiles in field 5
+                (Optional, default = 3).
+            num_6 (int): Number of strain profiles in field 6
+                (Optional, default = 4).
+            num (int): Total number of strain profiles (Optional, default =
+                None). If specified num and num_1, ..., num_6 the total number
+                of num may be different.
+            type_1 (str): Type of spacing for field 1. 'linear' for a
+                linear spacing, 'geometric' for a geometric spacing 'quadratic'
+                for a quadratic spacing (default = 'linear').
+            type_2 (str): Type of spacing for field 2 (default = 'linear'). See
+                type_1 for options.
+            type_3 (str): Type of spacing for field 3 (default = 'geometric').
+                See type_1 for options.
+            type_4 (str): Type of spacing for field 4 (default = 'linear'). See
+                type_1 for options.
+            type_5 (str): Type of spacing for field 5 (default = 'linear'). See
+                type_1 for options.
+            type_6 (str): Type of spacing for field 6 (default = 'linear'). See
+                type_1 for options.
 
-        Return:
-        (NmInteractionDomain)
+        Returns:
+            (NmInteractionDomain)
         """
         # Prepare the results
         res = s_res.NMInteractionDomain()
@@ -962,38 +957,33 @@ class GenericSectionCalculator(SectionCalculator):
     ):
         """Return an array of ultimate strain profiles.
 
-        Args:
-        theta (float): The angle of neutral axis.
-        num_1 (int): Number of strain profiles in field 1
-            (Optional, default = 1).
-        num_2 (int): Number of strain profiles in field 2
-            (Optional, default = 2).
-        num_3 (int): Number of strain profiles in field 3
-            (Optional, default = 15).
-        num_4 (int): Number of strain profiles in field 4
-            (Optional, default = 10).
-        num_5 (int): Number of strain profiles in field 5
-            (Optional, default = 3).
-        num_6 (int): Number of strain profiles in field 6
-            (Optional, default = 4).
-        type_1 (literal): Type of spacing for field 1.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_2 (literal): Type of spacing for field 2.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_3 (literal): Type of spacing for field 3.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_4 (literal): Type of spacing for field 4.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_5 (literal): Type of spacing for field 5.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_6 (literal): Type of spacing for field 6.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
+        Arguments:
+            theta (float): The angle of neutral axis.
+            num_1 (int): Number of strain profiles in field 1
+                (Optional, default = 1).
+            num_2 (int): Number of strain profiles in field 2
+                (Optional, default = 2).
+            num_3 (int): Number of strain profiles in field 3
+                (Optional, default = 15).
+            num_4 (int): Number of strain profiles in field 4
+                (Optional, default = 10).
+            num_5 (int): Number of strain profiles in field 5
+                (Optional, default = 3).
+            num_6 (int): Number of strain profiles in field 6
+                (Optional, default = 4).
+            type_1 (literal): Type of spacing for field 1. 'linear' for a
+                linear spacing, 'geometric' for a geometric spacing 'quadratic'
+                for a quadratic spacing (Optional default = 'linear').
+            type_2 (literal): Type of spacing for field 2 (default = 'linear').
+                See type_1 for options.
+            type_3 (literal): Type of spacing for field 3 (default =
+                'geometric'). See type_1 for options.
+            type_4 (literal): Type of spacing for field 4 (default = 'linear').
+                See type_1 for options.
+            type_5 (literal): Type of spacing for field 5 (default = 'linear').
+                See type_1 for options.
+            type_6 (literal): Type of spacing for field 6 (default = 'linear').
+                See type_1 for options.
         """
         rotated_geom = self.section.geometry.rotate(-theta)
 
@@ -1123,45 +1113,40 @@ class GenericSectionCalculator(SectionCalculator):
     ) -> s_res.NMMInteractionDomain:
         """Calculates the NMM interaction domain.
 
-        Args:
-        num_theta (int): Number of discretization of angle of neutral axis
-            (Optional, Default = 32).
-        num_1 (int): Number of strain profiles in field 1
-            (Optional, default = 1).
-        num_2 (int): Number of strain profiles in field 2
-            (Optional, default = 2).
-        num_3 (int): Number of strain profiles in field 3
-            (Optional, default = 15).
-        num_4 (int): Number of strain profiles in field 4
-            (Optional, default = 10).
-        num_5 (int): Number of strain profiles in field 5
-            (Optional, default = 3).
-        num_6 (int): Number of strain profiles in field 6
-            (Optional, default = 4).
-        num (int): Total number of strain profiles (Optional, default = None).
-            If specified num and num_1, ..., num_6 the total number of num
-            may be different.
-        type_1 (literal): Type of spacing for field 1.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_2 (literal): Type of spacing for field 2.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_3 (literal): Type of spacing for field 3.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_4 (literal): Type of spacing for field 4.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_5 (literal): Type of spacing for field 5.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
-        type_6 (literal): Type of spacing for field 6.
-            'linear' for a linear spacing, 'geometric' for a geometric spacing
-            'quadratic' for a quadratic spacing (Optional default = 'linear').
+        Arguments:
+            num_theta (int): Number of discretization of angle of neutral axis
+                (Optional, Default = 32).
+            num_1 (int): Number of strain profiles in field 1
+                (Optional, default = 1).
+            num_2 (int): Number of strain profiles in field 2
+                (Optional, default = 2).
+            num_3 (int): Number of strain profiles in field 3
+                (Optional, default = 15).
+            num_4 (int): Number of strain profiles in field 4
+                (Optional, default = 10).
+            num_5 (int): Number of strain profiles in field 5
+                (Optional, default = 3).
+            num_6 (int): Number of strain profiles in field 6
+                (Optional, default = 4).
+            num (int): Total number of strain profiles (Optional, default =
+                None). If specified num and num_1, ..., num_6 the total number
+                of num may be different.
+            type_1 (literal): Type of spacing for field 1. 'linear' for a
+                linear spacing, 'geometric' for a geometric spacing 'quadratic'
+                for a quadratic spacing (Optional default = 'linear').
+            type_2 (literal): Type of spacing for field 2 (default = 'linear').
+                See type_1 for options.
+            type_3 (literal): Type of spacing for field 3 (default =
+                'geometric'). See type_1 for options.
+            type_4 (literal): Type of spacing for field 4 (default = 'linear').
+                See type_1 for options.
+            type_5 (literal): Type of spacing for field 5 (default = 'linear').
+                See type_1 for options.
+            type_6 (literal): Type of spacing for field 6 (default = 'linear').
+                See type_1 for options.
 
         Return:
-        (NMMInteractionDomain)
+            (NMMInteractionDomain)
         """
         res = s_res.NMMInteractionDomain()
         res.num_theta = num_theta
