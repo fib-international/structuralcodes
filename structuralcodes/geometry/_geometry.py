@@ -155,11 +155,12 @@ class PointGeometry(Geometry):
         self._density = density
         if isinstance(material, Material):
             self._density = material.density
-            material = material.constitutive_law
+            self._material = material.constitutive_law
+        elif isinstance(material, ConstitutiveLaw):
+            self._material = material
 
         self._point = point
         self._diameter = diameter
-        self._material = material
         self._area = np.pi * diameter**2 / 4.0
 
     @property
@@ -173,7 +174,7 @@ class PointGeometry(Geometry):
         return self._area
 
     @property
-    def material(self) -> Material:
+    def material(self) -> ConstitutiveLaw:
         """Returns the point material."""
         return self._material
 
@@ -591,7 +592,7 @@ def _process_geometries_multipolygon(
     materials: t.Optional[
         t.Union[t.List[Material], Material, ConstitutiveLaw]
     ],
-) -> list:
+) -> list[Geometry]:
     """Process geometries for initialization."""
     checked_geometries = []
     # a MultiPolygon is provided
@@ -635,6 +636,8 @@ class CompoundGeometry(Geometry):
     it is basicaly a set of geometries, each one with its
     own materials and properties.
     """
+
+    geometries: t.List[Geometry]
 
     def __init__(
         self,
