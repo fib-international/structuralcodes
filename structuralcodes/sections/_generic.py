@@ -898,7 +898,7 @@ class GenericSectionCalculator(SectionCalculator):
                 type_1 for options.
 
         Returns:
-            (NmInteractionDomain)
+            NMInteractionDomain: The calculation results.
         """
         # Prepare the results
         res = s_res.NMInteractionDomain()
@@ -1161,7 +1161,7 @@ class GenericSectionCalculator(SectionCalculator):
                 See type_1 for options.
 
         Returns:
-            (NMMInteractionDomain)
+            NMInteractionDomain: The calculation results.
         """
         res = s_res.NMMInteractionDomain()
         res.num_theta = num_theta
