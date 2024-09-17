@@ -77,9 +77,9 @@ class FiberIntegrator(SectionIntegrator):
 
         Returns:
             Tuple(List, Dict): The prepared input representing a list with
-                x-coordinates, y-coordinates and force for each fiber and a
-                dictionary containing the triangulation data that can be stored
-                and used later to avoid repetition of triangulation.
+            x-coordinates, y-coordinates and force for each fiber and a
+            dictionary containing the triangulation data that can be stored and
+            used later to avoid repetition of triangulation.
         """
         # This method should:
         #  - discretize the section in a number of fibers (mesh_size)

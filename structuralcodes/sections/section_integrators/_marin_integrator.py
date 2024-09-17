@@ -36,10 +36,9 @@ class MarinIntegrator(SectionIntegrator):
 
         Returns:
             Tuple(float, Tuple(ndarray, ndarray, ndarray)): The prepared input
-                represented as the angle of rotation computed (needed for
-                rotating back the resultants) and as a tuple with 3 ndarryas
-                collecting respectivelly y, z and stress coefficients for each
-                sub-part.
+            represented as the angle of rotation computed (needed for rotating
+            back the resultants) and as a tuple with 3 ndarrys collecting
+            respectively y, z and stress coefficients for each sub-part.
         """
         # This method should do the following tasks:
         # - For each geo:
