@@ -1,6 +1,7 @@
 """Results."""
 
-# import typing as t
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 from dataclasses import dataclass, field, fields
 
 from numpy.typing import ArrayLike
@@ -105,7 +106,7 @@ class GrossProperties:
         """Defines the format for returning the string representation.
 
         Arguments:
-        spec: the string specifying the format
+            spec (str): The string specifying the format.
         """
         output_string = 'Gross Concrete Section Properties:\n'
         for f in fields(self):
@@ -119,8 +120,7 @@ class GrossProperties:
         return output_string
 
     def __str__(self) -> str:
-        """Returns the informal string representation.
-        Returns the informal string representation of the gross concrete
+        """Returns the informal string representation of the gross concrete
         section properties.
         """
         return f'{self}'
@@ -142,9 +142,9 @@ class CrackedProperties:
 
 @dataclass
 class MomentCurvatureResults:
-    """class for storing moment curvature results
-    the analysis will be done in general for a given inclination
-    of n.a.
+    """Class for storing moment curvature results.
+
+    The analysis will be done in general for a given inclination of n.a.
     """
 
     theta: float = 0  # the inclination of n.a.
@@ -161,8 +161,8 @@ class MomentCurvatureResults:
 
 @dataclass
 class UltimateBendingMomentResults:
-    """class for storing the ultimate bending moment computation
-    for a given inclination of n.a. and axial load.
+    """Class for storing the ultimate bending moment computation for a given
+    inclination of n.a. and axial load.
     """
 
     theta: float = 0  # the inclination of n.a.

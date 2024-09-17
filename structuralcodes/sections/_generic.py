@@ -1,6 +1,6 @@
 """Generic class section implemenetation."""
 
-from __future__ import annotations
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import typing as t
 import warnings
@@ -26,21 +26,19 @@ from .section_integrators import integrator_factory
 class GenericSection(Section):
     """This is the implementation of the generic class section.
 
-    The section is a 2D geometry where Y axis is horizontal while
-    Z axis is vertical.
-    The moments and curvatures around Y and Z axes are assumed
-    positive according to RHR.
+    The section is a 2D geometry where Y axis is horizontal while Z axis is
+    vertical.
+
+    The moments and curvatures around Y and Z axes are assumed positive
+    according to RHR.
 
     Attributes:
-        geometry: (SurfaceGeometry or CompoundGeometry)
-            the geometry of the section
-        name: (str) the name of the section
-        section_calculator: (GenericSectionCalculator)
-            the object responsible for performing different
-            calculations on the section (e.g. bending strength,
-            moment curvature, etc.)
-        gross_properties: (GrossProperties)
-            the results of gross properties computation
+        geometry (Union(SurfaceGeometry, CompoundGeometry)): The geometry of
+            the section.
+        name (str): The name of the section.
+        section_calculator (GenericSectionCalculator): The object responsible
+            for performing different calculations on the section (e.g. bending
+            strength, moment curvature, etc.).
     """
 
     def __init__(
@@ -50,6 +48,14 @@ class GenericSection(Section):
         integrator: t.Literal['marin', 'fiber'] = 'marin',
         **kwargs,
     ) -> None:
+        """Initialize a GenericSection.
+
+        Arguments:
+            geometry (Union(SurfaceGeometry, CompoundGeometry)): The geometry
+                of the section.
+            name (str): The name of the section.
+            integrator (str): The name of the SectionIntegrator to use.
+        """
         if name is None:
             name = 'GenericSection'
         super().__init__(name)
@@ -76,24 +82,25 @@ class GenericSection(Section):
 
 
 class GenericSectionCalculator(SectionCalculator):
-    """Calculator class implementing analysis algortims for
-    Code checks.
-    """
+    """Calculator class implementing analysis algorithms for code checks."""
 
     def __init__(
-        self, sec: GenericSection, integrator: str = 'Marin', **kwargs
+        self,
+        sec: GenericSection,
+        integrator: t.Literal['marin', 'fiber'] = 'marin',
+        **kwargs,
     ) -> None:
         """Initialize the GenericSectionCalculator.
 
-        Args:
-            section (SectionCalculator): the section object.
-            integrator (str): the integrator to be used for computations
-                            (default = 'marin')
+        Arguments:
+            section (GenericSection): The section object.
+            integrator (str): The SectionIntegrator to be used for computations
+                (default = 'marin').
 
         Note:
-            when using 'fiber' integrator the kwarg 'mesh_size' can be used
-            to specify a dimensionless number (between 0 and 1) specifying
-            the size of the resulting mesh.
+            When using 'fiber' integrator the kwarg 'mesh_size' can be used to
+            specify a dimensionless number (between 0 and 1) specifying the
+            size of the resulting mesh.
         """
         super().__init__(section=sec)
         # Select the integrator if specified
@@ -109,11 +116,11 @@ class GenericSectionCalculator(SectionCalculator):
     def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
         """Calculates the gross section properties of the GenericSection.
 
-        This function is private and called when the section is created
+        This function is private and called when the section is created.
         It stores the result into the result object.
 
         Returns:
-        gross_section_properties (GrossSection)
+            GrossProperties: The gross properties of the section.
         """
         # It will use the algorithms for generic sections
         gp = s_res.GrossProperties()
@@ -267,21 +274,18 @@ class GenericSectionCalculator(SectionCalculator):
 
         This is found from all ultimate strains for all materials, checking
         the minimum value of curvature.
-        It returns a tuple with:
-        1. Value of y coordinate for negative failure
-        2. Value of y coordinate for positive failure
-        3. Strain profile as a list with three values: axial strain, curvature
-           y*, curvature z* (assumed zero since in the rotated frame y*z* it is
-           a case of uniaxial bending).
 
-        Args:
-            geom: the compund geometry
-            yielding: (bool, default = False) consider yielding instead of
-                ultimate strain
+        Arguments:
+            geom (CompoundGeometry): The compund geometry.
+            yielding (bool): consider yielding instead of ultimate strain,
+                default = False.
 
         Returns:
-            Returns a tuple (float, float, float) that define the strain
-            distribution
+            Tuple(float, float, List): It returns a tuple with, 1) Value of y
+            coordinate for negative failure, 2) Value of y coordinate for
+            positive failure, 3) Strain profile as a list with three values:
+            axial strain, curvature y*, curvature z* (assumed zero since in the
+            rotated frame y*z* it is a case of uniaxial bending).
         """
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
@@ -323,12 +327,15 @@ class GenericSectionCalculator(SectionCalculator):
         raised respectively.
 
         Arguments:
-        geom: (CompoundGeometry) A geometry in the rotated reference system
-        n: (float) value of external axial force needed to be equilibrated
+            geom (CompoundGeometry): A geometry in the rotated reference
+                system.
+            n (float): Value of external axial force needed to be equilibrated.
+            yielding (bool): ...
 
         Returns:
-        strain: list of 3 floats. Axial strain at (0,0) curvatures of y* and z*
-            axes. Note that being uniaxial bending, curvature along z* is 0.0
+            Tuple(float, float, float): 3 floats: Axial strain at (0,0), and
+            curvatures of y* and z* axes. Note that being uniaxial bending,
+            curvature along z* is 0.0.
         """
         # Number of maximum iteration for the bisection algorithm
         ITMAX = 100
@@ -408,8 +415,8 @@ class GenericSectionCalculator(SectionCalculator):
         """Perfind range where the curvature equilibrium is located.
 
         This algorithms quickly finds a position of NA that guaranteed the
-        existence of at least one zero in the function dn vs. curv in order
-        to apply the bisection algorithm.
+        existence of at least one zero in the function dn vs. curv in order to
+        apply the bisection algorithm.
         """
         ITMAX = 20
         sign = -1 if dn_a > 0 else 1
@@ -443,16 +450,21 @@ class GenericSectionCalculator(SectionCalculator):
 
     def find_equilibrium_fixed_curvature(
         self, geom: CompoundGeometry, n: float, curv: float, eps_0: float
-    ):
+    ) -> t.Tuple[float, float, float]:
         """Find strain profile with equilibrium with fixed curvature.
-        Given curvature and external axial force, find the strain profile
-        that makes internal and external axial force in equilibrium.
+
+        Given curvature and external axial force, find the strain profile that
+        makes internal and external axial force in equilibrium.
 
         Arguments:
-        geom: (CompounGeometry) the geometry
-        n: (float) the external axial load
-        curv: (float) the value of curvature
-        eps_0: (float) a first attempt for neutral axis position
+            geom (CompounGeometry): The geometry.
+            n (float): The external axial load.
+            curv (float): The value of curvature.
+            eps_0 (float): A first attempt for neutral axis position.
+
+        Returns:
+            Tuple(float, float, float): The axial strain and the two
+            curvatures.
         """
         # Useful for Moment Curvature Analysis
         # Number of maximum iteration for the bisection algorithm
@@ -502,13 +514,13 @@ class GenericSectionCalculator(SectionCalculator):
             s = f'Last iteration reached a unbalance of: \
                 dn_c = {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        return [eps_0_c, curv, 0]
+        return eps_0_c, curv, 0
 
     def calculate_limit_axial_load(self):
         """Compute maximum and minimum axial load.
 
         Returns:
-            (float, float) Minimum and Maximum axial load.
+            Tuple(float, float): Minimum and Maximum axial load.
         """
         # Find balanced failure to get strain limits
         y_n, y_p, strain = self.get_balanced_failure_strain(
@@ -548,7 +560,11 @@ class GenericSectionCalculator(SectionCalculator):
         return self._n_max
 
     def check_axial_load(self, n: float):
-        """Check if axial load n is within section limits."""
+        """Check if axial load n is within section limits.
+
+        Raises:
+            ValueError: If axial load cannot be carried by the section.
+        """
         if n < self.n_min or n > self.n_max:
             error_str = f'Axial load {n} cannot be taken by section.\n'
             error_str += f'n_min = {self.n_min} / n_max = {self.n_max}'
@@ -571,16 +587,13 @@ class GenericSectionCalculator(SectionCalculator):
     ) -> t.Tuple[float, float, float]:
         """Integrate a strain profile returning internal forces.
 
-        Args:
-            strain: (Array like) represents the deformation plane
-                    the strain should have three entries representing
-                    respectively:
-                    axial strain (At 0,0 coordinates)
-                    curv_y
-                    curv_z
+        Arguments:
+            strain (ArrayLike): Represents the deformation plane. The strain
+                should have three entries representing respectively: axial
+                strain (At 0,0 coordinates), curv_y, curv_z.
 
         Returns:
-            (float, float, float) N, My and Mz
+            Tuple(float, float, float): N, My and Mz.
         """
         N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
@@ -593,17 +606,17 @@ class GenericSectionCalculator(SectionCalculator):
     def calculate_bending_strength(
         self, theta=0, n=0
     ) -> s_res.UltimateBendingMomentResults:
-        """Calculates the bending strength for given inclination of n.a.
-        and axial load.
+        """Calculates the bending strength for given inclination of n.a. and
+        axial load.
 
         Arguments:
-        theta (float, default = 0): inclination of n.a. respect to section
-            y axis
-        n (float, default = 0): axial load applied to the section
-            (+: tension, -: compression)
+            theta (float): Inclination of n.a. respect to section y axis,
+                default = 0.
+            n (float): Axial load applied to the section (+: tension, -:
+                compression), default = 0.
 
-        Return:
-        ultimate_bending_moment_result (UltimateBendingMomentResult)
+        Returns:
+            UltimateBendingMomentResults: The results from the calculation.
         """
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
@@ -654,23 +667,25 @@ class GenericSectionCalculator(SectionCalculator):
         n.a. and axial load.
 
         Arguments:
-        theta (float, default = 0): inclination of n.a. respect to y axis
-        n (float, default = 0): axial load applied to the section (+: tension,
-            -: compression)
-        chi_first (float, default = 1e-8): the first value of the curvature
-        num_pre_yield (int, default = 10): Number of points before yielding.
-            Note that the yield curvature will be at the num_pre_yield-th point
-            in the result array.
-        num_post_yield (int, default = 10): Number of points after yielding
-        chi (Optional[ArrayLike], default = None): An ArrayLike with curvatures
-            to calculate the moment response for. If chi is None, the array is
-            constructed from chi_first, num_pre_yield and num_post_yield. If
-            chi is not None, chi_first, num_pre_yield and num_post_yield are
-            disregarded, and the provided chi is used directly in the
-            calculations.
+            theta (float): Inclination of n.a. respect to y axis, default = 0.
+            n (float): Axial load applied to the section (+: tension, -:
+                compression), default = 0.
+            chi_first (float): The first value of the curvature, default =
+                1e-8.
+            num_pre_yield (int): Number of points before yielding. Note that
+                the yield curvature will be at the num_pre_yield-th point in
+                the result array, default = 10.
+            num_post_yield (int): Number of points after yielding, default =
+                10.
+            chi (Optional[ArrayLike]): An ArrayLike with curvatures to
+                calculate the moment response for. If chi is None, the array is
+                constructed from chi_first, num_pre_yield and num_post_yield.
+                If chi is not None, chi_first, num_pre_yield and num_post_yield
+                are disregarded, and the provided chi is used directly in the
+                calculations.
 
-        Return:
-        moment_curvature_result (MomentCurvatureResults)
+        Returns:
+            MomentCurvatureResults: The calculation results.
         """
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
@@ -883,7 +898,7 @@ class GenericSectionCalculator(SectionCalculator):
                 type_1 for options.
 
         Returns:
-            (NmInteractionDomain)
+            NMInteractionDomain: The calculation results.
         """
         # Prepare the results
         res = s_res.NMInteractionDomain()
@@ -1145,8 +1160,8 @@ class GenericSectionCalculator(SectionCalculator):
             type_6 (literal): Type of spacing for field 6 (default = 'linear').
                 See type_1 for options.
 
-        Return:
-            (NMMInteractionDomain)
+        Returns:
+            NMInteractionDomain: The calculation results.
         """
         res = s_res.NMMInteractionDomain()
         res.num_theta = num_theta
@@ -1210,11 +1225,11 @@ class GenericSectionCalculator(SectionCalculator):
         """Calculate the My-Mz interaction domain.
 
         Arguments:
-        n (float, default = 0): axial force
-        n_theta (int, default = 32): number of discretization for theta
+            n (float): Axial force, default = 0.
+            n_theta (int): Number of discretization for theta, default = 32.
 
         Return:
-        (MMInteractionDomain)
+            MMInteractionDomain: The calculation results.
         """
         # Prepare the results
         res = s_res.MMInteractionDomain()

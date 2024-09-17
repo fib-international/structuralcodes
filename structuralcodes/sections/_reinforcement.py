@@ -21,16 +21,17 @@ def add_reinforcement(
 ) -> CompoundGeometry:
     """Add a single bar given coordinate.
 
-    Args:
-        geo: a geometry (SurfaceGeometry or CompoundGeometry) to
-            which add reinforcement
-        coords: a tuple with cordinates of bar
-        diameter: the diameter of the reinforcement
-        material: a material or a constitutive law for the behavior
-            of the reinforcement
+    Arguments:
+        geo (Union(SurfaceGeometry, CompoundGeometry)): A geometry to which add
+            reinforcement.
+        coords (Tuple(float, float)): A tuple with cordinates of bar.
+        diameter (float): The diameter of the reinforcement.
+        material (Union(Material, ConstitutiveLaw)): A material or a
+            constitutive law for the behavior of the reinforcement.
 
     Returns:
-        the resulting compound geometry
+        CompoundGeometry: A compound geometry with the original geometry and
+        the reinforcement.
     """
     bar = PointGeometry(Point(coords), diameter, material)
     return geo + bar
@@ -49,22 +50,29 @@ def add_reinforcement_line(
 ) -> CompoundGeometry:
     """Adds a set of bars distributed in a line.
 
-    Args:
-        geo: the geometry used as input
-        coords_i: coordinates of the initial point of line
-        coords_j: coordinates of the final point of line
-        diamter: the diameter of the bars
-        material: a valid material or constitutive law
-        n: the number of bars to be distributed inside the line (default = 0)
-        s: the distance between the bars (default = 0)
-        first: boolean indicating if placing the first bar (default = True)
-        last: boolean indicating if placing the last bar (default = True)
+    Arguments:
+        geo (Union(SurfaceGeometry, CompoundGeometry)): The geometry used as
+            input.
+        coords_i (Tuple(float, float)): Coordinates of the initial point of
+            line.
+        coords_j (Tuple(float, float)): Coordinates of the final point of line.
+        diamter (float): The diameter of the bars.
+        material (Union(Material, ConstitutiveLaw)): A valid material or
+            constitutive law.
+        n (int): The number of bars to be distributed inside the line (default
+            = 0).
+        s (float): The distance between the bars (default = 0).
+        first (bool): Boolean indicating if placing the first bar (default =
+            True).
+        last (bool): Boolean indicating if placing the last bar (default =
+            True).
 
     Note:
-        at least n or s should be greater than zero
+        At least n or s should be greater than zero.
 
     Returns:
-        compound geometry
+        CompoundGeometry: A compound geometry with the original geometry and
+        the reinforcement.
     """
     from math import floor
 

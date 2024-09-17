@@ -33,7 +33,7 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
 
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
-            desnsity (float): Density of material in kg/m3 (default: 7850).
+            density (float): Density of material in kg/m3 (default: 7850).
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
