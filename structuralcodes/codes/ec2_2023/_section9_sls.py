@@ -7,7 +7,7 @@ from ._annexB_time_dependent import alpha_c
 from ._section5_materials import fcm, fctm
 
 
-def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
+def Ec_eff(fcm: float, phi: float, kE: float = 9500) -> float:
     """Returns de effective modulus of elasticity from fcm and phi.
 
     EN 1992-1-1:2023, Eq. (9.1).
@@ -22,8 +22,8 @@ def Ec_eff(fcm_: float, phi: float, kE: float = 9500) -> float:
     Returns:
         float: The effective modulus of elastiticy in MPa.
     """
-    Ecm = kE * fcm_ ** (1 / 3)
-    return alpha_c(fcm_) * Ecm / (1 + phi)
+    Ecm = kE * fcm ** (1 / 3)
+    return alpha_c(fcm) * Ecm / (1 + phi)
 
 
 def As_min_y(
@@ -87,7 +87,7 @@ def kh(b: float, h: float) -> float:
 
 
 def wk_cal2(
-    kw: float, k_1_r_: float, srm_cal_: float, epssm_epscm_: float
+    kw: float, k_1_r: float, srm_cal: float, epssm_epscm: float
 ) -> float:
     """Returns the calculated characteristic crack width.
 
@@ -96,18 +96,18 @@ def wk_cal2(
     Args:
         kw (float): Factor that converts the mean crack spacing to a
             characteristic value.
-        k_1_r_ (float): Factor accounting for the effect of curvature on crack
+        k_1_r (float): Factor accounting for the effect of curvature on crack
             width - can be determined using the function k_1_r.
-        srm_cal_ (float): Mean crack spacing - can be determined using the
+        srm_cal (float): Mean crack spacing - can be determined using the
             function srm_cal.
-        epssm_epscm_ (float): Mean diference of strain between steel and
+        epssm_epscm (float): Mean diference of strain between steel and
             concrete - can be determined using the function epssm_epscm.
 
     Returns:
         float: The calculated characteristic crack width in in units consistent
         with srm_cal.
     """
-    return kw * k_1_r_ * srm_cal_ * epssm_epscm_
+    return kw * k_1_r * srm_cal * epssm_epscm
 
 
 def k_1_r(h: float, x: float, ay: float) -> float:

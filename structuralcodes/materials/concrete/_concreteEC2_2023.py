@@ -293,9 +293,9 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             float: k coefficient for Sargin constitutive law.
         """
         self._k_sargin = self._k_sargin or ec2_2023.k_sargin(
-            _Ecm=self.Ecm,
-            _fcm=self.fcm,
-            _eps_c1=self.eps_c1,
+            Ecm=self.Ecm,
+            fcm=self.fcm,
+            eps_c1=self.eps_c1,
         )
         return self._k_sargin
 

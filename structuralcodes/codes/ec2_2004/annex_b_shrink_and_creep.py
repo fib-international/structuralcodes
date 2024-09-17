@@ -65,7 +65,7 @@ def phi(
     return phi_0 * _beta_c
 
 
-def beta_c(t0: float, t: float, _beta_H: float) -> float:
+def beta_c(t0: float, t: float, beta_H: float) -> float:
     """Calculates the factor beta_c.
 
     EN 1992-1-1:2004, Eq. (B.7).
@@ -73,12 +73,12 @@ def beta_c(t0: float, t: float, _beta_H: float) -> float:
     Args:
         t0 (float): The concrete age in days a the time of loading.
         t (float): The concrete age at the evaluated time.
-        _beta_H: Parameter defined in (B.8).
+        beta_H: Parameter defined in (B.8).
 
     Returns:
         float: Parameter defined by Equation (B.7), beta_c.
     """
-    return ((t - t0) / (_beta_H + t - t0)) ** 0.3
+    return ((t - t0) / (beta_H + t - t0)) ** 0.3
 
 
 def t0_adj(t0: float, alpha_cement: float) -> float:

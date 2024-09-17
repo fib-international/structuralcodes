@@ -708,4 +708,4 @@ def test_k_sargin(Ecm, fcm, epsc1, expected):
 def test_k_sargin_raises_errors(Ecm, fcm, epsc1):
     """Test k_sargin raises errors."""
     with pytest.raises(ValueError):
-        _section5_materials.k_sargin(_Ecm=Ecm, _fcm=fcm, _eps_c1=epsc1)
+        _section5_materials.k_sargin(Ecm=Ecm, fcm=fcm, eps_c1=epsc1)

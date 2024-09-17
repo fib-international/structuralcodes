@@ -65,7 +65,7 @@ def w_max(
 
 
 def As_min(
-    A_ct: float, sigma_s: float, fct_eff: float, _k: float, kc: float
+    A_ct: float, sigma_s: float, fct_eff: float, k: float, kc: float
 ) -> float:
     """Computes the minimum area of reinforcing steel within the tensile zone
     for control of cracking areas.
@@ -86,7 +86,7 @@ def As_min(
             the concrete effective at the time when the cracks may first be
             expected to occur: fct,eff=fct or lower (fct(t)), is cracking
             is expected earlier than 28 days.
-        _k (float): is the coefficient which allow for the effect of
+        k (float): is the coefficient which allow for the effect of
             non-uniform self-equilibrating stresses, which lead to a
             reduction of restraint forces.
             k=1 for webs w<=300mm or flanges widths less than 300mm
@@ -101,7 +101,7 @@ def As_min(
         mm2.
 
     Raises:
-        ValueError: if _k value is not between 0.65 and 1 or kc is not
+        ValueError: if k value is not between 0.65 and 1 or kc is not
             larger than 0 and lower than 1.
     """
     fct_eff = abs(fct_eff)
@@ -110,12 +110,12 @@ def As_min(
         raise ValueError(f'A_ct={A_ct} must be larger than 0')
     if sigma_s < 0:
         raise ValueError(f'sigma_s={sigma_s} must be equal or larger than 0')
-    if _k < 0.65 or _k > 1.0:
-        raise ValueError(f'_k={_k} must be between 0.65 and 1')
+    if k < 0.65 or k > 1.0:
+        raise ValueError(f'k={k} must be between 0.65 and 1')
     if kc > 1 or kc < 0:
         raise ValueError(f'kc={kc} must be lower than 1 and larger than 0')
 
-    return kc * _k * fct_eff * A_ct / sigma_s
+    return kc * k * fct_eff * A_ct / sigma_s
 
 
 def k(h: float) -> float:
@@ -192,10 +192,10 @@ def kc_rect_area(h: float, b: float, fct_eff: float, N_ed: float) -> float:
         raise ValueError(f'b={b} should be larger than 0mm')
 
     h_s = min(h, 1000)
-    _k1 = 1.5 if N_ed >= 0 else 2 * h_s / 3 / h
+    k1 = 1.5 if N_ed >= 0 else 2 * h_s / 3 / h
     s_concrete = N_ed * 1000 / b / h
     h_ratio = h / h_s
-    return min(max(0.4 * (1 - s_concrete / _k1 / h_ratio / fct_eff), 0), 1)
+    return min(max(0.4 * (1 - s_concrete / k1 / h_ratio / fct_eff), 0), 1)
 
 
 def kc_flanges_area(f_cr: float, A_ct: float, fct_eff: float) -> float:
@@ -298,7 +298,7 @@ def As_min_p(
     A_ct: float,
     sigma_s: float,
     fct_eff: float,
-    _k: float,
+    k: float,
     kc: float,
     Ap: float,
     phi_s: float,
@@ -325,7 +325,7 @@ def As_min_p(
             the concrete effective at the time when the cracks may first be
             expected to occur: fct,eff=fct or lower (fct(t)), is cracking is
             expected earlier than 28 days.
-        _k (float): is the coefficient which allow for the effect of non-
+        k (float): is the coefficient which allow for the effect of non-
             uniform self-equilibrating stresses, which lead to a reduction of
             restraint forces. k=1 for webs w<=300mm or flanges widths less than
             300mm. k=0.65 for webs w>=800mm or flanges with widths greater than
@@ -348,7 +348,7 @@ def As_min_p(
         mm2.
 
     Raises:
-        ValueError: If _k value is not between 0.65 and 1 or kc is not larger
+        ValueError: If k value is not between 0.65 and 1 or kc is not larger
         than 0 and lower than 1. If diameters phi_s or phi_p are lower than 0.
         If ratio of bond xi strength is less than 0.15 or larger than 0.8. If
         stress variation incr_stress is less than 0.
@@ -363,12 +363,12 @@ def As_min_p(
         raise ValueError(f'A_ct={A_ct} must be larger than 0')
     if sigma_s < 0:
         raise ValueError(f'sigma_s={sigma_s} must be equal or larger than 0')
-    if _k < 0.65 or _k > 1.0:
-        raise ValueError(f'_k={_k} must be between 0.65 and 1')
+    if k < 0.65 or k > 1.0:
+        raise ValueError(f'k={k} must be between 0.65 and 1')
     if kc > 1 or kc < 0:
         raise ValueError(f'kc={kc} must be lower than 1 and larger than 0')
 
-    a1 = kc * _k * fct_eff * A_ct
+    a1 = kc * k * fct_eff * A_ct
     e1 = xi1(xi, phi_p, phi_s)
     a2 = e1 * Ap * delta_s
     a = a1 - a2
@@ -377,7 +377,7 @@ def As_min_p(
 
 
 def As_min_2(
-    _wk: float,
+    wk: float,
     sigma_s: float,
     fct_eff: float,
     h_cr: float,
@@ -392,7 +392,7 @@ def As_min_2(
     EUROCODE 2 1992-1-1:2004, Table (7.2N), Table (7.3N).
 
     Args:
-        _wk (float): the characteristic crack width value in mm.
+        wk (float): the characteristic crack width value in mm.
         sigma_s (float): the steel stress value in MPa under the relevant
             combination of actions.
         fct_eff (float): is the mean value of the tensile strength in MPa of
@@ -420,12 +420,12 @@ def As_min_2(
         position.
 
     Raises:
-        ValueError: If _wk, fct_eff, h_cr, h or d are less than 0.
+        ValueError: If wk, fct_eff, h_cr, h or d are less than 0.
         ValueError: If kc is not between 0 and 1.
         ValueError: If combination of wk and stress values are out of scope.
     """
-    if _wk < 0:
-        raise ValueError(f'_wk={_wk} cannot be less than 0')
+    if wk < 0:
+        raise ValueError(f'wk={wk} cannot be less than 0')
     if fct_eff < 0:
         raise ValueError(f'fct_eff={fct_eff} is less than 0')
     if h_cr < 0:
@@ -493,7 +493,7 @@ def As_min_2(
 
     points_phi = np.array(np.meshgrid(y_phi, x)).T.reshape(-1, 2)
     points_spa = np.array(np.meshgrid(y_spa, x)).T.reshape(-1, 2)
-    xi = (s, _wk)
+    xi = (s, wk)
 
     phi_star = float(
         scipy.interpolate.griddata(points_phi, phi_s_v, xi, method='linear')
@@ -508,7 +508,7 @@ def As_min_2(
     )
 
     if math.isnan(phi) or math.isnan(spa):
-        raise ValueError('Combination of _wk or stress values out of scope')
+        raise ValueError('Combination of wk or stress values out of scope')
 
     return phi, spa
 
@@ -536,14 +536,14 @@ def alpha_e(Es: float, Ecm: float) -> float:
     return Es / Ecm
 
 
-def rho_p_eff(As: float, _xi1: float, Ap: float, Ac_eff: float) -> float:
+def rho_p_eff(As: float, xi1: float, Ap: float, Ac_eff: float) -> float:
     """Effective bond ratio between areas.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.10).
 
     Args:
         As (float): Steel area in mm2.
-        _xi1 (float): The adjusted ratio of bond according to expression (7.5).
+        xi1 (float): The adjusted ratio of bond according to expression (7.5).
         Ap (float): The area in mm2 of post-tensioned tendons in ac_eff.
         Ac_eff (float): Effective area of concrete in tension surrounding the
             reinforcement or prestressing tendons of depth hc_eff.
@@ -556,14 +556,14 @@ def rho_p_eff(As: float, _xi1: float, Ap: float, Ac_eff: float) -> float:
     """
     if As < 0:
         raise ValueError(f'As={As} cannot be less than 0')
-    if _xi1 < 0:
-        raise ValueError(f'_xi1={_xi1} cannot be less than 0')
+    if xi1 < 0:
+        raise ValueError(f'xi1={xi1} cannot be less than 0')
     if Ap < 0:
         raise ValueError(f'Ap={Ap} cannot be less than 0')
     if Ac_eff < 0:
         raise ValueError(f'Ac_eff={Ac_eff} cannot be less than 0')
 
-    return (As + _xi1**2 * Ap) / Ac_eff
+    return (As + xi1**2 * Ap) / Ac_eff
 
 
 def kt(load_type: t.Literal['short', 'long']) -> float:
@@ -594,9 +594,9 @@ def kt(load_type: t.Literal['short', 'long']) -> float:
 
 def eps_sm_eps_cm(
     sigma_s: float,
-    _alpha_e: float,
-    _rho_p_eff: float,
-    _kt: float,
+    alpha_e: float,
+    rho_p_eff: float,
+    kt: float,
     fct_eff: float,
     Es: float,
 ) -> float:
@@ -615,10 +615,10 @@ def eps_sm_eps_cm(
             be replaced by increment of s_steel stress variation in
             prestressing tendons from the state of zero strain of the concrete
             at the same level.
-        _alpha_e (float): Is the ratio Es/Ecm.
-        _rho_p_eff (float): Effective bond ratio between areas given by Eq.
+        alpha_e (float): Is the ratio Es/Ecm.
+        rho_p_eff (float): Effective bond ratio between areas given by Eq.
             (7.10).
-        _kt (float): Is a factor dependent on the load duration.
+        kt (float): Is a factor dependent on the load duration.
         fct_eff (float): Is the mean value of the tensile strength in MPa of
             the concrete effective at the time when the cracks may first be
             expected to occur: fct_eff=fctm or fctm(t) if crack is expected
@@ -629,27 +629,27 @@ def eps_sm_eps_cm(
         float: The strain difference between concrete and steel.
 
     Raises:
-        ValueError: If any sigma_s, _alpha_e, _rho_p_eff, fct_eff or Es is less
+        ValueError: If any sigma_s, alpha_e, rho_p_eff, fct_eff or Es is less
             than 0.
-        ValueError: if _kt is not 0.6 and not 0.4.
+        ValueError: if kt is not 0.6 and not 0.4.
     """
     if sigma_s < 0:
         raise ValueError(f'sigma_s={sigma_s} cannot be less than 0')
-    if _alpha_e < 0:
-        raise ValueError(f'_alpha_e={_alpha_e} cannot be less than 0')
-    if _rho_p_eff < 0:
-        raise ValueError(f'_rho_p_eff={_rho_p_eff} cannot be less than 0')
+    if alpha_e < 0:
+        raise ValueError(f'alpha_e={alpha_e} cannot be less than 0')
+    if rho_p_eff < 0:
+        raise ValueError(f'rho_p_eff={rho_p_eff} cannot be less than 0')
     if fct_eff < 0:
         raise ValueError(f'fct_eff={fct_eff} cannot be less than 0')
     if Es < 0:
         raise ValueError(f'Es={Es} cannot be less than 0')
-    if _kt not in (0.6, 0.4):
-        raise ValueError(f'_kt={_kt} can only take as values 0.4 and 0.6')
+    if kt not in (0.6, 0.4):
+        raise ValueError(f'kt={kt} can only take as values 0.4 and 0.6')
 
     min_val = 0.6 * sigma_s / Es
 
-    a = 1 + _alpha_e * _rho_p_eff
-    b = _kt * fct_eff / _rho_p_eff * a
+    a = 1 + alpha_e * rho_p_eff
+    b = kt * fct_eff / rho_p_eff * a
     c = (sigma_s - b) / Es
 
     return max(c, min_val)
@@ -788,14 +788,17 @@ def k4():
     return 0.425
 
 
+K_COEFFICIENTS = {'k1': k1, 'k2': k2, 'k3': k3, 'k4': k4}
+
+
 def sr_max_close(
     c: float,
     phi: float,
-    _rho_p_eff: float,
-    _k1: float,
-    _k2: float,
-    _k3: t.Optional[float] = None,
-    _k4: t.Optional[float] = None,
+    rho_p_eff: float,
+    k1: float,
+    k2: float,
+    k3: t.Optional[float] = None,
+    k4: t.Optional[float] = None,
 ) -> float:
     """Computes the maximum crack spacing in cases where bonded reinforcement
     is fixed at reasonably close centres within the tension zone
@@ -807,49 +810,49 @@ def sr_max_close(
         c (float): Is the cover in mm of the longitudinal reinforcement.
         phi (float): Is the bar diameter in mm. Where mixed bar diameters used,
             then it should be replaced for an equivalent bar diameter.
-        _rho_p_eff (float): Effective bond ratio between areas given by Eq.
+        rho_p_eff (float): Effective bond ratio between areas given by Eq.
             (7.10).
-        _k1 (float): Coefficient that takes into account the bound properties
+        k1 (float): Coefficient that takes into account the bound properties
             of the bonded reinforcement.
-        _k2 (float): Coefficient that takes into account the distribution of of
+        k2 (float): Coefficient that takes into account the distribution of of
             the strain.
 
     Keyword Args:
-        _k3 (float, optional): Coefficient from the National Annex. If not
-            specified then _k3=3.4.
-        _k4 (float): Coefficient from the National Annex. If not specified then
-            _k4=0.425.
+        k3 (float, optional): Coefficient from the National Annex. If not
+            specified then k3=3.4.
+        k4 (float): Coefficient from the National Annex. If not specified then
+            k4=0.425.
 
     Returns:
         float: The maximum crack spaing in mm.
 
     Raises:
-        ValueError: If one or more of c, phi, _rho_p_eff, _k3 or _k4
+        ValueError: If one or more of c, phi, rho_p_eff, k3 or k4
             is lower than zero.
-        ValueError: If _k1 is not 0.8 or 1.6.
-        ValueError: If _k2 is not between 0.5 and 1.0.
+        ValueError: If k1 is not 0.8 or 1.6.
+        ValueError: If k2 is not between 0.5 and 1.0.
     """
-    if _k3 is None:
-        _k3 = k3()
-    if _k4 is None:
-        _k4 = k4()
+    if k3 is None:
+        k3 = K_COEFFICIENTS['k3']()
+    if k4 is None:
+        k4 = K_COEFFICIENTS['k4']()
 
     if c < 0:
         raise ValueError(f'c={c} cannot be less than zero')
     if phi < 0:
         raise ValueError(f'phi={phi} cannot be less than zero')
-    if _rho_p_eff < 0:
-        raise ValueError(f'_rho_p_eff={_rho_p_eff} cannot be less than zero')
-    if _k3 < 0:
-        raise ValueError(f'_k3={_k3} cannot be less than zero')
-    if _k4 < 0:
-        raise ValueError(f'_k4={_k4} cannot be less than zero')
-    if _k1 not in (0.8, 1.6):
-        raise ValueError(f'_k1={_k1} can only take as values 0.8 and 1.6')
-    if _k2 < 0.5 or _k2 > 1:
-        raise ValueError(f'_k2={_k2} is not between 0.5 and 1.0')
+    if rho_p_eff < 0:
+        raise ValueError(f'rho_p_eff={rho_p_eff} cannot be less than zero')
+    if k3 < 0:
+        raise ValueError(f'k3={k3} cannot be less than zero')
+    if k4 < 0:
+        raise ValueError(f'k4={k4} cannot be less than zero')
+    if k1 not in (0.8, 1.6):
+        raise ValueError(f'k1={k1} can only take as values 0.8 and 1.6')
+    if k2 < 0.5 or k2 > 1:
+        raise ValueError(f'k2={k2} is not between 0.5 and 1.0')
 
-    return _k3 * c + _k1 * _k2 * _k4 * phi / _rho_p_eff
+    return k3 * c + k1 * k2 * k4 * phi / rho_p_eff
 
 
 def sr_max_far(h: float, x: float) -> float:
@@ -910,14 +913,14 @@ def sr_max_theta(sr_max_y: float, sr_max_z: float, theta: float) -> float:
     return 1 / (a + b)
 
 
-def wk(sr_max: float, _eps_sm_eps_cm: float) -> float:
+def wk(sr_max: float, eps_sm_eps_cm: float) -> float:
     """Computes the crack width.
 
     EUROCODE 2 1992-1-1:2004, Eq. (7.8).
 
     Args:
         sr_max (float): The maximum crack length spacing in mm.
-        _eps_sm_eps_cm (float): the difference between the mean strain in the
+        eps_sm_eps_cm (float): the difference between the mean strain in the
             reinforcement under relevant combination of loads, including the
             effect of imposed deformations and taking into account tension
             stiffening and the mean strain in the concrete between cracks.
@@ -930,9 +933,9 @@ def wk(sr_max: float, _eps_sm_eps_cm: float) -> float:
     """
     if sr_max < 0:
         raise ValueError(f'sr_max={sr_max} cannot be less than zero')
-    if _eps_sm_eps_cm < 0:
+    if eps_sm_eps_cm < 0:
         raise ValueError(
-            f'_eps_sm_eps_cm={_eps_sm_eps_cm} cannot be less than zero'
+            f'eps_sm_eps_cm={eps_sm_eps_cm} cannot be less than zero'
         )
 
-    return sr_max * _eps_sm_eps_cm
+    return sr_max * eps_sm_eps_cm

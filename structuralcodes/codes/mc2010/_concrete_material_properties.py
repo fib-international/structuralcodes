@@ -62,34 +62,34 @@ def fctm(fck: float) -> float:
     return 2.12 * math.log(1 + 0.1 * fcm(fck))
 
 
-def fctkmin(_fctm: float) -> float:
+def fctkmin(fctm: float) -> float:
     """Compute the lower bound value of the characteristic tensile strength
     from the mean tensile strength.
 
     fib Model Code 2010, Eq. (5.1-4).
 
     Args:
-        _fctm (float): The mean tensile strength in MPa.
+        fctm (float): The mean tensile strength in MPa.
 
     Returns:
         float: Lower bound of the characteristic tensile strength in MPa.
     """
-    return 0.7 * _fctm
+    return 0.7 * fctm
 
 
-def fctkmax(_fctm: float) -> float:
+def fctkmax(fctm: float) -> float:
     """Compute the upper bound value of the characteristic tensile strength
     from the mean tensile strength.
 
     fib Model Code 2010, Eq. (5.1-5).
 
     Args:
-        _fctm (float): The mean tensile strength in MPa.
+        fctm (float): The mean tensile strength in MPa.
 
     Returns:
         float: Upper bound of the characteristic tensile strength in MPa.
     """
-    return 1.3 * _fctm
+    return 1.3 * fctm
 
 
 def Gf(fck: float) -> float:
@@ -108,7 +108,7 @@ def Gf(fck: float) -> float:
 
 
 def Eci(
-    _fcm: float,
+    fcm: float,
     agg_type: t.Literal[
         'basalt', 'quartzite', 'limestone', 'sandstone'
     ] = 'quartzite',
@@ -120,7 +120,7 @@ def Eci(
     Defined in fib Model Code 2010 (2013), Eq. 5.1-21.
 
     Args:
-        _fcm (float): The mean value of the compressive strength of the
+        fcm (float): The mean value of the compressive strength of the
             concrete in MPa.
 
     Keyword Args:
@@ -132,12 +132,12 @@ def Eci(
         float: The modulus of elasticity for normal weight concrete at 28 days
         in MPa.
     """
-    return EC0 * ALPHA_E[agg_type.lower()] * (_fcm / 10) ** (1 / 3)
+    return EC0 * ALPHA_E[agg_type.lower()] * (fcm / 10) ** (1 / 3)
 
 
 def beta_cc(
     time: npt.ArrayLike,
-    _fcm: float,
+    fcm: float,
     cem_class: t.Literal[
         '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'
     ],
@@ -150,52 +150,52 @@ def beta_cc(
     Args:
         time (numpy.typing.ArrayLike): The time in days at which the
             compressive strength is to be determined.
-        _fcm (float): The mean compressive strength of the concrete in MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
         cem_class (str): The cement strength class that is used. The choices
             are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
         numpy.ndarray: Multiplication factor beta_cc.
     """
-    if _fcm > 60:
+    if fcm > 60:
         return np.exp(0.2 * (1 - np.sqrt(28 / time)))
     return np.exp(S_CEM[cem_class.upper()] * (1 - np.sqrt(28 / time)))
 
 
-def beta_e(_beta_cc: npt.ArrayLike) -> np.ndarray:
+def beta_e(beta_cc: npt.ArrayLike) -> np.ndarray:
     """Calculate multiplication factor beta_e, used to determine the modulus of
     elasticity at an arbitrary time.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-57.
 
     Args:
-        _beta_cc (numpy.typing.ArrayLike): Multiplication factor as defined in
+        beta_cc (numpy.typing.ArrayLike): Multiplication factor as defined in
             the fib Model Code 2010 (2013), Eq. 5.1-51.
 
     Returns:
         numpy.ndarray: Multiplication factor beta_e.
     """
-    return np.sqrt(_beta_cc)
+    return np.sqrt(beta_cc)
 
 
-def Eci_t(_beta_e: npt.ArrayLike, _Eci: float) -> np.ndarray:
+def Eci_t(beta_e: npt.ArrayLike, Eci: float) -> np.ndarray:
     """Calculate the modulus of elasticity for normal weight concrete at time
     'time' (not 28 days).
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-56.
 
     Args:
-        _beta_e (numpy.typing.ArrayLike): Multiplication factor to determine
+        beta_e (numpy.typing.ArrayLike): Multiplication factor to determine
             the modulus of elasticity at an arbitrary time, as defined in fib
             Model Code 2010 (2013), Eq. 5.1-51.
-        _Eci (float): Modulus of elasticity of normal weight concrete at 28
+        Eci (float): Modulus of elasticity of normal weight concrete at 28
             days, as defined in fib Model Code 2010 (2013), Eq. 5.1-21.
 
     Returns:
         numpy.ndarray: The modulus of elasticity for normal weight concrete at
         time 'time' (not 28 days) in MPa.
     """
-    return _beta_e * _Eci
+    return beta_e * Eci
 
 
 def fcd(fck: float, alpha_cc: float = 1.0, gamma_c: float = 1.5) -> float:
