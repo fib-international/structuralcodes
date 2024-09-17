@@ -471,8 +471,18 @@ class SurfaceGeometry:
 
     def split_two_lines(
         self, lines: t.Union[t.Tuple[LineString, LineString], MultiLineString]
-    ) -> Polygon:
-        """Docstrings."""
+    ) -> t.Union[Polygon, MultiPolygon]:
+        """Splits the geometry using two lines.
+
+        Arguments:
+            lines (Union(Tuple(LineString, Linestring)), MultiLineString): Two
+                lines either represented by a tuple of two LineString shapely
+                objects, or a MultiLineString shapely object.
+
+        Returns:
+            Union(Polygon, Multipolygon): The polygon or multipolygon obtained
+            by splitting the SurfaceGeometry with the two lines.
+        """
         if isinstance(lines, MultiLineString):
             multi_line = lines
         elif isinstance(lines, tuple):

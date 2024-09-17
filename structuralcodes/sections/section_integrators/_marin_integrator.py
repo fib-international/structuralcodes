@@ -21,7 +21,7 @@ class MarinIntegrator(SectionIntegrator):
 
     def prepare_input(
         self, geo: CompoundGeometry, strain: ArrayLike
-    ) -> t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Prepare general input to the integration.
 
         Calculate the stresses based on strains in a set of points.
@@ -35,7 +35,11 @@ class MarinIntegrator(SectionIntegrator):
                 elements.
 
         Returns:
-            Tuple(List, Dict): ...
+            Tuple(float, Tuple(ndarray, ndarray, ndarray)): The prepared input
+                represented as the angle of rotation computed (needed for
+                rotating back the resultants) and as a tuple with 3 ndarryas
+                collecting respectivelly y, z and stress coefficients for each
+                sub-part.
         """
         # This method should do the following tasks:
         # - For each geo:
