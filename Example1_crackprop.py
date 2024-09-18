@@ -6,7 +6,7 @@ from structuralcodes.geometry import SurfaceGeometry
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.sections._reinforcement import add_reinforcement_line
 
-# from structuralcodes.plots.section_plots import draw_section_response,draw_section,get_stress_point
+# from structuralcodes.plots.section_plots import draw_section_response,draw_section
 
 ### CREATE THE SECTION ########
 codes.set_design_code(design_code='ec2_2004')

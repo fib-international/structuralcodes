@@ -2,42 +2,17 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from shapely import Point
 
 sys.path.append('../')
+import math
+
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from results_methods import get_stress_point
 
 from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
     Sargin,
 )
-
-
-def get_stress_point(section, y, z, eps_a, chi_y, chi_z):
-    """Get the stress in a given point (y,z) inside the cross section.
-
-    Args:
-        y,z : coordinates of point inside the c.s.
-        eps_a :  strain at (0,0)
-        chi_y,chi_z :  curvatures of the cross secction (1/mm)
-
-    Returns:
-        stress in y,z
-    """
-    pt = Point(y, z)
-    strain = []
-    strain.append(eps_a + z * chi_y + y * chi_z)
-    for i, g in enumerate(section.geometry.point_geometries):
-        center = g._point
-        r = g._diameter / 2
-        poly = center.buffer(r)
-        if poly.contains(pt) or poly.touches(pt):
-            return g.material.get_stress(strain)[0]
-    for i, g in enumerate(section.geometry.geometries):
-        poly = g.polygon
-        if poly.contains(pt) or poly.touches(pt):
-            return g.material.get_stress(strain)[0]
-    return None
 
 
 def draw_section(section, title='', reduction_reinf=None):
@@ -136,7 +111,6 @@ def draw_section_response3D(
         stress = np.array(stress).reshape(-1, 1)
         stress = np.where(stress == None, 0, stress)
         vertices = np.hstack((stress, border_points))
-        print(vertices[0, :])
 
         # Crear la sombra ed la seccion
         poly_section = Poly3DCollection(
@@ -373,7 +347,7 @@ def draw_constitutive_law(ec_const, lim_strain_neg=None, lim_strain_pos=None):
     plt.show()
 
 
-def draw_My_Mz_diagram(res, n=0, figsize=(10, 10), nticks_x=10, nticks_y=10):
+def draw_My_Mz_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
     """Draw the My-Mz diagram of a cross section.
 
     Args:
@@ -385,7 +359,7 @@ def draw_My_Mz_diagram(res, n=0, figsize=(10, 10), nticks_x=10, nticks_y=10):
     m_z = res.m_z / 1e6
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(m_y, m_z, color='green')
-    ax.set_title(f'My-Mz   N={n/1e3} kN')
+    ax.set_title(f'My-Mz   N={res.n/1e3} kN')
     ax.set_xlabel('My (mkN)')
     ax.set_ylabel('Mz (mkN)')
     ax.axhline(0, color='gray', linewidth=1)
@@ -413,7 +387,7 @@ def draw_N_M_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
     m_z = res.m_z / 1e6
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(n, m_y, color='red')
-    ax.set_title('N-My')
+    ax.set_title(f'N-My  theta={round(math.degrees(res.theta),1)}º')
     ax.set_xlabel('N (kN)')
     ax.set_ylabel('My (mkN)')
     ax.axhline(0, color='gray', linewidth=1)
@@ -424,11 +398,16 @@ def draw_N_M_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
     ax.set_yticks(y_legend)
     ax.set_xticklabels(np.around(x_legend, decimals=1))
     ax.set_yticklabels(np.around(y_legend, decimals=1))
+
+    for n_i, my_i in zip(n, m_y):
+        print(f'N = {n_i:.2f}\tkN\t\tMy = {my_i:.2f}\tkNm')
+        ax.plot(n_i, my_i, 'o', color='gray', markersize=2)
+
     plt.show()
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(n, m_z, color='red')
-    ax.set_title('N-MZ')
+    ax.set_title(f'N-MZ  theta={round(math.degrees(res.theta),1)}º')
     ax.set_xlabel('N (kN)')
     ax.set_ylabel('Mz (mkN)')
     ax.axhline(0, color='gray', linewidth=1)
@@ -439,6 +418,184 @@ def draw_N_M_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
     ax.set_yticks(y_legend)
     ax.set_xticklabels(np.around(x_legend, decimals=1))
     ax.set_yticklabels(np.around(y_legend, decimals=1))
+
+    for n_i, mz_i in zip(n, m_z):
+        print(f'N = {n_i:.2f}\tkN\t\tMz = {mz_i:.2f}\tkNm')
+        ax.plot(n_i, mz_i, 'o', color='gray', markersize=2)
+
+    plt.show()
+
+
+def draw_N_My_Mz_diagram(
+    mesh,
+    results,
+    N_scale=1e-3,
+    My_scale=1e-6,
+    Mz_scale=1e-6,
+    simplify_mesh: bool = False,
+):
+    """Visualizes the mesh and points using Matplotlib.
+
+    Parameters:
+    mesh : trimesh.Trimesh object
+        The mesh to visualize (capacity of the section).
+    results : list of dict
+        The results from check_points_in_N_My_Mz function.
+    N_scale, My_scale, Mz_scale : float, optional
+        unit change for the N, My, and Mz axes, respectively.
+    """
+    # Simplify the mesh to improve performance
+    if simplify_mesh:
+        target_face_count = int(
+            len(mesh.faces) * 0.3
+        )  # Reduce to 10% of original faces
+        simplified_mesh = mesh.simplify_quadratic_decimation(target_face_count)
+    else:
+        simplified_mesh = mesh
+
+    # Prepare the figure and axes
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot the simplified mesh
+    ax.plot_trisurf(
+        simplified_mesh.vertices[:, 0] * N_scale,
+        simplified_mesh.vertices[:, 1] * My_scale,
+        simplified_mesh.vertices[:, 2] * Mz_scale,
+        triangles=simplified_mesh.faces,
+        color='lightblue',
+        alpha=0.5,  # transparency
+        edgecolor='gray',
+        linewidth=0.1,  # width of mesh edges lines
+    )
+
+    # Plot the origin
+    origin = np.array([0.0, 0.0, 0.0])
+    ax.scatter(
+        origin[0],
+        origin[1],
+        origin[2],
+        color='green',
+        s=50,
+        label='Origin',
+        marker='+',
+    )
+
+    # Initialize lists for legend handling
+    plotted_labels = set()
+
+    # Plot each point and its ray
+    for res in results:
+        point = res['point'].copy()
+        point[0] *= N_scale
+        point[1] *= My_scale
+        point[2] *= Mz_scale
+        is_inside = res['is_inside']
+        efficiency = res['efficiency']
+        intersection_point = res['intersection_point']
+
+        if intersection_point is not None:
+            intersection_point = intersection_point.copy()
+            intersection_point[0] *= N_scale
+            intersection_point[1] *= My_scale
+            intersection_point[2] *= Mz_scale
+
+        # Color coding for inside/outside points
+        color = 'blue' if is_inside else 'red'
+        label = 'Point inside' if is_inside else 'Point outside'
+
+        # Plot the point
+        if label not in plotted_labels:
+            ax.scatter(
+                point[0],
+                point[1],
+                point[2],
+                color=color,
+                s=20,
+                label=label,
+            )
+            plotted_labels.add(label)
+        else:
+            ax.scatter(
+                point[0],
+                point[1],
+                point[2],
+                color=color,
+                s=20,
+            )
+
+        # Plot the ray from origin to point
+        ax.plot(
+            [origin[0], point[0]],
+            [origin[1], point[1]],
+            [origin[2], point[2]],
+            color='purple',
+            linestyle='--',
+        )
+
+        # If there's an intersection, plot it and the ray to it
+        if efficiency is not None and intersection_point is not None:
+            if 'Intersection Point' not in plotted_labels:
+                ax.scatter(
+                    intersection_point[0],
+                    intersection_point[1],
+                    intersection_point[2],
+                    color='orange',
+                    s=20,
+                    label='Intersection Point',
+                )
+                plotted_labels.add('Intersection Point')
+            else:
+                ax.scatter(
+                    intersection_point[0],
+                    intersection_point[1],
+                    intersection_point[2],
+                    color='orange',
+                    s=20,
+                )
+            # Plot the ray from origin to intersection point
+            ax.plot(
+                [origin[0], intersection_point[0]],
+                [origin[1], intersection_point[1]],
+                [origin[2], intersection_point[2]],
+                color='cyan',
+            )
+
+    # Set axis labels and title
+    ax.set_xlabel('N [kN]')
+    ax.set_ylabel('My [mkN]')
+    ax.set_zlabel('Mz [mkN]')
+    ax.set_title('Section capacity N-My-Mz')
+
+    # Calculate the maximum efficiency
+    efficiency_points = [
+        (res['efficiency'], res['point'])
+        for res in results
+        if res['efficiency'] is not None
+    ]
+    if efficiency_points:
+        max_efficiency, max_eff_point = max(
+            efficiency_points, key=lambda x: x[0]
+        )
+        max_ef_label = f'Max efficiency: {max_efficiency:.2f} at \nN={max_eff_point[0]*N_scale:.0f}, My={max_eff_point[1]*My_scale:.0f}, Mz={max_eff_point[2]*Mz_scale:.0f}'
+    else:
+        max_ef_label = 'No efficiency'
+
+    # Add the maximum efficiency to the legend
+    from matplotlib.lines import Line2D
+
+    custom_line = Line2D(
+        [0], [0], color='white', marker='', linestyle='', label=max_ef_label
+    )
+
+    # Adjust legend to avoid duplicates
+    handles, labels = ax.get_legend_handles_labels()
+    handles.append(custom_line)
+    labels.append(max_ef_label)
+    ax.legend(
+        handles, labels, fontsize='small', loc='upper right', frameon=False
+    )
+
     plt.show()
 
 
