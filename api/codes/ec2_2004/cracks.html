@@ -1,0 +1,1182 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Creep and shrinkage" href="creep_shrinkage.html" /><link rel="prev" title="Shear capacity" href="shear.html" />
+
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+        <title>Crack width calculations - StructuralCodes documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">StructuralCodes documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/structuralcodeslogo-300.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/structuralcodeslogo-300.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">StructuralCodes documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../library_structure.html">Library structure</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../index.html">Design codes</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Design codes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../general.html">General functions</a></li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="index.html">Eurocode 2 (2004)</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2004)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="shear.html">Shear capacity</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../ec2_2023/index.html">Eurocode 2 (2023)</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2023)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/deflections.html">Deflection calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../mc2010/index.html">fib Model Code 2010</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of fib Model Code 2010</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mc2010/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mc2010/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mc2010/shear.html">Shear, punching and torsion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mc2010/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../materials/index.html">Materials</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Materials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/concretes.html">Concrete materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/reinforcement_steels.html">Reinforcement steel materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/constitutive_laws.html">Constitutive laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/base_materials.html">Base material classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../geometry/steel_sections.html">Steel sections</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_calculator.html">Section calculator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theory/index.html">Theory reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">Contributing</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/api/codes/ec2_2004/cracks.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/api/codes/ec2_2004/cracks.md" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="crack-width-calculations">
+<h1>Crack width calculations<a class="headerlink" href="#crack-width-calculations" title="Link to this heading">¶</a></h1>
+<p>The following functions are related to calculating crack widths.</p>
+<section id="crack-width-criterion">
+<h2>Crack width criterion<a class="headerlink" href="#crack-width-criterion" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.w_max">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">w_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'X0'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XC1'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XC2'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XC3'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XC4'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XD1'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XD2'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XS1'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XS2'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'XS3'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_combination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'f'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'qp'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L12-L64"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.w_max" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the recommended value of the maximum crack width.</p>
+<p>EUROCODE 2 1992-1-1:2004, Table (7.1N).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exposure_class</strong> (<em>str</em>) – The exposure class. Possible values: X0, XC1,
+XC2, XC3, XC4, XD1, XD2, XS1, XS2, XS3.</p></li>
+<li><p><strong>load_combination</strong> (<em>str</em>) – The characteristic of the load combination.
+Frequent (f), or quasi-permanent (qp).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maximum recommended value for the crack width wmax in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if not valid exposure_class or load_combination values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="calculated-crack-width">
+<h2>Calculated crack width<a class="headerlink" href="#calculated-crack-width" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.wk">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">wk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sr_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_sm_eps_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L916-L941"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.wk" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the crack width.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.8).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sr_max</strong> (<em>float</em>) – The maximum crack length spacing in mm.</p></li>
+<li><p><strong>eps_sm_eps_cm</strong> (<em>float</em>) – the difference between the mean strain in the
+reinforcement under relevant combination of loads, including the
+effect of imposed deformations and taking into account tension
+stiffening and the mean strain in the concrete between cracks.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Crack width in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If any of sr_max or esm_ecm is less than zero.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.sr_max_close">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">sr_max_close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_p_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k3</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k4</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L794-L855"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.sr_max_close" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the maximum crack spacing in cases where bonded reinforcement
+is fixed at reasonably close centres within the tension zone
+(w_spacing&lt;=5(c+phi/2)).</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.11).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<em>float</em>) – Is the cover in mm of the longitudinal reinforcement.</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – Is the bar diameter in mm. Where mixed bar diameters used,
+then it should be replaced for an equivalent bar diameter.</p></li>
+<li><p><strong>rho_p_eff</strong> (<em>float</em>) – Effective bond ratio between areas given by Eq.
+(7.10).</p></li>
+<li><p><strong>k1</strong> (<em>float</em>) – Coefficient that takes into account the bound properties
+of the bonded reinforcement.</p></li>
+<li><p><strong>k2</strong> (<em>float</em>) – Coefficient that takes into account the distribution of of
+the strain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>k3</strong> (<em>float</em><em>, </em><em>optional</em>) – Coefficient from the National Annex. If not
+specified then k3=3.4.</p></li>
+<li><p><strong>k4</strong> (<em>float</em>) – Coefficient from the National Annex. If not specified then
+k4=0.425.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The maximum crack spaing in mm.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If one or more of c, phi, rho_p_eff, k3 or k4
+    is lower than zero.</p></li>
+<li><p><strong>ValueError</strong> – If k1 is not 0.8 or 1.6.</p></li>
+<li><p><strong>ValueError</strong> – If k2 is not between 0.5 and 1.0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.sr_max_far">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">sr_max_far</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L858-L883"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.sr_max_far" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the maximum crack spacing in cases where bonded reinforcement
+exceeds (w_spacing&gt;5(c+phi/2)) or where there is no bonded reinforcement at
+all.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.14).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<em>float</em>) – Total depth of the beam in mm.</p></li>
+<li><p><strong>x</strong> (<em>float</em>) – Distance to non tension area of the element mm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Maximum crack spacing in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If one of h or x is less than zero.</p></li>
+<li><p><strong>ValueError</strong> – If x is greater than h.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.sr_max_theta">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">sr_max_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sr_max_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr_max_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L886-L913"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.sr_max_theta" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the crack spacing sr_max when there is an angle between the
+angle of principal stress and the direction of the reinforcement, for
+members in two orthogonal directions, that is significant (&gt; 15 degrees).</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.15).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sr_max_y</strong> (<em>float</em>) – Crack spacing in mm in the y-direction.</p></li>
+<li><p><strong>sr_max_z</strong> (<em>float</em>) – Crack spacing in mm in the z-direction.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Angle in radians between the reinforcement in the
+y-direction and the direction of the principal tensile stress.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The crack spacing in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If sr_max_y or sr_max_z is negative.</p></li>
+<li><p><strong>ValueError</strong> – If theta is not between 0 and pi/2.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_sm_eps_cm">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_sm_eps_cm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_p_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L595-L655"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_sm_eps_cm" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the strain difference (epsilon_sm - epsilon_cm) needed to
+compute the crack width. esm is the mean strain in the reinforcement under
+the relevant combination of loads of imposed deformations and taking into
+account the effects of tension stiffening. Only the additional tensile
+strain beyond the state of zero strain of the concrete is considered.
+epsilon_cm is the mean strain in the concrete between the cracks.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.9).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_s</strong> (<em>float</em>) – Is the stress in MPa in the tension reinforcement
+assuming a cracked section. For pretensioned members, s_steel may
+be replaced by increment of s_steel stress variation in
+prestressing tendons from the state of zero strain of the concrete
+at the same level.</p></li>
+<li><p><strong>alpha_e</strong> (<em>float</em>) – Is the ratio Es/Ecm.</p></li>
+<li><p><strong>rho_p_eff</strong> (<em>float</em>) – Effective bond ratio between areas given by Eq.
+(7.10).</p></li>
+<li><p><strong>kt</strong> (<em>float</em>) – Is a factor dependent on the load duration.</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – Is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct_eff=fctm or fctm(t) if crack is expected
+earlier than 28 days.</p></li>
+<li><p><strong>Es</strong> (<em>float</em>) – Steel elastic modulus in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The strain difference between concrete and steel.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If any sigma_s, alpha_e, rho_p_eff, fct_eff or Es is less
+    than 0.</p></li>
+<li><p><strong>ValueError</strong> – if kt is not 0.6 and not 0.4.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_e">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_e</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Es</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ecm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L516-L536"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_e" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the ratio between the steel and mean concrete elastic modules.</p>
+<p>EUROCODE 2 1992-1-1:2004, Section 7.3.4-2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Es</strong> (<em>float</em>) – Steel elastic modulus in MPa.</p></li>
+<li><p><strong>Ecm</strong> (<em>float</em>) – Concrete mean elastic modulus in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Ratio between modules.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If any of es or ecm is lower than 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.hc_eff">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">hc_eff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L264-L294"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.hc_eff" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the effective height of concrete in tension surrounding the
+reinforcement or prestressing tendons.</p>
+<p>EUROCODE 2 1992-1-1:2004, Section (7.3.2-3).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<em>float</em>) – total depth of the element in mm.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – distance in mm to the level of the steel centroid.</p></li>
+<li><p><strong>x</strong> (<em>float</em>) – distance in mm to the zero tensile stress line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The effective height in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If any of h, d or x is lower than zero.</p></li>
+<li><p><strong>ValueError</strong> – If d is greater than h.</p></li>
+<li><p><strong>ValueError</strong> – If x is greater than h.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L121-L146"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k" title="Link to this definition">¶</a></dt>
+<dd><p>Is the coefficient which allow for the effect of
+non-uniform self-equilibrating stresses, which lead to a
+reduction of restraint forces.
+k=1 for webs w&lt;=300mm or flanges widths less than 300mm
+k=0.65 for webs w&gt;=800mm or flanges with widths greater than 800mm.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>h</strong> (<em>float</em>) – flange length or flange width in mm</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>k coefficient value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if h is less than 0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bond_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'bond'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'plain'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L721-L747"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k1" title="Link to this definition">¶</a></dt>
+<dd><p>Get the k1 coefficient which takes account of the bond properties of the
+bounded reinforcement.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.11-k1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bond_type</strong> (<em>str</em>) – The bond property of the reinforcement. High bond bars
+(bond), or bars with an effectively plain surface (plain).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value of the k1 coefficient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If bond_type is neither ‘bond’ nor ‘plain’.</p></li>
+<li><p><strong>TypeError</strong> – If bond_type is not an str.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L750-L770"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k2" title="Link to this definition">¶</a></dt>
+<dd><p>Computes a coeff. which takes into account the distribution of strain.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.13).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eps_r</strong> (<em>float</em>) – ratio epsilon_2/epsilon_1 where epsilon_1 is the greater
+and epsilon_2 is the lesser strain at the boundaries of the section
+considered, assessed on the basis of a cracked section. epsilon_r=0
+for bending and epsilon_r=1 for pure tension.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The k2 coefficient value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If eps_r is not between 0 and 1.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k3">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k3</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L773-L779"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k3" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the k3 coefficient for computing sr_max.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Value for the coefficient.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k4">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k4</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L782-L788"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k4" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the k4 coefficient for computing sr_max.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Value for the coefficient.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.kc_tension">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">kc_tension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L149-L159"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.kc_tension" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the coefficient which takes account of the stress
+distribution within the section immediately prior to cracking and
+the change of the lever arm in pure tension.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Value of the kc coefficient in pure tension.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.kc_rect_area">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">kc_rect_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L162-L198"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.kc_rect_area" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the coefficient which takes account of the stress distribution
+within the section immediately prior to cracking and the change of the
+lever arm for bending+axial combination in rectangular sections and webs of
+box sections and T-sections.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<em>float</em>) – heigth of the element in mm</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – width of the element in mm</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct,eff=fct or lower (fct(t)), is cracking is
+expected earlier than 28 days.</p></li>
+<li><p><strong>N_ed</strong> (<em>str</em>) – axial force at the serviceability limit state acting on the
+part of the cross-section under consideration (compressive force
+positive). n_ed should be determined considering the characteristic
+values of prestress and axial forces under the relevant combination
+of actions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value of the kc coefficient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If h or b are less than 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.kc_flanges_area">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">kc_flanges_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_ct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L201-L228"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.kc_flanges_area" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the coefficient which takes account of the stress
+distribution within the section immediately prior to cracking and
+the change of the lever arm for bending+axial combination
+in rectangular sections for flanges of box sections and T-sections.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.3).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_cr</strong> – is the absolute value in kN of the tensile force within the
+flange immediately prior to cracking due to cracking moment
+calculated with fct,eff.</p></li>
+<li><p><strong>A_ct</strong> (<em>float</em>) – is the area of concrete within the tensile zone in mm2.
+The tensile zone is that part of the section which is calculated
+to be in tension just before the formation of the first crack.</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct,eff=fct or lower (fct(t)), is cracking
+is expected earlier than 28 days.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value of the kc coefficient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If A_ct is less than 0mm2.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.xi1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">xi1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L231-L261"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.xi1" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the adjusted ratio of bond strength taking into account
+the different diameters of prestressing and reinforcing steel.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.5).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xi</strong> (<em>float</em>) – ratio of bond strength of prestressing and reinforcing
+steel, according to Table 6.2 in 6.8.2.</p></li>
+<li><p><strong>phi_p</strong> (<em>float</em>) – largest bar diameter in mm of reinforcing steel.
+Equal to 0 if only prestressing is used in control cracking.</p></li>
+<li><p><strong>phi_s</strong> (<em>float</em>) – equivalent diameter in mm of tendon acoording
+to 6.8.2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>With the value of the ratio.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If diameters phi_s or phi_p are lower than 0. If ratio of
+    bond strength xi is less than 0.15 or larger than 0.8.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.rho_p_eff">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">rho_p_eff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ac_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L539-L566"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.rho_p_eff" title="Link to this definition">¶</a></dt>
+<dd><p>Effective bond ratio between areas.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.10).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>As</strong> (<em>float</em>) – Steel area in mm2.</p></li>
+<li><p><strong>xi1</strong> (<em>float</em>) – The adjusted ratio of bond according to expression (7.5).</p></li>
+<li><p><strong>Ap</strong> (<em>float</em>) – The area in mm2 of post-tensioned tendons in ac_eff.</p></li>
+<li><p><strong>Ac_eff</strong> (<em>float</em>) – Effective area of concrete in tension surrounding the
+reinforcement or prestressing tendons of depth hc_eff.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>With the retio between areas.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If any of As, xi1, Ap or Ac_eff is less than 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.phi_eq">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">phi_eq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L683-L718"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.phi_eq" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the equivalent diameter. For a section with n1 bars of diameter
+phi1 and n2 bars of diameter phi2.</p>
+<p>EUROCODE 2 1992-1-1:2004, Sect. (7.12).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n1</strong> (<em>int</em>) – Number of bars with diameter phi1.</p></li>
+<li><p><strong>n2</strong> (<em>int</em>) – Number of bars with diameter phi2.</p></li>
+<li><p><strong>phi1</strong> (<em>float</em>) – Diameter of n1 bars in mm.</p></li>
+<li><p><strong>phi2</strong> (<em>float</em>) – Diamater of n2 bars in mm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The equivalent diameter in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If any of n1 or n2 is less than 0.</p></li>
+<li><p><strong>ValueError</strong> – If any of phi1 or phi2 is less than 0.</p></li>
+<li><p><strong>TypeError</strong> – If any of n1 or n2 is not an integer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.kt">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">kt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'short'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'long'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L569-L592"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.kt" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the kt factor dependent on the load duration for the crack width
+calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>load_type</strong> (<em>str</em>) – The load type, ‘short’ for term loading, ‘long’ for
+long term loading.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>With the kt factor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If load_type is not ‘short’ and not ‘long’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.w_spacing">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">w_spacing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L658-L680"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.w_spacing" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the distance threshold from which the maximum crack spacing is
+constant.</p>
+<p>EUROCODE 2 1992-1-1:2004, Sect. (7.3.4-3).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<em>float</em>) – Cover of the longitudinal reinforcement in mm.</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – Is the bar diameter in mm. Where mixed bar diameters used,
+then it should be replaced for an equivalent bar diameter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Threshold distance in mm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If any of c or phi is less than 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="minimum-reinforcement">
+<h2>Minimum reinforcement<a class="headerlink" href="#minimum-reinforcement" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.As_min">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">As_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_ct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L67-L118"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.As_min" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the minimum area of reinforcing steel within the tensile zone
+for control of cracking areas.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A_ct</strong> (<em>float</em>) – is the area of concrete within the tensile zone in mm2.
+The tensile zone is that part of the section which is calculated
+to be in tension just before the formation of the first crack.</p></li>
+<li><p><strong>sigma_s</strong> (<em>float</em>) – is the absolute value of the maximum stress in MPa
+permitted in the reinforcement immediately after the formation
+of the crack. This may be taken as theyield strength of the
+reinforcement, fyk. A lower value may, however, be needed to
+satisfy the crack width limits according to the maximum
+bar size of spacing (see 7.3.3 (2)).</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct,eff=fct or lower (fct(t)), is cracking
+is expected earlier than 28 days.</p></li>
+<li><p><strong>k</strong> (<em>float</em>) – is the coefficient which allow for the effect of
+non-uniform self-equilibrating stresses, which lead to a
+reduction of restraint forces.
+k=1 for webs w&lt;=300mm or flanges widths less than 300mm
+k=0.65 for webs w&gt;=800mm or flanges with widths greater than 800mm
+Intermediate values may be interpolated.</p></li>
+<li><p><strong>kc</strong> (<em>float</em>) – is a coefficient which takes account of the stress
+distribution within the section immediately prior to cracking and
+the change of the lever arm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The minimum area of reinforcing steel within the tensile zone in
+mm2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if k value is not between 0.65 and 1 or kc is not
+    larger than 0 and lower than 1.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.As_min_p">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">As_min_p</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A_ct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L297-L376"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.As_min_p" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the minimum area of reinforcing steel within the tensile zone
+for control of cracking areas in addition with bonded tendons.</p>
+<p>EUROCODE 2 1992-1-1:2004, Eq. (7.1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A_ct</strong> (<em>float</em>) – is the area of concrete within the tensile zone in mm2.
+The tensile zone is that part of the section which is calculated to
+be in tension just before the formation of the first crack.</p></li>
+<li><p><strong>sigma_s</strong> (<em>float</em>) – is the absolute value of the maximum stress in MPa
+permitted in the reinforcement immediately after the formation of
+the crack. This may be taken as the yield strength of the
+reinforcement, fyk. A lower value may, however, be needed to
+satisfy the crack width limits according to the maximum bar size of
+spacing (see 7.3.3 (2)).</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct,eff=fct or lower (fct(t)), is cracking is
+expected earlier than 28 days.</p></li>
+<li><p><strong>k</strong> (<em>float</em>) – is the coefficient which allow for the effect of non-
+uniform self-equilibrating stresses, which lead to a reduction of
+restraint forces. k=1 for webs w&lt;=300mm or flanges widths less than
+300mm. k=0.65 for webs w&gt;=800mm or flanges with widths greater than
+800mm. Intermediate values may be interpolated.</p></li>
+<li><p><strong>kc</strong> (<em>float</em>) – is a coefficient which takes account of the stress
+distribution within the section immediately prior to cracking and
+the change of the lever arm.</p></li>
+<li><p><strong>Ap</strong> (<em>float</em>) – is the area in mm2 of pre or post-tensioned tendons within
+ac_eff.</p></li>
+<li><p><strong>phi_s</strong> (<em>float</em>) – largest bar diameter in mm of reinforcing steel. Equal
+to 0 if only prestressing is used in control cracking.</p></li>
+<li><p><strong>phi_p</strong> (<em>float</em>) – equivalent diameter in mm of tendon according to 6.8.2.</p></li>
+<li><p><strong>xi</strong> (<em>float</em>) – ratio of bond strength of prestressing and reinforcing
+steel, according to Table 6.2 in 6.8.2.</p></li>
+<li><p><strong>delta_s</strong> (<em>float</em>) – stress variation in MPa in prestressing tendons from
+the state of zero strain of the concrete at the same level.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The minimm area of reinforcing steel within the tensile zone in
+mm2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If k value is not between 0.65 and 1 or kc is not larger</p></li>
+<li><p><strong>than 0 and lower than 1. If diameters phi_s</strong><strong> or </strong><strong>phi_p are lower than 0.</strong> – </p></li>
+<li><p><strong>If ratio</strong><strong> of </strong><strong>bond xi strength is less than 0.15</strong><strong> or </strong><strong>larger than 0.8. If</strong> – </p></li>
+<li><p><strong>stress variation incr_stress is less than 0.</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.As_min_2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">As_min_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_section_7_3_crack_control.py#L379-L513"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.As_min_2" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the minimum area of reinforcing steel within the tensile zone
+for control of cracking areas.</p>
+<p>EUROCODE 2 1992-1-1:2004, Table (7.2N), Table (7.3N).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wk</strong> (<em>float</em>) – the characteristic crack width value in mm.</p></li>
+<li><p><strong>sigma_s</strong> (<em>float</em>) – the steel stress value in MPa under the relevant
+combination of actions.</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct,eff=fct or lower (fct(t)), is cracking is
+expected earlier than 28 days.</p></li>
+<li><p><strong>h_cr</strong> (<em>float</em>) – is the depth of the tensile zone immediately prior to
+cracking, considering the characteristic values of prestress and
+axial forces under the quasi-permanent combination of actions.</p></li>
+<li><p><strong>h</strong> (<em>float</em>) – the overall depth of the section in mm.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – is the effective depth to the centroid of the outer layer of
+the reinforcement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>delta_s</strong> (<em>float</em><em>, </em><em>optional</em>) – value of prestressed stress in MPa if
+applicable.</p></li>
+<li><p><strong>kc</strong> (<em>float</em><em>, </em><em>optional</em>) – is a coefficient which takes account of the
+stress distribution within the section immediately prior to
+cracking and the change of the lever arm in a bending section. None
+for pure tensile uniform axial section.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>With the value of the maximum bar diameters in mm
+in the first position and the maximum bar spacing in mm in the second
+position.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple(float, float)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If wk, fct_eff, h_cr, h or d are less than 0.</p></li>
+<li><p><strong>ValueError</strong> – If kc is not between 0 and 1.</p></li>
+<li><p><strong>ValueError</strong> – If combination of wk and stress values are out of scope.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="creep_shrinkage.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Creep and shrinkage</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="shear.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Shear capacity</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, fib International
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/fib-international/structuralcodes" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Crack width calculations</a><ul>
+<li><a class="reference internal" href="#crack-width-criterion">Crack width criterion</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.w_max"><code class="docutils literal notranslate"><span class="pre">w_max()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#calculated-crack-width">Calculated crack width</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.wk"><code class="docutils literal notranslate"><span class="pre">wk()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.sr_max_close"><code class="docutils literal notranslate"><span class="pre">sr_max_close()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.sr_max_far"><code class="docutils literal notranslate"><span class="pre">sr_max_far()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.sr_max_theta"><code class="docutils literal notranslate"><span class="pre">sr_max_theta()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_sm_eps_cm"><code class="docutils literal notranslate"><span class="pre">eps_sm_eps_cm()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_e"><code class="docutils literal notranslate"><span class="pre">alpha_e()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.hc_eff"><code class="docutils literal notranslate"><span class="pre">hc_eff()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k"><code class="docutils literal notranslate"><span class="pre">k()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k1"><code class="docutils literal notranslate"><span class="pre">k1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k2"><code class="docutils literal notranslate"><span class="pre">k2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k3"><code class="docutils literal notranslate"><span class="pre">k3()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k4"><code class="docutils literal notranslate"><span class="pre">k4()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.kc_tension"><code class="docutils literal notranslate"><span class="pre">kc_tension()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.kc_rect_area"><code class="docutils literal notranslate"><span class="pre">kc_rect_area()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.kc_flanges_area"><code class="docutils literal notranslate"><span class="pre">kc_flanges_area()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.xi1"><code class="docutils literal notranslate"><span class="pre">xi1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.rho_p_eff"><code class="docutils literal notranslate"><span class="pre">rho_p_eff()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.phi_eq"><code class="docutils literal notranslate"><span class="pre">phi_eq()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.kt"><code class="docutils literal notranslate"><span class="pre">kt()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.w_spacing"><code class="docutils literal notranslate"><span class="pre">w_spacing()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#minimum-reinforcement">Minimum reinforcement</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.As_min"><code class="docutils literal notranslate"><span class="pre">As_min()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.As_min_p"><code class="docutils literal notranslate"><span class="pre">As_min_p()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.As_min_2"><code class="docutils literal notranslate"><span class="pre">As_min_2()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+    <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+    <script defer="defer" src="../../../_static/tippy\api\codes\ec2_2004\cracks.12e3400d-f9b2-4ea2-9d7c-8ab6a48bac0f.js"></script>
+    </body>
+</html>

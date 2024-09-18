@@ -1,0 +1,1293 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Creep and shrinkage" href="creep_shrinkage.html" /><link rel="prev" title="Material properties for reinforcement steel" href="material_reinforcement.html" />
+
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+        <title>Shear, punching and torsion capacity - StructuralCodes documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">StructuralCodes documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/structuralcodeslogo-300.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/structuralcodeslogo-300.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">StructuralCodes documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../library_structure.html">Library structure</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../index.html">Design codes</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Design codes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../general.html">General functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../ec2_2004/index.html">Eurocode 2 (2004)</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2004)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/shear.html">Shear capacity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../ec2_2023/index.html">Eurocode 2 (2023)</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2023)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/deflections.html">Deflection calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="index.html">fib Model Code 2010</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of fib Model Code 2010</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">Shear, punching and torsion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../materials/index.html">Materials</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Materials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/concretes.html">Concrete materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/reinforcement_steels.html">Reinforcement steel materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/constitutive_laws.html">Constitutive laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/base_materials.html">Base material classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../geometry/steel_sections.html">Steel sections</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_calculator.html">Section calculator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theory/index.html">Theory reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">Contributing</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/api/codes/mc2010/shear.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/api/codes/mc2010/shear.md" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="shear-punching-and-torsion-capacity">
+<h1>Shear, punching and torsion capacity<a class="headerlink" href="#shear-punching-and-torsion-capacity" title="Link to this heading">¶</a></h1>
+<section id="shear">
+<h2>Shear<a class="headerlink" href="#shear" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approx_lvl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_shear_reinforcment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ywk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.15</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L74-L206"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the shear resistance of a web or slab.</p>
+<p>fib Model Code 2010, Eq. (7.3-11).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>approx_lvl</strong> (<em>int</em>) – Approximation level for concrete.</p></li>
+<li><p><strong>with_shear_reinforcment</strong> (<em>bool</em>) – Shear reinforced concrete or no shear
+reinforcement.</p></li>
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – distances between the centerline of the compressive chord
+and the reinforcement in mm.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section in mm.</p></li>
+<li><p><strong>dg</strong> (<em>float</em>) – Maximum size of aggregate in mm.</p></li>
+<li><p><strong>E_s</strong> (<em>float</em>) – The E_s-modulus to the material in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section area of reinforcement in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>asw</strong> (<em>float</em>) – Area of shear reinforcement in mm^2.</p></li>
+<li><p><strong>sw</strong> (<em>float</em>) – Senter distance between the shear reinforcement in mm.</p></li>
+<li><p><strong>f_ywk</strong> (<em>float</em>) – The characteristic yield strength of the shear
+reinforcement.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Inclitantion of the compression stressfield in degrees.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+<li><p><strong>gamma_s</strong> (<em>float</em>) – Steel safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Design shear resistance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rdc">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rdc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approx_lvl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L209-L259"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rdc" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate shear resistance of a web / slab without shear reinforcement.</p>
+<p>fib Model Code 2010, Eq. (7.3-17).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>approx_lvl</strong> (<em>int</em>) – Approximation level for concrete.</p></li>
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section in mm.</p></li>
+<li><p><strong>dg</strong> (<em>float</em>) – Maximum size of aggregate.</p></li>
+<li><p><strong>E_s</strong> (<em>float</em>) – The E_s-modulus to the materialb in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section area in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The design shear resistance attributed to the concrete.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rdc_approx1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rdc_approx1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L262-L287"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rdc_approx1" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate shear resistance for concrete with approx level 1.</p>
+<p>For members with no segnificant axal load, with fyk &lt;= 600 Mpa, fck &lt;= 70
+Mpa and with maximum aggrigate size of no less then 10mm.</p>
+<p>fib Model Code 2010, Eq. (7.3-17) and (7.3-19).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength in MPa.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Safety factor for concrete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Design shear resistance without shear reinforcement.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rdc_approx2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rdc_approx2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L290-L328"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rdc_approx2" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate shear resistance for concrete with approx level 2.</p>
+<p>In higher strength concrete and light-weight aggregate concretes, the
+fracture surface may go through the aggregate particles, rather then
+around, reducing the crack roughness.</p>
+<p>fib Model Code 2010, Eq. (7.3-17), (7.3-20) and (7.3-21).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section.</p></li>
+<li><p><strong>dg</strong> (<em>float</em>) – Maximum size of aggregate.</p></li>
+<li><p><strong>E_s</strong> (<em>float</em>) – The E_s-modulus to the materialb in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section area in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Design shear resistance without shear reinforcement.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rdc_approx3">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rdc_approx3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approx_lvl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L331-L382"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rdc_approx3" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate shear resistance for concrete with approx level 3.</p>
+<p>The design shear resistance of a web or a slab without shear reinforcement.</p>
+<p>fib Model Code 2010, Eq. (7.3-17), (7.3-39) and (7.3-43).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>z</strong> – (float): The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>bw</strong> – (float): Thickness of web in cross section.</p></li>
+<li><p><strong>E_s</strong> – (float): The E_s-modulus to the materialb in MPa.</p></li>
+<li><p><strong>As</strong> – (float): The cross-section area in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Design shear resistance without shear reinforcement.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rds">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">asw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ywk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">45.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.15</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L385-L421"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rds" title="Link to this definition">¶</a></dt>
+<dd><p>The shear resistance that shear reinforcement gives.</p>
+<p>fib Model Code 2010, Eq. (7.3-25) and (7.3-29)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>asw</strong> (<em>float</em>) – Area of shear reinforcement in mm.</p></li>
+<li><p><strong>sw</strong> (<em>float</em>) – Senter distance between the shear reinforcement in mm.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>f_ywk</strong> (<em>float</em>) – The characteristic yield strength of the shear
+reinforcement.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Inclitaniton of the compression stressfield in degrees.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups.</p></li>
+<li><p><strong>gamma_s</strong> (<em>float</em>) – Steel safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The design shear resistance provided by shear reinforcement.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_max_approx1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_max_approx1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L470-L503"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_max_approx1" title="Link to this definition">¶</a></dt>
+<dd><p>The maximum allowed shear resistance, with level 1 approximation.</p>
+<p>fib Model Code 2010, eq. (7.3-37).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Inclitaniton of the compression stressfield in degrees.</p></li>
+<li><p><strong>z</strong> – (float): The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Maximum allowed shear resistance for approximation level 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_max_approx2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_max_approx2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L506-L551"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_max_approx2" title="Link to this definition">¶</a></dt>
+<dd><p>The maximum allowed shear resistance, with level 2 approximation.</p>
+<p>fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Inclitaniton of the compression stressfield in degrees.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>E_s</strong> (<em>float</em>) – The E_s-modulus to the materialb in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section area of reinforcement in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Maximum allowed shear resistance for approximation level 2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_max_approx3">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_max_approx3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L554-L586"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_max_approx3" title="Link to this definition">¶</a></dt>
+<dd><p>The maximum allowed shear resistance, with level 3 approximation.</p>
+<p>fib Model Code 2010, eq. (7.3-24), (7.3-40) and (7.3-41).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Thickness of web in cross section.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>E_s</strong> (<em>float</em>) – The E_s-modulus to the materialb in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section area of reinforcement in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Maximum allowed shear resistance for approximation level 3.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_ct_approx1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_ct_approx1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_ctd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_cp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_bd0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L662-L697"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_ct_approx1" title="Link to this definition">¶</a></dt>
+<dd><p>Calculating level 1 approximation for shear resistance in hollow core
+slabs.</p>
+<p>fib Model Code 2010, eq. (7.3-44).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_ctd</strong> (<em>float</em>) – The design value of concrete axial tensile strength.</p></li>
+<li><p><strong>i_c</strong> (<em>float</em>) – The second moment of area.</p></li>
+<li><p><strong>s_c</strong> (<em>float</em>) – The first moment of area, above and about the centriodal
+axis in mm^3.</p></li>
+<li><p><strong>b_w</strong> (<em>float</em>) – The width of the cross-section at the centroidal axis.</p></li>
+<li><p><strong>sigma_cp</strong> (<em>float</em>) – The compressive stress at centroidal axis due to
+prestress in MPa.</p></li>
+<li><p><strong>l_x</strong> (<em>float</em>) – Distance from the edge to point of failure (Figure:
+7.3-12).</p></li>
+<li><p><strong>l_bd0</strong> (<em>float</em>) – follows 7.13-5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Vrd Appoximation 1 for hollow slabs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_ct_approx2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_ct_approx2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_ctd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_bd0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S_cy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_wy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_cy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_p_lx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_p_lx_dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L700-L749"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_ct_approx2" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the maximum shear force for level 2 approximationin hollow
+core slabs.</p>
+<p>fib Model Code 2010, eq. (7.3-45), (7.3-46) and (7.3-47)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_ctd</strong> (<em>float</em>) – Design value of concrete axial tensile strength in MPa.</p></li>
+<li><p><strong>i_c</strong> (<em>float</em>) – The second moment of area in mm^4.</p></li>
+<li><p><strong>l_x</strong> (<em>float</em>) – Distance from the edge to point of failure (Figure:
+7.3-12).</p></li>
+<li><p><strong>l_bd0</strong> (<em>float</em>) – follows 7.13-5.</p></li>
+<li><p><strong>S_cy</strong> (<em>float</em>) – The first moment of area above y in mm^3.</p></li>
+<li><p><strong>b_wy</strong> (<em>float</em>) – The width at hight y in mm.</p></li>
+<li><p><strong>y</strong> (<em>float</em>) – The highh of the critical point at the line of failure in
+mm.</p></li>
+<li><p><strong>y_c</strong> (<em>float</em>) – The hight of the concrete centroidal axis in mm.</p></li>
+<li><p><strong>A_c</strong> (<em>float</em>) – The area of concrete cross-section in mm^2.</p></li>
+<li><p><strong>A_cy</strong> (<em>float</em>) – The area of concrete cross-section above y in mm^2.</p></li>
+<li><p><strong>y_pt</strong> (<em>float</em>) – The hight of centroidal axis of prestressed steel in mm.</p></li>
+<li><p><strong>f_p_lx</strong> (<em>float</em>) – The prestressing force at the distance l_x in N.</p></li>
+<li><p><strong>f_p_lx</strong> – The derivative of prestressing force at the distance
+l_x with respect to dx.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maximum shear force for level 2 approximation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.epsilon_x">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">epsilon_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L8-L37"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.epsilon_x" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the longitudinal strain from a distance z.</p>
+<p>fib Model Code 2010, eq. (7.3-16).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> (<em>float</em>) – The E-modulus to the material in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section area of reinforcement in mm^2.</p></li>
+<li><p><strong>z</strong> – (float): The effective shear depth in mm.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The longitudinal strain.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eta_fc">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eta_fc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L40-L51"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eta_fc" title="Link to this definition">¶</a></dt>
+<dd><p>Calculating eta_fc to determin the strength reduction factor.</p>
+<p>fib Model Code 2010, eq. (7.3-28).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>eta_fc in the strength reduction factor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.create_load_dict">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">create_load_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Med</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ved</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ned</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_shear.py#L54-L71"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.create_load_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Returns dictionary assosiated with loads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Med</strong> (<em>Float</em>) – The positive moment working on the material in Nmm.</p></li>
+<li><p><strong>Ved</strong> (<em>float</em>) – The positive shear force working on the material in N.</p></li>
+<li><p><strong>Ned</strong> (<em>float</em>) – The normal force working on the material in N with
+positive sign for tension and negative sign for compression.</p></li>
+<li><p><strong>delta_E</strong> (<em>float</em>) – The eccentricity of the axial load due to imperfection
+in the construction with distance in mm as a positive value in
+compression direction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with the given loads.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="punching">
+<h2>Punching<a class="headerlink" href="#punching" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_punching">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_punching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_yd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_per</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_rd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_pd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_bd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ywk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_sw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_prep_d_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stirrups_compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.15</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L405-L543"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_punching" title="Link to this definition">¶</a></dt>
+<dd><p>The total resistance for punching, both Vrd,c and Vrd,s.</p>
+<p>fib Model Code 2010, eq. (7.3-60).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e_u</strong> (<em>float</em>) – The ecentrisity of the result of shear forces with respect
+to the centroid (Figure 7.3-27b).</p></li>
+<li><p><strong>b_u</strong> (<em>float</em>) – The diamter of a circle with same surface as the region
+inside the basic control perimeter (Figure 7.3-27b).</p></li>
+<li><p><strong>l_x</strong> (<em>float</em>) – The distance between two columns in x direction.</p></li>
+<li><p><strong>l_y</strong> (<em>float</em>) – The distance between two columns in y direction.</p></li>
+<li><p><strong>f_yd</strong> (<em>float</em>) – Design strength of reinforment steel in MPa.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – The mean value of the effective depth in mm.</p></li>
+<li><p><strong>e_s</strong> (<em>float</em>) – The E_modulus for steel in MPa.</p></li>
+<li><p><strong>approx_lvl_p</strong> (<em>float</em>) – The approx level for punching.</p></li>
+<li><p><strong>v_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>inner</strong> (<em>bool</em>) – Is true only if the column is a inner column.</p></li>
+<li><p><strong>edge_par</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement parallel to the edge.</p></li>
+<li><p><strong>edge_per</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement perpendicular to the edge.</p></li>
+<li><p><strong>corner</strong> (<em>bool</em>) – Is true only if the column is a corner column.</p></li>
+<li><p><strong>m_rd</strong> (<em>float</em>) – The design average strength per unit length in MPa.</p></li>
+<li><p><strong>m_pd</strong> – (float): The average decompresstion moment due to prestressing in
+MPa.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>f_bd</strong> (<em>float</em>) – The design bond strength in MPa.</p></li>
+<li><p><strong>f_ywk</strong> (<em>float</em>) – Characteristic yield strength of the shear reinforcement
+in MPa.</p></li>
+<li><p><strong>phi_w</strong> (<em>float</em>) – The diameter of the shear reinforcement.</p></li>
+<li><p><strong>a_sw</strong> (<em>float</em>) – The area of the shear reinforcement in mm^2.</p></li>
+<li><p><strong>dg</strong> (<em>float</em>) – Maximum size of aggregate.</p></li>
+<li><p><strong>f_ck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>d_v</strong> (<em>float</em>) – The effective depth considering support in mm.</p></li>
+<li><p><strong>v_prep_d_max</strong> (<em>float</em>) – The maximum shear force per unit length
+perpendicular to the basic control parameter (Figure 7.3-24).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maximum allowed punching resistance, regardless of values
+from v_rdc and v_rds.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rd_max_punching">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rd_max_punching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_yd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_per</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_rd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_pd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_prep_d_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stirrups_compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L306-L402"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rd_max_punching" title="Link to this definition">¶</a></dt>
+<dd><p>Finds the maximum value you can have for v_rd_punching.</p>
+<p>fib Model Code 2010, eq. (7.3-68) and (7.3-69).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l_x</strong> (<em>float</em>) – The distance between two columns in x direction.</p></li>
+<li><p><strong>l_y</strong> (<em>float</em>) – The distance between two columns in y direction.</p></li>
+<li><p><strong>f_yd</strong> (<em>float</em>) – Design strength of reinforment steel in MPa.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – The mean value of the effective depth in mm.</p></li>
+<li><p><strong>e_s</strong> (<em>float</em>) – The E_modulus for steel in MPa.</p></li>
+<li><p><strong>approx_lvl_p</strong> (<em>float</em>) – The approx level for punching.</p></li>
+<li><p><strong>v_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>e_u</strong> (<em>float</em>) – Refers to the eccentricity of the resultant of shear
+forces with respect to the centroid.</p></li>
+<li><p><strong>inner</strong> (<em>bool</em>) – Is true only if the column is a inner column.</p></li>
+<li><p><strong>edge_par</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement parallel to the edge.</p></li>
+<li><p><strong>edge_per</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement perpendicular to the edge.</p></li>
+<li><p><strong>dg</strong> (<em>float</em>) – Maximum size of aggregate.</p></li>
+<li><p><strong>corner</strong> (<em>bool</em>) – Is true only if the column is a corner column.</p></li>
+<li><p><strong>m_rd</strong> (<em>float</em>) – The design average strength per unit length in MPa.</p></li>
+<li><p><strong>m_pd</strong> – (float): The average decompresstion moment due to prestressing in
+MPa.</p></li>
+<li><p><strong>v_prep_d_max</strong> (<em>float</em>) – The maximum shear force per unit length
+perpendiculerer to the basic control parameter (Figure 7.3-24).</p></li>
+<li><p><strong>d_v</strong> (<em>float</em>) – The effective depth considering support in mm.</p></li>
+<li><p><strong>f_ck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>d_head</strong> (<em>bool</em>) – True if diameter of heads is three times larger than.</p></li>
+<li><p><strong>stirrups_compression</strong> – (bool): Stirrups with sufficient length at
+compression face, and bent on tension face.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Safety factor for concrete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maximum allowed punching resistance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rdc_punching">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rdc_punching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_yd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_per</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_rd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_pd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_prep_d_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L127-L208"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rdc_punching" title="Link to this definition">¶</a></dt>
+<dd><p>Punching resistance from the concrete.</p>
+<p>fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l_x</strong> (<em>float</em>) – The distance between two columns in x direction.</p></li>
+<li><p><strong>l_y</strong> (<em>float</em>) – The distance between two columns in y direction.</p></li>
+<li><p><strong>f_yd</strong> (<em>float</em>) – Design strength of reinforment steel in MPa.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – The mean value of the effective depth in mm.</p></li>
+<li><p><strong>e_s</strong> (<em>float</em>) – The E_modulus for steel in MPa.</p></li>
+<li><p><strong>approx_lvl_p</strong> (<em>float</em>) – The approx level for punching.</p></li>
+<li><p><strong>dg</strong> (<em>float</em>) – Maximum size of aggregate.</p></li>
+<li><p><strong>f_ck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>d_v</strong> (<em>float</em>) – The effective depth considering support in mm.</p></li>
+<li><p><strong>v_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>e_u</strong> (<em>float</em>) – Refers to the eccentricity of the resultant of shear
+forces with respect to the centroid.</p></li>
+<li><p><strong>inner</strong> (<em>bool</em>) – Is true only if the column is a inner column.</p></li>
+<li><p><strong>edge_par</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement parallel to the edge.</p></li>
+<li><p><strong>edge_per</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement perpendicular to the edge.</p></li>
+<li><p><strong>corner</strong> (<em>bool</em>) – Is true only if the column is a corner column.</p></li>
+<li><p><strong>m_rd</strong> (<em>float</em>) – The design average strength per unit length in MPa.</p></li>
+<li><p><strong>m_pd</strong> – (float): The average decompresstion moment due to prestressing
+in MPa.</p></li>
+<li><p><strong>v_prep_d_max</strong> (<em>float</em>) – The maximum shear force per unit length
+perpendicular to the basic control parameter (Figure 7.3-24).</p></li>
+<li><p><strong>gamma_c</strong> – Safety factor for concrete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>v_rdc for punching with the right approx level.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_rds_punching">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_rds_punching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_yd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_per</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_rd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_pd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_bd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ywk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_sw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L211-L303"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_rds_punching" title="Link to this definition">¶</a></dt>
+<dd><p>The punching resistance from shear reinforcement.</p>
+<p>fib Model Code 2010, eq. (7.3-64) and (7.3-65).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e_u</strong> (<em>float</em>) – The ecentrisity of the result of shear forces
+with respect to the centroid (Figure 7.3-27b).</p></li>
+<li><p><strong>b_u</strong> (<em>float</em>) – The diamter of a circle with same surface as the region
+inside the basic control perimeter (Figure 7.3-27b).</p></li>
+<li><p><strong>l_x</strong> (<em>float</em>) – The distance between two columns in x direction.</p></li>
+<li><p><strong>l_y</strong> (<em>float</em>) – The distance between two columns in y direction.</p></li>
+<li><p><strong>f_yd</strong> (<em>float</em>) – Design strength of reinforment steel in MPa.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – The mean value of the effective depth in mm.</p></li>
+<li><p><strong>e_s</strong> (<em>float</em>) – The E_modulus for steel in MPa.</p></li>
+<li><p><strong>approx_lvl_p</strong> (<em>float</em>) – The approx level for punching.</p></li>
+<li><p><strong>v_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>inner</strong> (<em>bool</em>) – Is true only if the column is a inner column.</p></li>
+<li><p><strong>edge_par</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement parallel to the edge.</p></li>
+<li><p><strong>edge_per</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement perpendicular to the edge.</p></li>
+<li><p><strong>corner</strong> (<em>bool</em>) – Is true only if the column is a corner column.</p></li>
+<li><p><strong>m_rd</strong> (<em>float</em>) – The design average strength per unit length in MPa.</p></li>
+<li><p><strong>m_pd</strong> – (float): The average decompresstion moment due to prestressing in
+MPa.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>f_bd</strong> (<em>float</em>) – The design bond strength in MPa.</p></li>
+<li><p><strong>f_ywk</strong> (<em>float</em>) – Characteristic yield strength of the shear reinforcement
+in MPa.</p></li>
+<li><p><strong>phi_w</strong> (<em>float</em>) – The diameter of the shear reinforcement.</p></li>
+<li><p><strong>a_sw</strong> (<em>float</em>) – The area of the shear reinforcement in mm^2.</p></li>
+<li><p><strong>gamma_s</strong> (<em>float</em>) – Safety factor for reinforcement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Punching resistance that comes from reinforcement.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.b_0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">b_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_prep_d_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L7-L20"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.b_0" title="Link to this definition">¶</a></dt>
+<dd><p>Gives the general output for b_0, shear-resisting control perimeter.</p>
+<p>fib Model Code 2010, eq. (7.3-57).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>V_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>v_prep_d_max</strong> (<em>float</em>) – The maximum shear force per unit length
+perpendicular to the basic control parameter (Figure 7.3-24).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The shear-resisting control perimeter, b_0.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.m_ed">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">m_ed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_per</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L23-L67"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.m_ed" title="Link to this definition">¶</a></dt>
+<dd><p>The average bending moment acting in the support strip.</p>
+<p>fib Model Code 2010, eq. (7.3-76), (7.3-71), (7.3-72), (7.3-73)
+and (7.3-74).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>e_u</strong> (<em>float</em>) – Refers to the eccentricity of the resultant of shear
+forces with respect to the centroid.</p></li>
+<li><p><strong>l_x</strong> (<em>float</em>) – The width in x direction that the collumn carries.</p></li>
+<li><p><strong>l_y</strong> (<em>float</em>) – The width in y direction that the collumn carries.</p></li>
+<li><p><strong>inner</strong> (<em>bool</em>) – Is true only if the column is a inner column.</p></li>
+<li><p><strong>edge_par</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement parallel to the edge.</p></li>
+<li><p><strong>edge_per</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement perpendicular to the edge.</p></li>
+<li><p><strong>corner</strong> (<em>bool</em>) – Is true only if the column is a corner column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The bending moment acting in the support strip regardless of the
+position of the column.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.psi_punching">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">psi_punching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_yd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_per</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_rd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_punching.py#L70-L124"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.psi_punching" title="Link to this definition">¶</a></dt>
+<dd><p>The rotation of the slab around the supported area.</p>
+<p>fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l_x</strong> (<em>float</em>) – The distance between two columns in x direction.</p></li>
+<li><p><strong>l_y</strong> (<em>float</em>) – The distance between two columns in y direction.</p></li>
+<li><p><strong>f_yd</strong> (<em>float</em>) – Design strength of reinforment steel in MPa.</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – The mean value of the effective depth in mm.</p></li>
+<li><p><strong>e_s</strong> (<em>float</em>) – The E_modulus for steel in MPa.</p></li>
+<li><p><strong>approx_lvl_p</strong> (<em>float</em>) – The approx level for punching.</p></li>
+<li><p><strong>v_ed</strong> (<em>float</em>) – The acting shear force from the columns.</p></li>
+<li><p><strong>e_u</strong> (<em>float</em>) – Refers to the eccentricity of the resultant of shear
+forces with respect to the centroid.</p></li>
+<li><p><strong>inner</strong> (<em>bool</em>) – Is true only if the column is a inner column.</p></li>
+<li><p><strong>edge_par</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement parallel to the edge.</p></li>
+<li><p><strong>edge_per</strong> (<em>bool</em>) – Is true only if the column is a edge column with
+tension reinforcement perpendicular to the edge.</p></li>
+<li><p><strong>corner</strong> (<em>bool</em>) – Is true only if the column is a corner column.</p></li>
+<li><p><strong>m_rd</strong> (<em>float</em>) – The design average strength per unit length in MPa.</p></li>
+<li><p><strong>m_pd</strong> – (float): The average decompresstion moment due to prestressing
+in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>psi for the chosen approx level in punching.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="torsion">
+<h2>Torsion<a class="headerlink" href="#torsion" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.t_rd">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">t_rd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">90.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_torsion.py#L91-L164"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.t_rd" title="Link to this definition">¶</a></dt>
+<dd><p>Checks if the combination of torsion and shear is ok.</p>
+<p>fib Model Code 2010, eq. (7.3-56).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_ed</strong> (<em>float</em>) – The torsion working on the material in Nmm.</p></li>
+<li><p><strong>approx_lvl</strong> (<em>int</em>) – Approximation level chosen for shear resistance.</p></li>
+<li><p><strong>fck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>bw</strong> – (float): Thickness of web in cross section.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – inclination of the compression stressfield in degrees.</p></li>
+<li><p><strong>z</strong> – (float): The length to the areasenter of cross-section in mm.</p></li>
+<li><p><strong>E_s</strong> – (float): The E_modulus to the material in MPa.</p></li>
+<li><p><strong>As</strong> – (float): The cross-section area in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>d_k</strong> (<em>float</em>) – Is the diameter in the smallest circel in the cross
+section.</p></li>
+<li><p><strong>a_k</strong> (<em>float</em>) – Can be found in figure 7.3-18.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Inclination of the stirrups in degrees.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a bool that is true if the criterion for torsion and
+shear is fulfilled.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.t_rd_max">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">t_rd_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_ck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approx_lvl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">As</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_torsion.py#L24-L88"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.t_rd_max" title="Link to this definition">¶</a></dt>
+<dd><p>The maximum allowed torsion.</p>
+<p>fib Model Code 2010, eq. (7.3-56).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_ck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>gamma_c</strong> (<em>float</em>) – Concrete safety factor.</p></li>
+<li><p><strong>d_k</strong> (<em>float</em>) – Is the diameter in the smallest circel in the cross
+section.</p></li>
+<li><p><strong>a_k</strong> – Can be found in figure 7.3-18.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – inclination of the compression stressfield in degrees.</p></li>
+<li><p><strong>approx_lvl</strong> (<em>int</em>) – Approximation method for concrete with reinforcement.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – distances between the centerline of the compressive chord
+and the reinforcement in mm.</p></li>
+<li><p><strong>E_s</strong> (<em>float</em>) – The E_modulus to the material in MPa.</p></li>
+<li><p><strong>As</strong> (<em>float</em>) – The cross-section reinforcement in mm^2.</p></li>
+<li><p><strong>loads</strong> (<em>dict</em>) – The given loads in a dictionary. See create_load_dict.</p></li>
+<li><p><strong>gamma_c</strong> – Concrete safety factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maximum allowed torsion.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.v_ed_ti">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">v_ed_ti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_torsion.py#L8-L21"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.v_ed_ti" title="Link to this definition">¶</a></dt>
+<dd><p>Shear force due to torsion.</p>
+<p>fib Model Code 2010, eq. (7.3-53).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_ed</strong> – The acting torsion force in the cross section in Nmm.</p></li>
+<li><p><strong>z_i</strong> – Can be found in figure 7.3-18.</p></li>
+<li><p><strong>a_k</strong> – Can be found in figure 7.3-18.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The shear force that will occur due to torsion moment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="shear-at-the-interface-between-concrete-cast-at-different-times">
+<h2>Shear at the interface between concrete cast at different times<a class="headerlink" href="#shear-at-the-interface-between-concrete-cast-at-different-times" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.tau_edi">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">tau_edi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_ed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_interface_different_casting_times.py#L6-L21"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.tau_edi" title="Link to this definition">¶</a></dt>
+<dd><p>Shear at the interface between concrete cast at different times.</p>
+<p>fib Model Code 2010, eq. (7.3-49).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta</strong> (<em>float</em>) – The ratio of longitudinal force in the new concrete and
+the longitudinal force in either compression or tension zone.</p></li>
+<li><p><strong>v_ed</strong> (<em>float</em>) – The shear force at the interface in N.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – The inner lever arm of the composed section in mm.</p></li>
+<li><p><strong>b_i</strong> (<em>float</em>) – The width of the inerface in mm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The shear force that should be used at the intersection.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.tau_rdi_without_reinforcement">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">tau_rdi_without_reinforcement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ctd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_interface_different_casting_times.py#L24-L52"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.tau_rdi_without_reinforcement" title="Link to this definition">¶</a></dt>
+<dd><p>Shear resistance without reinforcement at the intesection with different
+casting time.</p>
+<p>fib Model Code 2010, eq. (7.3-50).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c_a</strong> (<em>float</em>) – The coefficient for adhesive bond (Table 7.3-1).</p></li>
+<li><p><strong>f_ctd</strong> (<em>float</em>) – The design axial tensile strength of concrete.</p></li>
+<li><p><strong>mu</strong> (<em>float</em>) – The friction coefficient.</p></li>
+<li><p><strong>sigma_n</strong> (<em>float</em>) – The lowest expected compressive stress from normal
+forces in MPa.</p></li>
+<li><p><strong>f_ck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>f_cd</strong> (<em>float</em>) – The design value of cylinder compressive strength
+concrete in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The shear resistance without reinforcement at the intesection
+with different casting time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.tau_rdi_with_reinforcement">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">tau_rdi_with_reinforcement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_yd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_interface_different_casting_times.py#L55-L104"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.tau_rdi_with_reinforcement" title="Link to this definition">¶</a></dt>
+<dd><p>Shear resistance with reinforcement or dowels at the intesection with
+different casting time.</p>
+<p>fib Model Code 2010, eq. (7.3-51).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c_r</strong> (<em>float</em>) – Coefficient for aggregate interlock effects (Table 7.3-2).</p></li>
+<li><p><strong>k1</strong> (<em>float</em>) – The interaction coefficient for tensile force activated in
+reinforcment (Table 7.3-2).</p></li>
+<li><p><strong>k2</strong> (<em>float</em>) – The interaction coeffiction for flexural resistance (Table
+7.3-2).</p></li>
+<li><p><strong>mu</strong> (<em>float</em>) – The friction coefficient (Table 7.3-2).</p></li>
+<li><p><strong>ro</strong> (<em>float</em>) – The reinforcement ratio of reinforcing steel crossing the
+interface.</p></li>
+<li><p><strong>sigma_n</strong> (<em>float</em>) – The lowest expected compressive stress resulting from
+normal forces acting on the interface in MPa.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – The inclination of reinforcement crossing the interface
+(Table 7.3-14).</p></li>
+<li><p><strong>beta_c</strong> (<em>float</em>) – The coefficient for strength of compression strut
+(Table 7.3-2).</p></li>
+<li><p><strong>f_ck</strong> (<em>float</em>) – Characteristic strength in MPa.</p></li>
+<li><p><strong>f_yd</strong> (<em>float</em>) – design strength of reinforment steel in MPa.</p></li>
+<li><p><strong>f_cd</strong> (<em>float</em>) – The design value of cylinder compressive strength
+concrete.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shear resistance with reinforcement at intesection with
+different casting time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="creep_shrinkage.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Creep and shrinkage</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="material_reinforcement.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Material properties for reinforcement steel</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, fib International
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/fib-international/structuralcodes" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Shear, punching and torsion capacity</a><ul>
+<li><a class="reference internal" href="#shear">Shear</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd"><code class="docutils literal notranslate"><span class="pre">v_rd()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rdc"><code class="docutils literal notranslate"><span class="pre">v_rdc()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rdc_approx1"><code class="docutils literal notranslate"><span class="pre">v_rdc_approx1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rdc_approx2"><code class="docutils literal notranslate"><span class="pre">v_rdc_approx2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rdc_approx3"><code class="docutils literal notranslate"><span class="pre">v_rdc_approx3()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rds"><code class="docutils literal notranslate"><span class="pre">v_rds()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_max_approx1"><code class="docutils literal notranslate"><span class="pre">v_rd_max_approx1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_max_approx2"><code class="docutils literal notranslate"><span class="pre">v_rd_max_approx2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_max_approx3"><code class="docutils literal notranslate"><span class="pre">v_rd_max_approx3()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_ct_approx1"><code class="docutils literal notranslate"><span class="pre">v_rd_ct_approx1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_ct_approx2"><code class="docutils literal notranslate"><span class="pre">v_rd_ct_approx2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.epsilon_x"><code class="docutils literal notranslate"><span class="pre">epsilon_x()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eta_fc"><code class="docutils literal notranslate"><span class="pre">eta_fc()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.create_load_dict"><code class="docutils literal notranslate"><span class="pre">create_load_dict()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#punching">Punching</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_punching"><code class="docutils literal notranslate"><span class="pre">v_rd_punching()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rd_max_punching"><code class="docutils literal notranslate"><span class="pre">v_rd_max_punching()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rdc_punching"><code class="docutils literal notranslate"><span class="pre">v_rdc_punching()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_rds_punching"><code class="docutils literal notranslate"><span class="pre">v_rds_punching()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.b_0"><code class="docutils literal notranslate"><span class="pre">b_0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.m_ed"><code class="docutils literal notranslate"><span class="pre">m_ed()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.psi_punching"><code class="docutils literal notranslate"><span class="pre">psi_punching()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#torsion">Torsion</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.t_rd"><code class="docutils literal notranslate"><span class="pre">t_rd()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.t_rd_max"><code class="docutils literal notranslate"><span class="pre">t_rd_max()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.v_ed_ti"><code class="docutils literal notranslate"><span class="pre">v_ed_ti()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#shear-at-the-interface-between-concrete-cast-at-different-times">Shear at the interface between concrete cast at different times</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.tau_edi"><code class="docutils literal notranslate"><span class="pre">tau_edi()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.tau_rdi_without_reinforcement"><code class="docutils literal notranslate"><span class="pre">tau_rdi_without_reinforcement()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.tau_rdi_with_reinforcement"><code class="docutils literal notranslate"><span class="pre">tau_rdi_with_reinforcement()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+    <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+    <script defer="defer" src="../../../_static/tippy\api\codes\mc2010\shear.5bc1fdfe-b075-4af6-a824-4f9f9d1ccbf1.js"></script>
+    </body>
+</html>

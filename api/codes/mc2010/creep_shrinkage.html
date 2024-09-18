@@ -1,0 +1,1012 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Materials" href="../../materials/index.html" /><link rel="prev" title="Shear, punching and torsion capacity" href="shear.html" />
+
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+        <title>Creep and shrinkage - StructuralCodes documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">StructuralCodes documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/structuralcodeslogo-300.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/structuralcodeslogo-300.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">StructuralCodes documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../library_structure.html">Library structure</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../index.html">Design codes</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Design codes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../general.html">General functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../ec2_2004/index.html">Eurocode 2 (2004)</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2004)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/shear.html">Shear capacity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2004/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../ec2_2023/index.html">Eurocode 2 (2023)</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2023)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/deflections.html">Deflection calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ec2_2023/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="index.html">fib Model Code 2010</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of fib Model Code 2010</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="shear.html">Shear, punching and torsion</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">Creep and shrinkage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../materials/index.html">Materials</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Materials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/concretes.html">Concrete materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/reinforcement_steels.html">Reinforcement steel materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/constitutive_laws.html">Constitutive laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../materials/base_materials.html">Base material classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../geometry/steel_sections.html">Steel sections</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../sections/section_calculator.html">Section calculator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theory/index.html">Theory reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">Contributing</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/api/codes/mc2010/creep_shrinkage.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/api/codes/mc2010/creep_shrinkage.md" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="creep-and-shrinkage">
+<h1>Creep and shrinkage<a class="headerlink" href="#creep-and-shrinkage" title="Link to this heading">¶</a></h1>
+<section id="creep">
+<h2>Creep<a class="headerlink" href="#creep" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.calc_J">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">calc_J</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E_ci_t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L688-L704"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.calc_J" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the creep compliance function.</p>
+<p>Defined in fib Model Code 2010, Eq. 5.1-61.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E_ci_t0</strong> (<em>float</em>) – Modulus of elasticity at time of loading t0, as
+defined in fib Model Code 2010 (2013), Eq. 5.1-56.</p></li>
+<li><p><strong>phi</strong> (<em>numpy.typing.ArrayLike</em>) – Creep coefficient, as defined in fib
+Model Code 2010 (2013), Eq. 5.1-63.</p></li>
+<li><p><strong>E_ci</strong> (<em>float</em>) – defined in fib Model Code 2010 (2013), Eq. 5.1-21.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The creep compliance function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.phi">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi_bc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_dc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L658-L685"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.phi" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the creep coefficient distinguishing between linear and
+non-linear creep for compressive stresses sigma &lt;= 0.4fcm, and 0.4fcm &lt;
+sigma &lt;= 0.6fcm, respectively.</p>
+<p>Defined in fib Model Code 2010, Eqs. 5.1-63 and 5.1-74.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi_bc</strong> (<em>numpy.typing.ArrayLike</em>) – Basic creep coefficient, as defined
+in fib Model Code 2010 (2013), Eq. 5.1-64.</p></li>
+<li><p><strong>phi_dc</strong> (<em>numpy.typing.ArrayLike</em>) – Drying creep coefficient, as defined
+in fib Model Code 2010 (2013), Eq. 5.1-67.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – The compressive stress applied to the concrete at ts in
+MPa.</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The creep coefficient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.phi_bc">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">phi_bc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_bc_fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_bc_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L458-L474"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.phi_bc" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the basic creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-64.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta_bc_fcm</strong> (<em>float</em>) – Multiplication factor that accounts for the
+influence of the concrete strength of the creep behaviour, as
+defined in fib Model Code 2010 (2013), Eq. 5.1-65.</p></li>
+<li><p><strong>beta_bc_t</strong> (<em>numpy.typing.ArrayLike</em>) – Multiplication factor that
+accounts for the influence of the age of the concrete of the creep
+behaviour, as defined in fib Model Code 2010 (2013), Eq. 5.1-66.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The basic creep coefficient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.phi_dc">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">phi_dc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_dc_fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_dc_RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_dc_t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_dc_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L609-L636"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.phi_dc" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate drying creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-67.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta_dc_fcm</strong> (<em>float</em>) – Multiplication factor that accounts for the
+effect of the strength of the concrete, as calculated by Eq.
+5.1-68.</p></li>
+<li><p><strong>beta_dc_RH</strong> (<em>float</em>) – Multiplication factor that accounts for the effect
+of the relative humidity of the environment, as calculated by Eq.
+5.1-69.</p></li>
+<li><p><strong>beta_dc_t0</strong> (<em>float</em>) – multiplication factor that accounts for the effect
+of the (temperature corrected) age of the concrete when loading is
+applied, as calculated by Eq. 5.1-70.</p></li>
+<li><p><strong>beta_dc_t</strong> (<em>numpy.typing.ArrayLike</em>) – multiplication factor that
+accounts for the different considered values of time, as calculated
+by Eq. 5.1-71a.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Drying creep coeffcient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_bc_fcm">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_bc_fcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L421-L434"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_bc_fcm" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the
+compressive strength of the concrete to calculate the basic creep
+coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-65.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor beta_bc_fcm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_bc_t">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_bc_t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t0_adj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L437-L455"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_bc_t" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the age
+of the of the concrete to calculate the basic creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-66.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>numpy.typing.ArrayLike</em>) – The different times in days at which the
+basic creep coefficient is determined.</p></li>
+<li><p><strong>t0</strong> (<em>float</em>) – The age of the concrete in days at which the loading is
+applied.</p></li>
+<li><p><strong>t0_adj</strong> (<em>float</em>) – The temperature corrected age of the concrete when the
+loading is applied in days, as defined in fib Model Code 2010
+(2013). Eq. 5.1-85.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factors beta_bc_t.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.t_T">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">t_T</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_cur</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L182-L217"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.t_T" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the temperature corrected concrete age in days at t0.</p>
+<p>Defined in fib Model Code 2010 (2013). Eq. 5.1-85 (only for a single time
+value input, as required in Eq. 5.1-73).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t0</strong> (<em>np.typing.ArrayLike</em>) – The age of the concrete in days at which the
+loading is applied.</p></li>
+<li><p><strong>T_cur</strong> (<em>np.typing.ArrayLike</em>) – The temperature of the environment during
+curing in degrees Celcius.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dt</strong> (<em>np.typing.ArrayLike</em>) – Number of days at which T_cur prevails.
+Required when providing a list for T_cur.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The temperature corrected age of the concrete in days at
+loading.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.t0_adj">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">t0_adj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cem_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'32.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'32.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'42.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'42.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'52.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'52.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L220-L248"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.t0_adj" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the modified age at loading (t0) to account for the effect of
+the type of cement and curing temperature on the degree of hydration and -
+in turn - on creep.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-73.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_T</strong> (<em>float</em>) – Temperature adjusted concrete age in days.</p></li>
+<li><p><strong>cem_class</strong> (<em>str</em>) – The cement strength class that is used. The choices
+are: ‘32.5 N’, ‘32.5 R’, ‘42.5 N’, ‘42.5 R’, ‘52.5 N’, ‘52.5 R’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The temperature corrected age of the concrete in days at
+loading, accounting for the effect of the cement type. For slow
+hardening concrete, the creep coefficient is increased due to the lower
+modified age at loading.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_dc_fcm">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_dc_fcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L477-L489"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_dc_fcm" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the
+strength of the concrete to calculate the drying creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-68.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor beta_dc_fcm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_dc_RH">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_dc_RH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notional_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L492-L511"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_dc_RH" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the
+relative humidity of the environment to calculate the drying creep
+coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-69.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rh</strong> (<em>float</em>) – The relative humidity of the environment. Value can be
+provided as percentage (i.e. 40–100), or as ratio (i.e. 0.4–1).</p></li>
+<li><p><strong>notional_size</strong> (<em>float</em>) – The notional size of the considered element in
+mm, defined as 2A/u.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor beta_RH.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_dc_t">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_dc_t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L583-L606"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_dc_t" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the different
+considered values of time. Used to calculate the drying creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-71a.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>numpy.typing.ArrayLike</em>) – The different times in days at which the
+drying creep coefficient is determined.</p></li>
+<li><p><strong>t0</strong> (<em>float</em>) – The age of the concrete concrete when the loading is
+applied in days.</p></li>
+<li><p><strong>beta_h</strong> (<em>float</em>) – Multiplication factor that accounts for the effect of
+the notional size, as calculated by Eq. 5.1-71c</p></li>
+<li><p><strong>gamma_t0</strong> (<em>float</em>) – Exponent that accounts for the effect of the
+(temperature corrected) age of the concrete when loaded, as
+calculated by Eq. 5.1-71b.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplcation factor beta_dc_t for the considered values
+of time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_dc_t0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_dc_t0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0_adj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L514-L529"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_dc_t0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the
+(temperature corrected) age of the concrete when loading is applied to
+calculate the drying creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-70.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t0_adj</strong> (<em>float</em>) – The temperature corrected age of the concrete when the
+loading is applied in days, as defined in fib Model Code 2010
+(2013). Eq. 5.1-85.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor beta_dc_t0.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_h">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notional_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L547-L562"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_h" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the
+notional size of the to calculate the drying creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-71c</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>notional_size</strong> (<em>float</em>) – The notional size of the considered element in
+mm, defined as 2A/h.</p></li>
+<li><p><strong>alpha_fcm</strong> (<em>float</em>) – Multiplication factor that accounts for the effect
+of the strength of the concrete on the drying creep coefficient.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor beta_h.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.gamma_t0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">gamma_t0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0_adj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L565-L580"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.gamma_t0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate exponent that accounts for the effect of the (temperature
+corrected) age of the concrete when loaded. Used to calculate the drying
+creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-71b.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t0_adj</strong> (<em>float</em>) – The temperature corrected age of the concrete when the
+loading is applied in days, as defined in fib Model Code 2010
+(2013). Eq. 5.1-85.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Exponent gamma_t0.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.alpha_fcm">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">alpha_fcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L532-L544"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.alpha_fcm" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor that accounts for the effect of the
+strength of the concrete to calculate the drying creep coefficient.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-71d.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor alpha_fcm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.k_sigma">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">k_sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L639-L655"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.k_sigma" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the ratio between the applied stress and the mean concrete
+compressive strength.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-74.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<em>float</em>) – The compressive stress applied to the concrete at ts in
+MPa.</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Absolute value of the ratio between the stress in the concrete
+and the mean concrete strength.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="shrinkage">
+<h2>Shrinkage<a class="headerlink" href="#shrinkage" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cbs">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps_cbs0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_bs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L404-L418"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cbs" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the basic shrinkage.</p>
+<p>Defined in fib Model Code 2010 (2013), Eqs. 5.1-76.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eps_cbs0</strong> (<em>float</em>) – Notional basic shrinkage, as defined in fib Model
+Code 2010 (2013), Eq. 5.1-78.</p></li>
+<li><p><strong>beta_bs</strong> (<em>numpy.typing.ArrayLike</em>) – Time function for basic shrinkage,
+as defined in fib Model Code 2010 (2013), Eq. 5.1-79.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The basic shrinkage strains for the given times.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cds">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps_cds0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_ds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_rh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L340-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cds" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the drying shrinkage of the concrete element.</p>
+<p>Defined in fib Model Code 2010 (2013), Eqs. 5.1-77.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eps_cds0</strong> (<em>float</em>) – The notional drying shrinkage, no units, as defined
+in fib Model Code 2010 (2013), Eq. 5.1-80.</p></li>
+<li><p><strong>beta_ds</strong> (<em>numpy.typing.ArrayLike</em>) – Multiplication factor used for
+calculating the drying shrinkage as a function of time, as defined
+in fib Model Code 2010 (2013), Eq. 5.1-82.</p></li>
+<li><p><strong>beta_rh</strong> (<em>float</em>) – Multiplication factor used when calculating the
+drying shrinkage.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The drying shrinkage strains for the given times, no
+units.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cbs0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cbs0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cem_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'32.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'32.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'42.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'42.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'52.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'52.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L365-L384"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cbs0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the notional basic shrinkage.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-78.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in
+MPa.</p></li>
+<li><p><strong>cem_class</strong> (<em>str</em>) – The cement strength class that is used. The choices
+are: ‘32.5 N’, ‘32.5 R’, ‘42.5 N’, ‘42.5 R’, ‘52.5 N’, ‘52.5 R’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The notional basic shrinkage, no units.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_bs">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_bs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L387-L401"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_bs" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate multiplication factor beta_bs which is used to determine the
+basic shrinkage.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-79.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> (<em>numpy.typing.ArrayLike</em>) – The different times in days at which the
+basic strain is determined.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor that is used to determine the
+basic shrinkage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cds0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cds0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cem_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'32.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'32.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'42.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'42.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'52.5</span> <span class="pre">N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'52.5</span> <span class="pre">R'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L251-L273"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cds0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the notional drying shrinkage.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-80.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p></li>
+<li><p><strong>cem_class</strong> (<em>str</em>) – The cement strength class that is used. The choices
+are: ‘32.5 N’, ‘32.5 R’, ‘42.5 N’, ‘42.5 R’, ‘52.5 N’, ‘52.5 R’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The notional drying shrinkage, no units.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_ds">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notional_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L276-L294"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_ds" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the multiplication factor beta_ds.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-82.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>numpy.typing.ArrayLike</em>) – The different times in days at which the
+shrinkage strain is determined.</p></li>
+<li><p><strong>ts</strong> (<em>float</em>) – Age of the concrete when exposed to the environment.</p></li>
+<li><p><strong>notional_size</strong> (<em>float</em>) – The notional size of the considered element in
+mm, defined as 2A/u.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor used for calculating the drying
+shrinkage as a function of time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_RH">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_RH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_s1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L312-L337"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_RH" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the multiplication factor beta_RH.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-81</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rh</strong> (<em>float</em>) – The relative humidity of the environment. Value can be
+provided as percentage (i.e. 40–100), or as ratio (i.e. 0.4–1).</p></li>
+<li><p><strong>beta_s1</strong> (<em>float</em>) – Multiplication factor as calculated in the fib Model
+Code 2010 (2013), Eq. 5.1-83.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor used when calculating the drying
+shrinkage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.beta_s1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">beta_s1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_creep_and_shrinkage.py#L297-L309"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.beta_s1" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the correction factor beta_s1.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-83.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength of the concrete in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multiplication factor used when calculating the drying
+shrinkage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../../materials/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Materials</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="shear.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Shear, punching and torsion capacity</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, fib International
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/fib-international/structuralcodes" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Creep and shrinkage</a><ul>
+<li><a class="reference internal" href="#creep">Creep</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.calc_J"><code class="docutils literal notranslate"><span class="pre">calc_J()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.phi"><code class="docutils literal notranslate"><span class="pre">phi()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.phi_bc"><code class="docutils literal notranslate"><span class="pre">phi_bc()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.phi_dc"><code class="docutils literal notranslate"><span class="pre">phi_dc()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_bc_fcm"><code class="docutils literal notranslate"><span class="pre">beta_bc_fcm()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_bc_t"><code class="docutils literal notranslate"><span class="pre">beta_bc_t()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.t_T"><code class="docutils literal notranslate"><span class="pre">t_T()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.t0_adj"><code class="docutils literal notranslate"><span class="pre">t0_adj()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_dc_fcm"><code class="docutils literal notranslate"><span class="pre">beta_dc_fcm()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_dc_RH"><code class="docutils literal notranslate"><span class="pre">beta_dc_RH()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_dc_t"><code class="docutils literal notranslate"><span class="pre">beta_dc_t()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_dc_t0"><code class="docutils literal notranslate"><span class="pre">beta_dc_t0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_h"><code class="docutils literal notranslate"><span class="pre">beta_h()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.gamma_t0"><code class="docutils literal notranslate"><span class="pre">gamma_t0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.alpha_fcm"><code class="docutils literal notranslate"><span class="pre">alpha_fcm()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.k_sigma"><code class="docutils literal notranslate"><span class="pre">k_sigma()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#shrinkage">Shrinkage</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cbs"><code class="docutils literal notranslate"><span class="pre">eps_cbs()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cds"><code class="docutils literal notranslate"><span class="pre">eps_cds()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cbs0"><code class="docutils literal notranslate"><span class="pre">eps_cbs0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_bs"><code class="docutils literal notranslate"><span class="pre">beta_bs()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cds0"><code class="docutils literal notranslate"><span class="pre">eps_cds0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_ds"><code class="docutils literal notranslate"><span class="pre">beta_ds()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_RH"><code class="docutils literal notranslate"><span class="pre">beta_RH()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_s1"><code class="docutils literal notranslate"><span class="pre">beta_s1()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
+    <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
+    <script defer="defer" src="../../../_static/tippy\api\codes\mc2010\creep_shrinkage.290f84eb-e075-453a-bee4-2a027096c798.js"></script>
+    </body>
+</html>

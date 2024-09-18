@@ -1,0 +1,1749 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
+
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 --><title>Index - StructuralCodes documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">StructuralCodes documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/structuralcodeslogo-300.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/structuralcodeslogo-300.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">StructuralCodes documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart/index.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/library_structure.html">Library structure</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/codes/index.html">Design codes</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Design codes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/codes/general.html">General functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/codes/ec2_2004/index.html">Eurocode 2 (2004)</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2004)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2004/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2004/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2004/shear.html">Shear capacity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2004/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2004/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/codes/ec2_2023/index.html">Eurocode 2 (2023)</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2023)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2023/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2023/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2023/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2023/deflections.html">Deflection calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/ec2_2023/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="api/codes/mc2010/index.html">fib Model Code 2010</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of fib Model Code 2010</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/mc2010/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/mc2010/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/mc2010/shear.html">Shear, punching and torsion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/codes/mc2010/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/materials/index.html">Materials</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Materials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/materials/concretes.html">Concrete materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/materials/reinforcement_steels.html">Reinforcement steel materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/materials/constitutive_laws.html">Constitutive laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/materials/base_materials.html">Base material classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/geometry/steel_sections.html">Steel sections</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/sections/section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/sections/section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/sections/section_calculator.html">Section calculator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="theory/index.html">Theory reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing/index.html">Contributing</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          
+<section class="genindex-section">
+  <h1 id="index">Index</h1>
+  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#H"><strong>H</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#K"><strong>K</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a> | <a href="#X"><strong>X</strong></a> | <a href="#Y"><strong>Y</strong></a></div>
+</section>
+<section id="_" class="genindex-section">
+  <h2>_</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.__init__">__init__() (structuralcodes.geometry.CompoundGeometry method)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.Geometry.__init__">(structuralcodes.geometry.Geometry method)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.__init__">(structuralcodes.geometry.PointGeometry method)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.__init__">(structuralcodes.geometry.SurfaceGeometry method)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.__init__">(structuralcodes.materials.concrete.ConcreteEC2_2004 method)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.__init__">(structuralcodes.materials.concrete.ConcreteEC2_2023 method)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.__init__">(structuralcodes.materials.concrete.ConcreteMC2010 method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.BilinearCompression.__init__">(structuralcodes.materials.constitutive_laws.BilinearCompression method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Elastic.__init__">(structuralcodes.materials.constitutive_laws.Elastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ElasticPlastic.__init__">(structuralcodes.materials.constitutive_laws.ElasticPlastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ParabolaRectangle.__init__">(structuralcodes.materials.constitutive_laws.ParabolaRectangle method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Popovics.__init__">(structuralcodes.materials.constitutive_laws.Popovics method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Sargin.__init__">(structuralcodes.materials.constitutive_laws.Sargin method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.UserDefined.__init__">(structuralcodes.materials.constitutive_laws.UserDefined method)</a>
+</li>
+          <li><a href="api/sections/section_creation.html#structuralcodes.sections.GenericSection.__init__">(structuralcodes.sections.GenericSection method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="A" class="genindex-section">
+  <h2>A</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.A">A (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.A">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.A">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.A">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.A">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.A">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.A">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2023/creep_shrinkage.html#structuralcodes.codes.ec2_2023.A_phi_correction_exp">A_phi_correction_exp() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/sections/section_creation.html#structuralcodes.sections.add_reinforcement">add_reinforcement() (in module structuralcodes.sections)</a>
+</li>
+        <li><a href="api/sections/section_creation.html#structuralcodes.sections.add_reinforcement_line">add_reinforcement_line() (in module structuralcodes.sections)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.alpha_c_th">alpha_c_th() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.alpha_cc">alpha_cc (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.alpha_cc">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.alpha_e">alpha_e() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.alpha_fcm">alpha_fcm() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.alpha_s_th">alpha_s_th() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.area">area (structuralcodes.geometry.CompoundGeometry property)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.area">(structuralcodes.geometry.PointGeometry property)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.area">(structuralcodes.geometry.SurfaceGeometry property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.As_min">As_min() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.As_min_2">As_min_2() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.As_min_p">As_min_p() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.As_min_y">As_min_y() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/shear.html#structuralcodes.codes.ec2_2004.Asw_max">Asw_max() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="B" class="genindex-section">
+  <h2>B</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.b">b (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.b">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.b">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.b">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.b">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.b">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.b">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.b_0">b_0() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_bc_fcm">beta_bc_fcm() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_bc_t">beta_bc_t() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_bs">beta_bs() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.beta_c">beta_c() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.beta_cc">beta_cc() (in module structuralcodes.codes.mc2010)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_dc_fcm">beta_dc_fcm() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_dc_RH">beta_dc_RH() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_dc_t">beta_dc_t() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_dc_t0">beta_dc_t0() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_ds">beta_ds() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.beta_e">beta_e() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.beta_fcm">beta_fcm() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.beta_H">beta_H() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_h">beta_h() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.beta_RH">beta_RH() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_RH">(in module structuralcodes.codes.mc2010)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.beta_s1">beta_s1() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.BilinearCompression">BilinearCompression (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="C" class="genindex-section">
+  <h2>C</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.calc_J">calc_J() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_bending_strength">calculate_bending_strength() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.calculate_extents">calculate_extents() (structuralcodes.geometry.CompoundGeometry method)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.calculate_extents">(structuralcodes.geometry.SurfaceGeometry method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_limit_axial_load">calculate_limit_axial_load() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_mm_interaction_domain">calculate_mm_interaction_domain() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature">calculate_moment_curvature() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_nm_interaction_domain">calculate_nm_interaction_domain() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_nmm_interaction_domain">calculate_nmm_interaction_domain() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.centroid">centroid (structuralcodes.geometry.SurfaceGeometry property)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.check_axial_load">check_axial_load() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry">CompoundGeometry (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.concrete.Concrete">Concrete (class in structuralcodes.materials.concrete)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004">ConcreteEC2_2004 (class in structuralcodes.materials.concrete)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023">ConcreteEC2_2023 (class in structuralcodes.materials.concrete)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010">ConcreteMC2010 (class in structuralcodes.materials.concrete)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.Material.constitutive_law">constitutive_law (structuralcodes.core.base.Material property)</a>
+
+        <ul>
+          <li><a href="api/materials/base_materials.html#structuralcodes.materials.concrete.Concrete.constitutive_law">(structuralcodes.materials.concrete.Concrete property)</a>
+</li>
+          <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.constitutive_law">(structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.ConstitutiveLaw">ConstitutiveLaw (class in structuralcodes.core.base)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.CrackedProperties">CrackedProperties (class in structuralcodes.core._section_results)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.create_concrete">create_concrete() (in module structuralcodes.materials.concrete)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.create_constitutive_law">create_constitutive_law() (in module structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.create_line_point_angle">create_line_point_angle() (in module structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.create_load_dict">create_load_dict() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.create_reinforcement">create_reinforcement() (in module structuralcodes.materials.reinforcement)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="D" class="genindex-section">
+  <h2>D</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2023/deflections.html#structuralcodes.codes.ec2_2023.delta_simpl">delta_simpl() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.Material.density">density (structuralcodes.core.base.Material property)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.density">(structuralcodes.geometry.PointGeometry property)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.density">(structuralcodes.geometry.SurfaceGeometry property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.diameter">diameter (structuralcodes.geometry.PointGeometry property)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="E" class="genindex-section">
+  <h2>E</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2023/deflections.html#structuralcodes.codes.ec2_2023.Ec_eff">Ec_eff() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.Eci">Eci (structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.Eci">Eci() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.Eci_t">Eci_t() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.Ecm">Ecm (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.Ecm">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.Ecm">Ecm() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.Ecm">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Elastic">Elastic (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ElasticPlastic">ElasticPlastic (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.eps_c1">eps_c1 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.eps_c1">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.eps_c1">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.eps_c1">eps_c1() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.eps_c1">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.eps_c2">eps_c2 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.eps_c2">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.eps_c2">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.eps_c2">eps_c2() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.eps_c3">eps_c3 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.eps_c3">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.eps_c3">eps_c3() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.eps_cbs">eps_cbs() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.eps_cbs0">eps_cbs0() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.eps_cd_0">eps_cd_0() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.eps_cds">eps_cds() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.eps_cds0">eps_cds0() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.eps_cs">eps_cs() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2023/creep_shrinkage.html#structuralcodes.codes.ec2_2023.eps_cs_50y">eps_cs_50y() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.eps_cu1">eps_cu1 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.eps_cu1">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.eps_cu1">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.eps_cu1">eps_cu1() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.eps_cu1">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.eps_cu2">eps_cu2 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.eps_cu2">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.eps_cu2">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.eps_cu2">eps_cu2() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.eps_cu3">eps_cu3 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.eps_cu3">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.eps_cu3">eps_cu3() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.eps_sm_eps_cm">eps_sm_eps_cm() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.epsilon_x">epsilon_x() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.epssm_epscm">epssm_epscm() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/material_reinforcement.html#structuralcodes.codes.ec2_2004.epsud">epsud() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/mc2010/material_reinforcement.html#structuralcodes.codes.mc2010.epsud">(in module structuralcodes.codes.mc2010)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2004.epsud">(structuralcodes.materials.reinforcement.ReinforcementEC2_2004 method)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2023.epsud">(structuralcodes.materials.reinforcement.ReinforcementEC2_2023 method)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementMC2010.epsud">(structuralcodes.materials.reinforcement.ReinforcementMC2010 method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.epsuk">epsuk (structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.epsyd">epsyd (structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.epsyk">epsyk (structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.Es">Es (structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.Es">Es() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.eta_cc">eta_cc() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.eta_fc">eta_fc() (in module structuralcodes.codes.mc2010)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="F" class="genindex-section">
+  <h2>F</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.fcd">fcd() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.fcd">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+          <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.fcd">(in module structuralcodes.codes.mc2010)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.fcd">(structuralcodes.materials.concrete.ConcreteEC2_2004 method)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.fcd">(structuralcodes.materials.concrete.ConcreteEC2_2023 method)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.fcd">(structuralcodes.materials.concrete.ConcreteMC2010 method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.concrete.Concrete.fck">fck (structuralcodes.materials.concrete.Concrete property)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.fcm">fcm (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.fcm">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.fcm">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.fcm">fcm() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.fcm">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+          <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.fcm">(in module structuralcodes.codes.mc2010)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.fctd">fctd() (in module structuralcodes.codes.ec2_2023)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.fctd">(structuralcodes.materials.concrete.ConcreteEC2_2023 method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.fctk_5">fctk_5 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.fctk_5">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.fctk_5">fctk_5() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.fctk_5">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.fctk_95">fctk_95 (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.fctk_95">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.fctk_95">fctk_95() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.fctk_95">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.fctkmax">fctkmax (structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.fctkmax">fctkmax() (in module structuralcodes.codes.mc2010)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.fctkmin">fctkmin (structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.fctkmin">fctkmin() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.fctm">fctm (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.fctm">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.fctm">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.fctm">fctm() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.fctm">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+          <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.fctm">(in module structuralcodes.codes.mc2010)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.FiberIntegrator">FiberIntegrator (class in structuralcodes.sections)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.find_equilibrium_fixed_curvature">find_equilibrium_fixed_curvature() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.find_equilibrium_fixed_pivot">find_equilibrium_fixed_pivot() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.fpd">fpd() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.from_geometry">from_geometry() (structuralcodes.geometry.CompoundGeometry static method)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.from_geometry">(structuralcodes.geometry.PointGeometry static method)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.from_geometry">(structuralcodes.geometry.SurfaceGeometry static method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2004.ftd">ftd() (structuralcodes.materials.reinforcement.ReinforcementEC2_2004 method)</a>
+
+        <ul>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2023.ftd">(structuralcodes.materials.reinforcement.ReinforcementEC2_2023 method)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementMC2010.ftd">(structuralcodes.materials.reinforcement.ReinforcementMC2010 method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.ftk">ftk (structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/material_reinforcement.html#structuralcodes.codes.ec2_2004.fyd">fyd() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.fyd">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+          <li><a href="api/codes/mc2010/material_reinforcement.html#structuralcodes.codes.mc2010.fyd">(in module structuralcodes.codes.mc2010)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2004.fyd">(structuralcodes.materials.reinforcement.ReinforcementEC2_2004 method)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2023.fyd">(structuralcodes.materials.reinforcement.ReinforcementEC2_2023 method)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementMC2010.fyd">(structuralcodes.materials.reinforcement.ReinforcementMC2010 method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement.fyk">fyk (structuralcodes.materials.reinforcement.Reinforcement property)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.concrete.Concrete.gamma_c">gamma_c (structuralcodes.materials.concrete.Concrete property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.gamma_c">(structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.gamma_c">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.gamma_c">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2004.gamma_eps">gamma_eps (structuralcodes.materials.reinforcement.ReinforcementEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementMC2010.gamma_eps">(structuralcodes.materials.reinforcement.ReinforcementMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2004.gamma_s">gamma_s (structuralcodes.materials.reinforcement.ReinforcementEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2023.gamma_s">(structuralcodes.materials.reinforcement.ReinforcementEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementMC2010.gamma_s">(structuralcodes.materials.reinforcement.ReinforcementMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.gamma_t0">gamma_t0() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/sections/section_creation.html#structuralcodes.sections.GenericSection">GenericSection (class in structuralcodes.sections)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator">GenericSectionCalculator (class in structuralcodes.sections)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.Geometry">Geometry (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/sections/section_creation.html#structuralcodes.sections.GenericSection.geometry">geometry (structuralcodes.sections.GenericSection attribute)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.get_balanced_failure_strain">get_balanced_failure_strain() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.get_constitutive_laws_list">get_constitutive_laws_list() (in module structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/codes/general.html#structuralcodes.codes.get_design_codes">get_design_codes() (in module structuralcodes.codes)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.get_polygon">get_polygon() (structuralcodes.geometry.HE class method)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.get_polygon">(structuralcodes.geometry.IPE class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.get_polygon">(structuralcodes.geometry.IPN class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.get_polygon">(structuralcodes.geometry.UB class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.get_polygon">(structuralcodes.geometry.UBP class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.get_polygon">(structuralcodes.geometry.UC class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.get_polygon">(structuralcodes.geometry.UPN class method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.ConstitutiveLaw.get_secant">get_secant() (structuralcodes.core.base.ConstitutiveLaw method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.BilinearCompression.get_stress">get_stress() (structuralcodes.materials.constitutive_laws.BilinearCompression method)</a>
+
+        <ul>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Elastic.get_stress">(structuralcodes.materials.constitutive_laws.Elastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ElasticPlastic.get_stress">(structuralcodes.materials.constitutive_laws.ElasticPlastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ParabolaRectangle.get_stress">(structuralcodes.materials.constitutive_laws.ParabolaRectangle method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Popovics.get_stress">(structuralcodes.materials.constitutive_laws.Popovics method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Sargin.get_stress">(structuralcodes.materials.constitutive_laws.Sargin method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.UserDefined.get_stress">(structuralcodes.materials.constitutive_laws.UserDefined method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.BilinearCompression.get_tangent">get_tangent() (structuralcodes.materials.constitutive_laws.BilinearCompression method)</a>
+
+        <ul>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Elastic.get_tangent">(structuralcodes.materials.constitutive_laws.Elastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ElasticPlastic.get_tangent">(structuralcodes.materials.constitutive_laws.ElasticPlastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ParabolaRectangle.get_tangent">(structuralcodes.materials.constitutive_laws.ParabolaRectangle method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Popovics.get_tangent">(structuralcodes.materials.constitutive_laws.Popovics method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Sargin.get_tangent">(structuralcodes.materials.constitutive_laws.Sargin method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.UserDefined.get_tangent">(structuralcodes.materials.constitutive_laws.UserDefined method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.BilinearCompression.get_ultimate_strain">get_ultimate_strain() (structuralcodes.materials.constitutive_laws.BilinearCompression method)</a>
+
+        <ul>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Elastic.get_ultimate_strain">(structuralcodes.materials.constitutive_laws.Elastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ElasticPlastic.get_ultimate_strain">(structuralcodes.materials.constitutive_laws.ElasticPlastic method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ParabolaRectangle.get_ultimate_strain">(structuralcodes.materials.constitutive_laws.ParabolaRectangle method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Popovics.get_ultimate_strain">(structuralcodes.materials.constitutive_laws.Popovics method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Sargin.get_ultimate_strain">(structuralcodes.materials.constitutive_laws.Sargin method)</a>
+</li>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.UserDefined.get_ultimate_strain">(structuralcodes.materials.constitutive_laws.UserDefined method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.Gf">Gf (structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        <li><a href="api/codes/mc2010/material_concrete.html#structuralcodes.codes.mc2010.Gf">Gf() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/sections/section_creation.html#structuralcodes.sections.GenericSection.gross_properties">gross_properties (structuralcodes.sections.GenericSection property)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.GrossProperties">GrossProperties (class in structuralcodes.core._section_results)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.Geometry.group_label">group_label (structuralcodes.geometry.Geometry property)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="H" class="genindex-section">
+  <h2>H</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.h">h (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.h">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.h">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.h">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.h">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.h">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.h">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.hc_eff">hc_eff() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE">HE (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/creep_shrinkage.html#structuralcodes.codes.ec2_2023.hn">hn() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="I" class="genindex-section">
+  <h2>I</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Icsi">Icsi (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Icsi">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Icsi">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Icsi">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Icsi">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Icsi">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Icsi">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Ieta">Ieta (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Ieta">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Ieta">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Ieta">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Ieta">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Ieta">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Ieta">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.FiberIntegrator.integrate">integrate() (structuralcodes.sections.FiberIntegrator method)</a>
+
+        <ul>
+          <li><a href="api/sections/section_integrator.html#structuralcodes.sections.MarinIntegrator.integrate">(structuralcodes.sections.MarinIntegrator method)</a>
+</li>
+          <li><a href="api/sections/section_integrator.html#structuralcodes.sections.SectionIntegrator.integrate">(structuralcodes.sections.SectionIntegrator method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.integrate_strain_profile">integrate_strain_profile() (structuralcodes.sections.GenericSectionCalculator method)</a>
+</li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.FiberIntegrator.integrate_strain_response_on_geometry">integrate_strain_response_on_geometry() (structuralcodes.sections.FiberIntegrator method)</a>
+
+        <ul>
+          <li><a href="api/sections/section_integrator.html#structuralcodes.sections.MarinIntegrator.integrate_strain_response_on_geometry">(structuralcodes.sections.MarinIntegrator method)</a>
+</li>
+          <li><a href="api/sections/section_integrator.html#structuralcodes.sections.SectionIntegrator.integrate_strain_response_on_geometry">(structuralcodes.sections.SectionIntegrator method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.integrator_factory">integrator_factory() (in module structuralcodes.sections)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE">IPE (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN">IPN (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Iy">Iy (structuralcodes.geometry.HE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.iy">iy (structuralcodes.geometry.HE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Iy">Iy (structuralcodes.geometry.IPE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.iy">iy (structuralcodes.geometry.IPE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Iy">Iy (structuralcodes.geometry.IPN property)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.iy">iy (structuralcodes.geometry.IPN property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Iy">Iy (structuralcodes.geometry.UB property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.iy">iy (structuralcodes.geometry.UB property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Iy">Iy (structuralcodes.geometry.UBP property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.iy">iy (structuralcodes.geometry.UBP property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Iy">Iy (structuralcodes.geometry.UC property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.iy">iy (structuralcodes.geometry.UC property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Iy">Iy (structuralcodes.geometry.UPN property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.iy">iy (structuralcodes.geometry.UPN property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Iyz">Iyz (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Iyz">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Iyz">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Iyz">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Iyz">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Iyz">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Iyz">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Iz">Iz (structuralcodes.geometry.HE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.iz">iz (structuralcodes.geometry.HE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Iz">Iz (structuralcodes.geometry.IPE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.iz">iz (structuralcodes.geometry.IPE property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Iz">Iz (structuralcodes.geometry.IPN property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.iz">iz (structuralcodes.geometry.IPN property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Iz">Iz (structuralcodes.geometry.UB property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.iz">iz (structuralcodes.geometry.UB property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Iz">Iz (structuralcodes.geometry.UBP property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.iz">iz (structuralcodes.geometry.UBP property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Iz">Iz (structuralcodes.geometry.UC property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.iz">iz (structuralcodes.geometry.UC property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Iz">Iz (structuralcodes.geometry.UPN property)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.iz">iz (structuralcodes.geometry.UPN property)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="K" class="genindex-section">
+  <h2>K</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.k">k() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.k1">k1() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.k2">k2() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.k3">k3() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.k4">k4() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.k_1_r">k_1_r() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.k_sargin">k_sargin (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.k_sargin">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.k_sargin">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.k_sigma">k_sigma() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.k_tc">k_tc() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.k_tt">k_tt() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.kc_flanges_area">kc_flanges_area() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.kc_rect_area">kc_rect_area() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.kc_tension">kc_tension() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.kfl">kfl() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.kh">kh() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.kt">kt() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="M" class="genindex-section">
+  <h2>M</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.m_ed">m_ed() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.marin_integration">marin_integration() (in module structuralcodes.sections)</a>
+</li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.MarinIntegrator">MarinIntegrator (class in structuralcodes.sections)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.Material">Material (class in structuralcodes.core.base)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.material">material (structuralcodes.geometry.PointGeometry property)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.MMInteractionDomain">MMInteractionDomain (class in structuralcodes.core._section_results)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.MomentCurvatureResults">MomentCurvatureResults (class in structuralcodes.core._section_results)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.n_max">n_max (structuralcodes.sections.GenericSectionCalculator property)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.n_min">n_min (structuralcodes.sections.GenericSectionCalculator property)</a>
+</li>
+        <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2004.n_parabolic_rectangular">n_parabolic_rectangular (structuralcodes.materials.concrete.ConcreteEC2_2004 property)</a>
+
+        <ul>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteEC2_2023.n_parabolic_rectangular">(structuralcodes.materials.concrete.ConcreteEC2_2023 property)</a>
+</li>
+          <li><a href="api/materials/concretes.html#structuralcodes.materials.concrete.ConcreteMC2010.n_parabolic_rectangular">(structuralcodes.materials.concrete.ConcreteMC2010 property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2004/material_concrete.html#structuralcodes.codes.ec2_2004.n_parabolic_rectangular">n_parabolic_rectangular() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.ConstitutiveLaw.name">name (structuralcodes.core.base.ConstitutiveLaw property)</a>
+
+        <ul>
+          <li><a href="api/materials/base_materials.html#structuralcodes.core.base.Material.name">(structuralcodes.core.base.Material property)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.Geometry.name">(structuralcodes.geometry.Geometry property)</a>
+</li>
+          <li><a href="api/sections/section_creation.html#structuralcodes.sections.GenericSection.name">(structuralcodes.sections.GenericSection attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.NMInteractionDomain">NMInteractionDomain (class in structuralcodes.core._section_results)</a>
+</li>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.NMMInteractionDomain">NMMInteractionDomain (class in structuralcodes.core._section_results)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="P" class="genindex-section">
+  <h2>P</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.p_steel_stress_params">p_steel_stress_params() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.ParabolaRectangle">ParabolaRectangle (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.phi">phi() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.phi">(in module structuralcodes.codes.mc2010)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/ec2_2023/creep_shrinkage.html#structuralcodes.codes.ec2_2023.phi_50y_t0">phi_50y_t0() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.phi_bc">phi_bc() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/creep_shrinkage.html#structuralcodes.codes.ec2_2023.phi_correction_factor">phi_correction_factor() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.phi_dc">phi_dc() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.phi_eq">phi_eq() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.phi_RH">phi_RH() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.point">point (structuralcodes.geometry.PointGeometry property)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry">PointGeometry (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.polygon">polygon (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.polygon">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.polygon">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.polygon">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.polygon">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.polygon">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.polygon">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Popovics">Popovics (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.FiberIntegrator.prepare_input">prepare_input() (structuralcodes.sections.FiberIntegrator method)</a>
+
+        <ul>
+          <li><a href="api/sections/section_integrator.html#structuralcodes.sections.MarinIntegrator.prepare_input">(structuralcodes.sections.MarinIntegrator method)</a>
+</li>
+          <li><a href="api/sections/section_integrator.html#structuralcodes.sections.SectionIntegrator.prepare_input">(structuralcodes.sections.SectionIntegrator method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.FiberIntegrator.prepare_triangulation">prepare_triangulation() (structuralcodes.sections.FiberIntegrator method)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.ConstitutiveLaw.preprocess_strains_with_limits">preprocess_strains_with_limits() (structuralcodes.core.base.ConstitutiveLaw method)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.profiles">profiles() (structuralcodes.geometry.HE class method)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.profiles">(structuralcodes.geometry.IPE class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.profiles">(structuralcodes.geometry.IPN class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.profiles">(structuralcodes.geometry.UB class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.profiles">(structuralcodes.geometry.UBP class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.profiles">(structuralcodes.geometry.UC class method)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.profiles">(structuralcodes.geometry.UPN class method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.psi_punching">psi_punching() (in module structuralcodes.codes.mc2010)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="R" class="genindex-section">
+  <h2>R</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.r">r (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.r">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.r">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.r">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.r">(structuralcodes.geometry.UC property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.r1">r1 (structuralcodes.geometry.IPN property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.r1">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.r2">r2 (structuralcodes.geometry.IPN property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.r2">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.reinforced_concrete">reinforced_concrete (structuralcodes.geometry.CompoundGeometry property)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/base_materials.html#structuralcodes.materials.reinforcement.Reinforcement">Reinforcement (class in structuralcodes.materials.reinforcement)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/material_reinforcement.html#structuralcodes.codes.ec2_2004.reinforcement_duct_props">reinforcement_duct_props() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.reinforcement_duct_props">(in module structuralcodes.codes.ec2_2023)</a>
+</li>
+          <li><a href="api/codes/mc2010/material_reinforcement.html#structuralcodes.codes.mc2010.reinforcement_duct_props">(in module structuralcodes.codes.mc2010)</a>
+</li>
+        </ul></li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2004">ReinforcementEC2_2004 (class in structuralcodes.materials.reinforcement)</a>
+</li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementEC2_2023">ReinforcementEC2_2023 (class in structuralcodes.materials.reinforcement)</a>
+</li>
+        <li><a href="api/materials/reinforcement_steels.html#structuralcodes.materials.reinforcement.ReinforcementMC2010">ReinforcementMC2010 (class in structuralcodes.materials.reinforcement)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.rho_p_eff">rho_p_eff() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.rotate">rotate() (structuralcodes.geometry.CompoundGeometry method)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.rotate">(structuralcodes.geometry.PointGeometry method)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.rotate">(structuralcodes.geometry.SurfaceGeometry method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Sargin">Sargin (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+        <li><a href="api/sections/section_creation.html#structuralcodes.sections.GenericSection.section_calculator">section_calculator (structuralcodes.sections.GenericSection attribute)</a>
+</li>
+        <li><a href="api/sections/section_integrator.html#structuralcodes.sections.SectionIntegrator">SectionIntegrator (class in structuralcodes.sections)</a>
+</li>
+        <li><a href="api/codes/general.html#structuralcodes.codes.set_design_code">set_design_code() (in module structuralcodes.codes)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.Elastic.set_ultimate_strain">set_ultimate_strain() (structuralcodes.materials.constitutive_laws.Elastic method)</a>
+
+        <ul>
+          <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.UserDefined.set_ultimate_strain">(structuralcodes.materials.constitutive_laws.UserDefined method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.split">split() (structuralcodes.geometry.SurfaceGeometry method)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.split_two_lines">split_two_lines() (structuralcodes.geometry.SurfaceGeometry method)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.sr_max_close">sr_max_close() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.sr_max_far">sr_max_far() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.sr_max_theta">sr_max_theta() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.srm_cal">srm_cal() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry">SurfaceGeometry (class in structuralcodes.geometry)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="T" class="genindex-section">
+  <h2>T</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/creep_shrinkage.html#structuralcodes.codes.ec2_2004.t0_adj">t0_adj() (in module structuralcodes.codes.ec2_2004)</a>
+
+        <ul>
+          <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.t0_adj">(in module structuralcodes.codes.mc2010)</a>
+</li>
+        </ul></li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.t_rd">t_rd() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.t_rd_max">t_rd_max() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/creep_shrinkage.html#structuralcodes.codes.mc2010.t_T">t_T() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.tau_edi">tau_edi() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.tau_rdi_with_reinforcement">tau_rdi_with_reinforcement() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.tau_rdi_without_reinforcement">tau_rdi_without_reinforcement() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.tf">tf (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.tf">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.tf">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.tf">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.tf">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.tf">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.tf">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.theta">theta (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.theta">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.theta">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.theta">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.theta">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.theta">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.theta">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry.translate">translate() (structuralcodes.geometry.CompoundGeometry method)</a>
+
+        <ul>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.translate">(structuralcodes.geometry.PointGeometry method)</a>
+</li>
+          <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry.translate">(structuralcodes.geometry.SurfaceGeometry method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.tw">tw (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.tw">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.tw">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.tw">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.tw">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.tw">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.tw">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="U" class="genindex-section">
+  <h2>U</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB">UB (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP">UBP (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC">UC (class in structuralcodes.geometry)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/sections/section_calculator.html#structuralcodes.core._section_results.UltimateBendingMomentResults">UltimateBendingMomentResults (class in structuralcodes.core._section_results)</a>
+</li>
+        <li><a href="api/materials/base_materials.html#structuralcodes.core.base.Material.update_attributes">update_attributes() (structuralcodes.core.base.Material method)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN">UPN (class in structuralcodes.geometry)</a>
+</li>
+        <li><a href="api/materials/constitutive_laws.html#structuralcodes.materials.constitutive_laws.UserDefined">UserDefined (class in structuralcodes.materials.constitutive_laws)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="V" class="genindex-section">
+  <h2>V</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_ed_ti">v_ed_ti() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd">v_rd() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_ct_approx1">v_rd_ct_approx1() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_ct_approx2">v_rd_ct_approx2() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_max_approx1">v_rd_max_approx1() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_max_approx2">v_rd_max_approx2() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_max_approx3">v_rd_max_approx3() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_max_punching">v_rd_max_punching() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rd_punching">v_rd_punching() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rdc">v_rdc() (in module structuralcodes.codes.mc2010)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rdc_approx1">v_rdc_approx1() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rdc_approx2">v_rdc_approx2() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rdc_approx3">v_rdc_approx3() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rdc_punching">v_rdc_punching() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rds">v_rds() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/mc2010/shear.html#structuralcodes.codes.mc2010.v_rds_punching">v_rds_punching() (in module structuralcodes.codes.mc2010)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/shear.html#structuralcodes.codes.ec2_2004.VEdmax_unreinf">VEdmax_unreinf() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/shear.html#structuralcodes.codes.ec2_2004.VRdc">VRdc() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/shear.html#structuralcodes.codes.ec2_2004.VRdc_prin_stress">VRdc_prin_stress() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/shear.html#structuralcodes.codes.ec2_2004.VRdmax">VRdmax() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/shear.html#structuralcodes.codes.ec2_2004.VRds">VRds() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="W" class="genindex-section">
+  <h2>W</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.w_max">w_max() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.w_spacing">w_spacing() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_concrete.html#structuralcodes.codes.ec2_2023.weight_c">weight_c() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/material_reinforcement.html#structuralcodes.codes.ec2_2023.weight_s">weight_s() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Wely">Wely (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Wely">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Wely">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Wely">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Wely">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Wely">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Wely">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Welz">Welz (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Welz">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Welz">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Welz">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Welz">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Welz">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Welz">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.wk">wk() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.wk_cal">wk_cal() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/codes/ec2_2023/cracks.html#structuralcodes.codes.ec2_2023.wk_cal2">wk_cal2() (in module structuralcodes.codes.ec2_2023)</a>
+</li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Wply">Wply (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Wply">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Wply">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Wply">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Wply">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Wply">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Wply">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+        <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.HE.Wplz">Wplz (structuralcodes.geometry.HE property)</a>
+
+        <ul>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPE.Wplz">(structuralcodes.geometry.IPE property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.IPN.Wplz">(structuralcodes.geometry.IPN property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UB.Wplz">(structuralcodes.geometry.UB property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UBP.Wplz">(structuralcodes.geometry.UBP property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UC.Wplz">(structuralcodes.geometry.UC property)</a>
+</li>
+          <li><a href="api/geometry/steel_sections.html#structuralcodes.geometry.UPN.Wplz">(structuralcodes.geometry.UPN property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="X" class="genindex-section">
+  <h2>X</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.x">x (structuralcodes.geometry.PointGeometry property)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/codes/ec2_2004/cracks.html#structuralcodes.codes.ec2_2004.xi1">xi1() (in module structuralcodes.codes.ec2_2004)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="Y" class="genindex-section">
+  <h2>Y</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/geometry/geometry_creation.html#structuralcodes.geometry.PointGeometry.y">y (structuralcodes.geometry.PointGeometry property)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, fib International
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/fib-international/structuralcodes" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>
