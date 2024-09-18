@@ -3,7 +3,7 @@
 from . import codes, core, geometry, materials, sections
 from .codes import get_design_codes, set_design_code, set_national_annex
 
-__version__ = ''
+__version__ = '0.0.1'
 
 __all__ = [
     'set_design_code',
