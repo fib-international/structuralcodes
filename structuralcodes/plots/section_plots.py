@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.append('../')
-import math
 
+from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from results_methods import get_stress_point
 
@@ -347,88 +347,141 @@ def draw_constitutive_law(ec_const, lim_strain_neg=None, lim_strain_pos=None):
     plt.show()
 
 
-def draw_My_Mz_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
-    """Draw the My-Mz diagram of a cross section.
+def draw_2D_diagram(
+    x_boundary,
+    y_boundary,
+    test_points,
+    figsize=(10, 10),
+    nticks_x=10,
+    nticks_y=10,
+    title='2D diagram',
+    title_x='X-axis',
+    title_y='Y-axis',
+    color='red',
+    debug=False,
+    scale_x=1,
+    scale_y=1,
+):
+    """Draw the 2D diagram of a cross section result representation.
 
     Args:
-        res : MMInteractionDomain results
+        x_boundary : array of x value for the capacity
+        y_boundary : array of y value for the capacity
+        test_points : Points to check if inside/outside boundary
         figsize : Size of the plot
         nticks_x,nticks_y : number of ticks in the axes
+        title :  title of the plot
+        title_x,title_y : title of the axis
+        color: color of boundary line
+        debug: print values of boundary
+        scale_x, scale_y: for change units of boundary points and test_points
     """
-    m_y = res.m_y / 1e6
-    m_z = res.m_z / 1e6
+    # Apply scale (units)
+    x_boundary *= scale_x
+    y_boundary *= scale_y
+
     fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(m_y, m_z, color='green')
-    ax.set_title(f'My-Mz   N={res.n/1e3} kN')
-    ax.set_xlabel('My (mkN)')
-    ax.set_ylabel('Mz (mkN)')
+    ax.plot(x_boundary, y_boundary, color=color)
+    ax.set_title(title)
+    ax.set_xlabel(title_x)
+    ax.set_ylabel(title_y)
     ax.axhline(0, color='gray', linewidth=1)
     ax.axvline(0, color='gray', linewidth=1)
-
-    x_legend = np.linspace(np.min(m_y), np.max(m_y), nticks_x)
-    y_legend = np.linspace(np.min(m_z), np.max(m_z), nticks_y)
-    ax.set_xticks(x_legend)
-    ax.set_yticks(y_legend)
-    ax.set_xticklabels(np.around(x_legend, decimals=1))
-    ax.set_yticklabels(np.around(y_legend, decimals=1))
-    plt.show()
-
-
-def draw_N_M_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
-    """Draw the N-M diagram of a cross section.
-
-    Args:
-        res : NMInteractionDomain results
-        figsize : Size of the plot
-        nticks_x,nticks_y : number of ticks in the axes
-    """
-    n = res.n / 1e3
-    m_y = res.m_y / 1e6
-    m_z = res.m_z / 1e6
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(n, m_y, color='red')
-    ax.set_title(f'N-My  theta={round(math.degrees(res.theta),1)}º')
-    ax.set_xlabel('N (kN)')
-    ax.set_ylabel('My (mkN)')
-    ax.axhline(0, color='gray', linewidth=1)
-    ax.axvline(0, color='gray', linewidth=1)
-    x_legend = np.linspace(np.min(n), np.max(n), nticks_x)
-    y_legend = np.linspace(np.min(m_y), np.max(m_y), nticks_y)
+    x_legend = np.linspace(np.min(x_boundary), np.max(x_boundary), nticks_x)
+    y_legend = np.linspace(np.min(y_boundary), np.max(y_boundary), nticks_y)
     ax.set_xticks(x_legend)
     ax.set_yticks(y_legend)
     ax.set_xticklabels(np.around(x_legend, decimals=1))
     ax.set_yticklabels(np.around(y_legend, decimals=1))
 
-    for n_i, my_i in zip(n, m_y):
-        print(f'N = {n_i:.2f}\tkN\t\tMy = {my_i:.2f}\tkNm')
-        ax.plot(n_i, my_i, 'o', color='gray', markersize=2)
+    for x_i, y_i in zip(x_boundary, y_boundary):
+        if debug:
+            print(f'X = {x_i:.2f}\tY = {y_i:.2f}')
+        # boundary points
+        ax.plot(x_i, y_i, 'o', color=color, markersize=2)
 
-    plt.show()
+    if test_points:
+        for res in test_points:
+            point = res['point']
+            point[0] *= scale_x
+            point[1] *= scale_y
+            intersection_point = res['intersection_point']
+            if intersection_point is not None:
+                intersection_point[0] *= scale_x
+                intersection_point[1] *= scale_y
+            is_inside = res['is_inside']
+            # point
+            color_check = 'blue' if is_inside else 'red'
+            ax.plot(point[0], point[1], 'o', color=color_check, markersize=5)
+            if is_inside:
+                ax.plot(
+                    [0, point[0]],
+                    [0, point[1]],
+                    linestyle='-',
+                    color='gray',
+                    linewidth=0.5,
+                )
+            elif intersection_point is not None:
+                ax.plot(
+                    intersection_point[0],
+                    intersection_point[1],
+                    'o',
+                    color='orange',
+                    markersize=5,
+                )
+                ax.plot(
+                    [0, intersection_point[0]],
+                    [0, intersection_point[1]],
+                    linestyle='-',
+                    linewidth=0.5,
+                    color='gray',
+                )
+                ax.plot(
+                    [intersection_point[0], point[0]],
+                    [intersection_point[1], point[1]],
+                    linestyle='--',
+                    linewidth=0.5,
+                    color='red',
+                )
+    # Calculate the maximum efficiency
+    if test_points:
+        efficiency_points = [
+            (res['efficiency'], res['point'])
+            for res in test_points
+            if res['efficiency'] is not None
+        ]
+        if efficiency_points:
+            max_efficiency, max_eff_point = max(
+                efficiency_points, key=lambda x: x[0]
+            )
+            max_ef_label = f'Max efficiency: {max_efficiency:.2f} at ({max_eff_point[0]:.0f}, {max_eff_point[1]:.0f})'
+        else:
+            max_ef_label = 'No efficiency'
 
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(n, m_z, color='red')
-    ax.set_title(f'N-MZ  theta={round(math.degrees(res.theta),1)}º')
-    ax.set_xlabel('N (kN)')
-    ax.set_ylabel('Mz (mkN)')
-    ax.axhline(0, color='gray', linewidth=1)
-    ax.axvline(0, color='gray', linewidth=1)
-    x_legend = np.linspace(np.min(n), np.max(n), nticks_x)
-    y_legend = np.linspace(np.min(m_z), np.max(m_z), nticks_y)
-    ax.set_xticks(x_legend)
-    ax.set_yticks(y_legend)
-    ax.set_xticklabels(np.around(x_legend, decimals=1))
-    ax.set_yticklabels(np.around(y_legend, decimals=1))
+        # Add the maximum efficiency to the legend
+        custom_line = Line2D(
+            [0],
+            [0],
+            color='white',
+            marker='',
+            linestyle='',
+            label=max_ef_label,
+        )
 
-    for n_i, mz_i in zip(n, m_z):
-        print(f'N = {n_i:.2f}\tkN\t\tMz = {mz_i:.2f}\tkNm')
-        ax.plot(n_i, mz_i, 'o', color='gray', markersize=2)
-
+        # Adjust legend to avoid duplicates
+        handles, labels = ax.get_legend_handles_labels()
+        handles.append(custom_line)
+        labels.append(max_ef_label)
+        ax.legend(
+            handles, labels, fontsize='small', loc='upper right', frameon=False
+        )
+    plt.grid(True, color='lightcyan')
     plt.show()
 
 
 def draw_N_My_Mz_diagram(
     mesh,
-    results,
+    results=None,
     N_scale=1e-3,
     My_scale=1e-6,
     Mz_scale=1e-6,
@@ -441,6 +494,7 @@ def draw_N_My_Mz_diagram(
         The mesh to visualize (capacity of the section).
     results : list of dict
         The results from check_points_in_N_My_Mz function.
+        If None, just plot the mesh capacity.
     N_scale, My_scale, Mz_scale : float, optional
         unit change for the N, My, and Mz axes, respectively.
     """
@@ -485,116 +539,122 @@ def draw_N_My_Mz_diagram(
     plotted_labels = set()
 
     # Plot each point and its ray
-    for res in results:
-        point = res['point'].copy()
-        point[0] *= N_scale
-        point[1] *= My_scale
-        point[2] *= Mz_scale
-        is_inside = res['is_inside']
-        efficiency = res['efficiency']
-        intersection_point = res['intersection_point']
+    if results:
+        for res in results:
+            point = res['point'].copy()
+            point[0] *= N_scale
+            point[1] *= My_scale
+            point[2] *= Mz_scale
+            is_inside = res['is_inside']
+            efficiency = res['efficiency']
+            intersection_point = res['intersection_point']
 
-        if intersection_point is not None:
-            intersection_point = intersection_point.copy()
-            intersection_point[0] *= N_scale
-            intersection_point[1] *= My_scale
-            intersection_point[2] *= Mz_scale
+            if intersection_point is not None:
+                intersection_point = intersection_point.copy()
+                intersection_point[0] *= N_scale
+                intersection_point[1] *= My_scale
+                intersection_point[2] *= Mz_scale
 
-        # Color coding for inside/outside points
-        color = 'blue' if is_inside else 'red'
-        label = 'Point inside' if is_inside else 'Point outside'
+            # Color coding for inside/outside points
+            color = 'blue' if is_inside else 'red'
+            label = 'Point inside' if is_inside else 'Point outside'
 
-        # Plot the point
-        if label not in plotted_labels:
-            ax.scatter(
-                point[0],
-                point[1],
-                point[2],
-                color=color,
-                s=20,
-                label=label,
-            )
-            plotted_labels.add(label)
-        else:
-            ax.scatter(
-                point[0],
-                point[1],
-                point[2],
-                color=color,
-                s=20,
-            )
-
-        # Plot the ray from origin to point
-        ax.plot(
-            [origin[0], point[0]],
-            [origin[1], point[1]],
-            [origin[2], point[2]],
-            color='purple',
-            linestyle='--',
-        )
-
-        # If there's an intersection, plot it and the ray to it
-        if efficiency is not None and intersection_point is not None:
-            if 'Intersection Point' not in plotted_labels:
+            # Plot the point
+            if label not in plotted_labels:
                 ax.scatter(
-                    intersection_point[0],
-                    intersection_point[1],
-                    intersection_point[2],
-                    color='orange',
+                    point[0],
+                    point[1],
+                    point[2],
+                    color=color,
                     s=20,
-                    label='Intersection Point',
+                    label=label,
                 )
-                plotted_labels.add('Intersection Point')
+                plotted_labels.add(label)
             else:
                 ax.scatter(
-                    intersection_point[0],
-                    intersection_point[1],
-                    intersection_point[2],
-                    color='orange',
+                    point[0],
+                    point[1],
+                    point[2],
+                    color=color,
                     s=20,
                 )
-            # Plot the ray from origin to intersection point
+
+            # Plot the ray from origin to point
             ax.plot(
-                [origin[0], intersection_point[0]],
-                [origin[1], intersection_point[1]],
-                [origin[2], intersection_point[2]],
-                color='cyan',
+                [origin[0], point[0]],
+                [origin[1], point[1]],
+                [origin[2], point[2]],
+                color='purple',
+                linestyle='--',
             )
+
+            # If there's an intersection, plot it and the ray to it
+            if efficiency is not None and intersection_point is not None:
+                if 'Intersection Point' not in plotted_labels:
+                    ax.scatter(
+                        intersection_point[0],
+                        intersection_point[1],
+                        intersection_point[2],
+                        color='orange',
+                        s=20,
+                        label='Intersection Point',
+                    )
+                    plotted_labels.add('Intersection Point')
+                else:
+                    ax.scatter(
+                        intersection_point[0],
+                        intersection_point[1],
+                        intersection_point[2],
+                        color='orange',
+                        s=20,
+                    )
+                # Plot the ray from origin to intersection point
+                ax.plot(
+                    [origin[0], intersection_point[0]],
+                    [origin[1], intersection_point[1]],
+                    [origin[2], intersection_point[2]],
+                    color='cyan',
+                )
 
     # Set axis labels and title
     ax.set_xlabel('N [kN]')
     ax.set_ylabel('My [mkN]')
     ax.set_zlabel('Mz [mkN]')
-    ax.set_title('Section capacity N-My-Mz')
+    # ax.set_title('Section capacity N-My-Mz')
+    ax.set_title('Potato diagram N-My-Mz')
 
     # Calculate the maximum efficiency
-    efficiency_points = [
-        (res['efficiency'], res['point'])
-        for res in results
-        if res['efficiency'] is not None
-    ]
-    if efficiency_points:
-        max_efficiency, max_eff_point = max(
-            efficiency_points, key=lambda x: x[0]
+    if results:
+        efficiency_points = [
+            (res['efficiency'], res['point'])
+            for res in results
+            if res['efficiency'] is not None
+        ]
+        if efficiency_points:
+            max_efficiency, max_eff_point = max(
+                efficiency_points, key=lambda x: x[0]
+            )
+            max_ef_label = f'Max efficiency: {max_efficiency:.2f} at \nN={max_eff_point[0]*N_scale:.0f}, My={max_eff_point[1]*My_scale:.0f}, Mz={max_eff_point[2]*Mz_scale:.0f}'
+        else:
+            max_ef_label = 'No efficiency'
+
+        # Add the maximum efficiency to the legend
+        custom_line = Line2D(
+            [0],
+            [0],
+            color='white',
+            marker='',
+            linestyle='',
+            label=max_ef_label,
         )
-        max_ef_label = f'Max efficiency: {max_efficiency:.2f} at \nN={max_eff_point[0]*N_scale:.0f}, My={max_eff_point[1]*My_scale:.0f}, Mz={max_eff_point[2]*Mz_scale:.0f}'
-    else:
-        max_ef_label = 'No efficiency'
 
-    # Add the maximum efficiency to the legend
-    from matplotlib.lines import Line2D
-
-    custom_line = Line2D(
-        [0], [0], color='white', marker='', linestyle='', label=max_ef_label
-    )
-
-    # Adjust legend to avoid duplicates
-    handles, labels = ax.get_legend_handles_labels()
-    handles.append(custom_line)
-    labels.append(max_ef_label)
-    ax.legend(
-        handles, labels, fontsize='small', loc='upper right', frameon=False
-    )
+        # Adjust legend to avoid duplicates
+        handles, labels = ax.get_legend_handles_labels()
+        handles.append(custom_line)
+        labels.append(max_ef_label)
+        ax.legend(
+            handles, labels, fontsize='small', loc='upper right', frameon=False
+        )
 
     plt.show()
 

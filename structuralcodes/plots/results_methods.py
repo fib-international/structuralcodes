@@ -3,6 +3,7 @@
 import numpy as np
 import trimesh
 from shapely import Point
+from shapely.geometry import LineString, Point, Polygon
 
 # sys.path.append('../')
 
@@ -124,3 +125,121 @@ def check_points_in_N_My_Mz(capacity_pts, forces):
         )
 
     return results, mesh
+
+
+def check_points_in_2D_diagram(boundary_x, boundary_y, forces, debug=False):
+    """Checks whether given points are inside a boundary defined by capacity_pts,
+    and calculates efficiency for rays from the origin to each point.
+
+    Parameters:
+    boundary_x,boundary_y : array-like, shape (n_points, 1)
+        The points defining the capacity boundary.
+    forces : array-like, shape (n_forces, 2)
+        The points to test.
+
+    Returns:
+    results : list of dict
+        A list containing dictionaries with the following keys:
+        - 'point': The point tested.
+        - 'is_inside': True if the point is inside the boundary, False otherwise.
+        - 'efficiency': The efficiency for the ray from the origin to the intersection point.
+        - 'intersection_point': The intersection point on the boundary, if any.
+    """
+    # Create boundary points in shape (n_points, 2)
+    capacity_pts = np.column_stack((boundary_x, boundary_y))
+
+    # Create the polygon from capacity points
+    capacity_polygon = Polygon(capacity_pts)
+
+    # Prepare the results list
+    results = []
+
+    # Convert forces to a NumPy array
+    forces = np.array(forces)
+
+    # Define the origin
+    origin = np.array([0.0, 0.0])
+
+    # Iterate over each point in forces
+    for point in forces:
+        # Create a line from the origin to the point
+        factored_point = np.array([point[0] * 1e10, point[1] * 1e10])
+        ray_line = LineString([origin, factored_point])
+
+        # Check if the point is inside the polygon
+        is_inside = capacity_polygon.contains(Point(point))
+
+        # Find the intersection of the ray with the polygon boundary
+        intersection = ray_line.intersection(capacity_polygon.boundary)
+
+        if intersection.is_empty:
+            # No intersection found
+            efficiency = None
+            intersection_point = None
+        else:
+            # There is an intersection
+            # Intersection could be a Point or MultiPoint
+            if isinstance(intersection, Point):
+                intersection_point = np.array([intersection.x, intersection.y])
+            elif isinstance(intersection, LineString):
+                # The ray lies along an edge; take the point closest to the origin
+                coords = np.array(intersection.coords)
+                distances = np.linalg.norm(coords - origin, axis=1)
+                min_index = np.argmin(distances)
+                intersection_point = coords[min_index]
+            elif intersection.geom_type == 'MultiPoint':
+                # Choose the closest intersection point to the origin
+                points = np.array([[pt.x, pt.y] for pt in intersection.geoms])
+                distances = np.linalg.norm(points - origin, axis=1)
+                min_index = np.argmin(distances)
+                intersection_point = points[min_index]
+            else:
+                # Unexpected geometry type
+                efficiency = None
+                intersection_point = None
+
+            if intersection_point is not None:
+                # Calculate distances
+                distance_origin_to_intersection = np.linalg.norm(
+                    intersection_point - origin
+                )
+                distance_origin_to_point = np.linalg.norm(point - origin)
+
+                # Calculate efficiency
+                if distance_origin_to_intersection != 0:
+                    efficiency = (
+                        distance_origin_to_point
+                        / distance_origin_to_intersection
+                    )
+                else:
+                    efficiency = np.inf  # Avoid division by zero
+
+                # Determine if the point is inside based on efficiency
+                is_inside = efficiency <= 1
+
+        # Append the result for this point
+        results.append(
+            {
+                'point': point,
+                'is_inside': is_inside,
+                'efficiency': efficiency,
+                'intersection_point': intersection_point,
+            }
+        )
+
+    if debug:
+        # Print the results
+        for res in results:
+            point = res['point']
+            is_inside = res['is_inside']
+            efficiency = res['efficiency']
+            print(
+                f"Point {point} is {'inside' if is_inside else 'outside'} the boundary."
+            )
+            if efficiency is not None:
+                print(f'Efficiency: {efficiency:.4f}')
+            if res['intersection_point'] is not None:
+                print(f"Intersection Point: {res['intersection_point']}")
+            print('---')
+
+    return results
