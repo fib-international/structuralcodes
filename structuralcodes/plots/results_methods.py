@@ -1,14 +1,68 @@
 # import sys
 
+import os
+import sys
+import typing as t
+
 import numpy as np
 import trimesh
 from shapely import Point
 from shapely.geometry import LineString, Point, Polygon
 
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+)
+from structuralcodes.geometry._geometry import CompoundGeometry
+from structuralcodes.sections._generic import GenericSection
+
 # sys.path.append('../')
 
 
-def get_stress_point(section, y, z, eps_a, chi_y, chi_z):
+def get_y_coordinate_inside_poly(polygon, z):
+    """Given a polygon and a horizontal line at height z, find the intersection points.
+    - If there is 1 intersection, return that point.
+    - If there are 2 or more intersections, return the midpoint.
+
+    Args:
+        polygon (Polygon): The polygon to intersect with.
+        z (float): The height at which to create the horizontal line.
+
+    Returns:
+        Point[0]: The horizontal coordinate of the point (single, midpoint).
+    """
+    # Create a horizontal line at the height z that spans the x range of the polygon
+    minx, miny, maxx, maxy = polygon.bounds
+    horizontal_line = LineString([(minx - 1, z), (maxx + 1, z)])
+
+    # Find intersections between the polygon and the horizontal line
+    intersections = polygon.intersection(horizontal_line)
+
+    # Extract the intersection points
+    if intersections.is_empty:
+        return None  # No intersection found
+    elif intersections.geom_type == 'Point':
+        return intersections.x  # Single intersection
+    elif intersections.geom_type == 'MultiPoint':
+        points = sorted(
+            intersections.geoms, key=lambda p: p.x
+        )  # Sort by x-coordinate
+
+        # Return the midpoint if there are two intersections
+        midpoint = LineString(points).centroid
+        return midpoint.x
+    elif intersections.geom_type == 'LineString':
+        return intersections.centroid.x
+    return None  # Handle cases where there are no valid intersections
+
+
+def get_stress_point(
+    section: t.Union[GenericSection, CompoundGeometry],
+    y,
+    z,
+    eps_a,
+    chi_y,
+    chi_z,
+):
     """Get the stress in a given point (y,z) inside the cross section.
 
     Args:
@@ -19,16 +73,21 @@ def get_stress_point(section, y, z, eps_a, chi_y, chi_z):
     Returns:
         stress in y,z
     """
+    if isinstance(section, GenericSection):
+        geom = section.geometry
+    elif isinstance(section, CompoundGeometry):
+        geom = section
+
     pt = Point(y, z)
     strain = []
     strain.append(eps_a + z * chi_y + y * chi_z)
-    for i, g in enumerate(section.geometry.point_geometries):
+    for i, g in enumerate(geom.point_geometries):
         center = g._point
         r = g._diameter / 2
         poly = center.buffer(r)
         if poly.contains(pt) or poly.touches(pt):
             return g.material.get_stress(strain)[0]
-    for i, g in enumerate(section.geometry.geometries):
+    for i, g in enumerate(geom.geometries):
         poly = g.polygon
         if poly.contains(pt) or poly.touches(pt):
             return g.material.get_stress(strain)[0]

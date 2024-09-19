@@ -1,7 +1,6 @@
 import os
 import sys
 
-# Agregar la carpeta A al PYTHONPATH
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 )
@@ -53,11 +52,40 @@ if False:
     section_plots.draw_section(sec, 'Section 1')
 
 # RESPONSE TO STRAIN PLANE (UNIAXIAL)
-if False:
+if True:
     res = sec.section_calculator.calculate_bending_strength(0, 0)
     section_plots.draw_section_response(
-        sec, res.eps_a, res.chi_y, title='Section 1'
+        sec,
+        res.eps_a,
+        res.chi_y,
+        res.chi_z,
+        lim_Sneg=-50,
+        lim_Spos=50,
+        title='Section 1',
     )
+
+# RESPONSE TO STRAIN PLANE (BIAXIAL)
+if True:
+    res = sec.section_calculator.calculate_bending_strength(0, 0)
+    epsa = -0.1
+    chisy = [2, 0, -2]
+    # chisz = [-3, -1, 0, 1, 3]
+    chisz = [2, 0, -2]
+    for chiz in chisz:
+        for chiy in chisy:
+            _N, _MY, _MZ = sec.section_calculator.integrate_strain_profile(
+                (epsa * 1e-3, chiy * 1e-6, chiz * 1e-6)
+            )
+
+            section_plots.draw_section_response(
+                sec,
+                epsa * 1e-3,
+                chiy * 1e-6,
+                chiz * 1e-6,
+                lim_Sneg=-50,
+                lim_Spos=50,
+                title=rf'Sect1,    $\epsilon_a$ [mm/m]={epsa},    $\chi_y$ [km$^{{-1}}$]={chiy},    $\chi_z$ [km$^{{-1}}$]={chiz}     ->     N={_N*1e-3:.0f}, My={_MY*1e-6:.0f}, Mz={_MZ*1e-6:.0f}',
+            )
 
 # MOMENT-CURVATURE
 if False:
@@ -79,7 +107,7 @@ if False:
     section_plots.draw_M_curvature_diagram(res1)
 
 # N-My ; N-Mz
-if True:
+if False:
     theta = math.pi / 4
     # both branches [0-pi) & [pi-2pi)
     bound_1 = sec.section_calculator.calculate_nm_interaction_domain(theta)

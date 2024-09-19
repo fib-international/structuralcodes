@@ -5,9 +5,13 @@ import numpy as np
 
 sys.path.append('../')
 
+import math
+
 from matplotlib.lines import Line2D
+from matplotlib.patches import Arc
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from results_methods import get_stress_point
+from results_methods import get_stress_point, get_y_coordinate_inside_poly
+from shapely import Polygon
 
 from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
@@ -141,43 +145,271 @@ def draw_section_response3D(
 
 
 def draw_section_response(
-    section, eps_a, chi_y, lim_Sneg=None, lim_Spos=None, title=None
+    section,
+    eps_a,
+    chi_y,
+    chi_z,
+    lim_Sneg=None,
+    lim_Spos=None,
+    title=None,
 ):
-    """Draw the stres and strains of a cross section.
+    """Draw the stress and strains of a cross section.
 
     Args:
-        eps_a : strain at (0,0)
-        chi_y : curvature in Y axis
-        lim_Sneg, lim_Spos: limits of stress in the plot
+        section: Cross-sectional geometry
+        eps_a: Strain at the origin (0,0)
+        chi_y: Curvature around the Y-axis
+        chi_z: Curvature around the Z-axis
+        lim_Sneg: Negative stress limit for plotting
+        lim_Spos: Positive stress limit for plotting
+        title: Title for the plot
     """
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    def angle(x, y):
+        """Calculate the angle of the vector (x, y) with respect to (1, 0) in the counterclockwise direction."""
+        angle = math.atan2(y, x)
+        # Ensure angle is between [0, 2π]
+        if angle < 0:
+            angle += 2 * math.pi
+        return angle  # Angle in radians
+
+    # Orient the section with the neutral axis horizontal
+    alfa = angle(chi_y, chi_z)
+    if alfa < math.pi / 2:  # I
+        rotated_angle = -alfa
+    elif alfa < math.pi:  # II
+        rotated_angle = math.pi - alfa
+    elif alfa < 3 / 2 * math.pi:  # III
+        rotated_angle = -alfa + math.pi
+    else:  # iV
+        rotated_angle = 2 * math.pi - alfa
+
+    sign = np.sign(chi_y) if abs(chi_y) > 0 else 1
+    rotated_geom = section.geometry.rotate(rotated_angle)
+    chi = (chi_y**2 + chi_z**2) ** 0.5 * sign
+
+    # Print neutral axis position if curvature is non-zero
+    if abs(chi) > 0:
+        z_neutral_axis = -eps_a / chi
+        print(f'z neutral axis = {round(z_neutral_axis, 2)}')
+    elif eps_a < 0:
+        z_neutral_axis = rotated_geom.geometries[0].polygon.bounds[1]
+    else:
+        z_neutral_axis = rotated_geom.geometries[0].polygon.bounds[3]
+
+    # region General plot configuration
+    # Create the figure and axes with the new criterion
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
     if title is not None:
         fig.suptitle(title)
-    ax.set_title('Section response - stress')
-    ax.set_xlabel('Stress [MPa]')
-    ax.set_ylabel('z')
-    # ax.invert_yaxis()  # Invert axis
-    if (lim_Sneg is not None) and (lim_Spos is not None):
-        ax.set_xlim(lim_Sneg, lim_Spos)
+    # Remove individual borders of axes
+    for ax in [ax1, ax2, ax3]:
+        for spine in ax.spines.values():
+            spine.set_visible(False)  # Remove individual borders
+    # Add a common border (spine) around ax1, ax2, and ax3.
+    plt.subplots_adjust(
+        top=0.85
+    )  # Adjust the subplot to make space for a shared title or border
+    fig.patch.set_linewidth(2)  # Set thickness of the common border
+    fig.patch.set_edgecolor('black')  # Set color of the common border
+
+    # Set equal aspect ratio for ax1
+    ax1.set_aspect('equal', 'box')
+    ax1.set_title(
+        f'Section representation - $\\alpha$={math.degrees(rotated_angle):.1f}°'
+    )
+    # Set up ax2 for stress plot
+    ax2.set_title('Section response - stress')
+    ax2.set_xlabel('Stress [MPa]')
+    ax2.set_ylabel('z')
+    if lim_Sneg is not None and lim_Spos is not None:
+        ax2.set_xlim(lim_Sneg, lim_Spos)
     else:
         lim_Sneg, lim_Spos = -1e11, 1e11
-    ax.invert_xaxis()
+    ax2.invert_xaxis()
 
+    # Set up ax3 for strain plot
+    ax3.set_title('Section response - strain')
+    ax3.set_xlabel('Strain [mm/m]')
+    ax3.set_ylabel('z')
+    ax3.invert_xaxis()
+    # endregion
+
+    # region Plot the section on ax1 with compression and tension zones
+    for g in rotated_geom.geometries:
+        poly = g.polygon
+        minx, miny, maxx, maxy = poly.bounds
+
+        # Create the compressed polygon based on chi
+        if chi > 0:
+            compressed_polygon = Polygon(
+                [
+                    (minx - 1, miny - 1),
+                    (maxx + 1, miny - 1),
+                    (maxx + 1, z_neutral_axis),
+                    (minx - 1, z_neutral_axis),
+                ]
+            )
+        else:
+            compressed_polygon = Polygon(
+                [
+                    (minx - 1, z_neutral_axis),
+                    (maxx + 1, z_neutral_axis),
+                    (maxx + 1, maxy + 1),
+                    (minx - 1, maxy + 1),
+                ]
+            )
+
+        # Get compressed and tension parts of the polygon
+        compressed_part = poly.intersection(compressed_polygon)
+        tension_part = poly.difference(compressed_part)
+
+        # Plot compressed part in light red
+        if not compressed_part.is_empty:
+            if compressed_part.geom_type == 'Polygon':
+                x, y = compressed_part.exterior.xy
+                ax1.fill(x, y, color='lightcoral')
+            elif compressed_part.geom_type == 'MultiPolygon':
+                for part in compressed_part.geoms:
+                    x, y = part.exterior.xy
+                    ax1.fill(x, y, color='lightcoral')
+
+        # Plot tension part in light blue
+        if not tension_part.is_empty:
+            if tension_part.geom_type == 'Polygon':
+                x, y = tension_part.exterior.xy
+                ax1.fill(x, y, color='lightblue')
+            elif tension_part.geom_type == 'MultiPolygon':
+                for part in tension_part.geoms:
+                    x, y = part.exterior.xy
+                    ax1.fill(x, y, color='lightblue')
+
+    # Plot point geometries with colors based on compression or tension
+    for g in rotated_geom.point_geometries:
+        center = g._point
+        r = g._diameter / 2
+
+        # Determine color based on position relative to neutral axis
+        if chi > 0:
+            if center.y <= z_neutral_axis:
+                color = 'darkred'  # Compressed zone
+            else:
+                color = 'darkblue'  # Tension zone
+        elif center.y >= z_neutral_axis:
+            color = 'darkred'  # Compressed zone
+        else:
+            color = 'darkblue'  # Tension zone
+
+        poly = center.buffer(r)
+        x, y = poly.exterior.xy
+        ax1.fill(x, y, color=color)
+
+    # Annotate the neutral axis on ax1
+    ax1.vlines(
+        x=minx + 0.1 * (maxx - minx),
+        ymin=min(0, z_neutral_axis),
+        ymax=max(0, z_neutral_axis),
+        color='black',
+        linestyle='--',
+        linewidth=1,
+        label=f'z n.a = {z_neutral_axis:.1f}',
+    )
+    # Add a text label for the neutral axis
+    ax1.text(
+        x=minx + 0.1 * (maxx - minx),
+        y=z_neutral_axis,
+        s=f'z n.a =  {z_neutral_axis:.1f}',
+        fontsize='small',
+        color='black',
+        ha='left',
+        va='bottom',
+    )
+
+    # plot global axes
+    module_axes = 0.25 * min((maxx - minx), (maxy - miny))
+    _x = math.cos(rotated_angle) * module_axes
+    _y = math.sin(rotated_angle) * module_axes
+    ax1.plot([0, _x], [0, _y], color='DarkGray')
+    ax1.text(
+        x=_x,
+        y=_y,
+        s='X',
+        fontsize='small',
+        color='black',
+        ha='center',
+        va='center',
+    )
+    ax1.plot([0, -_y], [0, _x], color='DarkGray')
+    ax1.text(
+        x=-_y,
+        y=_x,
+        s='Y',
+        fontsize='small',
+        color='black',
+        ha='center',
+        va='center',
+    )
+    ax1.plot([0, module_axes], [0, 0], color='DarkGray')
+
+    # rotated angle annotation
+    arc_radius = module_axes * 0.25
+    arc = Arc(
+        (0, 0),
+        arc_radius * 2,
+        arc_radius * 2,
+        angle=rotated_angle,
+        color='black',
+    )
+    arc = Arc(
+        (0, 0),
+        width=arc_radius * 2,
+        height=arc_radius * 2,
+        theta1=0,
+        theta2=math.degrees(rotated_angle),
+        color='black',
+    )
+
+    ax1.add_patch(arc)
+    ax1.text(
+        arc_radius,
+        0,
+        r'$\alpha$',
+        fontsize='small',
+        ha='left',
+        va='bottom',
+        color='black',
+    )
+
+    # endregion
+
+    # Initialize dictionaries for labels in ax2 and ax3
     labels_stress = {}
     labels_strain = {}
 
-    for i, g in enumerate(section.geometry.geometries):
+    # region Plot stress and strain for each geometry in the section
+    for g in rotated_geom.geometries:
         poly = g.polygon
         x_min, y_min, x_max, y_max = poly.bounds
         z_range = np.linspace(y_min, y_max, 500)
+
+        # Calculate stress along z_range
         stress = [
             get_stress_point(
-                section, 0.5 * (x_min + x_max), z, eps_a, chi_y, 0
+                rotated_geom,
+                get_y_coordinate_inside_poly(poly, z),
+                z,
+                eps_a,
+                chi,
+                0,
             )
             for z in z_range
         ]
-        ax.plot(stress, z_range, color='gray')
-        ax.fill_betweenx(
+
+        # Plot stress on ax2
+        ax2.plot(stress, z_range, color='gray')
+
+        # Fill positive stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -185,7 +417,9 @@ def draw_section_response(
             facecolor='lightblue',
             interpolate=True,
         )
-        ax.fill_betweenx(
+
+        # Fill negative stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -193,47 +427,66 @@ def draw_section_response(
             facecolor='lightcoral',
             interpolate=True,
         )
+
+        # Add labels for stress
         labels_stress[(stress[0], z_range[0])] = round(stress[0], 2)
         labels_stress[(stress[-1], z_range[-1])] = round(stress[-1], 2)
 
-        # strain
-        eps = [(eps_a + chi_y * z) * 1000 for z in z_range]
-        ax2.plot(eps, z_range, color='gray')
-        ax2.fill_betweenx(
+        # Calculate strain along z_range (converted to mm/m)
+        eps = [(eps_a + chi * z) * 1000 for z in z_range]
+
+        # Plot strain on ax3
+        ax3.plot(eps, z_range, color='gray')
+
+        # Fill positive strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) >= 0),
+            where=(np.array(eps) >= 0),
             facecolor='lightblue',
             interpolate=True,
         )
-        ax2.fill_betweenx(
+
+        # Fill negative strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) < 0),
+            where=(np.array(eps) < 0),
             facecolor='lightcoral',
             interpolate=True,
         )
+
+        # Add labels for strain
         labels_strain[(eps[0], z_range[0])] = round(eps[0], 2)
         labels_strain[(eps[-1], z_range[-1])] = round(eps[-1], 2)
+    # endregion
 
-    for i, g in enumerate(section.geometry.point_geometries):
+    # region Plot stress and strain for point geometries (e.g., reinforcement bars)
+    for g in rotated_geom.point_geometries:
         center = g._point
         r = g._diameter / 2
         poly = center.buffer(r)
         x_min, y_min, x_max, y_max = poly.bounds
-        z_range = [y_min + 1e-5, y_max - 1e-5]
+        z_range = [
+            y_min + 1e-5,
+            y_max - 1e-5,
+        ]  # Small offset to avoid duplicates
 
-        # stress
+        # Calculate stress at two points
         stress = [
             get_stress_point(
-                section, 0.5 * (x_min + x_max), z, eps_a, chi_y, 0
+                rotated_geom, 0.5 * (x_min + x_max), z, eps_a, chi, 0
             )
             for z in z_range
         ]
-        ax.plot(stress, z_range, color='gray')
-        ax.fill_betweenx(
+
+        # Plot stress on ax2
+        ax2.plot(stress, z_range, color='gray')
+
+        # Fill positive stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -241,7 +494,9 @@ def draw_section_response(
             facecolor='lightblue',
             interpolate=True,
         )
-        ax.fill_betweenx(
+
+        # Fill negative stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -249,55 +504,64 @@ def draw_section_response(
             facecolor='lightcoral',
             interpolate=True,
         )
+
+        # Average stress for labeling
+        avg_stress = 0.5 * (stress[0] + stress[1])
         labels_stress[
             (
-                min(max(stress[0], lim_Sneg), lim_Spos),
+                min(max(avg_stress, lim_Sneg), lim_Spos),
                 0.5 * (z_range[0] + z_range[1]),
             )
-        ] = round(0.5 * (stress[0] + stress[1]), 1)
+        ] = round(avg_stress, 1)
 
-        # strain
-        eps = [(eps_a + chi_y * z) * 1000 for z in z_range]
-        ax2.plot(eps, z_range, color='gray')
-        ax2.fill_betweenx(
+        # Calculate strain at two points
+        eps = [(eps_a + chi * z) * 1000 for z in z_range]
+
+        # Plot strain on ax3
+        ax3.plot(eps, z_range, color='gray')
+
+        # Fill positive strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) >= 0),
+            where=(np.array(eps) >= 0),
             facecolor='lightblue',
             interpolate=True,
         )
-        ax2.fill_betweenx(
+
+        # Fill negative strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) < 0),
+            where=(np.array(eps) < 0),
             facecolor='lightcoral',
             interpolate=True,
         )
 
-        labels_strain[(eps[0], 0.5 * (z_range[0] + z_range[1]))] = round(
-            0.5 * (eps[0] + eps[1]), 2
+        # Average strain for labeling
+        avg_eps = 0.5 * (eps[0] + eps[1])
+        labels_strain[(avg_eps, 0.5 * (z_range[0] + z_range[1]))] = round(
+            avg_eps, 2
         )
 
+    # endregion
+
+    # Add stress labels to ax2
     for coords, text in labels_stress.items():
-        ax.text(
-            *coords, text, fontsize=10, color='black', ha='left', va='center'
-        )
-    for coords, text in labels_strain.items():
         ax2.text(
             *coords, text, fontsize=10, color='black', ha='left', va='center'
         )
 
-    # strains
-    ax2.set_title('Section response - strain')
-    ax2.set_xlabel('strain [mm/m]')
-    ax2.set_ylabel('z')
-    # ax2.invert_yaxis()  # Invert axis
-    ax2.invert_xaxis()
+    # Add strain labels to ax3
+    for coords, text in labels_strain.items():
+        ax3.text(
+            *coords, text, fontsize=10, color='black', ha='left', va='center'
+        )
+
+    # Display the plot
     plt.show()
-    if abs(chi_y) > 0:
-        print(f'z neutral axis = {round(-eps_a/chi_y,2)}')
 
 
 def draw_constitutive_law(ec_const, lim_strain_neg=None, lim_strain_pos=None):
