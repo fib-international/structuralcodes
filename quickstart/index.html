@@ -363,6 +363,8 @@
     <span class="p">]</span>
 <span class="p">)</span>  <span class="c1"># We leverage shapely to create geometries</span>
 <span class="n">geometry</span> <span class="o">=</span> <span class="n">SurfaceGeometry</span><span class="p">(</span>
+    <span class="n">polygon</span><span class="p">,</span> <span class="n">concrete</span>
+<span class="p">)</span>  <span class="c1"># A SurfaceGeometry is a shapely Polygon with an assigned material</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -371,9 +373,7 @@
 <p><a class="reference internal" href="../api/geometry/index.html#api-geometry"><span class="std std-ref">Geometry reference</span></a>.</p>
 </div>
 <p>Add reinforcement to the geometry:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">)</span>  <span class="c1"># A SurfaceGeometry is a shapely Polygon with an assigned material</span>
-
-<span class="c1"># Add reinforcement</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add reinforcement</span>
 <span class="n">diameter_reinf</span> <span class="o">=</span> <span class="mi">25</span>
 <span class="n">cover</span> <span class="o">=</span> <span class="mi">50</span>
 
@@ -393,11 +393,13 @@
         <span class="o">-</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">cover</span> <span class="o">+</span> <span class="n">diameter_reinf</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
     <span class="p">),</span>
     <span class="n">diameter_reinf</span><span class="p">,</span>
+    <span class="n">reinforcement</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Create a <a class="reference internal" href="../api/sections/section_creation.html#structuralcodes.sections.GenericSection" title="structuralcodes.sections.GenericSection"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericSection</span></code></a> based on the geometry:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">)</span>
-
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create section</span>
+<span class="n">section</span> <span class="o">=</span> <span class="n">GenericSection</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -405,8 +407,8 @@
 <p><a class="reference internal" href="../api/sections/index.html#api-sections"><span class="std std-ref">Section reference</span></a></p>
 </div>
 <p>Call the <a class="reference internal" href="../api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature" title="structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature"><code class="xref py py-func docutils literal notranslate"><span class="pre">.calculate_moment_curvature()</span></code></a> method on the <a class="reference internal" href="../api/sections/section_calculator.html#structuralcodes.sections.GenericSectionCalculator" title="structuralcodes.sections.GenericSectionCalculator"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericSectionCalculator</span></code></a> to calculate the moment-curvature relation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">section</span> <span class="o">=</span> <span class="n">GenericSection</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
-
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate the moment-curvature response</span>
+<span class="n">moment_curvature</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">calculate_moment_curvature</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -553,6 +555,6 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
     <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../_static/tippy\quickstart\index.2910204b-682d-4482-8d0d-dea2fc53c465.js"></script>
+    <script defer="defer" src="../_static/tippy\quickstart\index.32218956-6edb-49ea-b002-453fec62f994.js"></script>
     </body>
 </html>
