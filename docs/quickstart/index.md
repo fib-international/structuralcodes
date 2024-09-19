@@ -44,7 +44,7 @@ Create a {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` bas
 
 ```{eval-rst}
 .. literalinclude:: quickstart_example.py
-   :lines: 26-37
+   :lines: 26-39
 ```
 
 :::{seealso}
@@ -57,14 +57,14 @@ Add reinforcement to the geometry:
 
 ```{eval-rst}
 .. literalinclude:: quickstart_example.py
-   :lines: 39-60
+   :lines: 41-62
 ```
 
 Create a {class}`GenericSection <structuralcodes.sections.GenericSection>` based on the geometry:
 
 ```{eval-rst}
 .. literalinclude:: quickstart_example.py
-   :lines: 62-63
+   :lines: 64-65
 ```
 
 :::{seealso}
@@ -75,7 +75,7 @@ Call the {func}`.calculate_moment_curvature() <structuralcodes.sections.GenericS
 
 ```{eval-rst}
 .. literalinclude:: quickstart_example.py
-   :lines: 65-66
+   :lines: 67-70
 ```
 
 :::{seealso}
