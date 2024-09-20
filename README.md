@@ -3,6 +3,7 @@
 *A Python library for structural engineering calculations.*
 
 [![Build](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
+[![PyPI version](https://badge.fury.io/py/structuralcodes.svg)](https://badge.fury.io/py/structuralcodes)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/format.json)](https://github.com/charliermarsh/ruff)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/charliermarsh/ruff)
 [![Docs](https://img.shields.io/badge/%F0%9F%93%9A%20docs-fib--international.github.io%2Fstructuralcodes%2F-orange)](https://fib-international.github.io/structuralcodes/)
