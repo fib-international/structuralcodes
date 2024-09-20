@@ -32,9 +32,15 @@ sec.geometry = sec.geometry.translate(-175, -250)
 
 
 ### TEST calculate_strain_profile_biaxial  ########
+<<<<<<< HEAD
 n = -50 * 1e3
 my = -210 * 1e6  # -150
 mz = 47 * 1e6  # -100
+=======
+n = -110 * 1e3
+my = -31 * 1e6  # -150
+mz = 65 * 1e6  # -100
+>>>>>>> strain_profile_NMyMz
 
 
 res = sec.section_calculator.calculate_strain_profile(n, my, mz)
