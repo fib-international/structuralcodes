@@ -10,12 +10,15 @@ import math
 from matplotlib.lines import Line2D
 from matplotlib.patches import Arc
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from results_methods import get_stress_point, get_y_coordinate_inside_poly
 from shapely import Polygon
 
 from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
     Sargin,
+)
+from structuralcodes.plots.results_methods import (
+    get_stress_point,
+    get_y_coordinate_inside_poly,
 )
 
 

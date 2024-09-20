@@ -2,6 +2,7 @@ from shapely import Polygon
 
 from structuralcodes import codes, materials
 from structuralcodes.geometry import SurfaceGeometry
+from structuralcodes.plots import section_plots
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.sections._reinforcement import add_reinforcement_line
 
@@ -32,18 +33,11 @@ sec.geometry = sec.geometry.translate(-175, -250)
 
 
 ### TEST calculate_strain_profile_biaxial  ########
-<<<<<<< HEAD
-n = -50 * 1e3
-my = -210 * 1e6  # -150
-mz = 47 * 1e6  # -100
-=======
-n = -110 * 1e3
-my = -31 * 1e6  # -150
-mz = 65 * 1e6  # -100
->>>>>>> strain_profile_NMyMz
+n = -0 * 1e3
+my = 0 * 1e6  # -150
+mz = 80 * 1e6  # -100
 
-
-res = sec.section_calculator.calculate_strain_profile(n, my, mz)
+res = sec.section_calculator.calculate_strain_profile_v1(n, my, mz)
 print(
     'eps',
     round(res[0] * 1e3, 2),
@@ -60,4 +54,25 @@ print(
     round(forces[1] / 1e6, 2),
     '  Mz',
     round(forces[2] / 1e6, 2),
+)
+
+
+(
+    section_plots.draw_section_response(
+        sec,
+        res[0],
+        res[1],
+        res[2],
+        lim_Sneg=-50,
+        lim_Spos=50,
+        title=(
+            rf'Sect1, '
+            rf'$\epsilon_a$ [mm/m]={res[0]*1e3:.2f}, '
+            rf'$\chi_y$ [km$^{-1}$]={res[1]*1e6:.2f}, '
+            rf'$\chi_z$ [km$^{-1}$]={res[2]*1e6:.2f}    '
+            rf'$\rightarrow$    N={forces[0]*1e-3:.0f}, '
+            rf'My={forces[1]*1e-6:.0f}, '
+            rf'Mz={forces[2]*1e-6:.0f}'
+        ),
+    ),
 )

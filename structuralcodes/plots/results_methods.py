@@ -6,7 +6,8 @@ import typing as t
 
 import numpy as np
 import trimesh
-from shapely import Point
+
+# from shapely import Point
 from shapely.geometry import LineString, Point, Polygon
 
 sys.path.append(

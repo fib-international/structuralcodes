@@ -52,7 +52,7 @@ if False:
     section_plots.draw_section(sec, 'Section 1')
 
 # RESPONSE TO STRAIN PLANE (UNIAXIAL)
-if True:
+if False:
     res = sec.section_calculator.calculate_bending_strength(0, 0)
     section_plots.draw_section_response(
         sec,
@@ -65,7 +65,7 @@ if True:
     )
 
 # RESPONSE TO STRAIN PLANE (BIAXIAL)
-if True:
+if False:
     res = sec.section_calculator.calculate_bending_strength(0, 0)
     epsa = -0.1
     chisy = [2, 0, -2]
@@ -88,11 +88,13 @@ if True:
             )
 
 # MOMENT-CURVATURE
-if False:
+if True:
     # junta rama 0-pi con rama pi-2pi
-    res1 = sec.section_calculator.calculate_moment_curvature(theta=0, n=0)
+    res1 = sec.section_calculator.calculate_moment_curvature(
+        theta=0, n=0, chi=[1e-8, 40 * 1e-6, 60 * 1e-6, 74 * 1e-6]
+    )
     res2 = sec.section_calculator.calculate_moment_curvature(
-        theta=math.pi, n=0
+        theta=math.pi, n=0, chi=[1e-8, 10 * 1e-6]
     )
     res1.chi_y = np.concatenate((res1.chi_y, res2.chi_y))
     res1.chi_z = np.concatenate((res1.chi_z, res2.chi_z))
@@ -184,7 +186,6 @@ if False:
         scale_x=1e-6,
         scale_y=1e-6,
     )
-
 
 # N-My-Mz
 if False:
