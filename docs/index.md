@@ -1,6 +1,7 @@
 # Welcome to StructuralCodes documentation!
 
 [![Build](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
+[![PyPI version](https://badge.fury.io/py/structuralcodes.svg)](https://badge.fury.io/py/structuralcodes)
 
 :::{toctree}
 :hidden:
