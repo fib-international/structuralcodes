@@ -4,10 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.append('../')
+
 import math
 
+from matplotlib.lines import Line2D
+from matplotlib.patches import Arc
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from results_methods import get_stress_point
+from results_methods import get_stress_point, get_y_coordinate_inside_poly
+from shapely import Polygon
 
 from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
@@ -141,43 +145,271 @@ def draw_section_response3D(
 
 
 def draw_section_response(
-    section, eps_a, chi_y, lim_Sneg=None, lim_Spos=None, title=None
+    section,
+    eps_a,
+    chi_y,
+    chi_z,
+    lim_Sneg=None,
+    lim_Spos=None,
+    title=None,
 ):
-    """Draw the stres and strains of a cross section.
+    """Draw the stress and strains of a cross section.
 
     Args:
-        eps_a : strain at (0,0)
-        chi_y : curvature in Y axis
-        lim_Sneg, lim_Spos: limits of stress in the plot
+        section: Cross-sectional geometry
+        eps_a: Strain at the origin (0,0)
+        chi_y: Curvature around the Y-axis
+        chi_z: Curvature around the Z-axis
+        lim_Sneg: Negative stress limit for plotting
+        lim_Spos: Positive stress limit for plotting
+        title: Title for the plot
     """
-    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    def angle(x, y):
+        """Calculate the angle of the vector (x, y) with respect to (1, 0) in the counterclockwise direction."""
+        angle = math.atan2(y, x)
+        # Ensure angle is between [0, 2π]
+        if angle < 0:
+            angle += 2 * math.pi
+        return angle  # Angle in radians
+
+    # Orient the section with the neutral axis horizontal
+    alfa = angle(chi_y, chi_z)
+    if alfa < math.pi / 2:  # I
+        rotated_angle = -alfa
+    elif alfa < math.pi:  # II
+        rotated_angle = math.pi - alfa
+    elif alfa < 3 / 2 * math.pi:  # III
+        rotated_angle = -alfa + math.pi
+    else:  # iV
+        rotated_angle = 2 * math.pi - alfa
+
+    sign = np.sign(chi_y) if abs(chi_y) > 0 else 1
+    rotated_geom = section.geometry.rotate(rotated_angle)
+    chi = (chi_y**2 + chi_z**2) ** 0.5 * sign
+
+    # Print neutral axis position if curvature is non-zero
+    if abs(chi) > 0:
+        z_neutral_axis = -eps_a / chi
+        print(f'z neutral axis = {round(z_neutral_axis, 2)}')
+    elif eps_a < 0:
+        z_neutral_axis = rotated_geom.geometries[0].polygon.bounds[1]
+    else:
+        z_neutral_axis = rotated_geom.geometries[0].polygon.bounds[3]
+
+    # region General plot configuration
+    # Create the figure and axes with the new criterion
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
     if title is not None:
         fig.suptitle(title)
-    ax.set_title('Section response - stress')
-    ax.set_xlabel('Stress [MPa]')
-    ax.set_ylabel('z')
-    # ax.invert_yaxis()  # Invert axis
-    if (lim_Sneg is not None) and (lim_Spos is not None):
-        ax.set_xlim(lim_Sneg, lim_Spos)
+    # Remove individual borders of axes
+    for ax in [ax1, ax2, ax3]:
+        for spine in ax.spines.values():
+            spine.set_visible(False)  # Remove individual borders
+    # Add a common border (spine) around ax1, ax2, and ax3.
+    plt.subplots_adjust(
+        top=0.85
+    )  # Adjust the subplot to make space for a shared title or border
+    fig.patch.set_linewidth(2)  # Set thickness of the common border
+    fig.patch.set_edgecolor('black')  # Set color of the common border
+
+    # Set equal aspect ratio for ax1
+    ax1.set_aspect('equal', 'box')
+    ax1.set_title(
+        f'Section representation - $\\alpha$={math.degrees(rotated_angle):.1f}°'
+    )
+    # Set up ax2 for stress plot
+    ax2.set_title('Section response - stress')
+    ax2.set_xlabel('Stress [MPa]')
+    ax2.set_ylabel('z')
+    if lim_Sneg is not None and lim_Spos is not None:
+        ax2.set_xlim(lim_Sneg, lim_Spos)
     else:
         lim_Sneg, lim_Spos = -1e11, 1e11
-    ax.invert_xaxis()
+    ax2.invert_xaxis()
 
+    # Set up ax3 for strain plot
+    ax3.set_title('Section response - strain')
+    ax3.set_xlabel('Strain [mm/m]')
+    ax3.set_ylabel('z')
+    ax3.invert_xaxis()
+    # endregion
+
+    # region Plot the section on ax1 with compression and tension zones
+    for g in rotated_geom.geometries:
+        poly = g.polygon
+        minx, miny, maxx, maxy = poly.bounds
+
+        # Create the compressed polygon based on chi
+        if chi > 0:
+            compressed_polygon = Polygon(
+                [
+                    (minx - 1, miny - 1),
+                    (maxx + 1, miny - 1),
+                    (maxx + 1, z_neutral_axis),
+                    (minx - 1, z_neutral_axis),
+                ]
+            )
+        else:
+            compressed_polygon = Polygon(
+                [
+                    (minx - 1, z_neutral_axis),
+                    (maxx + 1, z_neutral_axis),
+                    (maxx + 1, maxy + 1),
+                    (minx - 1, maxy + 1),
+                ]
+            )
+
+        # Get compressed and tension parts of the polygon
+        compressed_part = poly.intersection(compressed_polygon)
+        tension_part = poly.difference(compressed_part)
+
+        # Plot compressed part in light red
+        if not compressed_part.is_empty:
+            if compressed_part.geom_type == 'Polygon':
+                x, y = compressed_part.exterior.xy
+                ax1.fill(x, y, color='lightcoral')
+            elif compressed_part.geom_type == 'MultiPolygon':
+                for part in compressed_part.geoms:
+                    x, y = part.exterior.xy
+                    ax1.fill(x, y, color='lightcoral')
+
+        # Plot tension part in light blue
+        if not tension_part.is_empty:
+            if tension_part.geom_type == 'Polygon':
+                x, y = tension_part.exterior.xy
+                ax1.fill(x, y, color='lightblue')
+            elif tension_part.geom_type == 'MultiPolygon':
+                for part in tension_part.geoms:
+                    x, y = part.exterior.xy
+                    ax1.fill(x, y, color='lightblue')
+
+    # Plot point geometries with colors based on compression or tension
+    for g in rotated_geom.point_geometries:
+        center = g._point
+        r = g._diameter / 2
+
+        # Determine color based on position relative to neutral axis
+        if chi > 0:
+            if center.y <= z_neutral_axis:
+                color = 'darkred'  # Compressed zone
+            else:
+                color = 'darkblue'  # Tension zone
+        elif center.y >= z_neutral_axis:
+            color = 'darkred'  # Compressed zone
+        else:
+            color = 'darkblue'  # Tension zone
+
+        poly = center.buffer(r)
+        x, y = poly.exterior.xy
+        ax1.fill(x, y, color=color)
+
+    # Annotate the neutral axis on ax1
+    ax1.vlines(
+        x=minx + 0.1 * (maxx - minx),
+        ymin=min(0, z_neutral_axis),
+        ymax=max(0, z_neutral_axis),
+        color='black',
+        linestyle='--',
+        linewidth=1,
+        label=f'z n.a = {z_neutral_axis:.1f}',
+    )
+    # Add a text label for the neutral axis
+    ax1.text(
+        x=minx + 0.1 * (maxx - minx),
+        y=z_neutral_axis,
+        s=f'z n.a =  {z_neutral_axis:.1f}',
+        fontsize='small',
+        color='black',
+        ha='left',
+        va='bottom',
+    )
+
+    # plot global axes
+    module_axes = 0.25 * min((maxx - minx), (maxy - miny))
+    _x = math.cos(rotated_angle) * module_axes
+    _y = math.sin(rotated_angle) * module_axes
+    ax1.plot([0, _x], [0, _y], color='DarkGray')
+    ax1.text(
+        x=_x,
+        y=_y,
+        s='X',
+        fontsize='small',
+        color='black',
+        ha='center',
+        va='center',
+    )
+    ax1.plot([0, -_y], [0, _x], color='DarkGray')
+    ax1.text(
+        x=-_y,
+        y=_x,
+        s='Y',
+        fontsize='small',
+        color='black',
+        ha='center',
+        va='center',
+    )
+    ax1.plot([0, module_axes], [0, 0], color='DarkGray')
+
+    # rotated angle annotation
+    arc_radius = module_axes * 0.25
+    arc = Arc(
+        (0, 0),
+        arc_radius * 2,
+        arc_radius * 2,
+        angle=rotated_angle,
+        color='black',
+    )
+    arc = Arc(
+        (0, 0),
+        width=arc_radius * 2,
+        height=arc_radius * 2,
+        theta1=0,
+        theta2=math.degrees(rotated_angle),
+        color='black',
+    )
+
+    ax1.add_patch(arc)
+    ax1.text(
+        arc_radius,
+        0,
+        r'$\alpha$',
+        fontsize='small',
+        ha='left',
+        va='bottom',
+        color='black',
+    )
+
+    # endregion
+
+    # Initialize dictionaries for labels in ax2 and ax3
     labels_stress = {}
     labels_strain = {}
 
-    for i, g in enumerate(section.geometry.geometries):
+    # region Plot stress and strain for each geometry in the section
+    for g in rotated_geom.geometries:
         poly = g.polygon
         x_min, y_min, x_max, y_max = poly.bounds
         z_range = np.linspace(y_min, y_max, 500)
+
+        # Calculate stress along z_range
         stress = [
             get_stress_point(
-                section, 0.5 * (x_min + x_max), z, eps_a, chi_y, 0
+                rotated_geom,
+                get_y_coordinate_inside_poly(poly, z),
+                z,
+                eps_a,
+                chi,
+                0,
             )
             for z in z_range
         ]
-        ax.plot(stress, z_range, color='gray')
-        ax.fill_betweenx(
+
+        # Plot stress on ax2
+        ax2.plot(stress, z_range, color='gray')
+
+        # Fill positive stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -185,7 +417,9 @@ def draw_section_response(
             facecolor='lightblue',
             interpolate=True,
         )
-        ax.fill_betweenx(
+
+        # Fill negative stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -193,47 +427,66 @@ def draw_section_response(
             facecolor='lightcoral',
             interpolate=True,
         )
+
+        # Add labels for stress
         labels_stress[(stress[0], z_range[0])] = round(stress[0], 2)
         labels_stress[(stress[-1], z_range[-1])] = round(stress[-1], 2)
 
-        # strain
-        eps = [(eps_a + chi_y * z) * 1000 for z in z_range]
-        ax2.plot(eps, z_range, color='gray')
-        ax2.fill_betweenx(
+        # Calculate strain along z_range (converted to mm/m)
+        eps = [(eps_a + chi * z) * 1000 for z in z_range]
+
+        # Plot strain on ax3
+        ax3.plot(eps, z_range, color='gray')
+
+        # Fill positive strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) >= 0),
+            where=(np.array(eps) >= 0),
             facecolor='lightblue',
             interpolate=True,
         )
-        ax2.fill_betweenx(
+
+        # Fill negative strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) < 0),
+            where=(np.array(eps) < 0),
             facecolor='lightcoral',
             interpolate=True,
         )
+
+        # Add labels for strain
         labels_strain[(eps[0], z_range[0])] = round(eps[0], 2)
         labels_strain[(eps[-1], z_range[-1])] = round(eps[-1], 2)
+    # endregion
 
-    for i, g in enumerate(section.geometry.point_geometries):
+    # region Plot stress and strain for point geometries (e.g., reinforcement bars)
+    for g in rotated_geom.point_geometries:
         center = g._point
         r = g._diameter / 2
         poly = center.buffer(r)
         x_min, y_min, x_max, y_max = poly.bounds
-        z_range = [y_min + 1e-5, y_max - 1e-5]
+        z_range = [
+            y_min + 1e-5,
+            y_max - 1e-5,
+        ]  # Small offset to avoid duplicates
 
-        # stress
+        # Calculate stress at two points
         stress = [
             get_stress_point(
-                section, 0.5 * (x_min + x_max), z, eps_a, chi_y, 0
+                rotated_geom, 0.5 * (x_min + x_max), z, eps_a, chi, 0
             )
             for z in z_range
         ]
-        ax.plot(stress, z_range, color='gray')
-        ax.fill_betweenx(
+
+        # Plot stress on ax2
+        ax2.plot(stress, z_range, color='gray')
+
+        # Fill positive stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -241,7 +494,9 @@ def draw_section_response(
             facecolor='lightblue',
             interpolate=True,
         )
-        ax.fill_betweenx(
+
+        # Fill negative stress areas
+        ax2.fill_betweenx(
             z_range,
             0,
             stress,
@@ -249,55 +504,64 @@ def draw_section_response(
             facecolor='lightcoral',
             interpolate=True,
         )
+
+        # Average stress for labeling
+        avg_stress = 0.5 * (stress[0] + stress[1])
         labels_stress[
             (
-                min(max(stress[0], lim_Sneg), lim_Spos),
+                min(max(avg_stress, lim_Sneg), lim_Spos),
                 0.5 * (z_range[0] + z_range[1]),
             )
-        ] = round(0.5 * (stress[0] + stress[1]), 1)
+        ] = round(avg_stress, 1)
 
-        # strain
-        eps = [(eps_a + chi_y * z) * 1000 for z in z_range]
-        ax2.plot(eps, z_range, color='gray')
-        ax2.fill_betweenx(
+        # Calculate strain at two points
+        eps = [(eps_a + chi * z) * 1000 for z in z_range]
+
+        # Plot strain on ax3
+        ax3.plot(eps, z_range, color='gray')
+
+        # Fill positive strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) >= 0),
+            where=(np.array(eps) >= 0),
             facecolor='lightblue',
             interpolate=True,
         )
-        ax2.fill_betweenx(
+
+        # Fill negative strain areas
+        ax3.fill_betweenx(
             z_range,
             0,
             eps,
-            where=(np.array(stress) < 0),
+            where=(np.array(eps) < 0),
             facecolor='lightcoral',
             interpolate=True,
         )
 
-        labels_strain[(eps[0], 0.5 * (z_range[0] + z_range[1]))] = round(
-            0.5 * (eps[0] + eps[1]), 2
+        # Average strain for labeling
+        avg_eps = 0.5 * (eps[0] + eps[1])
+        labels_strain[(avg_eps, 0.5 * (z_range[0] + z_range[1]))] = round(
+            avg_eps, 2
         )
 
+    # endregion
+
+    # Add stress labels to ax2
     for coords, text in labels_stress.items():
-        ax.text(
-            *coords, text, fontsize=10, color='black', ha='left', va='center'
-        )
-    for coords, text in labels_strain.items():
         ax2.text(
             *coords, text, fontsize=10, color='black', ha='left', va='center'
         )
 
-    # strains
-    ax2.set_title('Section response - strain')
-    ax2.set_xlabel('strain [mm/m]')
-    ax2.set_ylabel('z')
-    # ax2.invert_yaxis()  # Invert axis
-    ax2.invert_xaxis()
+    # Add strain labels to ax3
+    for coords, text in labels_strain.items():
+        ax3.text(
+            *coords, text, fontsize=10, color='black', ha='left', va='center'
+        )
+
+    # Display the plot
     plt.show()
-    if abs(chi_y) > 0:
-        print(f'z neutral axis = {round(-eps_a/chi_y,2)}')
 
 
 def draw_constitutive_law(ec_const, lim_strain_neg=None, lim_strain_pos=None):
@@ -347,88 +611,141 @@ def draw_constitutive_law(ec_const, lim_strain_neg=None, lim_strain_pos=None):
     plt.show()
 
 
-def draw_My_Mz_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
-    """Draw the My-Mz diagram of a cross section.
+def draw_2D_diagram(
+    x_boundary,
+    y_boundary,
+    test_points,
+    figsize=(10, 10),
+    nticks_x=10,
+    nticks_y=10,
+    title='2D diagram',
+    title_x='X-axis',
+    title_y='Y-axis',
+    color='red',
+    debug=False,
+    scale_x=1,
+    scale_y=1,
+):
+    """Draw the 2D diagram of a cross section result representation.
 
     Args:
-        res : MMInteractionDomain results
+        x_boundary : array of x value for the capacity
+        y_boundary : array of y value for the capacity
+        test_points : Points to check if inside/outside boundary
         figsize : Size of the plot
         nticks_x,nticks_y : number of ticks in the axes
+        title :  title of the plot
+        title_x,title_y : title of the axis
+        color: color of boundary line
+        debug: print values of boundary
+        scale_x, scale_y: for change units of boundary points and test_points
     """
-    m_y = res.m_y / 1e6
-    m_z = res.m_z / 1e6
+    # Apply scale (units)
+    x_boundary *= scale_x
+    y_boundary *= scale_y
+
     fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(m_y, m_z, color='green')
-    ax.set_title(f'My-Mz   N={res.n/1e3} kN')
-    ax.set_xlabel('My (mkN)')
-    ax.set_ylabel('Mz (mkN)')
+    ax.plot(x_boundary, y_boundary, color=color)
+    ax.set_title(title)
+    ax.set_xlabel(title_x)
+    ax.set_ylabel(title_y)
     ax.axhline(0, color='gray', linewidth=1)
     ax.axvline(0, color='gray', linewidth=1)
-
-    x_legend = np.linspace(np.min(m_y), np.max(m_y), nticks_x)
-    y_legend = np.linspace(np.min(m_z), np.max(m_z), nticks_y)
-    ax.set_xticks(x_legend)
-    ax.set_yticks(y_legend)
-    ax.set_xticklabels(np.around(x_legend, decimals=1))
-    ax.set_yticklabels(np.around(y_legend, decimals=1))
-    plt.show()
-
-
-def draw_N_M_diagram(res, figsize=(10, 10), nticks_x=10, nticks_y=10):
-    """Draw the N-M diagram of a cross section.
-
-    Args:
-        res : NMInteractionDomain results
-        figsize : Size of the plot
-        nticks_x,nticks_y : number of ticks in the axes
-    """
-    n = res.n / 1e3
-    m_y = res.m_y / 1e6
-    m_z = res.m_z / 1e6
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(n, m_y, color='red')
-    ax.set_title(f'N-My  theta={round(math.degrees(res.theta),1)}º')
-    ax.set_xlabel('N (kN)')
-    ax.set_ylabel('My (mkN)')
-    ax.axhline(0, color='gray', linewidth=1)
-    ax.axvline(0, color='gray', linewidth=1)
-    x_legend = np.linspace(np.min(n), np.max(n), nticks_x)
-    y_legend = np.linspace(np.min(m_y), np.max(m_y), nticks_y)
+    x_legend = np.linspace(np.min(x_boundary), np.max(x_boundary), nticks_x)
+    y_legend = np.linspace(np.min(y_boundary), np.max(y_boundary), nticks_y)
     ax.set_xticks(x_legend)
     ax.set_yticks(y_legend)
     ax.set_xticklabels(np.around(x_legend, decimals=1))
     ax.set_yticklabels(np.around(y_legend, decimals=1))
 
-    for n_i, my_i in zip(n, m_y):
-        print(f'N = {n_i:.2f}\tkN\t\tMy = {my_i:.2f}\tkNm')
-        ax.plot(n_i, my_i, 'o', color='gray', markersize=2)
+    for x_i, y_i in zip(x_boundary, y_boundary):
+        if debug:
+            print(f'X = {x_i:.2f}\tY = {y_i:.2f}')
+        # boundary points
+        ax.plot(x_i, y_i, 'o', color=color, markersize=2)
 
-    plt.show()
+    if test_points:
+        for res in test_points:
+            point = res['point']
+            point[0] *= scale_x
+            point[1] *= scale_y
+            intersection_point = res['intersection_point']
+            if intersection_point is not None:
+                intersection_point[0] *= scale_x
+                intersection_point[1] *= scale_y
+            is_inside = res['is_inside']
+            # point
+            color_check = 'blue' if is_inside else 'red'
+            ax.plot(point[0], point[1], 'o', color=color_check, markersize=5)
+            if is_inside:
+                ax.plot(
+                    [0, point[0]],
+                    [0, point[1]],
+                    linestyle='-',
+                    color='gray',
+                    linewidth=0.5,
+                )
+            elif intersection_point is not None:
+                ax.plot(
+                    intersection_point[0],
+                    intersection_point[1],
+                    'o',
+                    color='orange',
+                    markersize=5,
+                )
+                ax.plot(
+                    [0, intersection_point[0]],
+                    [0, intersection_point[1]],
+                    linestyle='-',
+                    linewidth=0.5,
+                    color='gray',
+                )
+                ax.plot(
+                    [intersection_point[0], point[0]],
+                    [intersection_point[1], point[1]],
+                    linestyle='--',
+                    linewidth=0.5,
+                    color='red',
+                )
+    # Calculate the maximum efficiency
+    if test_points:
+        efficiency_points = [
+            (res['efficiency'], res['point'])
+            for res in test_points
+            if res['efficiency'] is not None
+        ]
+        if efficiency_points:
+            max_efficiency, max_eff_point = max(
+                efficiency_points, key=lambda x: x[0]
+            )
+            max_ef_label = f'Max efficiency: {max_efficiency:.2f} at ({max_eff_point[0]:.0f}, {max_eff_point[1]:.0f})'
+        else:
+            max_ef_label = 'No efficiency'
 
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(n, m_z, color='red')
-    ax.set_title(f'N-MZ  theta={round(math.degrees(res.theta),1)}º')
-    ax.set_xlabel('N (kN)')
-    ax.set_ylabel('Mz (mkN)')
-    ax.axhline(0, color='gray', linewidth=1)
-    ax.axvline(0, color='gray', linewidth=1)
-    x_legend = np.linspace(np.min(n), np.max(n), nticks_x)
-    y_legend = np.linspace(np.min(m_z), np.max(m_z), nticks_y)
-    ax.set_xticks(x_legend)
-    ax.set_yticks(y_legend)
-    ax.set_xticklabels(np.around(x_legend, decimals=1))
-    ax.set_yticklabels(np.around(y_legend, decimals=1))
+        # Add the maximum efficiency to the legend
+        custom_line = Line2D(
+            [0],
+            [0],
+            color='white',
+            marker='',
+            linestyle='',
+            label=max_ef_label,
+        )
 
-    for n_i, mz_i in zip(n, m_z):
-        print(f'N = {n_i:.2f}\tkN\t\tMz = {mz_i:.2f}\tkNm')
-        ax.plot(n_i, mz_i, 'o', color='gray', markersize=2)
-
+        # Adjust legend to avoid duplicates
+        handles, labels = ax.get_legend_handles_labels()
+        handles.append(custom_line)
+        labels.append(max_ef_label)
+        ax.legend(
+            handles, labels, fontsize='small', loc='upper right', frameon=False
+        )
+    plt.grid(True, color='lightcyan')
     plt.show()
 
 
 def draw_N_My_Mz_diagram(
     mesh,
-    results,
+    results=None,
     N_scale=1e-3,
     My_scale=1e-6,
     Mz_scale=1e-6,
@@ -441,6 +758,7 @@ def draw_N_My_Mz_diagram(
         The mesh to visualize (capacity of the section).
     results : list of dict
         The results from check_points_in_N_My_Mz function.
+        If None, just plot the mesh capacity.
     N_scale, My_scale, Mz_scale : float, optional
         unit change for the N, My, and Mz axes, respectively.
     """
@@ -485,116 +803,122 @@ def draw_N_My_Mz_diagram(
     plotted_labels = set()
 
     # Plot each point and its ray
-    for res in results:
-        point = res['point'].copy()
-        point[0] *= N_scale
-        point[1] *= My_scale
-        point[2] *= Mz_scale
-        is_inside = res['is_inside']
-        efficiency = res['efficiency']
-        intersection_point = res['intersection_point']
+    if results:
+        for res in results:
+            point = res['point'].copy()
+            point[0] *= N_scale
+            point[1] *= My_scale
+            point[2] *= Mz_scale
+            is_inside = res['is_inside']
+            efficiency = res['efficiency']
+            intersection_point = res['intersection_point']
 
-        if intersection_point is not None:
-            intersection_point = intersection_point.copy()
-            intersection_point[0] *= N_scale
-            intersection_point[1] *= My_scale
-            intersection_point[2] *= Mz_scale
+            if intersection_point is not None:
+                intersection_point = intersection_point.copy()
+                intersection_point[0] *= N_scale
+                intersection_point[1] *= My_scale
+                intersection_point[2] *= Mz_scale
 
-        # Color coding for inside/outside points
-        color = 'blue' if is_inside else 'red'
-        label = 'Point inside' if is_inside else 'Point outside'
+            # Color coding for inside/outside points
+            color = 'blue' if is_inside else 'red'
+            label = 'Point inside' if is_inside else 'Point outside'
 
-        # Plot the point
-        if label not in plotted_labels:
-            ax.scatter(
-                point[0],
-                point[1],
-                point[2],
-                color=color,
-                s=20,
-                label=label,
-            )
-            plotted_labels.add(label)
-        else:
-            ax.scatter(
-                point[0],
-                point[1],
-                point[2],
-                color=color,
-                s=20,
-            )
-
-        # Plot the ray from origin to point
-        ax.plot(
-            [origin[0], point[0]],
-            [origin[1], point[1]],
-            [origin[2], point[2]],
-            color='purple',
-            linestyle='--',
-        )
-
-        # If there's an intersection, plot it and the ray to it
-        if efficiency is not None and intersection_point is not None:
-            if 'Intersection Point' not in plotted_labels:
+            # Plot the point
+            if label not in plotted_labels:
                 ax.scatter(
-                    intersection_point[0],
-                    intersection_point[1],
-                    intersection_point[2],
-                    color='orange',
+                    point[0],
+                    point[1],
+                    point[2],
+                    color=color,
                     s=20,
-                    label='Intersection Point',
+                    label=label,
                 )
-                plotted_labels.add('Intersection Point')
+                plotted_labels.add(label)
             else:
                 ax.scatter(
-                    intersection_point[0],
-                    intersection_point[1],
-                    intersection_point[2],
-                    color='orange',
+                    point[0],
+                    point[1],
+                    point[2],
+                    color=color,
                     s=20,
                 )
-            # Plot the ray from origin to intersection point
+
+            # Plot the ray from origin to point
             ax.plot(
-                [origin[0], intersection_point[0]],
-                [origin[1], intersection_point[1]],
-                [origin[2], intersection_point[2]],
-                color='cyan',
+                [origin[0], point[0]],
+                [origin[1], point[1]],
+                [origin[2], point[2]],
+                color='purple',
+                linestyle='--',
             )
+
+            # If there's an intersection, plot it and the ray to it
+            if efficiency is not None and intersection_point is not None:
+                if 'Intersection Point' not in plotted_labels:
+                    ax.scatter(
+                        intersection_point[0],
+                        intersection_point[1],
+                        intersection_point[2],
+                        color='orange',
+                        s=20,
+                        label='Intersection Point',
+                    )
+                    plotted_labels.add('Intersection Point')
+                else:
+                    ax.scatter(
+                        intersection_point[0],
+                        intersection_point[1],
+                        intersection_point[2],
+                        color='orange',
+                        s=20,
+                    )
+                # Plot the ray from origin to intersection point
+                ax.plot(
+                    [origin[0], intersection_point[0]],
+                    [origin[1], intersection_point[1]],
+                    [origin[2], intersection_point[2]],
+                    color='cyan',
+                )
 
     # Set axis labels and title
     ax.set_xlabel('N [kN]')
     ax.set_ylabel('My [mkN]')
     ax.set_zlabel('Mz [mkN]')
-    ax.set_title('Section capacity N-My-Mz')
+    # ax.set_title('Section capacity N-My-Mz')
+    ax.set_title('Potato diagram N-My-Mz')
 
     # Calculate the maximum efficiency
-    efficiency_points = [
-        (res['efficiency'], res['point'])
-        for res in results
-        if res['efficiency'] is not None
-    ]
-    if efficiency_points:
-        max_efficiency, max_eff_point = max(
-            efficiency_points, key=lambda x: x[0]
+    if results:
+        efficiency_points = [
+            (res['efficiency'], res['point'])
+            for res in results
+            if res['efficiency'] is not None
+        ]
+        if efficiency_points:
+            max_efficiency, max_eff_point = max(
+                efficiency_points, key=lambda x: x[0]
+            )
+            max_ef_label = f'Max efficiency: {max_efficiency:.2f} at \nN={max_eff_point[0]*N_scale:.0f}, My={max_eff_point[1]*My_scale:.0f}, Mz={max_eff_point[2]*Mz_scale:.0f}'
+        else:
+            max_ef_label = 'No efficiency'
+
+        # Add the maximum efficiency to the legend
+        custom_line = Line2D(
+            [0],
+            [0],
+            color='white',
+            marker='',
+            linestyle='',
+            label=max_ef_label,
         )
-        max_ef_label = f'Max efficiency: {max_efficiency:.2f} at \nN={max_eff_point[0]*N_scale:.0f}, My={max_eff_point[1]*My_scale:.0f}, Mz={max_eff_point[2]*Mz_scale:.0f}'
-    else:
-        max_ef_label = 'No efficiency'
 
-    # Add the maximum efficiency to the legend
-    from matplotlib.lines import Line2D
-
-    custom_line = Line2D(
-        [0], [0], color='white', marker='', linestyle='', label=max_ef_label
-    )
-
-    # Adjust legend to avoid duplicates
-    handles, labels = ax.get_legend_handles_labels()
-    handles.append(custom_line)
-    labels.append(max_ef_label)
-    ax.legend(
-        handles, labels, fontsize='small', loc='upper right', frameon=False
-    )
+        # Adjust legend to avoid duplicates
+        handles, labels = ax.get_legend_handles_labels()
+        handles.append(custom_line)
+        labels.append(max_ef_label)
+        ax.legend(
+            handles, labels, fontsize='small', loc='upper right', frameon=False
+        )
 
     plt.show()
 
