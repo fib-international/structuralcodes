@@ -36,5 +36,5 @@ sec.geometry._reinforced_concrete = (
 )
 ### CREATE THE SECTION ########
 
-print(sec.cracked_properties)
+print(sec.cracked_properties(-300 * 1e3, 30 * 1e6, -60 * 1e6))
 # print(sec.cracked_properties.i_yy_2 / sec.gross_properties.i11)

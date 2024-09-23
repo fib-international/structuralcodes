@@ -128,9 +128,19 @@ class GrossProperties:
 
 @dataclass
 class CrackedProperties:
-    """Simple dataclass for storing cracked section properties."""
+    """Simple dataclass for storing cracked section properties.
+    Cracked properties differs of the service loads n_ed, m_ed_1, m_ed_2.
+    If no provided, assumed n_ed=0 and m_ed_1, m_ed_2 = 40% ultimate moment.
+    """
+
+    n_ed: float = field(
+        default=0, metadata={'description': 'Axial load in SLS'}
+    )
 
     # LOWER COMPRESION BLOCK
+    m_ed_1: float = field(
+        default=0, metadata={'description': 'Bending moment in SLS'}
+    )
     # second moments of area
     i_yy_1: float = field(
         default=0, metadata={'description': 'Product moment (Iyy_1)'}
@@ -146,10 +156,16 @@ class CrackedProperties:
     ei_zz_1: float = field(default=0, metadata={'description': 'E * Izz_1'})
     # neutral axe
     z_na_1: float = field(
-        default=0, metadata={'description': 'neutral axe distance'}
+        default=0, metadata={'description': 'Neutral axe distance'}
+    )
+    m_cracking_1: float = field(
+        default=0, metadata={'description': 'Cracking moment'}
     )
 
     # UPPER COMPRESION BLOCK
+    m_ed_2: float = field(
+        default=0, metadata={'description': 'Bending moment in SLS'}
+    )
     # second moments of area
     i_yy_2: float = field(
         default=0, metadata={'description': 'Product moment (Iyy_2)'}
@@ -165,8 +181,16 @@ class CrackedProperties:
     ei_zz_2: float = field(default=0, metadata={'description': 'E * Izz_2'})
     # neutral axe
     z_na_2: float = field(
-        default=0, metadata={'description': 'neutral axe distance'}
+        default=0, metadata={'description': 'Neutral axe distance'}
     )
+    m_cracking_2: float = field(
+        default=0, metadata={'description': 'Cracking moment'}
+    )
+
+    def __init__(self, n_ed=0, m_ed_1=0, m_ed_2=0):
+        self.n_ed = n_ed
+        self.m_ed_1 = m_ed_1
+        self.m_ed_2 = m_ed_2
 
     def __format__(self, spec: str) -> str:
         """Defines the format for returning the string representation.
@@ -176,7 +200,7 @@ class CrackedProperties:
         """
         output_string = 'Cracked Concrete Section Properties:\n1) Lower compresion block:\n'
         for f in fields(self):
-            if f.name.endswith('_1'):
+            if f.name.endswith('_1') or f.name == 'n_ed':
                 value = getattr(self, f.name)
                 description = f.metadata.get(
                     'description', 'No description available'
@@ -184,7 +208,7 @@ class CrackedProperties:
                 output_string += f'  {description}: {value:{spec}}\n'
         output_string += '2) Upper compresion block:\n'
         for f in fields(self):
-            if f.name.endswith('_2'):
+            if f.name.endswith('_2') or f.name == 'n_ed':
                 value = getattr(self, f.name)
                 description = f.metadata.get(
                     'description', 'No description available'

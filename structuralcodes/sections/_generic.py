@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import math
 import typing as t
 import warnings
@@ -13,13 +14,20 @@ from shapely import MultiPolygon
 from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
+from structuralcodes.codes import _CODE, set_design_code
 from structuralcodes.core.base import Section, SectionCalculator
 from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
     SurfaceGeometry,
 )
-from structuralcodes.materials.constitutive_laws import Elastic
+from structuralcodes.materials.concrete import create_concrete
+from structuralcodes.materials.constitutive_laws import (
+    Elastic,
+    ParabolaRectangle,
+    Sargin,
+    UserDefined,
+)
 
 from .section_integrators import integrator_factory
 
@@ -78,14 +86,20 @@ class GenericSection(Section):
             )
         return self._gross_properties
 
-    @property
-    def cracked_properties(self) -> s_res.CrackedProperties:
+    def cracked_properties(
+        self, n_ed=0, m_ed_1=0, m_ed_2=0
+    ) -> s_res.CrackedProperties:
         """Return the cracked properties of the section for positive and
         negative bending (n=0) with horizontal neutral axe.
+        n_ed = axial load in SLS
+        m_ed_1 = moment in SLS compressing the bottom part of the section
+        m_ed_2 = moment in SLS compressing the upper part of the section.
         """
         if self._cracked_properties is None:
             self._cracked_properties = (
-                self.section_calculator._calculate_cracked_section_properties()
+                self.section_calculator._calculate_cracked_section_properties(
+                    n_ed, m_ed_1, m_ed_2
+                )
             )
         return self._cracked_properties
 
@@ -276,8 +290,8 @@ class GenericSectionCalculator(SectionCalculator):
         return gp
 
     def _calculate_cracked_section_properties(
-        self, n=0
-    ) -> s_res.CrackedProperties:
+        self, n_ed=0, m_ed_1=0, m_ed_2=0
+    ) -> s_res.CrackedProperties():
         """Calculates the Cracked section properties of the reinforced concrete GenericSection.
 
         This function is private and called when the section is created
@@ -304,33 +318,36 @@ class GenericSectionCalculator(SectionCalculator):
         if not self.section.geometry.reinforced_concrete:
             return None
 
+        cp = s_res.CrackedProperties(n_ed, m_ed_1, m_ed_2)
+        cp.m_cracking_1, cp.m_cracking_2, z_1, z_2 = (
+            self.calculate_cracking_moment(n_ed)
+        )
+
         for lower_compression_block in [True, False]:
             # Determine parameters based on the compression side
-            theta_values = {True: 0, False: math.pi}
-            sign_factor = {
-                True: -1,
-                False: 1,
-            }  # ISSUE: I need it because my and chi follow different coordinate axes in the results of calculate_bending_strength. it looks like a bug. Ask Diego
+            theta = math.pi if lower_compression_block else 0
+            m_ed = m_ed_1 if lower_compression_block else m_ed_2
 
-            # Calculate theta and curvature based on both cases
-            r = self.calculate_bending_strength(
-                theta=theta_values[lower_compression_block], n=n
-            )
-            curv = (
-                sign_factor[lower_compression_block] * r.chi_y / 10
-            )  # small curvature to get neutral axis
+            # if no prvided use 0.40 m_max as service moment for cracking
+            if m_ed == 0:
+                r = self.calculate_bending_strength(theta=theta, n=n_ed)
+                m_ed = 0.4 * r.m_y
+
+            # Get curvature for (n_ed,m_ed)
+            r = self.calculate_moment_curvature(theta, n_ed)
+            curv = np.interp(m_ed, r.m_y, r.chi_y)
 
             # Find the equilibrium with fixed curvature
             eps = self.find_equilibrium_fixed_curvature(
-                self.section.geometry, n, curv, 0
+                self.section.geometry, n_ed, curv, 0
             )[0]
-            y = -eps / curv  # distance to neutral fibre
+            z_na = -eps / curv  # distance to neutral fibre
 
             # Cutting concrete geometries and retaining the compressed block
             cut_geom = CompoundGeometry(None, None)
             for i, part in enumerate(self.section.geometry.geometries):
                 min_x, max_x, min_y, max_y = part.calculate_extents()
-                above_div, below_div = part.split(((min_x, y), 0))
+                above_div, below_div = part.split(((min_x, z_na), 0))
                 subpart_poly = (
                     below_div if lower_compression_block else above_div
                 )
@@ -349,24 +366,43 @@ class GenericSectionCalculator(SectionCalculator):
 
             # Define auxiliary cracked section
             cracked_sec = GenericSection(cut_geom)
-            r = cracked_sec.gross_properties
-
+            rc = cracked_sec.gross_properties
+            rg = self._calculate_gross_section_properties()
             # Store results for each case (True/False)
+
             if lower_compression_block:
-                cp = s_res.CrackedProperties()
-                cp.ei_yy_1 = r.e_iyy
-                cp.ei_zz_1 = r.e_izz
-                cp.i_yy_1 = r.iyy
-                cp.i_zz_1 = r.izz
-                cp.i_yz_1 = r.iyz
-                cp.z_na_1 = y
+                cp.n_ed = n_ed
+                cp.m_ed_1 = m_ed
+                if abs(cp.m_cracking_1) > abs(cp.m_ed_1):  # no cracking
+                    cp.ei_yy_1 = rg.e_iyy
+                    cp.ei_zz_1 = rg.e_izz
+                    cp.i_yy_1 = rg.iyy
+                    cp.i_zz_1 = rg.izz
+                    cp.i_yz_1 = rg.iyz
+                    cp.z_na_1 = z_1
+                else:
+                    cp.ei_yy_1 = rc.e_iyy
+                    cp.ei_zz_1 = rc.e_izz
+                    cp.i_yy_1 = rc.iyy
+                    cp.i_zz_1 = rc.izz
+                    cp.i_yz_1 = rc.iyz
+                    cp.z_na_1 = z_na
             else:
-                cp.ei_yy_2 = r.e_iyy
-                cp.ei_zz_2 = r.e_izz
-                cp.i_yy_2 = r.iyy
-                cp.i_zz_2 = r.izz
-                cp.i_yz_2 = r.iyz
-                cp.z_na_2 = y
+                cp.m_ed_2 = m_ed
+                if abs(cp.m_cracking_2) > abs(cp.m_ed_2):  # no cracking
+                    cp.ei_yy_2 = rg.e_iyy
+                    cp.ei_zz_2 = rg.e_izz
+                    cp.i_yy_2 = rg.iyy
+                    cp.i_zz_2 = rg.izz
+                    cp.i_yz_2 = rg.iyz
+                    cp.z_na_2 = z_2
+                else:
+                    cp.ei_yy_2 = rc.e_iyy
+                    cp.ei_zz_2 = rc.e_izz
+                    cp.i_yy_2 = rc.iyy
+                    cp.i_zz_2 = rc.izz
+                    cp.i_yz_2 = rc.iyz
+                    cp.z_na_2 = z_na
 
         return cp
 
@@ -1079,3 +1115,88 @@ class GenericSectionCalculator(SectionCalculator):
             res.m_z[i] = res_bend_strength.m_z
 
         return res
+
+    def calculate_cracking_moment(self, n=0):
+        """Calculate the cracking moment of a R.C section.
+        A concrete material failing at fctm is used for the cracking moment
+        calculation. This method modify the constitutive law of concrete to reach
+        fctm in tension.
+
+        Args:
+            n [N]: Axial external load
+
+        Returns:
+            m_cracking_1: moment compress lower part of the section
+            m_cracking_2: moment compress upper part of the section
+            z_1 : distance of neutral axe to origin when M=m_cracking_1
+            z_2 : distance of neutral axe to origin when M=m_cracking_2
+        """
+
+        def modify_consitutive_law(geom: SurfaceGeometry):
+            """Add tension branch of concrete to constitutive law."""
+            mat = geom.material
+            gamma_c = 1.5  # !!!! ISSUE. gamma_c should be readable from ConstitutiveLaw class (TODO)
+            if (
+                _CODE is None
+            ):  # should be the code of the material used to create the section
+                set_design_code('mc2010')
+            if isinstance(mat, ParabolaRectangle):
+                strains = np.linspace(mat._eps_u, 0, 20)
+                aux_concrete = create_concrete(
+                    abs(mat._fc * gamma_c), gamma_c=1
+                )
+            elif isinstance(mat, Sargin):
+                strains = np.linspace(mat._eps_cu1, 0, 20)
+                aux_concrete = create_concrete(
+                    abs(mat._fc * gamma_c), gamma_c=1
+                )
+            else:  # UserDefined
+                strains = np.linspace(-0.0035, 0, 20)
+                eps_max, eps_min = mat.get_ultimate_strain()
+                s1 = np.linspace(eps_min, eps_max, 100)
+                s2 = mat.get_stress(s1)
+                aux_concrete = create_concrete(
+                    abs(s2.min() * gamma_c), gamma_c=1
+                )
+
+            stress = aux_concrete.constitutive_law.get_stress((strains))
+            # stress = mat.get_stress((strains))
+            strains = strains.tolist()
+            stress = stress.tolist()
+
+            fctm = aux_concrete.fctm
+            Ec = aux_concrete.constitutive_law.get_tangent(0)[0]
+            tensile_strain_limit = fctm / Ec
+            strains.append(tensile_strain_limit)
+            stress.append(fctm)
+            ec_const = UserDefined(
+                strains, stress, 'constitutive_law_with_tension'
+            )
+            geom.material = ec_const
+
+        sec = copy.deepcopy(self.section)
+        m_cracking_1, m_cracking_2 = 0, 0
+        if sec.geometry.reinforced_concrete:
+            if isinstance(sec.geometry, SurfaceGeometry):
+                modify_consitutive_law(sec.geometry)
+            elif isinstance(sec.geometry, CompoundGeometry):
+                for i in range(len(sec.geometry.geometries)):
+                    modify_consitutive_law(sec.geometry.geometries[i])
+            else:
+                raise ValueError(
+                    'geometry must be SurfaceGeometry or CompoundGeometry'
+                )
+            # lower compresion block failure
+            res = sec.section_calculator.calculate_bending_strength(
+                theta=math.pi, n=n
+            )
+            m_cracking_1 = res.m_y
+            z_1 = -res.eps_a / res.chi_y
+            # upper compresion block failure
+            res = sec.section_calculator.calculate_bending_strength(
+                theta=0, n=n
+            )
+            m_cracking_2 = res.m_y
+            z_2 = res.eps_a / res.chi_y
+
+        return m_cracking_1, m_cracking_2, z_1, z_2
