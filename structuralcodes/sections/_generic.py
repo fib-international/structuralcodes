@@ -14,13 +14,20 @@ from shapely import MultiPolygon
 from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
+from structuralcodes.codes import _CODE, set_design_code
 from structuralcodes.core.base import Section, SectionCalculator
 from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
     SurfaceGeometry,
 )
-from structuralcodes.materials.constitutive_laws import Elastic
+from structuralcodes.materials.concrete import create_concrete
+from structuralcodes.materials.constitutive_laws import (
+    Elastic,
+    ParabolaRectangle,
+    Sargin,
+    UserDefined,
+)
 
 from .section_integrators import integrator_factory
 
@@ -66,6 +73,7 @@ class GenericSection(Section):
             sec=self, integrator=integrator, **kwargs
         )
         self._gross_properties = None
+        self._cracked_properties = None
 
     @property
     def gross_properties(self) -> s_res.GrossProperties:
@@ -1382,80 +1390,87 @@ class GenericSectionCalculator(SectionCalculator):
         else:
             return eps_a, chiy, chiz
 
+    def calculate_cracking_moment(self, n=0):
+        """Calculate the cracking moment of a R.C section.
+        A concrete material failing at fctm is used for the cracking moment
+        calculation. This method modify the constitutive law of concrete to reach
+        fctm in tension.
 
-def calculate_cracking_moment(self, n=0):
-    """Calculate the cracking moment of a R.C section.
-    A concrete material failing at fctm is used for the cracking moment
-    calculation. This method modify the constitutive law of concrete to reach
-    fctm in tension.
+        Args:
+            n [N]: Axial external load
 
-    Args:
-        n [N]: Axial external load
+        Returns:
+            m_cracking_1: moment compress lower part of the section
+            m_cracking_2: moment compress upper part of the section
+            z_1 : distance of neutral axe to origin when M=m_cracking_1
+            z_2 : distance of neutral axe to origin when M=m_cracking_2
+        """
 
-    Returns:
-        m_cracking_1: moment compress lower part of the section
-        m_cracking_2: moment compress upper part of the section
-        z_1 : distance of neutral axe to origin when M=m_cracking_1
-        z_2 : distance of neutral axe to origin when M=m_cracking_2
-    """
+        def modify_consitutive_law(geom: SurfaceGeometry):
+            """Add tension branch of concrete to constitutive law."""
+            mat = geom.material
+            gamma_c = 1.5  # !!!! ISSUE. gamma_c should be readable from ConstitutiveLaw class (TODO)
+            if (
+                _CODE is None
+            ):  # should be the code of the material used to create the section
+                set_design_code('mc2010')
+            if isinstance(mat, ParabolaRectangle):
+                strains = np.linspace(mat._eps_u, 0, 20)
+                aux_concrete = create_concrete(
+                    abs(mat._fc * gamma_c), gamma_c=1
+                )
+            elif isinstance(mat, Sargin):
+                strains = np.linspace(mat._eps_cu1, 0, 20)
+                aux_concrete = create_concrete(
+                    abs(mat._fc * gamma_c), gamma_c=1
+                )
+            else:  # UserDefined
+                strains = np.linspace(-0.0035, 0, 20)
+                eps_max, eps_min = mat.get_ultimate_strain()
+                s1 = np.linspace(eps_min, eps_max, 100)
+                s2 = mat.get_stress(s1)
+                aux_concrete = create_concrete(
+                    abs(s2.min() * gamma_c), gamma_c=1
+                )
 
-    def modify_consitutive_law(geom: SurfaceGeometry):
-        """Add tension branch of concrete to constitutive law."""
-        mat = geom.material
-        gamma_c = 1.5  # !!!! ISSUE. gamma_c should be readable from ConstitutiveLaw class (TODO)
-        if (
-            _CODE is None
-        ):  # should be the code of the material used to create the section
-            set_design_code('mc2010')
-        if isinstance(mat, ParabolaRectangle):
-            strains = np.linspace(mat._eps_u, 0, 20)
-            aux_concrete = create_concrete(abs(mat._fc * gamma_c), gamma_c=1)
-        elif isinstance(mat, Sargin):
-            strains = np.linspace(mat._eps_cu1, 0, 20)
-            aux_concrete = create_concrete(abs(mat._fc * gamma_c), gamma_c=1)
-        else:  # UserDefined
-            strains = np.linspace(-0.0035, 0, 20)
-            eps_max, eps_min = mat.get_ultimate_strain()
-            s1 = np.linspace(eps_min, eps_max, 100)
-            s2 = mat.get_stress(s1)
-            aux_concrete = create_concrete(abs(s2.min() * gamma_c), gamma_c=1)
+            stress = aux_concrete.constitutive_law.get_stress((strains))
+            # stress = mat.get_stress((strains))
+            strains = strains.tolist()
+            stress = stress.tolist()
 
-        stress = aux_concrete.constitutive_law.get_stress((strains))
-        # stress = mat.get_stress((strains))
-        strains = strains.tolist()
-        stress = stress.tolist()
-
-        fctm = aux_concrete.fctm
-        Ec = aux_concrete.constitutive_law.get_tangent(0)[0]
-        tensile_strain_limit = fctm / Ec
-        strains.append(tensile_strain_limit)
-        stress.append(fctm)
-        ec_const = UserDefined(
-            strains, stress, 'constitutive_law_with_tension'
-        )
-        geom.material = ec_const
-
-    sec = copy.deepcopy(self.section)
-    m_cracking_1, m_cracking_2 = 0, 0
-    if sec.geometry.reinforced_concrete:
-        if isinstance(sec.geometry, SurfaceGeometry):
-            modify_consitutive_law(sec.geometry)
-        elif isinstance(sec.geometry, CompoundGeometry):
-            for i in range(len(sec.geometry.geometries)):
-                modify_consitutive_law(sec.geometry.geometries[i])
-        else:
-            raise ValueError(
-                'geometry must be SurfaceGeometry or CompoundGeometry'
+            fctm = aux_concrete.fctm
+            Ec = aux_concrete.constitutive_law.get_tangent(0)[0]
+            tensile_strain_limit = fctm / Ec
+            strains.append(tensile_strain_limit)
+            stress.append(fctm)
+            ec_const = UserDefined(
+                strains, stress, 'constitutive_law_with_tension'
             )
-        # lower compresion block failure
-        res = sec.section_calculator.calculate_bending_strength(
-            theta=math.pi, n=n
-        )
-        m_cracking_1 = res.m_y
-        z_1 = -res.eps_a / res.chi_y
-        # upper compresion block failure
-        res = sec.section_calculator.calculate_bending_strength(theta=0, n=n)
-        m_cracking_2 = res.m_y
-        z_2 = res.eps_a / res.chi_y
+            geom.material = ec_const
 
-    return m_cracking_1, m_cracking_2, z_1, z_2
+        sec = copy.deepcopy(self.section)
+        m_cracking_1, m_cracking_2 = 0, 0
+        if sec.geometry.reinforced_concrete:
+            if isinstance(sec.geometry, SurfaceGeometry):
+                modify_consitutive_law(sec.geometry)
+            elif isinstance(sec.geometry, CompoundGeometry):
+                for i in range(len(sec.geometry.geometries)):
+                    modify_consitutive_law(sec.geometry.geometries[i])
+            else:
+                raise ValueError(
+                    'geometry must be SurfaceGeometry or CompoundGeometry'
+                )
+            # lower compresion block failure
+            res = sec.section_calculator.calculate_bending_strength(
+                theta=math.pi, n=n
+            )
+            m_cracking_1 = res.m_y
+            z_1 = -res.eps_a / res.chi_y
+            # upper compresion block failure
+            res = sec.section_calculator.calculate_bending_strength(
+                theta=0, n=n
+            )
+            m_cracking_2 = res.m_y
+            z_2 = res.eps_a / res.chi_y
+
+        return m_cracking_1, m_cracking_2, z_1, z_2

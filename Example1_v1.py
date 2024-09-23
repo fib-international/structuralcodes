@@ -37,7 +37,7 @@ n = -0 * 1e3
 my = 0 * 1e6  # -150
 mz = 80 * 1e6  # -100
 
-res = sec.section_calculator.calculate_strain_profile_v1(n, my, mz)
+res = sec.section_calculator.calculate_strain_profile(n, my, mz)
 print(
     'eps',
     round(res[0] * 1e3, 2),
