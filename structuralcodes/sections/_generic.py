@@ -972,15 +972,17 @@ class GenericSectionCalculator(SectionCalculator):
         return res
 
     def calculate_strain_profile(self, n_ed=0, my_ed=0, mz_ed=0):
-        """'Get the strain plane for a given axial force and biaxial bending .
+        """Get the strain plane for a given axial force and biaxial bending.
 
         Args:
-            n_ed [N]: Axial load
-            my_ed [N*m]: Bending moment My
-            mz_ed [N*m]: Bending moment My
+            n_ed (float): Axial load
+            my_ed (float): Bending moment around y-axis
+            mz_ed (float): Bending moment around z-axis
+
         Returns:
-            eps_a: strain at (0,0)
-            chiy,chiz: curvatures of the section
+            eps_a (float): Strain at (0,0)
+            chiy (float): Curvature of the section around y-axis
+            chiz (float): Curvature of the section around z-axis
         """
 
         def interpolate(x1, x2, y1, y2, x):
@@ -990,111 +992,162 @@ class GenericSectionCalculator(SectionCalculator):
             return y
 
         def angle(x, y):
-            """Obtain the angle of the vector with respect to (1,0) in counterclockwise direction."""
+            """Obtain the angle of the vector with respect to (1,0) in
+            counterclockwise direction.
+            """
             angle = math.atan2(y, x)
 
             # check angle between [0, 2π]
             if angle < 0:
                 angle += 2 * math.pi
+            return angle
 
-            # Degrees
-            angle_deg = math.degrees(angle)
+        def check_points_in_2D_diagram(
+            boundary_x, boundary_y, forces, debug=False
+        ):  # TODO Should this method be moved to the section_results classes?
+            """Checks whether given points are inside a boundary defined by
+            capacity_pts, and calculates efficiency for rays from the origin
+            to each point.
 
-            return angle  # , angle_deg
-
-        def calculate_strain_profile_uniaxial(
-            section: GenericSection, n_ed=0, m_ed=0
-        ):
-            """'Get the strain plane for horizontal neutral axe.
-
-            Args:
-                n_ed [N]: Axial load
-                m_ed [N*m]: Resultant bending moment (My**2+Mz**2)**0.5
+            Parameters:
+            boundary_x,boundary_y : array-like, shape (n_points, 1)
+                The points defining the capacity boundary.
+            forces : array-like, shape (n_forces, 2)
+                The points to test.
 
             Returns:
-                eps_a: strain at (0,0)
-                chi: curvature of the section
+            results : list of dict
+                A list containing dictionaries with the following keys:
+                - 'point': The point tested.
+                - 'is_inside': True if the point is inside the boundary
+                - 'efficiency': The efficiency for the ray from the origin to
+                the intersection point.
+                - 'intersection_point': The intersection point on the boundary
             """
-            sec_geom = section.geometry
+            from shapely import LineString, Point, Polygon
 
-            if m_ed < 0:
-                r = section.section_calculator.calculate_bending_strength(
-                    theta=0, n=n_ed
-                )
-                m1, m2 = r.m_y, 0
-                chi1, chi2 = r.chi_y, 0
-                e1, e2 = r.eps_a, 0
-            else:
-                r = section.section_calculator.calculate_bending_strength(
-                    theta=math.pi, n=n_ed
-                )
-                m1, m2 = 0, r.m_y
-                chi1, chi2 = 0, -r.chi_y
-                e1, e2 = 0, r.eps_a
+            # Create boundary points in shape (n_points, 2)
+            capacity_pts = np.column_stack((boundary_x, boundary_y))
 
-            chi = interpolate(m1, m2, chi1, chi2, m_ed)
+            # Create the polygon from capacity points
+            capacity_polygon = Polygon(capacity_pts)
 
-            strain = [interpolate(m1, m2, e1, e2, m_ed), 0, 0]
+            # Prepare the results list
+            results = []
 
-            ITMAX = 100
-            tolerance = 1000  # (1e-3 mkN)
-            iter = 0
-            M_ = 1e11
+            # Convert forces to a NumPy array
+            forces = np.array(forces)
 
-            # Stop if the ultimate curvature is exceeded
-            if chi >= chi2:
-                return e2, chi2
-            elif chi <= chi1:
-                return e1, chi1
+            # Define the origin
+            origin = np.array([0.0, 0.0])
 
-            while abs(m_ed - M_) > tolerance and iter < ITMAX:
-                strain = section.section_calculator.find_equilibrium_fixed_curvature(
-                    sec_geom, n_ed, chi, strain[0]
-                )
-                (
-                    _,
-                    My,
-                    Mz,
-                    _,
-                ) = section.section_calculator.integrator.integrate_strain_response_on_geometry(
-                    geo=sec_geom,
-                    strain=strain,
-                    tri=section.section_calculator.triangulated_data,
-                )
+            # Iterate over each point in forces
+            for point in forces:
+                # Create a line from the origin to the point
+                factored_point = np.array([point[0] * 1e10, point[1] * 1e10])
+                ray_line = LineString([origin, factored_point])
 
-                M_ = (My**2 + Mz**2) ** 0.5
+                # Check if the point is inside the polygon
+                is_inside = capacity_polygon.contains(Point(point))
 
-                if m_ed < M_:
-                    m2 = M_
-                    chi2 = chi
+                # Find the intersection of the ray with the polygon boundary
+                intersection = ray_line.intersection(capacity_polygon.boundary)
+
+                if intersection.is_empty:
+                    # No intersection found
+                    efficiency = None
+                    intersection_point = None
                 else:
-                    m1 = M_
-                    chi1 = chi
+                    # There is an intersection
+                    # Intersection could be a Point or MultiPoint
+                    if isinstance(intersection, Point):
+                        intersection_point = np.array(
+                            [intersection.x, intersection.y]
+                        )
+                    elif isinstance(intersection, LineString):
+                        # The ray lies along an edge; take the point closest
+                        # to the origin
+                        coords = np.array(intersection.coords)
+                        distances = np.linalg.norm(coords - origin, axis=1)
+                        min_index = np.argmin(distances)
+                        intersection_point = coords[min_index]
+                    elif intersection.geom_type == 'MultiPoint':
+                        # Choose the closest intersection point to the origin
+                        points = np.array(
+                            [[pt.x, pt.y] for pt in intersection.geoms]
+                        )
+                        distances = np.linalg.norm(points - origin, axis=1)
+                        min_index = np.argmin(distances)
+                        intersection_point = points[min_index]
+                    else:
+                        # Unexpected geometry type
+                        efficiency = None
+                        intersection_point = None
 
-                chi = interpolate(m1, m2, chi1, chi2, m_ed)
-                eps_a = strain[0]
-                iter += 1
-                print(
-                    'calculate_strain_profile_uniaxial - iter ',
-                    iter,
-                    ' - m_ed',
-                    round(m_ed / 1e6, 1),
-                    'M',
-                    round(M_ / 1e6, 1),
-                    'chi1',
-                    round(chi1 * 1e6, 1),
-                    'chi2',
-                    round(chi2 * 1e6, 1),
+                    if intersection_point is not None:
+                        # Calculate distances
+                        distance_origin_to_intersection = np.linalg.norm(
+                            intersection_point - origin
+                        )
+                        distance_origin_to_point = np.linalg.norm(
+                            point - origin
+                        )
+
+                        # Calculate efficiency
+                        if distance_origin_to_intersection != 0:
+                            efficiency = (
+                                distance_origin_to_point
+                                / distance_origin_to_intersection
+                            )
+                        else:
+                            efficiency = np.inf  # Avoid division by zero
+
+                        # Determine if the point is inside based on efficiency
+                        is_inside = efficiency <= 1
+
+                # Append the result for this point
+                results.append(
+                    {
+                        'point': point,
+                        'is_inside': is_inside,
+                        'efficiency': efficiency,
+                        'intersection_point': intersection_point,
+                    }
                 )
-            if iter == ITMAX:
-                return None, None
-            else:
-                return eps_a, chi
 
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n_ed)
+            if debug:
+                # Print the results
+                for res in results:
+                    point = res['point']
+                    is_inside = res['is_inside']
+                    efficiency = res['efficiency']
+                    print(
+                        f"Point {point} is "
+                        f"{'inside' if is_inside else 'outside'} the boundary."
+                    )
+                    if efficiency is not None:
+                        print(f'Efficiency: {efficiency:.4f}')
+                    if res['intersection_point'] is not None:
+                        print(
+                            f"Intersection Point: {res['intersection_point']}"
+                        )
+                    print('---')
 
-        # obtain the boundaries of theta (angle of moments) corresponding to the quadrants of the alpha angle
+            return results
+
+        # Step 1: Check if the section can carry the forces
+        mm_domain = self.calculate_mm_interaction_domain(n=n_ed, num_theta=16)
+        res = check_points_in_2D_diagram(
+            mm_domain.m_y, mm_domain.m_z, [[my_ed, mz_ed]]
+        )
+        if not res[0]['is_inside']:
+            raise ValueError(
+                f"Forces cannot be taken by section -> "
+                f"efficiency = {res[0]['efficiency']:.3f} > 1"
+            )
+
+        # Step 2: Obtain the boundaries of theta (angle of moments)
+        # corresponding to the quadrants of the alpha angle
         res = self.calculate_bending_strength(math.pi, n_ed)
         theta_0 = angle(res.m_y, res.m_z)
 
@@ -1134,32 +1187,42 @@ class GenericSectionCalculator(SectionCalculator):
             alfa_2 = 2 * math.pi
             alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
 
+        # Step 3: Iterative process to refine alfa
         ITMAX = 50
         iter = 0
-        My = 1e11
-        Mz = 1e11
+        m_ed = (my_ed**2 + mz_ed**2) ** 0.5
+        _chi_pre, _chi_post = None, None
+        _theta = -9e9
+        while ((abs(_theta - theta)) > 1e-4) and iter < ITMAX:
+            if (alfa_2 - alfa_1) > math.pi / 18:  # more than 10° -> simplifies
+                mc_r = self.calculate_moment_curvature(
+                    alfa + math.pi, n_ed, num_pre_yield=2, num_post_yield=2
+                )
+            else:
+                mc_r = self.calculate_moment_curvature(
+                    alfa + math.pi,
+                    n_ed,
+                    chi=np.linspace(-_chi_pre, -_chi_post, 5),
+                )
+            _M = np.array((mc_r.m_y**2 + mc_r.m_z**2) ** 0.5)
 
-        rotated_geom = self.section.geometry.rotate(0)
-        _sec = GenericSection(rotated_geom)
-        while ((alfa_2 - alfa_1) > 1e-3) and iter < ITMAX:
-            print('calculate_strain_profile - iter ', iter)
-            # rotated section
-            rotated_geom = self.section.geometry.rotate(alfa)
-            _sec.geometry = rotated_geom
-            _sec.section_calculator.integrator = self.integrator
+            # Interpolation of curvatures and strain
+            chiy = np.interp(m_ed, _M, mc_r.chi_y)
+            chiz = np.interp(m_ed, _M, mc_r.chi_z)
+            My = np.interp(m_ed, _M, mc_r.m_y)
+            Mz = np.interp(m_ed, _M, mc_r.m_z)
+            eps_a = np.interp(m_ed, _M, mc_r.eps_axial)
 
-            # Momento resultante que será el MY que aplique a la sección rotada
-            m_ed = (my_ed**2 + mz_ed**2) ** 0.5  # * sign
-            # Se saca el plano deformación de la sección rotada para momento en Y rotado
-            eps_a, chi = calculate_strain_profile_uniaxial(_sec, n_ed, m_ed)
+            # region faster algorithm for (alfa_2 - alfa_1)<10º
+            _chi = np.array((mc_r.chi_y**2 + mc_r.chi_z**2) ** 0.5)
+            _chi_current = np.interp(m_ed, _M, _chi)
+            delta_chi = (_chi[-1] - _chi[0]) * 0.20
+            _chi_pre = _chi_current - delta_chi
+            _chi_post = _chi_current + delta_chi
+            # endregion
 
-            # Se descomponen las curvarutas, que pertenecerán a la sección original
-            chiy = abs(chi) * math.cos(alfa)
-            chiz = abs(chi) * math.sin(alfa)
-            # draw_section(section)
-            N, My, Mz = self.integrate_strain_profile((eps_a, chiy, chiz))
-
-            if angle(My, Mz) > angle(my_ed, mz_ed):
+            _theta = angle(My, Mz)
+            if _theta > theta:
                 alfa_2 = alfa
             else:
                 alfa_1 = alfa
