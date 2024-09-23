@@ -737,7 +737,10 @@ class CompoundGeometry(Geometry):
             processed_geoms.append(g.translate(dx, dy))
         for pg in self.point_geometries:
             processed_geoms.append(pg.translate(dx, dy))
-        return CompoundGeometry(geometries=processed_geoms)
+        # Carlos Mestre: reinforced_concrete property must be updated
+        translated = CompoundGeometry(geometries=processed_geoms)
+        translated._reinforced_concrete = self.reinforced_concrete
+        return translated
 
     def rotate(
         self,
@@ -755,7 +758,10 @@ class CompoundGeometry(Geometry):
             processed_geoms.append(g.rotate(angle, point, use_radians))
         for pg in self.point_geometries:
             processed_geoms.append(pg.rotate(angle, point, use_radians))
-        return CompoundGeometry(geometries=processed_geoms)
+        # Carlos Mestre: reinforced_concrete property must be updated
+        rotated = CompoundGeometry(geometries=processed_geoms)
+        rotated._reinforced_concrete = self.reinforced_concrete
+        return rotated
 
     def __add__(self, other: Geometry) -> CompoundGeometry:
         """Add operator "+" for geometries.
