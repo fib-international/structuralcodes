@@ -971,13 +971,15 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_strain_profile(self, n_ed=0, my_ed=0, mz_ed=0):
+    def calculate_strain_profile(self, n_ed, my_ed, mz_ed, num_chis=5):
         """Get the strain plane for a given axial force and biaxial bending.
 
         Args:
-            n_ed (float): Axial load [N]
-            my_ed (float): Bending moment around y-axis [N*m]
-            mz_ed (float): Bending moment around z-axis [N*m]
+            n_ed (float): Axial load
+            my_ed (float): Bending moment around y-axis
+            mz_ed (float): Bending moment around z-axis
+            num_chis (int) [optional]: number of points in M-curvature in
+            each iteration of the neutral axe angle.
 
         Returns:
             eps_a (float): Strain at (0,0)
@@ -992,7 +994,9 @@ class GenericSectionCalculator(SectionCalculator):
             return y
 
         def angle(x, y):
-            """Obtain the angle of the vector with respect to (1,0) in counterclockwise direction."""
+            """Obtain the angle of the vector with respect to (1,0) in
+            counterclockwise direction.
+            """
             angle = math.atan2(y, x)
 
             # check angle between [0, 2π]
@@ -1002,9 +1006,10 @@ class GenericSectionCalculator(SectionCalculator):
 
         def check_points_in_2D_diagram(
             boundary_x, boundary_y, forces, debug=False
-        ):  # TODO I think this method should be included in the section_results classes
-            """Checks whether given points are inside a boundary defined by capacity_pts,
-            and calculates efficiency for rays from the origin to each point.
+        ):  # TODO Should this method be moved to the section_results classes?
+            """Checks whether given points are inside a boundary defined by
+            capacity_pts, and calculates efficiency for rays from the origin
+            to each point.
 
             Parameters:
             boundary_x,boundary_y : array-like, shape (n_points, 1)
@@ -1016,9 +1021,10 @@ class GenericSectionCalculator(SectionCalculator):
             results : list of dict
                 A list containing dictionaries with the following keys:
                 - 'point': The point tested.
-                - 'is_inside': True if the point is inside the boundary, False otherwise.
-                - 'efficiency': The efficiency for the ray from the origin to the intersection point.
-                - 'intersection_point': The intersection point on the boundary, if any.
+                - 'is_inside': True if the point is inside the boundary
+                - 'efficiency': The efficiency for the ray from the origin to
+                the intersection point.
+                - 'intersection_point': The intersection point on the boundary
             """
             from shapely import LineString, Point, Polygon
 
@@ -1061,7 +1067,8 @@ class GenericSectionCalculator(SectionCalculator):
                             [intersection.x, intersection.y]
                         )
                     elif isinstance(intersection, LineString):
-                        # The ray lies along an edge; take the point closest to the origin
+                        # The ray lies along an edge; take the point closest
+                        # to the origin
                         coords = np.array(intersection.coords)
                         distances = np.linalg.norm(coords - origin, axis=1)
                         min_index = np.argmin(distances)
@@ -1117,7 +1124,8 @@ class GenericSectionCalculator(SectionCalculator):
                     is_inside = res['is_inside']
                     efficiency = res['efficiency']
                     print(
-                        f"Point {point} is {'inside' if is_inside else 'outside'} the boundary."
+                        f"Point {point} is "
+                        f"{'inside' if is_inside else 'outside'} the boundary."
                     )
                     if efficiency is not None:
                         print(f'Efficiency: {efficiency:.4f}')
@@ -1136,10 +1144,12 @@ class GenericSectionCalculator(SectionCalculator):
         )
         if not res[0]['is_inside']:
             raise ValueError(
-                f"Forces cannot be taken by section -> efficiency = {res[0]['efficiency']:.3f} > 1"
+                f"Forces cannot be taken by section -> "
+                f"efficiency = {res[0]['efficiency']:.3f} > 1"
             )
 
-        # Step 2: Obtain the boundaries of theta (angle of moments) corresponding to the quadrants of the alpha angle
+        # Step 2: Obtain the boundaries of theta (angle of moments)
+        # corresponding to the quadrants of the alpha angle
         res = self.calculate_bending_strength(math.pi, n_ed)
         theta_0 = angle(res.m_y, res.m_z)
 
@@ -1184,21 +1194,20 @@ class GenericSectionCalculator(SectionCalculator):
         iter = 0
         m_ed = (my_ed**2 + mz_ed**2) ** 0.5
         _chi_pre, _chi_post = None, None
-
-        while ((alfa_2 - alfa_1) > 1e-3) and iter < ITMAX:
+        _theta = -9e9
+        while ((abs(_theta - theta)) > 1e-4) and iter < ITMAX:
             if (alfa_2 - alfa_1) > math.pi / 18:  # more than 10° -> simplifies
-                mc_r = self.calculate_moment_curvature(
-                    alfa + math.pi, n_ed, num_pre_yield=2, num_post_yield=2
-                )
-            else:
-                print('close to solution')
-                """mc_r = self.calculate_moment_curvature(
-                    alfa + math.pi, n_ed, num_pre_yield=10, num_post_yield=10
-                )"""
                 mc_r = self.calculate_moment_curvature(
                     alfa + math.pi,
                     n_ed,
-                    chi=np.linspace(-_chi_pre, -_chi_post, 4),
+                    num_pre_yield=num_chis,
+                    num_post_yield=num_chis,
+                )
+            else:  # close to solutuion
+                mc_r = self.calculate_moment_curvature(
+                    alfa + math.pi,
+                    n_ed,
+                    chi=np.linspace(-_chi_pre, -_chi_post, num_chis),
                 )
             _M = np.array((mc_r.m_y**2 + mc_r.m_z**2) ** 0.5)
 
@@ -1210,25 +1219,21 @@ class GenericSectionCalculator(SectionCalculator):
             eps_a = np.interp(m_ed, _M, mc_r.eps_axial)
 
             # region faster algorithm for (alfa_2 - alfa_1)<10º
-            idx = np.searchsorted(mc_r.chi_y, chiy)
-            if idx == 0:
-                idx_lower = idx
-                idx_upper = idx + 1
-            elif idx == len(_M):
-                idx_lower = idx - 2
-                idx_upper = idx - 1
-            else:
-                idx_lower = idx - 1
-                idx_upper = idx
             _chi = np.array((mc_r.chi_y**2 + mc_r.chi_z**2) ** 0.5)
-            _chi_pre = _chi[idx_lower]
-            _chi_post = _chi[idx_upper]
+            _chi_current = np.interp(m_ed, _M, _chi)
+            delta_chi = (_chi[-1] - _chi[0]) * 0.20
+            _chi_pre = _chi_current - delta_chi
+            _chi_post = _chi_current + delta_chi
             # endregion
             print(
-                f'iter {iter} - alfa={round(math.degrees(alfa))} - My= {round(My/1e6)} - Mz= {round(Mz/1e6)} - M= {round((My**2+Mz**2)**0.5/1e6)} '
+                f'My {round(My/1e6)} - '
+                f'Mz {round(Mz/1e6)} - '
+                f'alfa1 {round(math.degrees(alfa_1),1)} - '
+                f'alfa2 {round(math.degrees(alfa_2),1)} - '
             )
 
-            if angle(My, Mz) > angle(my_ed, mz_ed):
+            _theta = angle(My, Mz)
+            if _theta > theta:
                 alfa_2 = alfa
             else:
                 alfa_1 = alfa
@@ -1236,6 +1241,8 @@ class GenericSectionCalculator(SectionCalculator):
             alfa = 0.5 * (alfa_1 + alfa_2)
             iter += 1
         if iter == ITMAX:
-            return None, None, None
+            s = f'Last iteration reached: \
+                My = {My} Mz = {Mz})'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
         else:
             return eps_a, chiy, chiz
