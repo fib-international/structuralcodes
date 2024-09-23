@@ -971,13 +971,15 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_strain_profile(self, n_ed=0, my_ed=0, mz_ed=0):
+    def calculate_strain_profile(self, n_ed, my_ed, mz_ed, num_chis=5):
         """Get the strain plane for a given axial force and biaxial bending.
 
         Args:
             n_ed (float): Axial load
             my_ed (float): Bending moment around y-axis
             mz_ed (float): Bending moment around z-axis
+            num_chis (int) [optional]: number of points in M-curvature in
+            each iteration of the neutral axe angle.
 
         Returns:
             eps_a (float): Strain at (0,0)
@@ -1196,13 +1198,16 @@ class GenericSectionCalculator(SectionCalculator):
         while ((abs(_theta - theta)) > 1e-4) and iter < ITMAX:
             if (alfa_2 - alfa_1) > math.pi / 18:  # more than 10° -> simplifies
                 mc_r = self.calculate_moment_curvature(
-                    alfa + math.pi, n_ed, num_pre_yield=2, num_post_yield=2
+                    alfa + math.pi,
+                    n_ed,
+                    num_pre_yield=num_chis,
+                    num_post_yield=num_chis,
                 )
-            else:
+            else:  # close to solutuion
                 mc_r = self.calculate_moment_curvature(
                     alfa + math.pi,
                     n_ed,
-                    chi=np.linspace(-_chi_pre, -_chi_post, 5),
+                    chi=np.linspace(-_chi_pre, -_chi_post, num_chis),
                 )
             _M = np.array((mc_r.m_y**2 + mc_r.m_z**2) ** 0.5)
 
@@ -1220,6 +1225,12 @@ class GenericSectionCalculator(SectionCalculator):
             _chi_pre = _chi_current - delta_chi
             _chi_post = _chi_current + delta_chi
             # endregion
+            print(
+                f'My {round(My/1e6)} - '
+                f'Mz {round(Mz/1e6)} - '
+                f'alfa1 {round(math.degrees(alfa_1),1)} - '
+                f'alfa2 {round(math.degrees(alfa_2),1)} - '
+            )
 
             _theta = angle(My, Mz)
             if _theta > theta:
@@ -1230,6 +1241,8 @@ class GenericSectionCalculator(SectionCalculator):
             alfa = 0.5 * (alfa_1 + alfa_2)
             iter += 1
         if iter == ITMAX:
-            return None, None, None
+            s = f'Last iteration reached: \
+                My = {My} Mz = {Mz})'
+            raise ValueError(f'Maximum number of iterations reached.\n{s}')
         else:
             return eps_a, chiy, chiz
