@@ -2,8 +2,12 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import typing as t
 from dataclasses import dataclass, field, fields
 
+import matplotlib.pyplot as plt
+from matplotlib.axis import Axis
+from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 
 
@@ -197,6 +201,33 @@ class NMInteractionDomain:
     m_z: ArrayLike = None  # Moments Mz
 
     strains: ArrayLike = None
+
+    def get_plot(
+        self,
+        horizontal_axis: t.Literal['n', 'my', 'mz'] = 'n',
+        vertical_axis: t.Literal['n', 'my', 'mz'] = 'my',
+        ax: t.Optional[Axis] = None,
+    ) -> t.Tuple[Figure, Axis]:
+        """Retuns figure and axes handlers for a matplotlib plot."""
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+        if horizontal_axis == 'n':
+            x = self.n
+        elif horizontal_axis == 'my':
+            x = self.m_y
+        elif horizontal_axis == 'mz':
+            x = self.m_z
+        if vertical_axis == 'n':
+            y = self.n
+        elif vertical_axis == 'my':
+            y = self.m_y
+        elif vertical_axis == 'mz':
+            y = self.m_z
+        ax.plot(x, y)
+        ax.set(xlabel=horizontal_axis, ylabel=vertical_axis)
+        return fig, ax
 
 
 @dataclass
