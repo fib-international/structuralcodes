@@ -13,6 +13,7 @@ Examples <examples/index>
 API reference <api/index>
 Theory reference <theory/index>
 Contributing <contributing/index>
+Versioning <versioning/index>
 
 :::
 
