@@ -3,10 +3,11 @@
 import types
 import typing as t
 
-from . import ec2_2004, ec2_2023, mc2010
+from . import ec2_2004, ec2_2023, mc2010, mc2020
 
 __all__ = [
     'mc2010',
+    'mc2020',
     'ec2_2023',
     'ec2_2004',
     'set_design_code',
@@ -23,6 +24,7 @@ _NATIONAL_ANNEX: t.Optional[str] = None
 # Design code registry
 _DESIGN_CODES = {
     'mc2010': mc2010,
+    'mc2020': mc2020,
     'ec2_2004': ec2_2004,
     'ec2_2023': ec2_2023,
 }
