@@ -666,7 +666,7 @@ def _process_geometries_multipolygon(
 
 def _process_geometries_list(
     geometries: t.List[Geometry],
-) -> t.Tuple[list, list]:
+) -> t.Tuple[list[SurfaceGeometry], list[PointGeometry]]:
     """Process geometries for initialization."""
     # a list of SurfaceGeometry is provided
     checked_geometries = []
@@ -702,8 +702,9 @@ class CompoundGeometry(Geometry):
 
         Arguments:
             geometries (Union(List(Geometry), MultiPolygon)): A list of
-                SurfaceGeometry objects or a shapely MultiPolygon object
-                (in this case also a list of materials should be given).
+                Geometry objects (i.e. PointGeometry or SurfaceGeometry) or a
+                shapely MultiPolygon object (in this latter case also a list of
+                materials should be given).
             materials (Optional(List(Material), Material)): A material (applied
                 to all polygons) or a list of materials. In this case the
                 number of polygons should match the number of materials.
