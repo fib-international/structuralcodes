@@ -331,10 +331,12 @@ class SurfaceGeometry:
     holes.
     """
 
+    _material: ConstitutiveLaw
+
     def __init__(
         self,
         poly: Polygon,
-        mat: t.Union[Material, ConstitutiveLaw],
+        material: t.Union[Material, ConstitutiveLaw],
         density: t.Optional[float] = None,
         concrete: bool = False,
     ) -> None:
@@ -342,7 +344,7 @@ class SurfaceGeometry:
 
         Arguments:
             poly (shapely.Polygon): A Shapely polygon.
-            mat (Union(Material, ConstitutiveLaw)): A Material or
+            material (Union(Material, ConstitutiveLaw)): A Material or
                 ConsitutiveLaw class applied to the geometry.
             density (Optional(float)): When a ConstitutiveLaw is passed as mat,
                 the density can be provided by this argument. When mat is a
@@ -355,25 +357,25 @@ class SurfaceGeometry:
                 f'poly need to be a valid shapely.geometry.Polygon object. \
                 {repr(poly)}'
             )
-        if not isinstance(mat, Material) and not isinstance(
-            mat, ConstitutiveLaw
+        if not isinstance(material, Material) and not isinstance(
+            material, ConstitutiveLaw
         ):
             raise TypeError(
                 f'mat should be a valid structuralcodes.base.Material \
                 or structuralcodes.base.ConstitutiveLaw object. \
-                {repr(mat)}'
+                {repr(material)}'
             )
-        self.polygon = poly
+        self._polygon = poly
         # Pass a constitutive law to the SurfaceGeometry
         self._density = density
-        if isinstance(mat, Material):
-            self._density = mat.density
-            if isinstance(mat, Concrete):
+        if isinstance(material, Material):
+            self._density = material.density
+            if isinstance(material, Concrete):
                 concrete = True
-            mat = mat.constitutive_law
+            material = material.constitutive_law
 
-        self.material = mat
-        self.concrete = concrete
+        self._material = material
+        self._concrete = concrete
 
     @property
     def area(self) -> float:
@@ -397,6 +399,21 @@ class SurfaceGeometry:
     def density(self) -> float:
         """Returns the density."""
         return self._density
+
+    @property
+    def material(self) -> ConstitutiveLaw:
+        """Returns the Constitutive law."""
+        return self._material
+
+    @property
+    def concrete(self) -> bool:
+        """Returns true if the geometry material is Concrete."""
+        return self._concrete
+
+    @property
+    def polygon(self) -> Polygon:
+        """Returns the Shapely Polygon."""
+        return self._polygon
 
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of SurfaceGeometry.
@@ -518,7 +535,9 @@ class SurfaceGeometry:
             for g in other.geometries:
                 sub_polygon = sub_polygon - g.polygon
 
-        return SurfaceGeometry(poly=sub_polygon, mat=material, density=density)
+        return SurfaceGeometry(
+            poly=sub_polygon, material=material, density=density
+        )
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
@@ -536,7 +555,7 @@ class SurfaceGeometry:
         """
         return SurfaceGeometry(
             poly=affinity.translate(self.polygon, dx, dy),
-            mat=self.material,
+            material=self.material,
             density=self._density,
         )
 
@@ -563,7 +582,7 @@ class SurfaceGeometry:
             poly=affinity.rotate(
                 self.polygon, angle, origin=point, use_radians=use_radians
             ),
-            mat=self.material,
+            material=self.material,
             density=self._density,
         )
 
@@ -606,7 +625,7 @@ class SurfaceGeometry:
             new_material = Elastic(E=geo.material.get_tangent(eps=0)[0])
 
         return SurfaceGeometry(
-            poly=geo.polygon, mat=new_material, density=geo._density
+            poly=geo.polygon, material=new_material, density=geo._density
         )
 
     # here we can also add static methods like:
@@ -631,7 +650,9 @@ def _process_geometries_multipolygon(
     # a MultiPolygon is provided
     if isinstance(materials, (ConstitutiveLaw, Material)):
         for g in geometries.geoms:
-            checked_geometries.append(SurfaceGeometry(poly=g, mat=materials))
+            checked_geometries.append(
+                SurfaceGeometry(poly=g, material=materials)
+            )
     elif isinstance(materials, list):
         # the list of materials is provided, one for each polygon
         if len(geometries.geoms) != len(materials):
@@ -639,7 +660,7 @@ def _process_geometries_multipolygon(
                 'geometries and materials should have the same length'
             )
         for g, m in zip(geometries.geoms, materials):
-            checked_geometries.append(SurfaceGeometry(poly=g, mat=m))
+            checked_geometries.append(SurfaceGeometry(poly=g, material=m))
     return checked_geometries
 
 
@@ -704,7 +725,7 @@ class CompoundGeometry(Geometry):
             # useful for representation in svg
             geoms_representation = [g.polygon for g in self.geometries]
             geoms_representation += [
-                pg._point.buffer(pg._diameter / 2)
+                pg.point.buffer(pg.diameter / 2)
                 for pg in self.point_geometries
             ]
             self.geom = MultiPolygon(geoms_representation)
