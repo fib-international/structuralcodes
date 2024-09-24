@@ -22,17 +22,6 @@ from structuralcodes.core.base import ConstitutiveLaw, Material
 from structuralcodes.materials.concrete import Concrete
 from structuralcodes.materials.constitutive_laws import Elastic
 
-# Useful classes and functions: where to put?????? (core?
-# utility folder in sections? here in this file?)
-# Polygons, LineStrings, Points, MultiLyneStrings, MultiPolygons etc.
-
-# to think: dataclass or class?
-# Note that some things are already computed (like area) by shapely
-# like: polygon.area, polygon.centroid, etc.
-
-# For now dataclass, if we need convert to regular class,
-# init commented for now
-
 
 class Geometry:
     """Base class for a geometry object."""
