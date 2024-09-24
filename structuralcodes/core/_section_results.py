@@ -130,7 +130,7 @@ class GrossProperties:
 class CrackedProperties:
     """Simple dataclass for storing cracked section properties.
     Cracked properties differs of the service loads n_ed, m_ed_1, m_ed_2.
-    If no provided, assumed n_ed=0 and m_ed_1, m_ed_2 = 40% ultimate moment.
+    If no provided, assumed n_ed=0 and m_ed_1, m_ed_2 = 50% ultimate moment.
     """
 
     n_ed: float = field(
@@ -146,7 +146,7 @@ class CrackedProperties:
         default=0, metadata={'description': 'Product moment (Iyy_1)'}
     )
     i_zz_1: float = field(
-        default=0, metadata={'description': 'Product moment (Iz_1)'}
+        default=0, metadata={'description': 'Product moment (Izz_1)'}
     )
     i_yz_1: float = field(
         default=0, metadata={'description': 'Product moment (Iyz_1)'}
@@ -198,17 +198,31 @@ class CrackedProperties:
         Arguments:
         spec: the string specifying the format
         """
-        output_string = 'Cracked Concrete Section Properties:\n1) Lower compresion block:\n'
+        output_string = (
+            'Cracked concrete section properties for SLS forces:\n'
+            f' - N = {self.n_ed}\n'
+            f' - M1 (compression on bottom) = {self.m_ed_1}\n'
+            f' - M2 (compression on top) = {self.m_ed_2}\n'
+        )
+
+        if self.m_ed_1 < self.m_cracking_1:
+            output_string += '1) No cracking expected for N+M1. Properties:\n'
+        else:
+            output_string += '1) Cracked properties fo N+M1:\n'
         for f in fields(self):
-            if f.name.endswith('_1') or f.name == 'n_ed':
+            if f.name.endswith('_1') and f.name not in ['n_ed', 'm_ed_1']:
                 value = getattr(self, f.name)
                 description = f.metadata.get(
                     'description', 'No description available'
                 )
                 output_string += f'  {description}: {value:{spec}}\n'
-        output_string += '2) Upper compresion block:\n'
+
+        if self.m_ed_2 > self.m_cracking_2:  # > because momentes are negative
+            output_string += '2) No cracking expected for N+M2. Properties:\n'
+        else:
+            output_string += '2) Cracked properties fo N+M2:\n'
         for f in fields(self):
-            if f.name.endswith('_2') or f.name == 'n_ed':
+            if f.name.endswith('_2') and f.name not in ['n_ed', 'm_ed_2']:
                 value = getattr(self, f.name)
                 description = f.metadata.get(
                     'description', 'No description available'

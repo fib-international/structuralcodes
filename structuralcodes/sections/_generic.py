@@ -50,8 +50,6 @@ class GenericSection(Section):
             moment curvature, etc.)
         gross_properties: (GrossProperties)
             the results of gross properties computation
-        cracked_properties: (CrackedProperties)
-            the results of cracked properties computation
     """
 
     def __init__(
@@ -92,8 +90,8 @@ class GenericSection(Section):
         """Return the cracked properties of the section for positive and
         negative bending (n=0) with horizontal neutral axe.
         n_ed = axial load in SLS
-        m_ed_1 = moment in SLS compressing the bottom part of the section
-        m_ed_2 = moment in SLS compressing the upper part of the section.
+        m_ed_1 = moment in SLS compressing the bottom part of the section (>0).
+        m_ed_2 = moment in SLS compressing the upper part of the section (<0).
         """
         if self._cracked_properties is None:
             self._cracked_properties = (
@@ -301,6 +299,28 @@ class GenericSectionCalculator(SectionCalculator):
         CrackedProperties (CrackedSection)
         """
 
+        def first_monotonic_series(arr):
+            """Get the first monotonic slice of the array"""
+            if len(arr) < 2:
+                return (
+                    arr,
+                    len(arr),
+                )  # If the array has fewer than 2 elements, it's already monotonic
+
+            # Determine if it's increasing or decreasing
+            if arr[1] >= arr[0]:
+                # It's increasing or constant
+                for i in range(1, len(arr)):
+                    if arr[i] < arr[i - 1]:
+                        return np.array(arr[:i]), i
+            else:
+                # It's decreasing
+                for i in range(1, len(arr)):
+                    if arr[i] > arr[i - 1]:
+                        return np.array(arr[:i]), i
+
+            return arr, len(arr)  # If the entire array is monotonic, return it
+
         def create_surface_geometries(polygons_list, material):
             """Process shapely polygons to SurfaceGeometries."""
             # Create an empty list to store SurfaceGeometry objects
@@ -328,18 +348,22 @@ class GenericSectionCalculator(SectionCalculator):
             theta = math.pi if lower_compression_block else 0
             m_ed = m_ed_1 if lower_compression_block else m_ed_2
 
-            # if no prvided use 0.40 m_max as service moment for cracking
+            # if no prvided use 50% m_max as service moment for cracking
             if m_ed == 0:
                 r = self.calculate_bending_strength(theta=theta, n=n_ed)
-                m_ed = 0.4 * r.m_y
+                m_ed = 0.5 * r.m_y
 
             # Get curvature for (n_ed,m_ed)
-            r = self.calculate_moment_curvature(theta, n_ed)
-            curv = np.interp(m_ed, r.m_y, r.chi_y)
+            r = self.calculate_moment_curvature(theta, n_ed, chi_first=1e-10)
+            r.m_y, index = first_monotonic_series(r.m_y)
+            r.chi_y = np.array(r.chi_y[:index])
+            r.eps_axial = np.array(r.eps_axial[:index])
 
+            curv = np.interp(abs(m_ed), abs(r.m_y), r.chi_y)
+            eps = np.interp(abs(m_ed), abs(r.m_y), r.eps_axial)
             # Find the equilibrium with fixed curvature
             eps = self.find_equilibrium_fixed_curvature(
-                self.section.geometry, n_ed, curv, 0
+                self.section.geometry, n_ed, curv, eps
             )[0]
             z_na = -eps / curv  # distance to neutral fibre
 
@@ -1186,17 +1210,18 @@ class GenericSectionCalculator(SectionCalculator):
                 raise ValueError(
                     'geometry must be SurfaceGeometry or CompoundGeometry'
                 )
-            # lower compresion block failure
+            # lower compresion block moment
             res = sec.section_calculator.calculate_bending_strength(
                 theta=math.pi, n=n
             )
             m_cracking_1 = res.m_y
-            z_1 = -res.eps_a / res.chi_y
-            # upper compresion block failure
+            z_1 = res.eps_a / res.chi_y
+
+            # upper compresion block moment
             res = sec.section_calculator.calculate_bending_strength(
                 theta=0, n=n
             )
             m_cracking_2 = res.m_y
-            z_2 = res.eps_a / res.chi_y
+            z_2 = -res.eps_a / res.chi_y
 
         return m_cracking_1, m_cracking_2, z_1, z_2
