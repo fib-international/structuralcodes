@@ -23,3 +23,7 @@ Read the [quickstart guide](https://fib-international.github.io/structuralcodes/
 ## Contribution guidelines
 
 Check out our docs for how to get started [contributing](https://fib-international.github.io/structuralcodes/contributing/) to StructuralCodes.
+
+## Versioning
+
+Check out our docs to see how we handle [versioning](https://fib-international.github.io/structuralcodes/versioning/).
