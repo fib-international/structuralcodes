@@ -4,10 +4,10 @@ import math
 
 
 def sigma_cd_strut(F_cd: float, b_c: float, t: float) -> float:
-    """Calculate the compressive stress in a concrete
-        strut or compression field.
+    """Calculate the compressive stress in a concrete strut or compression
+    field.
 
-    EN1992-1-1:2023 Eq. (8.113)
+    EN1992-1-1:2023 Eq. (8.113).
 
     Args:
         F_cd (float): Compressive force of the strut in kN.
@@ -15,7 +15,7 @@ def sigma_cd_strut(F_cd: float, b_c: float, t: float) -> float:
         t (float): Thickness of the strut in mm.
 
     Returns:
-        float: Compressive stress σ_cd in MPa.
+        float: Compressive stress sigma_cd in MPa.
 
     Raises:
         ValueError: If b_c or t are not within valid ranges.
@@ -30,22 +30,22 @@ def sigma_cd_strut(F_cd: float, b_c: float, t: float) -> float:
 
 
 def nu_strut(theta_cs: float) -> float:
-    """Determine the strength reduction factor ν based on
-        the smallest angle θ_cs.
+    """Determine the strength reduction factor nu based on the smallest angle
+    theta_cs.
 
     EN1992-1-1:2023 Eqs. (8.119)
 
     Args:
-        theta_cs (float): Angle between the strut and the tie in degrees.
-            Must be between 0 and 90.
-        transverse_cracking (bool): Indicates if the region has
-            transverse cracking. Defaults to True.
+        theta_cs (float): Angle between the strut and the tie in degrees. Must
+            be between 0 and 90.
+        transverse_cracking (bool): Indicates if the region has transverse
+            cracking. Defaults to True.
 
     Returns:
-        float: Strength reduction factor ν.
+        float: Strength reduction factor nu.
 
     Raises:
-        ValueError: If θ_cs is not within the valid range.
+        ValueError: If theta_cs is not within the valid range.
     """
     if not 0 <= theta_cs <= 90:
         raise ValueError(
@@ -59,20 +59,20 @@ def nu_strut(theta_cs: float) -> float:
 
 
 def nu_strut_no_crack() -> float:
-    """Determine the strength reduction factor ν in
-        areas without transverse cracking.
+    """Determine the strength reduction factor nu in areas without transverse
+    cracking.
 
     EN1992-1-1:2023 Eqs. (8.120)
 
     Returns:
-        float: Strength reduction factor ν.
+        float: Strength reduction factor nu.
     """
     return 1.0
 
 
 def nu_refined(eps_1: float) -> float:
-    """Calculate a more refined value for the strength reduction factor ν
-    for compression fields in cracked zones based on principal tensile strain.
+    """Calculate a more refined value for the strength reduction factor nu for
+    compression fields in cracked zones based on principal tensile strain.
 
     EN1992-1-1:2023 Eq. (8.121)
 
@@ -80,12 +80,11 @@ def nu_refined(eps_1: float) -> float:
         epsilon_1 (float): Maximum principal tensile strain (dimensionless).
 
     Returns:
-        float: Refined strength reduction factor ν,
-            capped at a maximum value of 1.0.
+        float: Refined strength reduction factor nu, capped at a maximum value
+        of 1.0.
 
     Raises:
         ValueError: If epsilon_1 is negative.
-
     """
     if eps_1 < 0:
         raise ValueError(f'epsilon_1 must be non-negative. Got {eps_1}')
@@ -106,14 +105,14 @@ def FRd_tie(
     EN1992-1-1:2023 Eq. (8.122)
 
     Args:
-        As (float): Cross-sectional area of non-prestressed
-            reinforcement in mm2.
-        fyd (float): Design yield strength of non-prestressed
-            reinforcement in MPa.
-        Ap (float, optional): Cross-sectional area of prestressed
-            reinforcement in mm2. Default is 0.0.
-        fpd (float, optional): Design strength of prestressed
-            reinforcement in MPa. Default is 0.0.
+        As (float): Cross-sectional area of non-prestressed reinforcement in
+            mm2.
+        fyd (float): Design yield strength of non-prestressed reinforcement in
+            MPa.
+        Ap (float, optional): Cross-sectional area of prestressed reinforcement
+            in mm2. Default is 0.0.
+        fpd (float, optional): Design strength of prestressed reinforcement in
+            MPa. Default is 0.0.
         sigma_pd (float, optional): Stress in the prestressed reinforcement
             considered as an external action in MPa. Default is 0.0.
 
@@ -143,8 +142,8 @@ def FRd_tie(
 def Ftd_conc(
     Fd: float, a: float, b: float, H: float, near_edge: bool = False
 ) -> float:
-    """Calculate the transverse reinforcement for concentrated
-        forces spreading into a member using the strut-and-ties model.
+    """Calculate the transverse reinforcement for concentrated forces
+    spreading into a member using the strut-and-ties model.
 
     EN1992-1-1:2023 Eq. (8.123), Eq. (8.124), Eq. (8.125)
 
@@ -153,11 +152,11 @@ def Ftd_conc(
         a (float): Width of the concentrated force application area in mm.
         b (float): Width of the member in which force spreads in mm.
         H (float): Height of the member section in mm.
-        near_edge (bool, optional): Indicates if the force is acting
-            near an edge. Default is False.
+        near_edge (bool, optional): Indicates if the force is acting near an
+            edge. Default is False.
 
     Returns:
-        float: the transverse reinforcement force F_td in kN.
+        float: The transverse reinforcement force F_td in kN.
 
     Raises:
         ValueError: If any of the input values are negative.
