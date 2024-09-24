@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import math
 import typing as t
 import warnings
@@ -14,20 +13,13 @@ from shapely import MultiPolygon
 from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
-from structuralcodes.codes import _CODE, set_design_code
 from structuralcodes.core.base import Section, SectionCalculator
 from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
     SurfaceGeometry,
 )
-from structuralcodes.materials.concrete import create_concrete
-from structuralcodes.materials.constitutive_laws import (
-    Elastic,
-    ParabolaRectangle,
-    Sargin,
-    UserDefined,
-)
+from structuralcodes.materials.constitutive_laws import Elastic
 
 from .section_integrators import integrator_factory
 
@@ -83,23 +75,6 @@ class GenericSection(Section):
                 self.section_calculator._calculate_gross_section_properties()
             )
         return self._gross_properties
-
-    def cracked_properties(
-        self, n_ed=0, m_ed_1=0, m_ed_2=0
-    ) -> s_res.CrackedProperties:
-        """Return the cracked properties of the section for positive and
-        negative bending (n=0) with horizontal neutral axe.
-        n_ed = axial load in SLS
-        m_ed_1 = moment in SLS compressing the bottom part of the section
-        m_ed_2 = moment in SLS compressing the upper part of the section.
-        """
-        if self._cracked_properties is None:
-            self._cracked_properties = (
-                self.section_calculator._calculate_cracked_section_properties(
-                    n_ed, m_ed_1, m_ed_2
-                )
-            )
-        return self._cracked_properties
 
 
 class GenericSectionCalculator(SectionCalculator):
@@ -286,123 +261,6 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         return gp
-
-    def _calculate_cracked_section_properties(
-        self, n_ed=0, m_ed_1=0, m_ed_2=0
-    ) -> s_res.CrackedProperties():
-        """Calculates the Cracked section properties of the reinforced concrete GenericSection.
-
-        This function is private and called when the section is created
-        It stores the result into the result object.
-
-        Returns:
-        CrackedProperties (CrackedSection)
-        """
-
-        def create_surface_geometries(polygons_list, material):
-            """Process shapely polygons to SurfaceGeometries."""
-            # Create an empty list to store SurfaceGeometry objects
-            surface_geometries = []
-
-            # Iterate over the list of polygons and create a SurfaceGeometry for each one
-            for polygon in polygons_list:
-                # Create a new SurfaceGeometry for the current polygon
-                surface_geometry = SurfaceGeometry(polygon, material)
-                # Add the new SurfaceGeometry to the list
-                surface_geometries.append(surface_geometry)
-
-            return surface_geometries
-
-        if not self.section.geometry.reinforced_concrete:
-            return None
-
-        cp = s_res.CrackedProperties(n_ed, m_ed_1, m_ed_2)
-        cp.m_cracking_1, cp.m_cracking_2, z_1, z_2 = (
-            self.calculate_cracking_moment(n_ed)
-        )
-
-        for lower_compression_block in [True, False]:
-            # Determine parameters based on the compression side
-            theta = math.pi if lower_compression_block else 0
-            m_ed = m_ed_1 if lower_compression_block else m_ed_2
-
-            # if no prvided use 0.40 m_max as service moment for cracking
-            if m_ed == 0:
-                r = self.calculate_bending_strength(theta=theta, n=n_ed)
-                m_ed = 0.4 * r.m_y
-
-            # Get curvature for (n_ed,m_ed)
-            r = self.calculate_moment_curvature(theta, n_ed)
-            curv = np.interp(m_ed, r.m_y, r.chi_y)
-
-            # Find the equilibrium with fixed curvature
-            eps = self.find_equilibrium_fixed_curvature(
-                self.section.geometry, n_ed, curv, 0
-            )[0]
-            z_na = -eps / curv  # distance to neutral fibre
-
-            # Cutting concrete geometries and retaining the compressed block
-            cut_geom = CompoundGeometry(None, None)
-            for i, part in enumerate(self.section.geometry.geometries):
-                min_x, max_x, min_y, max_y = part.calculate_extents()
-                above_div, below_div = part.split(((min_x, z_na), 0))
-                subpart_poly = (
-                    below_div if lower_compression_block else above_div
-                )
-                # Convert to SurfaceGeometry
-                subpart_sg = create_surface_geometries(
-                    subpart_poly, part.material
-                )
-                if i == 0:
-                    cut_geom = CompoundGeometry(subpart_sg)
-                else:
-                    cut_geom += subpart_sg
-
-            # Add reinforcement geometries
-            for reinf in self.section.geometry.point_geometries:
-                cut_geom += reinf
-
-            # Define auxiliary cracked section
-            cracked_sec = GenericSection(cut_geom)
-            rc = cracked_sec.gross_properties
-            rg = self._calculate_gross_section_properties()
-            # Store results for each case (True/False)
-
-            if lower_compression_block:
-                cp.n_ed = n_ed
-                cp.m_ed_1 = m_ed
-                if abs(cp.m_cracking_1) > abs(cp.m_ed_1):  # no cracking
-                    cp.ei_yy_1 = rg.e_iyy
-                    cp.ei_zz_1 = rg.e_izz
-                    cp.i_yy_1 = rg.iyy
-                    cp.i_zz_1 = rg.izz
-                    cp.i_yz_1 = rg.iyz
-                    cp.z_na_1 = z_1
-                else:
-                    cp.ei_yy_1 = rc.e_iyy
-                    cp.ei_zz_1 = rc.e_izz
-                    cp.i_yy_1 = rc.iyy
-                    cp.i_zz_1 = rc.izz
-                    cp.i_yz_1 = rc.iyz
-                    cp.z_na_1 = z_na
-            else:
-                cp.m_ed_2 = m_ed
-                if abs(cp.m_cracking_2) > abs(cp.m_ed_2):  # no cracking
-                    cp.ei_yy_2 = rg.e_iyy
-                    cp.ei_zz_2 = rg.e_izz
-                    cp.i_yy_2 = rg.iyy
-                    cp.i_zz_2 = rg.izz
-                    cp.i_yz_2 = rg.iyz
-                    cp.z_na_2 = z_2
-                else:
-                    cp.ei_yy_2 = rc.e_iyy
-                    cp.ei_zz_2 = rc.e_izz
-                    cp.i_yy_2 = rc.iyy
-                    cp.i_zz_2 = rc.izz
-                    cp.i_yz_2 = rc.iyz
-                    cp.z_na_2 = z_na
-
-        return cp
 
     def get_balanced_failure_strain(
         self, geom: CompoundGeometry, yielding: bool = False
@@ -1114,7 +972,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_strain_profile(self, n_ed, my_ed, mz_ed, num_chis=5):
+    def calculate_strain_profile(
+        self, n_ed, my_ed, mz_ed, num_chis=5, numpts_nmm=16
+    ):
         """Get the strain plane for a given axial force and biaxial bending.
 
         Args:
@@ -1135,6 +995,28 @@ class GenericSectionCalculator(SectionCalculator):
                 return y1
             y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
             return y
+
+        def first_monotonic_series(arr):
+            """Get the first monotonic slice of the array"""
+            if len(arr) < 2:
+                return (
+                    arr,
+                    len(arr),
+                )  # If the array has fewer than 2 elements, it's already monotonic
+
+            # Determine if it's increasing or decreasing
+            if arr[1] >= arr[0]:
+                # It's increasing or constant
+                for i in range(1, len(arr)):
+                    if arr[i] < arr[i - 1]:
+                        return np.array(arr[:i]), i
+            else:
+                # It's decreasing
+                for i in range(1, len(arr)):
+                    if arr[i] > arr[i - 1]:
+                        return np.array(arr[:i]), i
+
+            return arr, len(arr)  # If the entire array is monotonic, return it
 
         def angle(x, y):
             """Obtain the angle of the vector with respect to (1,0) in
@@ -1281,7 +1163,9 @@ class GenericSectionCalculator(SectionCalculator):
             return results
 
         # Step 1: Check if the section can carry the forces
-        mm_domain = self.calculate_mm_interaction_domain(n=n_ed, num_theta=16)
+        mm_domain = self.calculate_mm_interaction_domain(
+            n=n_ed, num_theta=numpts_nmm
+        )
         res = check_points_in_2D_diagram(
             mm_domain.m_y, mm_domain.m_z, [[my_ed, mz_ed]]
         )
@@ -1292,7 +1176,9 @@ class GenericSectionCalculator(SectionCalculator):
             )
 
         # Step 2: Obtain the boundaries of theta (angle of moments)
-        # corresponding to the quadrants of the alpha angle
+        # corresponding to the quadrants of the alpha  for ultamate capacity.
+        # note that lower values of total M=sqrt(My^2+Mz^2) could get different bundarys
+        # but this is an aproxximation that is then corrected with delta
         res = self.calculate_bending_strength(math.pi, n_ed)
         theta_0 = angle(res.m_y, res.m_z)
 
@@ -1309,9 +1195,12 @@ class GenericSectionCalculator(SectionCalculator):
         theta = angle(my_ed, mz_ed)
 
         # get first attemp of alfa for iterations and quadrant of aplication
+        delta = math.pi / 10
+        # delta is used because the angle of theta is
+        # obtained for ultimate capacity and may be change in lower forces
         if (theta_0 <= theta < theta_1) or (0 <= theta < theta_1):
-            alfa_1 = 0
-            alfa_2 = math.pi / 2
+            alfa_1 = 0 - delta
+            alfa_2 = math.pi / 2 + delta
             # alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
             if theta_0 <= theta_1:  # theta_0>0
                 alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
@@ -1320,16 +1209,16 @@ class GenericSectionCalculator(SectionCalculator):
                     theta_0 - 2 * math.pi, theta_1, alfa_1, alfa_2, theta
                 )
         elif theta_1 <= theta < theta_2:
-            alfa_1 = math.pi / 2
-            alfa_2 = math.pi
+            alfa_1 = math.pi / 2 - delta
+            alfa_2 = math.pi + delta
             alfa = interpolate(theta_1, theta_2, alfa_1, alfa_2, theta)
         elif theta_2 <= theta < theta_3:
-            alfa_1 = math.pi
-            alfa_2 = 3 * math.pi / 2
+            alfa_1 = math.pi - delta
+            alfa_2 = 3 * math.pi / 2 + delta
             alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
         else:
-            alfa_1 = 3 * math.pi / 2
-            alfa_2 = 2 * math.pi
+            alfa_1 = 3 * math.pi / 2 - delta
+            alfa_2 = 2 * math.pi + delta
             alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
 
         # Step 3: Iterative process to refine alfa
@@ -1352,19 +1241,28 @@ class GenericSectionCalculator(SectionCalculator):
                     n_ed,
                     chi=np.linspace(-_chi_pre, -_chi_post, num_chis),
                 )
+
             _M = np.array((mc_r.m_y**2 + mc_r.m_z**2) ** 0.5)
 
+            # for non monotinic M-chi get the firs monotonic slice
+            _M, index = first_monotonic_series(_M)
+            _chi = np.array((mc_r.chi_y**2 + mc_r.chi_z**2) ** 0.5)
+            mc_r.chi_y = np.array(mc_r.chi_y[:index])
+            mc_r.chi_z = np.array(mc_r.chi_z[:index])
+            mc_r.m_y = np.array(mc_r.m_y[:index])
+            mc_r.m_z = np.array(mc_r.m_z[:index])
+            mc_r.eps_axial = np.array(mc_r.eps_axial[:index])
+
             # Interpolation of curvatures and strain
-            chiy = np.interp(m_ed, _M, mc_r.chi_y)
-            chiz = np.interp(m_ed, _M, mc_r.chi_z)
-            My = np.interp(m_ed, _M, mc_r.m_y)
-            Mz = np.interp(m_ed, _M, mc_r.m_z)
-            eps_a = np.interp(m_ed, _M, mc_r.eps_axial)
+            _chi_current = np.interp(m_ed, _M, _chi)
+            chiy = _chi_current * math.cos(alfa)
+            chiz = _chi_current * math.sin(alfa)
+            My = np.interp(abs(chiy), abs(mc_r.chi_y), mc_r.m_y)
+            Mz = np.interp(abs(chiz), abs(mc_r.chi_z), mc_r.m_z)
+            eps_a = np.interp(abs(chiy), abs(mc_r.chi_y), mc_r.eps_axial)
 
             # region faster algorithm for (alfa_2 - alfa_1)<10º
-            _chi = np.array((mc_r.chi_y**2 + mc_r.chi_z**2) ** 0.5)
-            _chi_current = np.interp(m_ed, _M, _chi)
-            delta_chi = (_chi[-1] - _chi[0]) * 0.20
+            delta_chi = abs(_chi[-1] - _chi[0]) * 0.20
             _chi_pre = _chi_current - delta_chi
             _chi_post = _chi_current + delta_chi
             # endregion
@@ -1372,7 +1270,10 @@ class GenericSectionCalculator(SectionCalculator):
                 f'My {round(My/1e6)} - '
                 f'Mz {round(Mz/1e6)} - '
                 f'alfa1 {round(math.degrees(alfa_1),1)} - '
+                f'alfa {round(math.degrees(alfa),1)} - '
                 f'alfa2 {round(math.degrees(alfa_2),1)} - '
+                f'_theta {round(math.degrees(_theta),1)} - '
+                f'theta {round(math.degrees(theta),1)} - '
             )
 
             _theta = angle(My, Mz)
@@ -1382,6 +1283,7 @@ class GenericSectionCalculator(SectionCalculator):
                 alfa_1 = alfa
 
             alfa = 0.5 * (alfa_1 + alfa_2)
+
             iter += 1
         if iter == ITMAX:
             s = f'Last iteration reached: \
@@ -1389,88 +1291,3 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         else:
             return eps_a, chiy, chiz
-
-    def calculate_cracking_moment(self, n=0):
-        """Calculate the cracking moment of a R.C section.
-        A concrete material failing at fctm is used for the cracking moment
-        calculation. This method modify the constitutive law of concrete to reach
-        fctm in tension.
-
-        Args:
-            n [N]: Axial external load
-
-        Returns:
-            m_cracking_1: moment compress lower part of the section
-            m_cracking_2: moment compress upper part of the section
-            z_1 : distance of neutral axe to origin when M=m_cracking_1
-            z_2 : distance of neutral axe to origin when M=m_cracking_2
-        """
-
-        def modify_consitutive_law(geom: SurfaceGeometry):
-            """Add tension branch of concrete to constitutive law."""
-            mat = geom.material
-            gamma_c = 1.5  # !!!! ISSUE. gamma_c should be readable from ConstitutiveLaw class (TODO)
-            if (
-                _CODE is None
-            ):  # should be the code of the material used to create the section
-                set_design_code('mc2010')
-            if isinstance(mat, ParabolaRectangle):
-                strains = np.linspace(mat._eps_u, 0, 20)
-                aux_concrete = create_concrete(
-                    abs(mat._fc * gamma_c), gamma_c=1
-                )
-            elif isinstance(mat, Sargin):
-                strains = np.linspace(mat._eps_cu1, 0, 20)
-                aux_concrete = create_concrete(
-                    abs(mat._fc * gamma_c), gamma_c=1
-                )
-            else:  # UserDefined
-                strains = np.linspace(-0.0035, 0, 20)
-                eps_max, eps_min = mat.get_ultimate_strain()
-                s1 = np.linspace(eps_min, eps_max, 100)
-                s2 = mat.get_stress(s1)
-                aux_concrete = create_concrete(
-                    abs(s2.min() * gamma_c), gamma_c=1
-                )
-
-            stress = aux_concrete.constitutive_law.get_stress((strains))
-            # stress = mat.get_stress((strains))
-            strains = strains.tolist()
-            stress = stress.tolist()
-
-            fctm = aux_concrete.fctm
-            Ec = aux_concrete.constitutive_law.get_tangent(0)[0]
-            tensile_strain_limit = fctm / Ec
-            strains.append(tensile_strain_limit)
-            stress.append(fctm)
-            ec_const = UserDefined(
-                strains, stress, 'constitutive_law_with_tension'
-            )
-            geom.material = ec_const
-
-        sec = copy.deepcopy(self.section)
-        m_cracking_1, m_cracking_2 = 0, 0
-        if sec.geometry.reinforced_concrete:
-            if isinstance(sec.geometry, SurfaceGeometry):
-                modify_consitutive_law(sec.geometry)
-            elif isinstance(sec.geometry, CompoundGeometry):
-                for i in range(len(sec.geometry.geometries)):
-                    modify_consitutive_law(sec.geometry.geometries[i])
-            else:
-                raise ValueError(
-                    'geometry must be SurfaceGeometry or CompoundGeometry'
-                )
-            # lower compresion block failure
-            res = sec.section_calculator.calculate_bending_strength(
-                theta=math.pi, n=n
-            )
-            m_cracking_1 = res.m_y
-            z_1 = -res.eps_a / res.chi_y
-            # upper compresion block failure
-            res = sec.section_calculator.calculate_bending_strength(
-                theta=0, n=n
-            )
-            m_cracking_2 = res.m_y
-            z_2 = res.eps_a / res.chi_y
-
-        return m_cracking_1, m_cracking_2, z_1, z_2
