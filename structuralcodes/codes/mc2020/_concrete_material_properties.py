@@ -5,14 +5,14 @@ from typing import List, Literal, Optional, Tuple
 
 
 def fcm(fck: float, delta_f: float = 8) -> float:
-    """Calculate the mean compressive strength fcm based on the
-        characteristic compressive strength fck.
+    """Calculate the mean compressive strength fcm based on the characteristic
+    compressive strength fck.
 
     fib Model Code 2020, eq. (14.6-1)
 
     Args:
         fck (float): Characteristic compressive strength fck in MPa.
-        delta_f (float): increment in MPa. Defaults to 8MPa.
+        delta_f (float): Increment in MPa. Defaults to 8MPa.
 
     Returns:
         float: Mean compressive strength fcm in MPa.
@@ -29,9 +29,8 @@ def fcm(fck: float, delta_f: float = 8) -> float:
 
 
 def flcm(flck: float, delta_f: float = 8) -> float:
-    """Calculate the mean compressive strength flcm for lightweight
-        aggregate concrete based on the characteristic
-        compressive strength flck.
+    """Calculate the mean compressive strength flcm for lightweight aggregate
+    concrete based on the characteristic compressive strength flck.
 
     fib Model Code 2020, eq. (14.6-2)
 
@@ -40,7 +39,7 @@ def flcm(flck: float, delta_f: float = 8) -> float:
 
     Returns:
         float: Mean compressive strength flcm in MPa.
-        delta_f (float): increment in MPa. Defaults to 8MPa.
+        delta_f (float): Increment in MPa. Defaults to 8MPa.
 
     Raises:
         ValueError: If flck is negative or zero.
@@ -125,8 +124,8 @@ def fck(
         'LC80',
     ],
 ) -> float:
-    """Retrieve the characteristic strength values (fck)
-        for a given con.
+    """Retrieve the characteristic strength values (fck) for a given concrete
+    grade.
 
     fib Model Code 2020, Tables 14.6-1, 14.6-2
 
@@ -138,9 +137,6 @@ def fck(
 
     Raises:
         ValueError: If the grade is not found.
-
-    Reference:
-
     """
     if grade not in _concrete_strengths:
         raise ValueError(
@@ -186,8 +182,8 @@ def fck_cube(
         'LC80',
     ],
 ) -> float:
-    """Retrieve the characteristic cube strength values (fck_cube)
-        for a given con.
+    """Retrieve the characteristic cube strength values (fck_cube) for a given
+    concrete grade.
 
     fib Model Code 2020, Tables 14.6-1, 14.6-2
 
@@ -199,9 +195,6 @@ def fck_cube(
 
     Raises:
         ValueError: If the grade is not found.
-
-    Reference:
-
     """
     if grade not in _concrete_strengths:
         raise ValueError(
@@ -263,22 +256,22 @@ def fctk_max(fctm: float) -> float:
 
 
 def flctm(fctm: float, density: float) -> float:
-    """Calculate the mean tensile strength flctm for
-        lightweight aggregate concrete.
+    """Calculate the mean tensile strength flctm for lightweight aggregate
+    concrete.
 
     fib Model Code 2020, eqs. (14.6-6a) and (14.6-6b)
 
     Args:
         fctm (float): Mean tensile strength for normal weight concrete in MPa.
-        density (float): Oven-dry density of the lightweight
-            aggregate concrete in kg/m3.
+        density (float): Oven-dry density of the lightweight aggregate concrete
+            in kg/m3.
 
     Returns:
         float: Mean tensile strength flctm in MPa.
 
     Raises:
-        ValueError: If density is outside the
-            reasonable range for lightweight aggregate concrete.
+        ValueError: If density is outside the reasonable range for lightweight
+            aggregate concrete.
     """
     if density < 1000 or density > 2200:
         raise ValueError(
@@ -291,8 +284,8 @@ def flctm(fctm: float, density: float) -> float:
 
 
 def flctk_min(flctm: float) -> float:
-    """Calculate the lower bound characteristic
-        tensile strength flctk,min for lightweight aggregate concrete.
+    """Calculate the lower bound characteristic tensile strength flctk,min for
+    lightweight aggregate concrete.
 
     fib Model Code 2020, similar to eq. (14.6-4)
 
@@ -306,8 +299,8 @@ def flctk_min(flctm: float) -> float:
 
 
 def flctk_max(flctm: float) -> float:
-    """Calculate the upper bound characteristic tensile strength
-        flctk,max for lightweight aggregate concrete.
+    """Calculate the upper bound characteristic tensile strength flctk,max for
+    lightweight aggregate concrete.
 
     fib Model Code 2020, similar to eq. (14.6-5)
 
@@ -321,8 +314,8 @@ def flctk_max(flctm: float) -> float:
 
 
 def fctm_from_splitting(fctm_sp: float, alpha_sp: float = 1.0) -> float:
-    """Calculate the mean uniaxial tensile strength
-        fctm from the mean splitting tensile strength fctm,sp.
+    """Calculate the mean uniaxial tensile strength fctm from the mean
+    splitting tensile strength fctm,sp.
 
     fib Model Code 2020, eq. (14.6-7)
 
@@ -331,14 +324,14 @@ def fctm_from_splitting(fctm_sp: float, alpha_sp: float = 1.0) -> float:
         alpha_sp (float): Conversion factor (default is 1.0).
 
     Returns:
-        float: Mean uniaxial tensile strength fctm iun MPa.
+        float: Mean uniaxial tensile strength fctm in MPa.
     """
     return alpha_sp * fctm_sp
 
 
 def fctm_from_flexural(fctm_fl: float, hb: float) -> float:
-    """Calculate the mean uniaxial tensile strength
-        fctm from the mean flexural tensile strength fctm,fl.
+    """Calculate the mean uniaxial tensile strength fctm from the mean flexural
+    tensile strength fctm,fl.
 
     fib Model Code 2020, eqs. (14.6-8a) and (14.6-8b)
 
@@ -388,8 +381,8 @@ def GF_l(flctm: float, use_normal_weight_sand: bool = True) -> float:
 
     Args:
         flctm (float): Mean tensile strength flctm in MPa.
-        use_normal_weight_sand (bool): True if using normal
-            weight sand, False if using lightweight sand.
+        use_normal_weight_sand (bool): True if using normal weight sand, False
+            if using lightweight sand.
 
     Returns:
         float: Fracture energy GF,l in N/m.
@@ -415,36 +408,35 @@ def multiaxial_stress_equation(
     tau_com: Optional[float] = None,
     is_lightweight: bool = False,
 ) -> float:
-    """Returns the symbolic equation for the mean
-        strength under multiaxial states of stress. The result
-        of this evaluation must be equal to zero to
-        fulfill the failure criterion. So a custom
-        solver defined by the user can be used.
+    """Returns the symbolic equation for the mean strength under multiaxial
+    states of stress. The result of this evaluation must be equal to zero to
+    fulfill the failure criterion. So a custom solver defined by the user can
+    be used.
 
     fib Model Code 2020, eq. (14.6-11 to 14.6-19.b)
 
     Args:
-        sigma_1 (float): first principal stress in MPa.
-        sigma_2 (float): second principal stress in MPa.
-        sigma_3 (float): third principal stress in MPa.
-        fcm (float): mean compressive strength of concrete in MPa. Use
-            flcm for lightweight concrete.
-        fctm (float): mean tensile strength of concrete in MPa. Use flctm
-            for lightweight concrete.
-        fc2cm (float): biaxial compressive strength in MPa.
-        sigma_com (float): triaxial compressive strength at on point
-            on the compressive meridian in MPa. (sigma_1 = sigma_2 > sigma_3).
-            If None, it computes the recommended value.
-        tau_com (float): triaxial comrpessive shear strength at one point
-            on the compressive meridian in MPa. (sigma_1 = sigma_2 > sigma_3).
-            If None, it computes the recommended value.
+        sigma_1 (float): First principal stress in MPa.
+        sigma_2 (float): Second principal stress in MPa.
+        sigma_3 (float): Third principal stress in MPa.
+        fcm (float): Mean compressive strength of concrete in MPa. Use flcm for
+            lightweight concrete.
+        fctm (float): Mean tensile strength of concrete in MPa. Use flctm for
+            lightweight concrete.
+        fc2cm (float): Biaxial compressive strength in MPa.
+        sigma_com (float): Triaxial compressive strength at on point on the
+            compressive meridian in MPa. (sigma_1 = sigma_2 > sigma_3). If
+            None, it computes the recommended value.
+        tau_com (float): Triaxial comrpessive shear strength at one point on
+            the compressive meridian in MPa. (sigma_1 = sigma_2 > sigma_3). If
+            None, it computes the recommended value.
         is_lightweight (bool): True if lightweight concrete. False otherwise.
 
     Returns:
-        float: the result of the evaluation of the multiaxial stress.
-            When this result is equal to zero, the equilibrium is met.
-            A custom solver/standard solver can be used passing the 3
-            principal stresses (sigma_1, sigma_2, sigma_3).
+        float: The result of the evaluation of the multiaxial stress. When this
+        result is equal to zero, the strength criterion is met. A
+        custom solver/standard solver can be used passing the 3 principal
+        stresses (sigma_1, sigma_2, sigma_3).
     """
     # Compute the invariants
     I1 = sigma_1 + sigma_2 + sigma_3
@@ -526,16 +518,16 @@ def multiaxial_stress_equation(
 
 
 def E_ci(fcm: float, alpha_E: float = 1.0, Ec0: float = 21500) -> float:
-    """Calculate the modulus of elasticity Eci for normal
-        weight concrete at 28 days.
+    """Calculate the modulus of elasticity Eci for normal weight concrete at 28
+    days.
 
     fib Model Code 2020, eq. (14.6-20)
 
     Args:
         fcm (float): Mean compressive strength fck in MPa.
-        alpha_E (float): Coefficient depending on
-            the aggregate type (default is 1.0 for quartzite).
-        Ec0 (float): base elastic modulus value in MPa.
+        alpha_E (float): Coefficient depending on the aggregate type (default
+            is 1.0 for quartzite).
+        Ec0 (float): Base elastic modulus value in MPa.
 
     Returns:
         float: Modulus of elasticity E_ci in MPa.
@@ -556,18 +548,18 @@ def E_ci(fcm: float, alpha_E: float = 1.0, Ec0: float = 21500) -> float:
 def El_ci(
     fcm: float, density: float, alpha_E: float = 1.0, Ec0: float = 21500
 ) -> float:
-    """Calculate the modulus of elasticity Elci for
-        lightweight aggregate concrete.
+    """Calculate the modulus of elasticity Elci for lightweight aggregate
+    concrete.
 
     fib Model Code 2020, eq. (14.6-22)
 
     Args:
         fcm (float): Mean compressive strength fcm in MPa.
-        density (float): Oven-dry density of the lightweight
-            aggregate concrete in kg/m3.
-        alpha_E (float): Coefficient depending on the aggregate
-            type (default is 1.0 for quartzite).
-        Ec0 (float): base elastic modulus value in MPa.
+        density (float): Oven-dry density of the lightweight aggregate concrete
+            in kg/m3.
+        alpha_E (float): Coefficient depending on the aggregate type (default
+            is 1.0 for quartzite).
+        Ec0 (float): Base elastic modulus value in MPa.
 
     Returns:
         float: Modulus of elasticity El_ci in MPa.
@@ -589,8 +581,8 @@ def El_ci(
 
 
 def E_ci_red_el(Eci: float, fcm: float) -> float:
-    """Calculate the reduced modulus of elasticity Ec for concrete
-        for only static analysis.
+    """Calculate the reduced modulus of elasticity Ec for concrete for only
+    static analysis.
 
     fib Model Code 2020, eq. (14.6-23) (14.6-24)
 
@@ -612,13 +604,13 @@ def E_ci_red_el(Eci: float, fcm: float) -> float:
 
 
 def nu_c() -> float:
-    """Get the Poisson's ratio νc for concrete for design purposes.
+    """Get the Poisson's ratio nuc for concrete for design purposes.
 
     fib Model Code 2020 (14.6.1.4.3)
 
     Returns:
-        float: Poisson's ratio νc for concrete,
-            typically 0.20 for design purposes.
+        float: Poisson's ratio nuc for concrete, typically 0.20 for design
+        purposes.
     """
     return 0.20
 
@@ -632,23 +624,23 @@ def sigma_c(
     fcm: float,
     k: float,
 ) -> float:
-    """Calculate the compressive stress σc for short-term
-        uniaxial compression of concrete.
+    """Calculate the compressive stress sigma_c for short-term uniaxial
+    compression of concrete.
 
     fib Model Code 2020, eq. (14.6-26)
 
     Args:
-        eps_c (float): Compressive strain εc.
-        eps_c1 (float): Strain at maximum compressive stress εc1.
+        eps_c (float): Compressive strain eps_c.
+        eps_c1 (float): Strain at maximum compressive stress eps_c1.
         eps_lim (float): Limit strain.
         Eci (float): Modulus of elasticity of concrete in MPa.
-        Ec1 (float): Secant modulus of elasticity from origin
-            to peak stress Ec1 in MPa.
+        Ec1 (float): Secant modulus of elasticity from origin to peak stress
+            Ec1 in MPa.
         fcm (float): Mean compressive strength fcm in MPa.
         k (float): Plasticity number k.
 
     Returns:
-        float: Compressive stress σc in MPa.
+        float: Compressive stress sigma_c in MPa.
 
     Raises:
         ValueError: If input values are not positive or within valid ranges.
@@ -812,14 +804,14 @@ def Ec1(concrete_grade: str) -> float:
 
 
 def eps_c1(concrete_grade: str) -> float:
-    """Get the strain at maximum compressive stress
-        εc1 for a given concrete grade.
+    """Get the strain at maximum compressive stress eps_c1 for a given concrete
+    grade.
 
     Args:
         concrete_grade (str): Concrete grade (e.g., 'C20', 'C30').
 
     Returns:
-        float: Strain at maximum compressive stress εc1.
+        float: Strain at maximum compressive stress eps_c1.
 
     Raises:
         ValueError: If the concrete grade is not recognized.
@@ -834,13 +826,13 @@ def eps_c1(concrete_grade: str) -> float:
 
 
 def eps_c_lim(concrete_grade: str) -> float:
-    """Get the strain limit εc,lim for a given concrete grade.
+    """Get the strain limit eps_c,lim for a given concrete grade.
 
     Args:
         concrete_grade (str): Concrete grade (e.g., 'C20', 'C30').
 
     Returns:
-        float: Strain limit εc,lim.
+        float: Strain limit eps_c,lim.
 
     Raises:
         ValueError: If the concrete grade is not recognized.
@@ -857,7 +849,7 @@ def eps_c_lim(concrete_grade: str) -> float:
 def eps_lc1(
     flck: float, Elc: float, sand: Literal['light', 'natural']
 ) -> float:
-    """Calculate the strain εlc1 for lightweight aggregate concrete.
+    """Calculate the strain eps_lc1 for lightweight aggregate concrete.
 
     fib Model Code 2020, eq. (14.6-27)
 
@@ -867,7 +859,7 @@ def eps_lc1(
         sand (float): Specifies the type of sand used.
 
     Returns:
-        float: Strain εlc1.
+        float: Strain eps_lc1.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -883,18 +875,18 @@ def eps_lc1(
 
 
 def sigma_ct_uncracked(eps_ct: float, E_ci: float, fctm: float) -> float:
-    """Calculate the tensile stress σct for uncracked
-        normal weight concrete subjected to tension.
+    """Calculate the tensile stress sigma_ct for uncracked normal weight
+    concrete subjected to tension.
 
     fib Model Code 2020, eqs. (14.6-29) and (14.6-30)
 
     Args:
-        eps_ct (float): Tensile strain εct.
+        eps_ct (float): Tensile strain eps_ct.
         E_ci (float): Tangent modulus of elasticity Eci in MPa.
         fctm (float): Mean tensile strength fctm in MPa.
 
     Returns:
-        float: Tensile stress σct in MPa.
+        float: Tensile stress sigma_ct in MPa.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -917,8 +909,8 @@ def sigma_ct_uncracked(eps_ct: float, E_ci: float, fctm: float) -> float:
 
 
 def sigma_ct_cracked(w: float, GF: float, fctm: float) -> float:
-    """Calculate the tensile stress σct for cracked normal
-        weight concrete subjected to tension.
+    """Calculate the tensile stress sigma_ct for cracked normal weight concrete
+    subjected to tension.
 
     fib Model Code 2020, eqs. (14.6-31) and (14.6-32)
 
@@ -928,7 +920,7 @@ def sigma_ct_cracked(w: float, GF: float, fctm: float) -> float:
         fctm (float): Mean tensile strength fctm in MPa.
 
     Returns:
-        float: Tensile stress σct in MPa.
+        float: Tensile stress sigma_ct in MPa.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -955,8 +947,8 @@ def sigma_ct_cracked(w: float, GF: float, fctm: float) -> float:
 def tau_crack_friction(
     delta: float, w: float, fcm: float, Cf: float = 1.0
 ) -> float:
-    """Calculate the mean shear stress τ in an open
-        crack subjected to shear displacements.
+    """Calculate the mean shear stress tau in an open crack subjected to shear
+    displacements.
 
     fib Model Code 2020, eq. (14.6-43)
 
@@ -967,7 +959,7 @@ def tau_crack_friction(
         Cf (float): Constant C (default is 1.0).
 
     Returns:
-        float: Mean shear stress τ in MPa.
+        float: Mean shear stress tau in MPa.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -987,26 +979,26 @@ def tau_crack_friction(
 def sigma_crack_friction(
     delta: float, w: float, fcm: float, Cf: float = 1.0
 ) -> float:
-    """Calculate the mean normal stress σ in an open
-        crack subjected to shear displacements.
+    """Calculate the mean normal stress sigma in an open crack subjected to
+    shear displacements.
 
     fib Model Code 2020, eq. (14.6-44)
 
     Args:
-        delta (float): Shear displacement δ in mm.
+        delta (float): Shear displacement delta in mm.
         w (float): Crack width w in mm.
         fcm (float): Mean compressive strength fcm in MPa.
         Cf (float): Constant C (default is 1.0).
 
     Returns:
-        float: Mean normal stress σ in MPa.
+        float: Mean normal stress sigma in MPa.
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if delta <= 0 or w <= 0 or fcm <= 0:
         raise ValueError(
-            'Shear displacement δ, crack width w, and '
+            'Shear displacement delta, crack width w, and '
             + 'mean compressive strength fcm must be positive.'
         )
 
@@ -1051,10 +1043,9 @@ def sC(fck: float, strength_class: Literal['CR', 'CN', 'CS']) -> float:
 
 
 def beta_cc(t: float, t_ref: float, sC: float) -> float:
-    """Calculate the strength development function βcc(t) for concrete.
+    """Calculate the strength development function beta_cc for concrete.
 
     fib Model Code 2020, eq. (14.6-46)
-
 
     Args:
         t (float): Concrete age t in days.
@@ -1062,7 +1053,7 @@ def beta_cc(t: float, t_ref: float, sC: float) -> float:
         sC (float): Coefficient sC based on strength development class.
 
     Returns:
-        float: Strength development function βcc(t).
+        float: Strength development function beta_cc.
 
     Raises:
         ValueError: If the input values are not valid.
@@ -1076,13 +1067,13 @@ def beta_cc(t: float, t_ref: float, sC: float) -> float:
 
 
 def fcm_t(fcm: float, beta_cc: float) -> float:
-    """Calculate the mean compressive strength fcm(t) at a given age t.
+    """Calculate the mean compressive strength fcm at a given age t.
 
     fib Model Code 2020, eq. (14.6-45)
 
     Args:
         fcm (float): Mean compressive strength at reference age fcm in MPa.
-        beta_cc (float): Strength development function βcc(t).
+        beta_cc (float): Strength development function beta_cc.
 
     Returns:
         float: Mean compressive strength fcm(t) in MPa.
@@ -1102,8 +1093,8 @@ def slC(aggregate_strength: Literal['high', 'low']) -> float:
     fib Model Code 2020, eq. (14.6-47)
 
     Args:
-        aggregate_strength (str): Strength of
-            lightweight aggregate ('high' or 'low').
+        aggregate_strength (str): Strength of lightweight aggregate ('high' or
+            'low').
 
     Returns:
         float: Coefficient slC.
@@ -1113,23 +1104,22 @@ def slC(aggregate_strength: Literal['high', 'low']) -> float:
     """
     if aggregate_strength == 'high':
         return 0.05
-    # if aggregate_strength == 'low':
     return 0.25
 
 
 def beta_lcc(t: float, t_ref: float, slC: float) -> float:
-    """Calculate the strength development function βlcc(t)
-        for lightweight aggregate concrete.
+    """Calculate the strength development function beta_lcc for lightweight
+    aggregate concrete.
 
     fib Model Code 2020, eq. (14.6-47)
 
     Args:
         t (float): Concrete age t in days.
-        t_ref (float): Reference age tref ins days (typically 28 days).
+        t_ref (float): Reference age tref in days (typically 28 days).
         slC (float): Coefficient slc based on aggregate strength.
 
     Returns:
-        float: Strength development function βlcc(t).
+        float: Strength development function beta_lcc(t).
 
     Raises:
         ValueError: If the input values are not valid.
@@ -1143,8 +1133,8 @@ def beta_lcc(t: float, t_ref: float, slC: float) -> float:
 
 
 def flcm_t(f_lcm: float, beta_lcc: float) -> float:
-    """Calculate the mean compressive strength flcm(t) at
-        a given age t for lightweight aggregate concrete.
+    """Calculate the mean compressive strength flcm(t) at a given age t for
+    lightweight aggregate concrete.
 
     fib Model Code 2020, eq. (14.6-47)
 
@@ -1165,8 +1155,8 @@ def flcm_t(f_lcm: float, beta_lcc: float) -> float:
 
 
 def beta_E(beta_cc: float) -> float:
-    """Calculate the modulus of elasticity development
-        coefficient βE(t) for concrete.
+    """Calculate the modulus of elasticity development coefficient beta_E for
+    concrete.
 
     fib Model Code 2020, eq. (14.6-49)
 
@@ -1174,7 +1164,7 @@ def beta_E(beta_cc: float) -> float:
         beta_cc (float)
 
     Returns:
-        float: Modulus of elasticity development coefficient βE(t).
+        float: Modulus of elasticity development coefficient beta_E(t).
 
     Raises:
         ValueError: If the input values are not valid.
@@ -1189,7 +1179,7 @@ def E_ci_t(E_ci: float, beta_E: float) -> float:
 
     Args:
         E_ci (float): Modulus of elasticity at reference age Eci in MPa.
-        beta_E (float): Modulus of elasticity development coefficient βE(t).
+        beta_E (float): Modulus of elasticity development coefficient beta_E.
 
     Returns:
         float: Modulus of elasticity Eci(t) in MPa.
@@ -1204,8 +1194,8 @@ def E_ci_t(E_ci: float, beta_E: float) -> float:
 
 
 def beta_t0(t0: float) -> float:
-    """Calculate the parameter βt0(t0) which
-        considers the maturity of the concrete at loading.
+    """Calculate the parameter beta_t0 which considers the maturity of the
+    concrete at loading.
 
     fib Model Code 2020, eq. (14.6-51)
 
@@ -1213,7 +1203,7 @@ def beta_t0(t0: float) -> float:
         t0 (float): Age of concrete at loading t0 in days.
 
     Returns:
-        float: Parameter βt0(t0).
+        float: Parameter beta_t0(t0).
 
     Raises:
         ValueError: If the input values are not valid.
@@ -1227,8 +1217,8 @@ def beta_t0(t0: float) -> float:
 
 
 def beta_c_sus(t: float, t0: float, beta_t0: float) -> float:
-    """Calculate the function βc,sus(t, t0) describing the
-        decrease of strength with time under high sustained load.
+    """Calculate the function beta_c,sus(t, t0) describing the decrease of
+    strength with time under high sustained load.
 
     fib Model Code 2020, eq. (14.6-51)
 
@@ -1238,7 +1228,7 @@ def beta_c_sus(t: float, t0: float, beta_t0: float) -> float:
         beta_t0 (float): Value of evaluated function beta_T0.
 
     Returns:
-        float: Function βc,sus(t, t0).
+        float: Function beta_c,sus(t, t0).
 
     Raises:
         ValueError: If the input values are not valid.
@@ -1252,16 +1242,16 @@ def beta_c_sus(t: float, t0: float, beta_t0: float) -> float:
 
 
 def fcm_sus(fcm: float, beta_cc_t: float, beta_c_sus: float) -> float:
-    """Calculate the mean compressive strength
-        fcm,sus(t, t0) under sustained load.
+    """Calculate the mean compressive strength fcm,sus(t, t0) under sustained
+    load.
 
     fib Model Code 2020, eq. (14.6-50)
 
     Args:
         f_cm (float): Mean compressive strength at reference age fcm in MPa.
-        beta_cc_t (float): Strength development function βcc(t).
-        beta_c_sus_t_t0 (float): Function βc,sus(t, t0) describing
-            the decrease of strength under high sustained load.
+        beta_cc_t (float): Strength development function beta_cc(t).
+        beta_c_sus_t_t0 (float): Function beta_c,sus(t, t0) describing the
+            decrease of strength under high sustained load.
 
     Returns:
         float: Mean compressive strength fcm,sus(t, t0) in MPa.
@@ -1278,15 +1268,15 @@ def fcm_sus(fcm: float, beta_cc_t: float, beta_c_sus: float) -> float:
 def fctk_sus(
     fctk: float, concrete: Literal['normal', 'high-strength']
 ) -> float:
-    """Calculate the sustained tensile strength fctk,sus
-        for concrete under sustained loading.
+    """Calculate the sustained tensile strength fctk,sus for concrete under
+    sustained loading.
 
     fib Model Code 2020, eq. (14.6-52)
 
     Args:
         fctk (float): Short-term tensile strength fctk in MPa.
-        alpha (float): Reduction factor for sustained loading
-            (default is 0.60).
+        alpha (float): Reduction factor for sustained loading (default is
+            0.60).
 
     Returns:
         float: Sustained tensile strength fctk,sus in MPa.
@@ -1302,18 +1292,19 @@ def fctk_sus(
 
 
 def eps_cc(sigma_c_t0: float, phi_t_t0: float, E_ci: float) -> float:
-    """Calculate the creep strain εcc(t, t0) at time
-        t for a concrete member under sustained loading.
+    """Calculate the creep strain eps_cc at time t for a concrete member under
+    sustained loading.
 
     fib Model Code 2020, eq. (14.6-55)
 
     Args:
-        sigma_c_t0 (float): Constant stress applied at time t0, σc(t0) in MPa.
-        phi_t_t0 (float): Creep coefficient φ(t, t0).
+        sigma_c_t0 (float): Constant stress applied at time t0, sigma_c(t0) in
+            MPa.
+        phi_t_t0 (float): Creep coefficient phi(t, t0).
         E_ci (float): Modulus of elasticity at the age of 28 days, Eci in MPa.
 
     Returns:
-        float: Creep strain εcc(t, t0).
+        float: Creep strain eps_cc(t, t0).
 
     Raises:
         ValueError: If input values are not within valid ranges
@@ -1327,19 +1318,19 @@ def eps_cc(sigma_c_t0: float, phi_t_t0: float, E_ci: float) -> float:
 def eps_c_sigma(
     sigma_c_t0: float, E_ci_t0: float, E_ci: float, phi_t_t0: float
 ) -> float:
-    """Calculate the stress-dependent strain εcσ(t, t0) at time t
-        for a concrete member under sustained loading.
+    """Calculate the stress-dependent strain eps_c_sigma at time t for a
+    concrete member under sustained loading.
 
     fib Model Code 2020, eq. (14.6-56)
 
     Args:
-        sigma_c_t0 (float): value of the stress at time t0 in MPa.
-        E_ci_t0 (float): modulus of elasticity at time t0 in MPa.
-        E_ci (float): modulus of elasticity of concrete in MPa.
-        phi_t_t0 (float): Creep coefficient φ(t, t0).
+        sigma_c_t0 (float): Value of the stress at time t0 in MPa.
+        E_ci_t0 (float): Modulus of elasticity at time t0 in MPa.
+        E_ci (float): Modulus of elasticity of concrete in MPa.
+        phi_t_t0 (float): Creep coefficient phi(t, t0).
 
     Returns:
-        float: Stress-dependent strain εcσ(t, t0).
+        float: Stress-dependent strain eps_c_sigma(t, t0).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1351,17 +1342,17 @@ def eps_c_sigma(
 
 
 def phi_t_t0(phi_bc_t_t0: float, phi_dc_t_t0: float) -> float:
-    """Calculate the total creep coefficient φ(t, t0)
-        for concrete under sustained loading.
+    """Calculate the total creep coefficient phi(t, t0) for concrete under
+    sustained loading.
 
     fib Model Code 2020, eq. (14.6-58)
 
     Args:
-        phi_bc_t_t0 (float): basic creep coefficient.
-        phi_dc_t_t0 (float): drying creep coefficient.
+        phi_bc_t_t0 (float): Basic creep coefficient.
+        phi_dc_t_t0 (float): Drying creep coefficient.
 
     Returns:
-        float: Total creep coefficient φ(t, t0).
+        float: Total creep coefficient phi(t, t0).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1370,8 +1361,8 @@ def phi_t_t0(phi_bc_t_t0: float, phi_dc_t_t0: float) -> float:
 
 
 def beta_bc_fcm(fcm: float) -> float:
-    """Calculate the mean compressive strength factor
-        (fcm) for drying creep coefficient.
+    """Calculate the mean compressive strength factor (fcm) for drying creep
+    coefficient.
 
     fib Model Code 2020, eq. (14.6-60)
 
@@ -1379,7 +1370,7 @@ def beta_bc_fcm(fcm: float) -> float:
         fcm (float): Mean compressive strength at an age of 28 days fcm in MPa.
 
     Returns:
-        float: Mean compressive strength factor β_bc_fcm(f_cm).
+        float: Mean compressive strength factor beta_bc_fcm(f_cm).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1391,8 +1382,7 @@ def beta_bc_fcm(fcm: float) -> float:
 
 
 def beta_bc_t_t0(t: float, t0: float, t0_adj: float) -> float:
-    """Calculte the beta_bc coefficient evaluated for
-        t,t0.
+    """Calculte the beta_bc coefficient evaluated for t,t0.
 
     fib Model Code 2020, eq. (14.6-61)
 
@@ -1421,8 +1411,8 @@ def beta_bc_t_t0(t: float, t0: float, t0_adj: float) -> float:
 
 
 def phi_bc_t_t0(beta_bc_t_t0: float, beta_bc_fcm: float) -> float:
-    """Calculate the basic creep coefficient φbc(t, t0)
-        for concrete under sustained loading.
+    """Calculate the basic creep coefficient phi_bc(t, t0) for concrete under
+    sustained loading.
 
     fib Model Code 2020, eqs. (14.6-59)
 
@@ -1431,7 +1421,7 @@ def phi_bc_t_t0(beta_bc_t_t0: float, beta_bc_fcm: float) -> float:
         beta_bc_fcm (float): value of beta_bc_fcm.
 
     Returns:
-        float: Basic creep coefficient φbc(t, t0).
+        float: Basic creep coefficient phi_bc(t, t0).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1443,8 +1433,8 @@ def phi_bc_t_t0(beta_bc_t_t0: float, beta_bc_fcm: float) -> float:
 
 
 def beta_dc_fcm(fcm: float) -> float:
-    """Calculate the mean compressive strength factor
-        βf_cm(fcm) for drying creep coefficient.
+    """Calculate the mean compressive strength factor beta_f_cm(fcm) for drying
+    creep coefficient.
 
     fib Model Code 2020, eq. (14.6-63)
 
@@ -1452,7 +1442,7 @@ def beta_dc_fcm(fcm: float) -> float:
         fcm (float): Mean compressive strength at an age of 28 days fcm in MPa.
 
     Returns:
-        float: Mean compressive strength factor βf_cm(f_cm).
+        float: Mean compressive strength factor beta_f_cm(f_cm).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1464,8 +1454,8 @@ def beta_dc_fcm(fcm: float) -> float:
 
 
 def beta_RH_c(RH: float, h: float) -> float:
-    """Calculate the relative humidity factor βRH(RH)
-        for drying creep coefficient.
+    """Calculate the relative humidity factor beta_RH(RH) for drying creep
+    coefficient.
 
     fib Model Code 2020, eq. (14.6-64)
 
@@ -1474,7 +1464,7 @@ def beta_RH_c(RH: float, h: float) -> float:
         h (float): Notional size of the member h in mm.
 
     Returns:
-        float: Relative humidity factor βRH(RH).
+        float: Relative humidity factor beta_RH(RH).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1488,7 +1478,7 @@ def beta_RH_c(RH: float, h: float) -> float:
 
 
 def beta_dc_t0(t0_adj: float) -> float:
-    """Calculate the time factor βt0(t0) for drying creep coefficient.
+    """Calculate the time factor beta_t0(t0) for drying creep coefficient.
 
     fib Model Code 2020, eq. (14.6-65)
 
@@ -1496,7 +1486,7 @@ def beta_dc_t0(t0_adj: float) -> float:
         t0_adj (float): Adjusted age at loading t0,adj in days.
 
     Returns:
-        float: Time factor βt0(t0).
+        float: Time factor beta_t0(t0).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1508,7 +1498,7 @@ def beta_dc_t0(t0_adj: float) -> float:
 
 
 def gamma_t0(t0_adj: float) -> float:
-    """Calculate the factor γ for drying creep development with time.
+    """Calculate the factor gamma for drying creep development with time.
 
     fib Model Code 2020, eq. (14.6-66b)
 
@@ -1516,7 +1506,7 @@ def gamma_t0(t0_adj: float) -> float:
         t0_adj (float): Adjusted age at loading t0,adj in days.
 
     Returns:
-        float: Factor γ.
+        float: Factor gamma.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1553,7 +1543,7 @@ def beta_h(h: float, fcm: float) -> float:
 
 
 def beta_dc_t_t0(t: float, t0: float, gamma_t0: float, beta_h: float) -> float:
-    """Calculate the development of drying creep with time βdc(t, t0).
+    """Calculate the development of drying creep with time beta_dc(t, t0).
 
     fib Model Code 2020, eq. (14.6-66a)
 
@@ -1566,7 +1556,7 @@ def beta_dc_t_t0(t: float, t0: float, gamma_t0: float, beta_h: float) -> float:
 
 
     Returns:
-        float: Development of drying creep with time βdc(t, t0).
+        float: Development of drying creep with time beta_dc(t, t0).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1587,8 +1577,8 @@ def phi_dc_t_t0(
     beta_dc_t0: float,
     beta_dc_t_t0: float,
 ) -> float:
-    """Calculate the drying creep coefficient φdc(t, t0)
-        for concrete under sustained loading.
+    """Calculate the drying creep coefficient phi_dc(t, t0) for concrete under
+    sustained loading.
 
     fib Model Code 2020, eq. (14.6-62)
 
@@ -1599,7 +1589,7 @@ def phi_dc_t_t0(
         beta_dc_t_t0 (float): beta_dc_t_t0 coefficient.
 
     Returns:
-        float: Drying creep coefficient φdc(t, t0).
+        float: Drying creep coefficient phi_dc(t, t0).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1608,28 +1598,29 @@ def phi_dc_t_t0(
 
 
 def phi_l_t_t0(phi_t_t0: float, rho: float, concrete_grade: str) -> float:
-    """Calculate the creep coefficient φl for lightweight aggregate concrete.
+    """Calculate the creep coefficient phi_l for lightweight aggregate
+    concrete.
 
     fib Model Code 2020, eq. (14.6-67)
 
     Args:
-        phi_t_t0 (float): Creep coefficient φ(t, t0)
-            according to Eq. (14.6-58).
-        rho (float): Oven-dry density of
-            lightweight aggregate concrete in kg/m3.
+        phi_t_t0 (float): Creep coefficient phi(t, t0) according to Eq.
+            (14.6-58).
+        rho (float): Oven-dry density of lightweight aggregate concrete in
+            kg/m3.
         concrete_grade (str): Grade of concrete (e.g., 'LC12', 'LC16', 'LC20').
 
     Returns:
-        float: Creep coefficient φl for lightweight aggregate concrete.
+        float: Creep coefficient phi_l for lightweight aggregate concrete.
 
     Raises:
-        ValueError: If input values are not within
-            valid ranges or invalid grade.
+        ValueError: If input values are not within valid ranges or invalid
+            grade.
     """
     if rho <= 0:
-        raise ValueError('Oven-dry density ρ must be positive.')
+        raise ValueError('Oven-dry density rho must be positive.')
     if phi_t_t0 < 0:
-        raise ValueError('Creep coefficient φ(t, t0) must not be negative.')
+        raise ValueError('Creep coefficient phi(t, t0) must not be negative.')
 
     # Calculate ηE
     eta_E = (rho / 2200) ** 2
@@ -1645,23 +1636,23 @@ def phi_l_t_t0(phi_t_t0: float, rho: float, concrete_grade: str) -> float:
 
 
 def t0_adj(t0_T: float, strength_class: Literal['CS', 'CN', 'CR']) -> float:
-    """Calculate the adjusted age at loading t0,adj for
-        concrete under sustained loading.
+    """Calculate the adjusted age at loading t0,adj for concrete under
+    sustained loading.
 
     fib Model Code 2020, eq. (14.6-68)
 
     Args:
-        t0_T (float): Age of concrete at loading in
-            days adjusted according to Eq. (14.6-80).
-        strength_class (str): Strength development
-            class of concrete ('CS', 'CN', 'CR').
+        t0_T (float): Age of concrete at loading in days adjusted according to
+            Eq. (14.6-80).
+        strength_class (str): Strength development class of concrete ('CS',
+            'CN', 'CR').
 
     Returns:
         float: Adjusted age at loading t0,adj in days.
 
     Raises:
-        ValueError: If input values are not
-            within valid ranges or invalid class.
+        ValueError: If input values are not within valid ranges or invalid
+            class.
     """
     if t0_T <= 0:
         raise ValueError('Age of concrete at loading t0_T must be positive.')
@@ -1677,24 +1668,24 @@ def t0_adj(t0_T: float, strength_class: Literal['CS', 'CN', 'CR']) -> float:
 
 
 def phi_sigma_t_t0(phi_t_t0: float, sigma_c: float, fcm_t0: float) -> float:
-    """Calculate the non-linear creep coefficient φσ(t, t0)
-        for concrete under high stress.
+    """Calculate the non-linear creep coefficient phi_sigma(t, t0) for concrete
+    under high stress.
 
     fib Model Code 2020, eq. (14.6-69)
 
     Args:
-        phi_t_t0 (float): Linear creep coefficient φ(t, t0)
-            according to Eq. (14.6-58).
+        phi_t_t0 (float): Linear creep coefficient phi(t, t0) according to Eq.
+            (14.6-58).
         sigma_c (float): Applied stress in MPa.
-        fcm_t0 (float): Mean compressive strength of concrete
-            at the age of loading t0 in MPa.
+        fcm_t0 (float): Mean compressive strength of concrete at the age of
+            loading t0 in MPa.
 
     Returns:
-        float: Non-linear creep coefficient φσ(t, t0).
+        float: Non-linear creep coefficient phi_sigma(t, t0).
 
     Raises:
-        ValueError: If input values are not within valid ranges or
-            if stress-strength ratio is not within 0.4 < kσ ≤ 0.6.
+        ValueError: If input values are not within valid ranges or if
+            stress-strength ratio is not within 0.4 < k_sigma ≤ 0.6.
     """
     if phi_t_t0 < 0:
         raise ValueError(
@@ -1713,53 +1704,55 @@ def phi_sigma_t_t0(phi_t_t0: float, sigma_c: float, fcm_t0: float) -> float:
 
 
 def eps_cs_t_ts(eps_cbs_t: float, eps_cds_t_ts: float) -> float:
-    """Calculate the total shrinkage strain εcs(t, ts).
+    """Calculate the total shrinkage strain eps_cs(t, ts).
 
     fib Model Code 2020, eq. (14.6-70)
 
     Args:
-        eps_cbs_t (float): Basic shrinkage strain εcbs(t).
-        eps_cds_t_ts (float): Drying shrinkage strain εcds(t, ts).
+        eps_cbs_t (float): Basic shrinkage strain eps_cbs(t).
+        eps_cds_t_ts (float): Drying shrinkage strain eps_cds(t, ts).
 
     Returns:
-        float: Total shrinkage strain εcs(t, ts).
+        float: Total shrinkage strain eps_cs(t, ts).
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if eps_cbs_t < 0:
         raise ValueError(
-            'Basic shrinkage strain εcbs(t) must not be negative.'
+            'Basic shrinkage strain eps_cbs(t) must not be negative.'
         )
     if eps_cds_t_ts < 0:
         raise ValueError(
-            'Drying shrinkage strain εcds(t, ts) must not be negative.'
+            'Drying shrinkage strain eps_cds(t, ts) must not be negative.'
         )
 
     return eps_cbs_t + eps_cds_t_ts
 
 
 def eps_cbs_t(eps_cbs0: float, beta_bs_t: float) -> float:
-    """Calculate the basic shrinkage strain εcbs(t).
+    """Calculate the basic shrinkage strain eps_cbs(t).
 
     fib Model Code 2020, eq. (14.6-71)
 
     Args:
-        eps_cbs0 (float): Basic shrinkage strain coefficient εcbs0.
-        beta_bs_t (float): Development function for basic shrinkage βbs(t).
+        eps_cbs0 (float): Basic shrinkage strain coefficient eps_cbs0.
+        beta_bs_t (float): Development function for basic shrinkage beta_bs(t).
 
     Returns:
-        float: Basic shrinkage strain εcbs(t).
+        float: Basic shrinkage strain eps_cbs(t).
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if eps_cbs0 < 0:
         raise ValueError(
-            'Basic shrinkage strain coefficient εcbs0 must not be negative.'
+            'Basic shrinkage strain coefficient eps_cbs0 must not be negative.'
         )
     if beta_bs_t < 0:
-        raise ValueError('Development function βbs(t) must not be negative.')
+        raise ValueError(
+            'Development function beta_bs(t) must not be negative.'
+        )
 
     return eps_cbs0 * beta_bs_t
 
@@ -1767,51 +1760,54 @@ def eps_cbs_t(eps_cbs0: float, beta_bs_t: float) -> float:
 def eps_cds_t_ts(
     eps_cds0: float, beta_RH: float, beta_ds_t_ts: float
 ) -> float:
-    """Calculate the drying shrinkage strain εcds(t, ts).
+    """Calculate the drying shrinkage strain eps_cds(t, ts).
 
     fib Model Code 2020, eq. (14.6-72)
 
     Args:
-        eps_cds0 (float): Drying shrinkage strain coefficient εcds0.
-        beta_RH (float): Relative humidity factor βRH(RH).
-        beta_ds_t_ts (float): Development function for
-            drying shrinkage βds(t - ts).
+        eps_cds0 (float): Drying shrinkage strain coefficient eps_cds0.
+        beta_RH (float): Relative humidity factor beta_RH(RH).
+        beta_ds_t_ts (float): Development function for drying shrinkage
+            beta_ds(t - ts).
 
     Returns:
-        float: Drying shrinkage strain εcds(t, ts).
+        float: Drying shrinkage strain eps_cds(t, ts).
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if eps_cds0 < 0:
         raise ValueError(
-            'Drying shrinkage strain coefficient εcds0 must not be negative.'
+            (
+                'Drying shrinkage strain coefficient eps_cds0 must not be '
+                'negative.'
+            )
         )
     if beta_RH < 0 or beta_RH > 1:
         raise ValueError(
-            'Relative humidity factor βRH must be between 0 and 1.'
+            'Relative humidity factor beta_RH must be between 0 and 1.'
         )
     if beta_ds_t_ts < 0:
         raise ValueError(
-            'Development function βds(t - ts) must not be negative.'
+            'Development function beta_ds(t - ts) must not be negative.'
         )
 
     return eps_cds0 * beta_RH * beta_ds_t_ts
 
 
 def eps_cbs_0(fcm: float, alpha_bs: float) -> float:
-    """Calculate the basic notional shrinkage coefficient εcbs0(fcm).
+    """Calculate the basic notional shrinkage coefficient eps_cbs0(fcm).
 
     fib Model Code 2020, eq. (14.6-73)
 
     Args:
-        fcm (float): Mean compressive strength at the age of
-            28 days fcm in MPa.
-        alpha_bs (float): Coefficient dependent on
-            the strength development class of concrete.
+        fcm (float): Mean compressive strength at the age of 28 days fcm in
+            MPa.
+        alpha_bs (float): Coefficient dependent on the strength development
+            class of concrete.
 
     Returns:
-        float: Basic notional shrinkage coefficient εcbs0(fcm).
+        float: Basic notional shrinkage coefficient eps_cbs0(fcm).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1825,7 +1821,7 @@ def eps_cbs_0(fcm: float, alpha_bs: float) -> float:
 
 
 def beta_bs_t(t: float) -> float:
-    """Calculate the time function for basic shrinkage βbs(t).
+    """Calculate the time function for basic shrinkage beta_bs(t).
 
     fib Model Code 2020, eq. (14.6-74)
 
@@ -1833,7 +1829,7 @@ def beta_bs_t(t: float) -> float:
         t (float): Age of concrete in days.
 
     Returns:
-        float: Time function for basic shrinkage βbs(t).
+        float: Time function for basic shrinkage beta_bs(t).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1853,14 +1849,15 @@ alpha_coefficients = {
 
 
 def alpha_bs(strength_class: Literal['CS', 'CN', 'CR']) -> tuple:
-    """Retrieve the coefficient αbs strength development class of concrete.
+    """Retrieve the coefficient alpha_bs strength development class of
+    concrete.
 
     Args:
-        strength_class (str): The strength development
-            class of concrete ('CS', 'CN', 'CR').
+        strength_class (str): The strength development class of concrete ('CS',
+            'CN', 'CR').
 
     Returns:
-        float: the value of αbs.
+        float: the value of alpha_bs.
 
     Raises:
         ValueError: If the strength development class is not recognized.
@@ -1878,14 +1875,15 @@ def alpha_bs(strength_class: Literal['CS', 'CN', 'CR']) -> tuple:
 
 
 def alpha_ds_1(strength_class: Literal['CS', 'CN', 'CR']) -> tuple:
-    """Retrieve the coefficient αds1 strength development class of concrete.
+    """Retrieve the coefficient alpha_ds1 strength development class of
+    concrete.
 
     Args:
-        strength_class (str): The strength development
-            class of concrete ('CS', 'CN', 'CR').
+        strength_class (str): The strength development class of concrete ('CS',
+            'CN', 'CR').
 
     Returns:
-        float: the value of αds1.
+        float: the value of alpha_ds1.
 
     Raises:
         ValueError: If the strength development class is not recognized.
@@ -1903,14 +1901,15 @@ def alpha_ds_1(strength_class: Literal['CS', 'CN', 'CR']) -> tuple:
 
 
 def alpha_ds_2(strength_class: Literal['CS', 'CN', 'CR']) -> tuple:
-    """Retrieve the coefficient αds2 strength development class of concrete.
+    """Retrieve the coefficient alpha_ds2 strength development class of
+    concrete.
 
     Args:
-        strength_class (str): The strength development
-            class of concrete ('CS', 'CN', 'CR').
+        strength_class (str): The strength development class of concrete ('CS',
+            'CN', 'CR').
 
     Returns:
-        float: the value of αds2.
+        float: the value of alpha_ds2.
 
     Raises:
         ValueError: If the strength development class is not recognized.
@@ -1928,19 +1927,19 @@ def alpha_ds_2(strength_class: Literal['CS', 'CN', 'CR']) -> tuple:
 
 
 def eps_cds_0_fcm(fcm: float, alpha_ds1: float, alpha_ds2: float) -> float:
-    """Calculate the notional drying shrinkage coefficient εcds0(fcm).
+    """Calculate the notional drying shrinkage coefficient eps_cds0(fcm).
 
     fib Model Code 2020, eq. (14.6-75)
 
     Args:
         fcm (float): Mean compressive strength at the age of 28 days in MPa.
-        alpha_ds1 (float): Coefficient dependent on the strength
-            development class of concrete.
-        alpha_ds2 (float): Coefficient dependent on the strength
-            development class of concrete.
+        alpha_ds1 (float): Coefficient dependent on the strength development
+            class of concrete.
+        alpha_ds2 (float): Coefficient dependent on the strength development
+            class of concrete.
 
     Returns:
-        float: Notional drying shrinkage coefficient εcds0(fcm).
+        float: Notional drying shrinkage coefficient eps_cds0(fcm).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1952,7 +1951,7 @@ def eps_cds_0_fcm(fcm: float, alpha_ds1: float, alpha_ds2: float) -> float:
 
 
 def beta_RH_s(RH: float, RH_eq: float) -> float:
-    """Calculate the relative humidity factor βRH(RH) for shrinkage.
+    """Calculate the relative humidity factor beta_RH(RH) for shrinkage.
 
     fib Model Code 2020, eq. (14.6-76)
 
@@ -1961,7 +1960,7 @@ def beta_RH_s(RH: float, RH_eq: float) -> float:
         RH_eq (float): value of equivalent humidity.
 
     Returns:
-        float: Relative humidity factor βRH(RH).
+        float: Relative humidity factor beta_RH(RH).
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -1981,8 +1980,8 @@ def beta_RH_s(RH: float, RH_eq: float) -> float:
 
 
 def beta_ds_t_ts(t: float, ts: float, h: float) -> float:
-    """Calculate the time-development function
-        for drying shrinkage βds(t - ts).
+    """Calculate the time-development function for drying shrinkage
+    beta_ds(t - ts).
 
     fib Model Code 2020, eq. (14.6-77)
 
@@ -1992,15 +1991,17 @@ def beta_ds_t_ts(t: float, ts: float, h: float) -> float:
         h (float): Notional size of the member in mm.
 
     Returns:
-        float: Time-development function for drying shrinkage βds(t - ts).
+        float: Time-development function for drying shrinkage beta_ds(t - ts).
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if t < ts:
         raise ValueError(
-            'Concrete age t must be greater than or '
-            + 'equal to the beginning of drying ts.'
+            (
+                'Concrete age t must be greater than or '
+                'equal to the beginning of drying ts.'
+            )
         )
     if h <= 0:
         raise ValueError('Notional size h must be positive.')
@@ -2041,21 +2042,23 @@ def eps_lcs_t_ts(
         'LC80',
     ],
 ) -> float:
-    """Calculate the shrinkage of lightweight aggregate concrete εlcs(t, ts).
+    """Calculate the shrinkage of lightweight aggregate concrete
+    eps_lcs(t, ts).
 
     fib Model Code 2020, eq. (14.6-79)
 
     Args:
-        eps_cs_t_ts (float): Shrinkage strain for normal
-            weight concrete εcs(t, ts).
-        concrete_grade (str): Grade of lightweight aggregate concrete
-            (e.g., 'LC8', 'LC12', 'LC16', 'LC20').
+        eps_cs_t_ts (float): Shrinkage strain for normal weight concrete
+            eps_cs(t, ts).
+        concrete_grade (str): Grade of lightweight aggregate concrete (e.g.,
+            'LC8', 'LC12', 'LC16', 'LC20').
 
     Returns:
-        float: Shrinkage strain for lightweight aggregate concrete εlcs(t, ts).
+        float: Shrinkage strain for lightweight aggregate concrete
+        eps_lcs(t, ts).
 
     Raises:
-        ValueError: if invalid concrete grade.
+        ValueError: If invalid concrete grade.
     """
     # Define eta values for different concrete grades
     eta_values = {
@@ -2083,8 +2086,10 @@ def eps_lcs_t_ts(
         eta = eta_values[concrete_grade]
     else:
         raise ValueError(
-            'Invalid concrete grade. Choose from '
-            + "'LC8', 'LC12', 'LC16', 'LC20', and higher."
+            (
+                'Invalid concrete grade. Choose from '
+                "'LC8', 'LC12', 'LC16', 'LC20', and higher."
+            )
         )
 
     # Calculate shrinkage for lightweight aggregate concrete
@@ -2100,10 +2105,10 @@ def t_T_maturity(
 
     Args:
         temperature_intervals (List[Tuple[float, float]]): A list of tuples
-            where each tuple contains
-            (Δti, T(Δti)), where Δti is the number of days
-            where a temperature T prevails, and T(Δti) is the
-            mean temperature in °C during the time period Δti.
+            where each tuple contains (delta_ti, T(delta_ti)), where delta_ti
+            is the number of days where a temperature T prevails, and
+            T(delta_ti) is the mean temperature in degrees C during the time
+            period delta_ti.
 
     Returns:
         float: Temperature-adjusted concrete age tT in days.
@@ -2118,10 +2123,10 @@ def t_T_maturity(
 
     for delta_t, T in temperature_intervals:
         if delta_t < 0:
-            raise ValueError('Number of days Δti must not be negative.')
+            raise ValueError('Number of days delta_ti must not be negative.')
         if T < -273.15:
             raise ValueError(
-                'Temperature T(Δti) must be above absolute zero (-273°C).'
+                'Temperature T(delta_ti) must be above absolute zero (-273C).'
             )
 
         t_T += delta_t * math.exp(13.65 - 4000 / (273 + T))
@@ -2130,20 +2135,21 @@ def t_T_maturity(
 
 
 def eps_c_T(delta_T: float, alpha_T: str) -> float:
-    """Calculate the thermal strain εcT due to thermal expansion of concrete.
+    """Calculate the thermal strain eps_cT due to thermal expansion of
+    concrete.
 
     fib Model Code 2020, eq. (14.6-81)
 
     Args:
         delta_T (float): Change in temperature in Kelvin (K).
-        alpha_T (str): thermal expecansion coefficient.
+        alpha_T (str): Thermal expecansion coefficient.
 
     Returns:
-        float: Thermal strain εcT.
+        float: Thermal strain eps_cT.
 
     Raises:
-        ValueError: If input values are not within
-            valid ranges or invalid concrete type.
+        ValueError: If input values are not within valid ranges or invalid
+            concrete type.
     """
     if alpha_T < 0:
         raise ValueError('alpha_T must not be negative.')
@@ -2153,27 +2159,27 @@ def eps_c_T(delta_T: float, alpha_T: str) -> float:
 
 
 def alpha_T(concrete_type: Literal['normal', 'lightweight']) -> float:
-    """Return the thermal expansion coefficient as a function
-        of the concrete type.
+    """Return the thermal expansion coefficient as a function of the concrete
+    type.
 
     Args:
-        concrete_type (str): concrete type.
+        concrete_type (str): Concrete type.
 
     Returns:
-        float: the thermal expansion coefficient in K-1
+        float: The thermal expansion coefficient in 1/K.
     """
     return 8e-6 if concrete_type == 'lightweight' else 10e-6
 
 
 def fcm_T(fcm: float, T: float) -> float:
-    """Calculate the compressive strength fcm(T) for
-        normal weight concrete at a given temperature.
+    """Calculate the compressive strength fcm(T) for normal weight concrete at
+    a given temperature.
 
     fib Model Code 2020, eq. (14.6-82)
 
     Args:
-        fcm (float): Compressive strength in MPa at T = 20°C.
-        T (float): Temperature in °C.
+        fcm (float): Compressive strength in MPa at T = 20 degrees C.
+        T (float): Temperature in degrees C.
 
     Returns:
         float: Compressive strength fcm(T) at temperature T in MPa.
@@ -2188,14 +2194,14 @@ def fcm_T(fcm: float, T: float) -> float:
 
 
 def flcm_T(flcm: float, T: float) -> float:
-    """Calculate the compressive strength flcm(T)
-        for lightweight aggregate concrete at a given temperature.
+    """Calculate the compressive strength flcm(T) for lightweight aggregate
+    concrete at a given temperature.
 
     fib Model Code 2020, eq. (14.6-83)
 
     Args:
-        flcm (float): Compressive strength in MPa at T = 20°C.
-        T (float): Temperature in °C.
+        flcm (float): Compressive strength in MPa at T = 20 degrees C.
+        T (float): Temperature in degrees C.
 
     Returns:
         float: Compressive strength flcm(T) at temperature T in MPa.
@@ -2215,8 +2221,8 @@ def fcm_hT_T(fcm_href_Tref: float, D_fc: float, S_fc: float) -> float:
     fib Model Code 2020, eq. (14.6-84)
 
     Args:
-        fcm_href_Tref (float): Compressive strength in MPa
-            at Tref = 20°C at reference storage conditions.
+        fcm_href_Tref (float): Compressive strength in MPa at Tref = 20 degrees
+            C at reference storage conditions.
         D_fc (float): Drying effect parameter.
         S_fc (float): Thermal dilation incompatibility factor.
 
@@ -2238,9 +2244,9 @@ def D_fc(h_Tref: float) -> float:
     fib Model Code 2020, eq. (14.6-85)
 
     Args:
-        T (float): Temperature in °C.
-        h_Tref (float): Relative humidity of the
-            concrete pores at temperature T.
+        T (float): Temperature in degrees C.
+        h_Tref (float): Relative humidity of the concrete pores at temperature
+            T.
 
     Returns:
         float: Drying effect parameter D_fc.
@@ -2262,8 +2268,9 @@ def hT_Tref(hT: float, K_hT: float, T: float, T_ref: float = 20.0) -> float:
     Args:
         hT (float): Relative humidity at reference temperature T_ref.
         K_hT (float): Coefficient for computing the relative humidity.
-        T (float): Temperature in °C.
-        T_ref (float): Reference temperature in °C, default is 20°C.
+        T (float): Temperature in degrees C.
+        T_ref (float): Reference temperature in degrees C, default is 20
+            degrees C.
 
     Returns:
         float: Relative humidity h_Tref in the concrete pores at temperature T.
@@ -2303,7 +2310,7 @@ def S_fc(T: float, alpha_fc: float) -> float:
     fib Model Code 2020, eq. (14.6-88)
 
     Args:
-        T (float): Temperature in °C.
+        T (float): Temperature in degrees C.
         alpha_fc (float): Alpha coefficient.
 
     Returns:
@@ -2337,14 +2344,14 @@ def alpha_fc(h_Tref: float) -> float:
 
 
 def fctm_T(fctm: float, T: float) -> float:
-    """Calculate the uniaxial tensile strength fctm(T)
-    for concrete at a given temperature.
+    """Calculate the uniaxial tensile strength fctm(T) for concrete at a given
+    temperature.
 
     fib Model Code 2020, eq. (14.6-90)
 
     Args:
-        fctm (float): Uniaxial tensile strength in MPa at T = 20°C.
-        T (float): Temperature in °C.
+        fctm (float): Uniaxial tensile strength in MPa at T = 20 degrees C.
+        T (float): Temperature in degrees C.
 
     Returns:
         float: Uniaxial tensile strength fctm(T) at temperature T in MPa.
@@ -2358,14 +2365,14 @@ def fctm_T(fctm: float, T: float) -> float:
 
 
 def GF_T(GF: float, T: float, concrete_type: Literal['dry', 'mass']) -> float:
-    """Calculate the fracture energy GF(T) for dry
-        concrete at a given temperature.
+    """Calculate the fracture energy GF(T) for dry concrete at a given
+    temperature.
 
     fib Model Code 2020, eq. (14.6-93a)
 
     Args:
-        GF (float): Fracture energy in N/m at T = 20°C.
-        T (float): Temperature in °C.
+        GF (float): Fracture energy in N/m at T = 20 degrees C.
+        T (float): Temperature in degrees C.
         concrete_type (str): Concrete type.
 
     Returns:
@@ -2385,13 +2392,14 @@ def GF_T(GF: float, T: float, concrete_type: Literal['dry', 'mass']) -> float:
 
 
 def fctm_hT_T(fctm_ref: float, D_fct: float, S_fct: float) -> float:
-    """Calculate the uniaxial tensile strength f_ctm(h_T, T) under
-        combined effects of temperature and drying.
+    """Calculate the uniaxial tensile strength f_ctm(h_T, T) under combined
+    effects of temperature and drying.
 
     fib Model Code 2020, eq. (14.6-94)
 
     Args:
-        fctm_ref (float): Uniaxial tensile strength in MPa at Tref = 20°C.
+        fctm_ref (float): Uniaxial tensile strength in MPa at Tref = 20 degrees
+            C.
         D_fct (float): Drying effect parameter.
         S_fct (float): Thermal dilation incompatibility factor.
 
@@ -2415,9 +2423,9 @@ def D_fct(T: float, hT_Tref: float) -> float:
     fib Model Code 2020, eq. (14.6-95)
 
     Args:
-        T (float): Temperature in °C.
-        hT_Tref (float): Relative humidity of the
-            concrete pores at temperature T.
+        T (float): Temperature in degrees C.
+        hT_Tref (float): Relative humidity of the concrete pores at temperature
+            T.
 
     Returns:
         float: Drying effect parameter D_fct.
@@ -2426,7 +2434,12 @@ def D_fct(T: float, hT_Tref: float) -> float:
         ValueError: If input values are not within valid ranges.
     """
     if T < 20 or T > 80:
-        raise ValueError('Temperature T must be in the range 20°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 20 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
     if hT_Tref < 0 or hT_Tref > 1:
         raise ValueError('Relative humidity h_T must be between 0 and 1.')
 
@@ -2439,7 +2452,7 @@ def S_fct(T: float, alpha_fct: float) -> float:
     fib Model Code 2020, eq. (14.6-96)
 
     Args:
-        T (float): Temperature in °C.
+        T (float): Temperature in degrees C.
         alpha_fct (float): Alpha coefficient.
 
     Returns:
@@ -2449,14 +2462,19 @@ def S_fct(T: float, alpha_fct: float) -> float:
         ValueError: If input values are not within valid ranges.
     """
     if T < 20 or T > 80:
-        raise ValueError('Temperature T must be in the range 20°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 20 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     ratio = (T - 20) / 100
     return 0.45 * ratio**2 + alpha_fct * ratio
 
 
 def alpha_fct(hT_Tref: float) -> float:
-    """Calculate the alpha coefficientalpha_fct.
+    """Calculate the alpha coefficient alpha_fct.
 
     fib Model Code 2020, eq. (14.6-97)
 
@@ -2476,14 +2494,14 @@ def alpha_fct(hT_Tref: float) -> float:
 
 
 def E_ci_T(E_ci: float, T: float) -> float:
-    """Calculate the modulus of elasticity E_ci(T)
-        for normal weight concrete at a given temperature.
+    """Calculate the modulus of elasticity E_ci(T) for normal weight concrete
+    at a given temperature.
 
     fib Model Code 2020, eq. (14.6-98)
 
     Args:
-        E_ci (float): Modulus of elasticity in MPa at T = 20°C.
-        T (float): Temperature in °C.
+        E_ci (float): Modulus of elasticity in MPa at T = 20 degrees C.
+        T (float): Temperature in degrees C.
 
     Returns:
         float: Modulus of elasticity E_ci(T) at temperature T in MPa.
@@ -2494,20 +2512,25 @@ def E_ci_T(E_ci: float, T: float) -> float:
     if E_ci <= 0:
         raise ValueError('Modulus of elasticity E_ci must be positive.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     return E_ci * (1.06 - 0.003 * T)
 
 
 def El_ci_T(E_l_ci: float, T: float) -> float:
-    """Calculate the modulus of elasticity E_l_ci(T)
-        for lightweight aggregate concrete at a given temperature.
+    """Calculate the modulus of elasticity E_l_ci(T) for lightweight aggregate
+    concrete at a given temperature.
 
     fib Model Code 2020, eq. (14.6-99)
 
     Args:
-        E_lci (float): Modulus of elasticity in MPa at T = 20°C.
-        T (float): Temperature in °C.
+        E_lci (float): Modulus of elasticity in MPa at T = 20 degrees C.
+        T (float): Temperature in degrees C.
 
     Returns:
         float: Modulus of elasticity E_l_ci(T) at temperature T in MPa.
@@ -2518,20 +2541,25 @@ def El_ci_T(E_l_ci: float, T: float) -> float:
     if E_l_ci <= 0:
         raise ValueError('Modulus of elasticity E_lci must be positive.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     return E_l_ci * (1.04 - 0.002 * T)
 
 
 def E_cm_hT_T(E_cm_ref: float, D_Ec: float, S_Ec: float) -> float:
-    """Calculate the modulus of elasticity E_cm(hT, T)
-        under combined effects of temperature and drying.
+    """Calculate the modulus of elasticity E_cm(hT, T) under combined effects
+    of temperature and drying.
 
     fib Model Code 2020, eq. (14.6-100)
 
     Args:
-        E_cm_ref (float): Modulus of elasticity in MPa at
-            Tref = 20°C at reference storage conditions.
+        E_cm_ref (float): Modulus of elasticity in MPa at Tref = 20 degrees C
+            at reference storage conditions.
         D_Ec (float): Drying effect parameter.
         S_Ec (float): Thermal dilation incompatibility factor.
 
@@ -2553,9 +2581,9 @@ def D_Ec(T: float, hT_Tref: float) -> float:
     fib Model Code 2020, eq. (14.6-101)
 
     Args:
-        T (float): Temperature in °C.
-        hT_Tref (float): Relative humidity of the
-            concrete pores at temperature T.
+        T (float): Temperature in degrees C.
+        hT_Tref (float): Relative humidity of the concrete pores at temperature
+            T.
 
     Returns:
         float: Drying effect parameter D_Ec.
@@ -2564,7 +2592,12 @@ def D_Ec(T: float, hT_Tref: float) -> float:
         ValueError: If input values are not within valid ranges.
     """
     if T < 20 or T > 80:
-        raise ValueError('Temperature T must be in the range 20°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 20 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
     if hT_Tref < 0 or hT_Tref > 1:
         raise ValueError('Relative humidity h_T must be between 0 and 1.')
 
@@ -2580,7 +2613,7 @@ def S_Ec(T: float, alpha_Ec: float) -> float:
     fib Model Code 2020, eq. (14.6-102)
 
     Args:
-        T (float): Temperature in °C.
+        T (float): Temperature in degrees C.
         alpha_Ec (float): Alpha coefficient for elastic modulus.
 
     Returns:
@@ -2590,7 +2623,12 @@ def S_Ec(T: float, alpha_Ec: float) -> float:
         ValueError: If input values are not within valid ranges.
     """
     if T < 20 or T > 80:
-        raise ValueError('Temperature T must be in the range 20°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 20 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     ratio = (T - 20) / 100
     return alpha_Ec * ratio
@@ -2617,120 +2655,146 @@ def alpha_Ec(hT_Tref: float) -> float:
 
 
 def beta_h_T(beta_h: float, T: float) -> float:
-    """Calculate the temperature-dependent coefficient
-        for creep time-development βh,T.
+    """Calculate the temperature-dependent coefficient for creep
+    time-development beta_h,T.
 
     fib Model Code 2020, eqs. (14.6-104) and (14.6-105)
 
     Args:
-        beta_h (float): Coefficient βh according to Eq. (14.6-66c).
-        T (float): Temperature in °C.
+        beta_h (float): Coefficient beta_h according to Eq. (14.6-66c).
+        T (float): Temperature in degrees C.
 
     Returns:
-        float: Temperature-dependent coefficient βh,T.
+        float: Temperature-dependent coefficient beta_h,T.
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if beta_h <= 0:
-        raise ValueError('Coefficient βh must be positive.')
+        raise ValueError('Coefficient beta_h must be positive.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     beta_T = math.exp(1500 / ((273 + T) - 5.12))
     return beta_h * beta_T
 
 
 def phi_bc_T(phi_bc: float, T: float) -> float:
-    """Calculate the temperature-dependent basic creep coefficient φbc,T.
+    """Calculate the temperature-dependent basic creep coefficient phi_bc,T.
 
     fib Model Code 2020, eq. (14.6-106) and (14.6-108)
 
     Args:
-        phi_bc (float): Basic creep coefficient φbc according to Eq. (14.6-59).
-        T (float): Temperature in °C.
+        phi_bc (float): Basic creep coefficient phi_bc according to Eq.
+            (14.6-59).
+        T (float): Temperature in degrees C.
 
     Returns:
-        float: Temperature-dependent basic creep coefficient φbc,T.
+        float: Temperature-dependent basic creep coefficient phi_bc,T.
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if phi_bc <= 0:
-        raise ValueError('Basic creep coefficient φbc must be positive.')
+        raise ValueError('Basic creep coefficient phi_bc must be positive.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     phi_T = math.exp(0.015 * (T - 20))
     return phi_bc * phi_T
 
 
 def phi_dc_T(phi_dc: float, T: float) -> float:
-    """Calculate the temperature-dependent drying creep coefficient φdc,T.
+    """Calculate the temperature-dependent drying creep coefficient phi_dc,T.
 
     fib Model Code 2020, eq. (14.6-107) and (14.6-108)
 
     Args:
-        phi_dc (float): Drying creep coefficient φdc
-            according to Eq. (14.6-62).
-        T (float): Temperature in °C.
+        phi_dc (float): Drying creep coefficient phi_dc according to Eq.
+            (14.6-62).
+        T (float): Temperature in degrees C.
 
     Returns:
-        float: Temperature-dependent drying creep coefficient φdc,T.
+        float: Temperature-dependent drying creep coefficient phi_dc,T.
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if phi_dc <= 0:
-        raise ValueError('Drying creep coefficient φdc must be positive.')
+        raise ValueError('Drying creep coefficient phi_dc must be positive.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     phi_T = math.exp(0.015 * (T - 20))
     return phi_dc * phi_T**1.2
 
 
 def phi_t_t0_T(phi_t_t0: float, T: float) -> float:
-    """Creep coefficient ΔφT,trans for taking into consideration
-        increase in temperature while member is under load.
+    """Creep coefficient delta_phi_T,trans for taking into consideration
+    increase in temperature while member is under load.
 
     fib Model Code 2020, eq. (14.6-109) and (14.6-110)
 
     Args:
-        phi_t_t0 (float): base creep coefficient.
-        T (float): Temperature in °C.
+        phi_t_t0 (float): Base creep coefficient.
+        T (float): Temperature in degrees C.
 
     Returns:
-        float: Transient thermal creep coefficient ΔφT,trans.
+        float: Transient thermal creep coefficient delta_phi_T,trans.
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     delta_phi_T_trans = 0.0004 * (T - 20) ** 2
     return phi_t_t0 + delta_phi_T_trans
 
 
 def alpha_sT(T: float, h: float) -> float:
-    """Calculate the temperature-dependent coefficient
-        for drying shrinkage time development αsT(T).
+    """Calculate the temperature-dependent coefficient for drying shrinkage
+    time development alpha_sT.
 
     fib Model Code 2020, eq. (14.6-111)
 
     Args:
-        T (float): Temperature in °C.
+        T (float): Temperature in degrees C.
         h (float): Notional size parameter.
 
     Returns:
-        float: Temperature-dependent coefficient αsT(T).
+        float: Temperature-dependent coefficient alpha_sT(T).
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
     if h <= 0:
         raise ValueError('Notional size parameter h must be positive.')
 
@@ -2738,38 +2802,38 @@ def alpha_sT(T: float, h: float) -> float:
 
 
 def beta_RH_T(beta_RH: float, beta_sT: float) -> float:
-    """Calculate the temperature-dependent coefficient
-        for drying shrinkage magnitude βRH,T.
+    """Calculate the temperature-dependent coefficient for drying shrinkage
+    magnitude beta_RH,T.
 
     fib Model Code 2020, eq. (14.6-112)
 
     Args:
-        beta_RH (float): Coefficient βRH.
-        beta_sT (float): Coefficient βsT.
+        beta_RH (float): Coefficient beta_RH.
+        beta_sT (float): Coefficient beta_sT.
 
     Returns:
-        float: Temperature-dependent coefficient βRH,T.
+        float: Temperature-dependent coefficient beta_RH,T.
 
     Raises:
         ValueError: If input values are not within valid ranges.
     """
     if beta_RH <= 0 or beta_sT <= 0:
-        raise ValueError('Coefficients βRH and βsT must be positive.')
+        raise ValueError('Coefficients beta_RH and beta_sT must be positive.')
 
     return beta_RH * beta_sT
 
 
 def beta_sT(RH: float, T: float) -> float:
-    """Calculate the temperature-dependent coefficient replacing βRH.
+    """Calculate the temperature-dependent coefficient replacing beta_RH.
 
     fib Model Code 2020, eq. (14.6-113)
 
     Args:
         RH (float): Relative humidity of the ambient environment in %.
-        T (float): Temperature in °C.
+        T (float): Temperature in degrees C.
 
     Returns:
-        float: Temperature-dependent coeSfficient βRH,T.
+        float: Temperature-dependent coeSfficient beta_RH,T.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -2777,13 +2841,18 @@ def beta_sT(RH: float, T: float) -> float:
     if RH < 0 or RH > 100:
         raise ValueError('Relative humidity RH must be between 0 and 100.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     return 1 + (4 / (103 - RH)) * ((T - 20) / 40)
 
 
 def beta_RH(RH: float, RH_T: float) -> float:
-    """Calculate the coefficient βRH,T for relative humidity.
+    """Calculate the coefficient beta_RH,T for relative humidity.
 
     fib Model Code 2020, eq. (14.6-114)
 
@@ -2792,7 +2861,7 @@ def beta_RH(RH: float, RH_T: float) -> float:
         RH_T (float): Relative humidity in % obtained from eq. (14.6-115)
 
     Returns:
-        float: Coefficient βRH.
+        float: Coefficient beta_RH.
 
     Raises:
         ValueError: If input values are not within valid ranges.
@@ -2813,19 +2882,24 @@ def RH_T(fcm: float, T: float) -> float:
     fib Model Code 2020, eq. (14.6-115), (14.6-116) and  (14.6-117)
 
     Args:
-        fcm (float): mean compressive strength of concrete in MPa.
-        T (float): Temperature in °C.
+        fcm (float): Mean compressive strength of concrete in MPa.
+        T (float): Temperature in degrees C.
 
     Returns:
         float: Value of RH_T.
 
     Raise:
-        ValueError: if values are not within a valid range.
+        ValueError: If values are not within a valid range.
     """
     if fcm < 0:
         raise ValueError('fcm cannot be negative.')
     if T < 0 or T > 80:
-        raise ValueError('Temperature T must be in the range 0°C ≤ T ≤ 80°C.')
+        raise ValueError(
+            (
+                'Temperature T must be in the range 0 degrees C ≤ T ≤ 80 '
+                'degrees C.'
+            )
+        )
 
     beta_s1 = min((35 / fcm) ** 0.1, 1)
     beta_s1_T = ((T - 20) / 25) ** 3
