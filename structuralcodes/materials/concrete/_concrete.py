@@ -49,8 +49,8 @@ class Concrete(Material):
 
     @abc.abstractmethod
     def _reset_attributes(self):
-        """Each concrete should define its own _reset_attributes method
-        This is because fck setting, reset the object arguments.
+        """Each concrete should define its own _reset_attributes method. This
+        is because fck setting, reset the object arguments.
         """
 
     @property
@@ -70,12 +70,12 @@ class Concrete(Material):
     ) -> None:
         """Setter for constitutive law.
 
-        Args:
-        consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw object
-                for concrete or  a string defining a valid constitutive law
-                type for concrete.
-                (valid options for string: 'elastic', 'parabolarectangle',
-                'bilinearcompression', 'sargin', 'popovics').
+        Arguments:
+            consitutive_law (ConstitutiveLaw | str): A valid ConstitutiveLaw
+                object for concrete or a string defining a valid constitutive
+                law type for concrete. (valid options for string: 'elastic',
+                'parabolarectangle', 'bilinearcompression', 'sargin',
+                'popovics').
         """
         if constitutive_law is None:
             raise ValueError(

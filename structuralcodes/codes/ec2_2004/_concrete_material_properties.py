@@ -39,62 +39,62 @@ def fctm(fck: float) -> float:
     return mc2010.fctm(fck=abs(fck))
 
 
-def fctk_5(_fctm: float) -> float:
+def fctk_5(fctm: float) -> float:
     """The 5% fractile of the tensile strength of concrete.
 
     EN 1992-1-1: 2004, Table 3.1.
 
     Args:
-        _fctm (float): The mean tensile strength of concrete in MPa.
+        fctm (float): The mean tensile strength of concrete in MPa.
 
     Returns:
         float: The 5% fractile of the tensile strength in MPa.
     """
-    return mc2010.fctkmin(_fctm=abs(_fctm))
+    return mc2010.fctkmin(fctm=abs(fctm))
 
 
-def fctk_95(_fctm: float) -> float:
+def fctk_95(fctm: float) -> float:
     """The 95% fractile of the tensile strength of concrete.
 
     EN 1992-1-1: 2004, Table 3.1.
 
     Args:
-        _fctm (float): The mean tensile strength of concrete in MPa.
+        fctm (float): The mean tensile strength of concrete in MPa.
 
     Returns:
         float: The 95% fractile of the tensile strength in MPa.
     """
-    return mc2010.fctkmax(_fctm=abs(_fctm))
+    return mc2010.fctkmax(fctm=abs(fctm))
 
 
-def Ecm(_fcm: float) -> float:
+def Ecm(fcm: float) -> float:
     """The secant modulus of concrete.
 
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        _fcm (float): The mean compressive strength of concrete in MPa.
+        fcm (float): The mean compressive strength of concrete in MPa.
 
     Returns:
         float: The secant modulus of concrete in MPa.
     """
-    return 22000.0 * math.pow(abs(_fcm) / 10, 0.3)
+    return 22000.0 * math.pow(abs(fcm) / 10, 0.3)
 
 
-def eps_c1(_fcm: float) -> float:
+def eps_c1(fcm: float) -> float:
     """The strain at maximum compressive stress of concrete (fcm) for the
     Sargin constitutive law.
 
     EN 1992-1-1:2004, Table 3.1.
 
     Args:
-        _fcm (float): The mean compressive strength of concrete in MPa.
+        fcm (float): The mean compressive strength of concrete in MPa.
 
     Returns:
         float: The strain at maximum compressive stress, absolute value, no
         unit.
     """
-    return min(0.7 * math.pow(abs(_fcm), 0.31), 2.8) / 1000
+    return min(0.7 * math.pow(abs(fcm), 0.31), 2.8) / 1000
 
 
 def eps_cu1(fck: float) -> float:
@@ -118,9 +118,9 @@ def eps_cu1(fck: float) -> float:
 
 
 def k_sargin(
-    _Ecm: float,
-    _fcm: float,
-    _eps_c1: float,
+    Ecm: float,
+    fcm: float,
+    eps_c1: float,
 ) -> float:
     """Computation of k parameter for Sargin constitutive Law.
 
@@ -131,7 +131,7 @@ def k_sargin(
         fcm (float): the mean compressive strength in MPa.
         eps_c1 (float): the strain corresponding to peak stress.
     """
-    return 1.05 * _Ecm * abs(_eps_c1) / _fcm
+    return 1.05 * Ecm * abs(eps_c1) / fcm
 
 
 def eps_c2(fck: float) -> float:
