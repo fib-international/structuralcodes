@@ -35,7 +35,7 @@ polygon = Polygon(
     ]
 )  # We leverage shapely to create geometries
 geometry = SurfaceGeometry(
-    polygon, concrete
+    poly=polygon, material=concrete
 )  # A SurfaceGeometry is a shapely Polygon with an assigned material
 
 # Add reinforcement
