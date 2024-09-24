@@ -1,5 +1,7 @@
 """Abstract base classes."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import abc
 import typing as t
 import warnings
@@ -85,13 +87,13 @@ class ConstitutiveLaw(abc.ABC):
         cls.constitutive_law_counter += 1
 
     @abc.abstractmethod
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Each constitutive law should provide a method to return the
         stress given the strain level.
         """
 
     @abc.abstractmethod
-    def get_tangent(self, eps: float) -> float:
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level.
         """
@@ -137,8 +139,7 @@ class ConstitutiveLaw(abc.ABC):
             return None
 
         eps_max, eps_min = self.get_ultimate_strain()
-        if eps_max > 1:
-            eps_max = 1
+        eps_max = min(eps_max, 1)
         # Analise positive branch
         eps = np.linspace(0, eps_max, 10000)
         sig = self.get_stress(eps)

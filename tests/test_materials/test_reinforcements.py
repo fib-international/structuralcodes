@@ -6,6 +6,7 @@ import pytest
 
 from structuralcodes.materials.constitutive_laws import (
     Elastic,
+    ElasticPlastic,
     ParabolaRectangle,
 )
 from structuralcodes.materials.reinforcement import (
@@ -63,6 +64,36 @@ def test_constitutive_law_setter_valid():
     assert isinstance(steel.constitutive_law, Elastic)
 
 
+def test_constitutive_law_setter_factory():
+    """Test the constitutive law setter, valid law."""
+    # Arrange
+    steel = ReinforcementEC2_2004(
+        fyk=500, Es=200000, density=7850, ftk=550, epsuk=0.07
+    )
+
+    # Act and assert
+    steel.constitutive_law = 'elastic'
+    assert isinstance(steel.constitutive_law, Elastic)
+    assert math.isclose(steel.constitutive_law._E, steel.Es)
+
+    # Act and assert
+    steel.constitutive_law = 'elasticplastic'
+    assert isinstance(steel.constitutive_law, ElasticPlastic)
+    assert math.isclose(steel.constitutive_law._E, steel.Es)
+    assert math.isclose(steel.constitutive_law._fy, steel.fyd())
+    assert math.isclose(steel.constitutive_law._eps_su, steel.epsud())
+    assert math.isclose(steel.constitutive_law._eps_sy, steel.epsyd)
+
+    # Act and assert
+    steel.constitutive_law = 'elasticperfectlyplastic'
+    assert isinstance(steel.constitutive_law, ElasticPlastic)
+    assert math.isclose(steel.constitutive_law._E, steel.Es)
+    assert math.isclose(steel.constitutive_law._fy, steel.fyd())
+    assert math.isclose(steel.constitutive_law._Eh, 0.0)
+    assert math.isclose(steel.constitutive_law._eps_su, steel.epsud())
+    assert math.isclose(steel.constitutive_law._eps_sy, steel.epsyd)
+
+
 def test_constitutive_law_setter_invalid():
     """Test the constitutive law setter, invalid law."""
     # Arrange
@@ -74,3 +105,4 @@ def test_constitutive_law_setter_invalid():
     # Act and assert
     with pytest.raises(ValueError):
         steel.constitutive_law = constitutive_law
+        steel.constitutive_law = 'parabolarectangle'

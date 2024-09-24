@@ -4,7 +4,10 @@ import abc
 import typing as t
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
-from structuralcodes.materials.constitutive_laws import ElasticPlastic
+from structuralcodes.materials.constitutive_laws import (
+    ElasticPlastic,
+    create_constitutive_law,
+)
 
 
 class Reinforcement(Material):
@@ -86,19 +89,56 @@ class Reinforcement(Material):
         self._epsuk = abs(epsuk)
 
     @property
+    def epsyk(self) -> float:
+        """Returns characteristic yield strain epsyk."""
+        return self.fyk / self.Es
+
+    @property
     def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the constitutive law object."""
         return self._constitutive_law
 
     @constitutive_law.setter
-    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
-        """Setter for constitutive law."""
-        if 'rebars' in constitutive_law.__materials__:
-            self._constitutive_law = constitutive_law
+    def constitutive_law(
+        self,
+        constitutive_law: t.Union[
+            ConstitutiveLaw,
+            t.Literal[
+                'elastic',
+                'elasticperfecltyplastic',
+                'elasticplastic',
+            ],
+        ],
+    ) -> None:
+        """Setter for constitutive law.
+
+        Arguments:
+            consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw
+                object for reinforcement or  a string defining a valid
+                constitutive law type for reinforcement. (valid options:
+                'elastic', 'elasticperfectlyplastic', 'elasticplastic').
+        """
+        if constitutive_law is None:
+            raise ValueError(
+                'At least a constitutive law or a string defining the '
+                'constitutive law must be provided.'
+            )
+        if isinstance(constitutive_law, str):
+            constitutive_law = create_constitutive_law(
+                constitutive_law_name=constitutive_law, material=self
+            )
+
+        if isinstance(constitutive_law, ConstitutiveLaw):
+            if 'rebars' in constitutive_law.__materials__:
+                self._constitutive_law = constitutive_law
+            else:
+                raise ValueError(
+                    'The constitutive law selected is not suitable '
+                    'for being used with a Reinforcement material.'
+                )
         else:
             raise ValueError(
-                'The constitutive law selected is not suitable '
-                'for being used with a reinforcement material.'
+                f'The constitutive law {constitutive_law} could not be created'
             )
 
     @property
@@ -115,7 +155,18 @@ class Reinforcement(Material):
         """
 
     @abc.abstractmethod
+    def ftd(self) -> float:
+        """Each reinforcement should implement its own method for calculating
+        the design ultimate strength.
+        """
+
+    @abc.abstractmethod
     def epsud(self) -> float:
         """Each reinforcement should implement its own method for calculating
-        the design yield strain.
+        the design ultimate strain.
         """
+
+    @property
+    def epsyd(self) -> float:
+        """Return the design yield strain."""
+        return self.fyd() / self.Es
