@@ -333,9 +333,9 @@ def test_k_getter(fck):
     """Test k getter."""
     c = ConcreteEC2_2004(fck=fck)
     expected = ec2_2004.k_sargin(
-        _Ecm=ec2_2004.Ecm(ec2_2004.fcm(fck=fck)),
-        _fcm=ec2_2004.fcm(fck=fck),
-        _eps_c1=ec2_2004.eps_c1(ec2_2004.fcm(fck=fck)),
+        Ecm=ec2_2004.Ecm(ec2_2004.fcm(fck=fck)),
+        fcm=ec2_2004.fcm(fck=fck),
+        eps_c1=ec2_2004.eps_c1(ec2_2004.fcm(fck=fck)),
     )
     assert math.isclose(c.k_sargin, expected, rel_tol=1e-6)
 

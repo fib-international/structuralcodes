@@ -7,6 +7,7 @@ from .section_integrators import (
     MarinIntegrator,
     SectionIntegrator,
     integrator_factory,
+    marin_integration,
 )
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     'FiberIntegrator',
     'MarinIntegrator',
     'integrator_factory',
+    'marin_integration',
 ]
