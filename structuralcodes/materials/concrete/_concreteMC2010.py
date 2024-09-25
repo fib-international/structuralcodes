@@ -41,11 +41,11 @@ class ConcreteMC2010(Concrete):
     ):
         """Initializes a new instance of Concrete for MC 2010.
 
-        Args:
+        Arguments:
             fck (float): Characteristic strength in MPa if concrete is not
                 existing.
 
-        Keyword Args:
+        Keyword Arguments:
             name (Optional(str)): A descriptive name for concrete.
             density (float): Density of material in kg/m3 (default: 2400).
             gamma_c (Optional(float)): The partial factor for concrete.
@@ -97,11 +97,11 @@ class ConcreteMC2010(Concrete):
     def fcm(self, value: float):
         """Sets a user defined value for fcm.
 
-        Args:
-            value (float): the value of fcm in MPa
+        Arguments:
+            value (float): The value of fcm in MPa.
 
         Raises:
-            ValueError: if value is lower than fck
+            ValueError: If value is lower than fck.
         """
         if abs(value) <= self._fck:
             raise ValueError(
@@ -122,7 +122,7 @@ class ConcreteMC2010(Concrete):
 
         It is assumed a normal concrete with quartzite aggregates (alfa_e = 1)
         """
-        self._Eci = self._Eci or mc2010.E_ci(self.fcm)
+        self._Eci = self._Eci or mc2010.Eci(self.fcm)
         return self._Eci
 
     @Eci.setter
@@ -130,8 +130,8 @@ class ConcreteMC2010(Concrete):
         """Sets a user defined value for modulus of elasticity at the concrete
         age of 28 days, Eci.
 
-        Args:
-            value (float): the value of Eci in MPa
+        Arguments:
+            value (float): The value of Eci in MPa.
         """
         if value < 1e4 or value > 1e5:
             warnings.warn(
@@ -145,7 +145,7 @@ class ConcreteMC2010(Concrete):
         """Returns fctm in MPa.
 
         Returns:
-            float: The mean tensile strength in MPa
+            float: The mean tensile strength in MPa.
         """
         self._fctm = self._fctm or mc2010.fctm(self._fck)
         return self._fctm
@@ -154,8 +154,8 @@ class ConcreteMC2010(Concrete):
     def fctm(self, value: float):
         """Sets a user defined value for fctm.
 
-        Args:
-            value (float): the value of fctm in MPa
+        Arguments:
+            value (float): The value of fctm in MPa.
         """
         if value > 0.5 * self._fck:
             warnings.warn(
@@ -168,7 +168,7 @@ class ConcreteMC2010(Concrete):
         """Returns fctkmin in MPa.
 
         Returns:
-            float: The lower bound tensile strength in MPa
+            float: The lower bound tensile strength in MPa.
         """
         self._fctkmin = self._fctkmin or mc2010.fctkmin(self.fctm)
         return self._fctkmin
@@ -177,8 +177,8 @@ class ConcreteMC2010(Concrete):
     def fctkmin(self, value: float):
         """Sets a user defined value for fctkmin.
 
-        Args:
-            value (float): the value of fctkmin in MPa
+        Arguments:
+            value (float): The value of fctkmin in MPa.
         """
         self._fctkmin = abs(value)
 
@@ -187,7 +187,7 @@ class ConcreteMC2010(Concrete):
         """Returns fctkmax in MPa.
 
         Returns:
-            float: The upper bound tensile strength in MPa
+            float: The upper bound tensile strength in MPa.
         """
         self._fctkmax = self._fctkmax or mc2010.fctkmax(self.fctm)
         return self._fctkmax
@@ -196,8 +196,8 @@ class ConcreteMC2010(Concrete):
     def fctkmax(self, value: float):
         """Sets a user defined value for fctkmax.
 
-        Args:
-            value (float): the value of fctkmax in MPa
+        Arguments:
+            value (float): The value of fctkmax in MPa.
         """
         self._fctkmax = abs(value)
 
@@ -206,7 +206,7 @@ class ConcreteMC2010(Concrete):
         """Fracture energy of concrete.
 
         Returns:
-            float: The fracture energy in N/m
+            float: The fracture energy in N/m.
         """
         self._Gf = self._Gf or mc2010.Gf(self._fck)
         return self._Gf
@@ -215,8 +215,8 @@ class ConcreteMC2010(Concrete):
     def Gf(self, value: float):
         """Sets a user defined value for fracture energy Gf.
 
-        Args:
-            value (float): the value of Gf in N/m
+        Arguments:
+            value (float): The value of Gf in N/m.
         """
         self._Gf = abs(value)
 
@@ -229,7 +229,7 @@ class ConcreteMC2010(Concrete):
         """Return the design compressive strength in MPa.
 
         Returns:
-            float: The design compressive strength of concrete in MPa
+            float: The design compressive strength of concrete in MPa.
         """
         # This method should perhaps become a property, but is left as a method
         # for now, to be consistent with other concretes.
@@ -246,22 +246,22 @@ class ConcreteMC2010(Concrete):
 
     @property
     def eps_c1(self) -> float:
-        """Returns the strain at maximum compressive strength
-            of concrete (fcm) for the Sargin constitutive law.
+        """Returns the strain at maximum compressive strength of concrete (fcm)
+        for the Sargin constitutive law.
 
         Returns:
-            float: the strain at maximum compressive strength of concrete
+            float: The strain at maximum compressive strength of concrete.
         """
         self._eps_c1 = self._eps_c1 or mc2010.eps_c1(self._fck)
         return self._eps_c1
 
     @eps_c1.setter
     def eps_c1(self, value: float):
-        """Sets a user defined value for strain at peak strenght
-        for Sargin constitutive law.
+        """Sets a user defined value for strain at peak strenght for Sargin
+        constitutive law.
 
-        Args:
-            value (float): the new value for eps_c1, no units
+        Arguments:
+            value (float): The new value for eps_c1, no units.
         """
         if abs(value) >= 0.1:
             warnings.warn(
@@ -275,7 +275,7 @@ class ConcreteMC2010(Concrete):
         """Returns the strain at concrete failure of concrete.
 
         Returns:
-            float: the maximum strength at failure of concrete
+            float: The maximum strength at failure of concrete.
         """
         self._eps_cu1 = self._eps_cu1 or mc2010.eps_cu1(self._fck)
         return self._eps_cu1
@@ -284,8 +284,8 @@ class ConcreteMC2010(Concrete):
     def eps_cu1(self, value: float):
         """Sets the nominal ultimate strain for Sargin constitutive law.
 
-        Args:
-            value (float): the new value for eps_cu1, no units
+        Arguments:
+            value (float): The new value for eps_cu1, no units.
         """
         if abs(value) >= 0.1:
             warnings.warn(
@@ -299,7 +299,7 @@ class ConcreteMC2010(Concrete):
         """Returns the coefficient for Sargin constitutive law.
 
         Returns:
-        float: the plastic coefficient for Sargin law.
+            float: The plastic coefficient for Sargin law.
         """
         self._k_sargin = self._k_sargin or mc2010.k_sargin(self._fck)
         return self._k_sargin
@@ -308,11 +308,11 @@ class ConcreteMC2010(Concrete):
     def k_sargin(self, value: float):
         """Sets the the coefficient for Sargin constitutive law.
 
-        Args:
-            value (float): the new value for k, no units
+        Arguments:
+            value (float): The new value for k, no units.
 
         Raises:
-            ValueError if value < 0
+            ValueError: If value < 0.
         """
         if value < 0:
             raise ValueError(f'n should be a positive value ({value} given)')
@@ -320,22 +320,22 @@ class ConcreteMC2010(Concrete):
 
     @property
     def eps_c2(self) -> float:
-        """Returns the strain at maximum compressive strength
-            of concrete (fcd) for the Parabola-rectangle constitutive law.
+        """Returns the strain at maximum compressive strength of concrete (fcd)
+        for the Parabola-rectangle constitutive law.
 
         Returns:
-            float: the strain at maximum compressive strength of concrete
+            float: The strain at maximum compressive strength of concrete.
         """
         self._eps_c2 = self._eps_c2 or mc2010.eps_c2(self.fck)
         return self._eps_c2
 
     @eps_c2.setter
     def eps_c2(self, value: float):
-        """Sets the strain at maximum compressive strength
-            of concrete (fcd) for the Parabola-rectangle constitutive law.
+        """Sets the strain at maximum compressive strength of concrete (fcd)
+        for the Parabola-rectangle constitutive law.
 
-        Args:
-            value (float): the new value for eps_c2, no units
+        Arguments:
+            value (float): The new value for eps_c2, no units.
         """
         if abs(value) >= 0.1:
             warnings.warn(
@@ -347,10 +347,10 @@ class ConcreteMC2010(Concrete):
     @property
     def eps_cu2(self) -> float:
         """Returns the strain at concrete failure of concrete for the
-            Parabola-rectangle constitutive law.
+        Parabola-rectangle constitutive law.
 
         Returns:
-            float: the maximum strain at failure of concrete
+            float: The maximum strain at failure of concrete.
         """
         self._eps_cu2 = self._eps_cu2 or mc2010.eps_cu2(self.fck)
         return self._eps_cu2
@@ -358,10 +358,10 @@ class ConcreteMC2010(Concrete):
     @eps_cu2.setter
     def eps_cu2(self, value: float):
         """Sets the strain at concrete failure of concrete for the
-            Parabola-rectangle constitutive law.
+        Parabola-rectangle constitutive law.
 
-        Args:
-            value (float): the new value for eps_cu2, no units
+        Arguments:
+            value (float): The new value for eps_cu2, no units.
         """
         if abs(value) >= 0.1:
             warnings.warn(
@@ -375,7 +375,7 @@ class ConcreteMC2010(Concrete):
         """Returns the coefficient for Parabola-rectangle constitutive law.
 
         Returns:
-        float: the exponent for Parabola-recangle law.
+            float: The exponent for Parabola-recangle law.
         """
         self._n_parabolic_rectangular = (
             self._n_parabolic_rectangular
@@ -387,11 +387,11 @@ class ConcreteMC2010(Concrete):
     def n_parabolic_rectangular(self, value: float):
         """Sets the coefficient for Parabola-rectangle constitutive law.
 
-        Args:
-            value (float): the new value for n, no units
+        Arguments:
+            value (float): The new value for n, no units.
 
         Raises:
-            ValueError if value < 0
+            ValueError: If value < 0.
         """
         if value < 0:
             raise ValueError(f'n should be a positive value ({value} given)')
@@ -404,22 +404,22 @@ class ConcreteMC2010(Concrete):
 
     @property
     def eps_c3(self) -> float:
-        """Returns the strain at maximum compressive strength
-            of concrete (fcd) for the Bi-linear constitutive law.
+        """Returns the strain at maximum compressive strength of concrete (fcd)
+        for the Bi-linear constitutive law.
 
         Returns:
-            float: the strain at maximum compressive strength of concrete
+            float: The strain at maximum compressive strength of concrete.
         """
         self._eps_c3 = self._eps_c3 or mc2010.eps_c3(self.fck)
         return self._eps_c3
 
     @eps_c3.setter
     def eps_c3(self, value: float):
-        """Sets the strain at maximum compressive strength
-            of concrete (fcd) for the Bi-linear constitutive law.
+        """Sets the strain at maximum compressive strength of concrete (fcd)
+        for the Bi-linear constitutive law.
 
-        Args:
-            value (float): the new value for eps_c3, no units
+        Arguments:
+            value (float): The new value for eps_c3, no units.
         """
         if abs(value) >= 0.1:
             warnings.warn(
@@ -430,22 +430,22 @@ class ConcreteMC2010(Concrete):
 
     @property
     def eps_cu3(self) -> float:
-        """Returns the strain at concrete failure of concrete for the
-            Bi-linear constitutive law.
+        """Returns the strain at concrete failure of concrete for the Bi-linear
+        constitutive law.
 
         Returns:
-            float: the maximum strain at failure of concrete
+            float: The maximum strain at failure of concrete.
         """
         self._eps_cu3 = self._eps_cu3 or mc2010.eps_cu3(self.fck)
         return self._eps_cu3
 
     @eps_cu3.setter
     def eps_cu3(self, value: float):
-        """Sets the strain at concrete failure of concrete for the
-            Bi-linear constitutive law.
+        """Sets the strain at concrete failure of concrete for the Bi-linear
+        constitutive law.
 
-        Args:
-            value (float): the new value for eps_cu3, no units
+        Arguments:
+            value (float): The new value for eps_cu3, no units.
         """
         if abs(value) >= 0.1:
             warnings.warn(

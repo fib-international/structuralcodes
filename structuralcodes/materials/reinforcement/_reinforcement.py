@@ -112,12 +112,11 @@ class Reinforcement(Material):
     ) -> None:
         """Setter for constitutive law.
 
-        Args:
-        consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw object
-                for concrete or  a string defining a valid constitutive law
-                type for concrete.
-                (valid options: 'elastic', 'elasticperfectlyplastic',
-                'elasticplastic').
+        Arguments:
+            consitutive_law (ConstitutiveLaw | str): a valid ConstitutiveLaw
+                object for reinforcement or  a string defining a valid
+                constitutive law type for reinforcement. (valid options:
+                'elastic', 'elasticperfectlyplastic', 'elasticplastic').
         """
         if constitutive_law is None:
             raise ValueError(
