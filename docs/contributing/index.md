@@ -1,9 +1,12 @@
 (contributing)=
 # Contributing
 
-[![Build](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/format.json)](https://github.com/charliermarsh/ruff)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/charliermarsh/ruff)
+
+[![Tests](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
+[![Publish](https://github.com/fib-international/structuralcodes/actions/workflows/create-release.yml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/create-release.yml)
+[![Docs](https://github.com/fib-international/structuralcodes/actions/workflows/sphinx.yml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/sphinx.yml)
 
 ## General
 
