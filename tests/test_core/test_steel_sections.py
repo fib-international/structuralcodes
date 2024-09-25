@@ -252,7 +252,7 @@ def test_section_get_polygon(cls, name):
     steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
 
     # Create geometry
-    geo = CompoundGeometry([SurfaceGeometry(cls.get_polygon(name), steel)])
+    geo = SurfaceGeometry(cls.get_polygon(name), steel)
     sec = GenericSection(geo)
 
     # Compute expected values

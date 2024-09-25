@@ -23,7 +23,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
     ):
         """Initializes a new instance of Reinforcement for EC2 2004.
 
-        Args:
+        Arguments:
             fyk (float): Characteristic yield strength in MPa.
             Es (float): The Young's modulus in MPa.
             ftk (float): Characteristic ultimate strength in MPa.
@@ -32,9 +32,9 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             gamma_s (Optional(float)): The partial factor for reinforcement.
                 Default value is 1.15.
 
-        Keyword Args:
+        Keyword Arguments:
             name (str): A descriptive name for the reinforcement.
-            desnsity (float): Density of material in kg/m3 (default: 7850).
+            density (float): Density of material in kg/m3 (default: 7850).
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
