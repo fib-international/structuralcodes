@@ -7,8 +7,8 @@ from scipy.optimize import newton
 
 
 def wlim_rfc(exposure_class: Literal['X0', 'XC', 'XD', 'XS']) -> float:
-    """Calculate the crack width limit
-        for regular reinforced concrete (RC) based on the exposure class.
+    """Calculate the crack width limit for regular reinforced concrete (RC)
+    based on the exposure class.
 
     fib Model Code 2020, Table (30.5-1)
 
@@ -31,8 +31,8 @@ def wlim_prestressed(
     exposure_class: Literal['X0', 'XC', 'XD', 'XS'],
     protection_level: Literal['PL1', 'PL2', 'PL3'],
 ) -> float:
-    """Calculate the crack width limit (wlim) for
-        prestressed concrete based on the exposure class.
+    """Calculate the crack width limit (wlim) forprestressed concrete based on
+    the exposure class.
 
     fib Model Code 2020, eq. (30.5-1)
 
@@ -44,8 +44,8 @@ def wlim_prestressed(
         float: The crack width limit en mm.
 
     Raises:
-        ValueError: If exposure_class is invalid or
-            required parameters are not provided.
+        ValueError: If exposure_class is invalid or required parameters are not
+            provided.
     """
     if protection_level in ('PL2', 'PL3'):
         if exposure_class == 'X0':
@@ -92,8 +92,8 @@ def Nr_crack(Ac: float, fctm: float, alpha_e: float, rho_s: float) -> float:
     Args:
         Ac (float): Area of the cross-section in mm2.
         fctm (float): Mean tensile strength of concrete in MPa.
-        alpha_e (float): Coefficient that considers the difference
-            between the modulus of elasticity of steel and concrete.
+        alpha_e (float): Coefficient that considers the ratio between the
+            modulus of elasticity of steel and concrete.
         rho_s (float): Reinforcement ratio (As/Ac).
 
     Returns:
@@ -121,8 +121,8 @@ def eps_crack(
 
     Args:
         Es (float): Modulus of elasticity of steel in MPa.
-        beta_TS (float): coefficient to assess the mean strain
-            depending on the type of loding.
+        beta_TS (float): Coefficient to assess the mean strain depending on the
+            type of loding.
         rho_s (float): Reinforcement ratio (As/Ac).
         f_ctm (float): Mean tensile strength of concrete in MPa.
 
@@ -139,8 +139,8 @@ def eps_crack(
 
 
 def k1_r(h: float, d: float, x: float) -> float:
-    """Calculate the factor k1/r which accounts for the
-        increase of crack width with cover due to curvature in bending.
+    """Calculate the factor k1/r which accounts for the increase of crack width
+    with cover due to curvature in bending.
 
     fib Model Code 2020, eq. (30.5-4)
 
@@ -159,8 +159,8 @@ def k1_r(h: float, d: float, x: float) -> float:
 
 
 def wcal(
-    _k1_r: float,
-    _sr_max: float,
+    k1_r: float,
+    sr_max: float,
     eps_sm_eps_cm: float,
 ) -> float:
     """Calculate the design (or calculated) crack width wcal.
@@ -168,7 +168,7 @@ def wcal(
     fib Model Code 2020, eq. (30.5-3)
 
     Args:
-        _k1_r (float): Factor accounting for curvature in bending.
+        k1_r (float): Factor accounting for curvature in bending.
         sr_max (float): Maximum crack spacing in mm.
         eps_sm_eps_cm (float): relavive mean strain.
 
@@ -178,23 +178,23 @@ def wcal(
     Raises:
         ValueError: If any input is negative.
     """
-    if _k1_r < 0 or _sr_max < 0 or eps_sm_eps_cm < 0:
+    if k1_r < 0 or sr_max < 0 or eps_sm_eps_cm < 0:
         raise ValueError('All input values must be non-negative.')
 
-    return _k1_r * _sr_max * eps_sm_eps_cm
+    return k1_r * sr_max * eps_sm_eps_cm
 
 
 def kfl(h: float, xg: float, hc_ef: float) -> float:
-    """Calculate the factor kfl which accounts
-        for stress distributions before cracking.
+    """Calculate the factor kfl which accounts for stress distributions before
+    cracking.
 
     fib Model Code 2020, eq. (30.5-6)
 
     Args:
         h (float): Height of the section in mm.
         xg (float): Depth of the neutral axis before cracking in mm.
-        hc_ef (float): Effective height according to
-            the relevant section in mm.
+        hc_ef (float): Effective height according to the relevant section in
+            mm.
 
     Returns:
         float: The factor kfl.
@@ -224,19 +224,19 @@ def sr_max(
     fib Model Code 2020, eq. (30.5-5)
 
     Args:
-        cracking_stage (str): Cracking stage, either
-            'stabilized' or 'formation'.
-        c (float): Maximum of the vertical and horizontal
-            clear concrete covers of the superficial bar in mm.
-        kfl (float): Factor to account for stress
-            distributions before cracking.
+        cracking_stage (str): Cracking stage, either 'stabilized' or
+            'formation'.
+        c (float): Maximum of the vertical and horizontal clear concrete
+            covers of the superficial bar in mm.
+        kfl (float): Factor to account for stress distributions before
+            cracking.
         tau_bms (float): Mean bond stress in MPa.
         fctm (float): Concrete tensile stress in MPa.
         rho_s_eff (float): Effective reinforcement ratio.
         casting_condition (str): Casting condition, either 'good' or 'poor'.
-        kc (float): Empirical parameter to quantify
-            the influence of the concrete cover. Defaults to 1.50.
-        k_phi_rho (float): Parameter quantifying the influence of bond τbms.
+        kc (float): Empirical parameter to quantify the influence of the
+            concrete cover. Defaults to 1.50.
+        k_phi_rho (float): Parameter quantifying the influence of bond tau_bms.
             Defaults to 0.25.
 
     Returns:
@@ -272,8 +272,8 @@ def Ac_ef_bar(rx: float, ry: float, phi: float, h: float, x: float) -> float:
         x (float): Depth of the neutral axis in mm.
 
     Returns:
-        float: The effective area of concrete
-            in tension around a single bar (Ac,ef,bar) in mm2.
+        float: The effective area of concrete in tension around a single bar
+        (Ac,ef,bar) in mm2.
 
     Raises:
         ValueError: If any input is negative.
@@ -297,8 +297,8 @@ def Ac_ef_group(
     sy: float,
     b: float,
 ) -> float:
-    """Calculate the effective area of concrete
-        in tension around a group of bars.
+    """Calculate the effective area of concrete in tension around a group of
+    bars.
 
     fib Model Code 2020, eq. (30.5-10)
 
@@ -309,13 +309,13 @@ def Ac_ef_group(
         h (float): Height of the section in mm.
         x (float): Depth of the neutral axis in mm.
         nl (int): Number of reinforcement layers.
-        sy (float): Spacing in the y direction
-            between bars in the tensile zone in mm.
+        sy (float): Spacing in the y direction between bars in the tensile zone
+            in mm.
         b (float): Width of the section in mm.
 
     Returns:
-        float: The effective area of concrete in
-            tension around a group of bars (Ac,ef,group) in mm2.
+        float: The effective area of concrete in tension around a group of bars
+        (Ac,ef,group) in mm2.
 
     Raises:
         ValueError: If any input is negative.
@@ -333,17 +333,17 @@ def Ac_ef_group(
 
 
 def rho_s_ef(As: float, Ac_ef: float) -> float:
-    """Calculate the effective reinforcement ratio (ρs,ef).
+    """Calculate the effective reinforcement ratio (rho_s,ef).
 
     fib Model Code 2020, eq. (30.5-8)
 
     Args:
         As (float): Total area of the bars in mm.
-        Ac_ef (float): Effective area of concrete in tension
-            around the bars in mm2.
+        Ac_ef (float): Effective area of concrete in tension around the bars in
+            mm2.
 
     Returns:
-        float: The effective reinforcement ratio (ρs,ef).
+        float: The effective reinforcement ratio (rho_s,ef).
 
     Raises:
         ValueError: If any input is negative.
@@ -362,8 +362,8 @@ def sr_max_frc(
     fib Model Code 2020, eq. (30.5-##)
 
     Args:
-        cracking_stage (str): Cracking stage, either
-            'stabilized' or 'formation'.
+        cracking_stage (str): Cracking stage, either 'stabilized' or
+            'formation'.
 
     """
     if srm < 0:
@@ -377,14 +377,14 @@ def eps_sm_eps_cm(
     sigma_s: float, sigma_sr_ef: float, Es: float, beta_TS: float
 ) -> float:
     """Calculate the relative mean strain for an element subjected to direct
-        loads or imposed strains where end restraint dominates.
+    loads or imposed strains where end restraint dominates.
 
     fib Model Code 2020, eq. (30.5-11)
 
     Args:
         sigma_s (float): Steel stress in the crack in MPa.
-        sigma_sr_ef (float): Steel stress in a crack in
-            the crack formation stage in MPa.
+        sigma_sr_ef (float): Steel stress in a crack in the crack formation
+            stage in MPa.
         Es (float): Modulus of elasticity of steel in MPa.
         beta_TS (float): Empirical coefficient from Table 30.5-2.
 
@@ -414,15 +414,15 @@ def eps_sm_eps_cm(
 def eps_sm_eps_cm_restrained(
     Rax: float, eps_free: float, beta_TS: float, fct_eff: float, Ec: float
 ) -> float:
-    """Calculate the relative mean strain for an element
-        subjected to restrained imposed strains and restrained at the edges.
+    """Calculate the relative mean strain for an element subjected to
+    restrained imposed strains and restrained at the edges.
 
     fib Model Code 2020, eq. (30.5-12)
 
     Args:
         Rax (float): Restraint factor.
-        epsilon_free (float): Imposed strain which
-            develops after the construction stage.
+        epsilon_free (float): Imposed strain which develops after the
+            construction stage.
         beta_TS (float): Empirical coefficient from Table 30.5-2.
         fct_eff (float): Effective tensile strength of concrete in MPa.
         Ec (float): Modulus of elasticity of concrete in MPa.
@@ -480,8 +480,8 @@ def Rax(eps_restr: float, eps_imp: float) -> float:
 
     Args:
         eps_restr (float): Strain which develops in the restrained element.
-        eps_imp (float): Imposed strain
-            (i.e., unrestrained shrinkage or temperature strain).
+        eps_imp (float): Imposed strain (i.e., unrestrained shrinkage or
+            temperature strain).
 
     Returns:
         float: Restraint factor.
@@ -504,19 +504,19 @@ def tau_bms(
     load_type: Literal['short-term', 'long-term'],
     stage: Literal['crack_formation', 'stabilized_cracking'],
 ) -> float:
-    """Calculate the bond stress τbms for deformed
-        reinforcing bars based on the load type and stage.
+    """Calculate the bond stress tau_bms for deformed reinforcing bars based on
+    the load type and stage.
 
     fib Model Code 2020, Table 30.5-2
 
     Args:
         fctm_t (float): Mean tensile strength of concrete at time t in MPa.
         load_type (str): Type of loading ('short-term' or 'long-term').
-        stage (str): Cracking stage ('crack formation'
-            or 'stabilized cracking').
+        stage (str): Cracking stage ('crack formation' or 'stabilized
+            cracking').
 
     Returns:
-        float: Bond stress τbms in MPa.
+        float: Bond stress tau_bms in MPa.
 
     Raises:
         ValueError: fctm_t is negative.
@@ -537,18 +537,18 @@ def beta_TS(
     load_type: Literal['short-term', 'long-term'],
     stage: Literal['crack_formation', 'stabilized_cracking'],
 ) -> float:
-    """Determine the empirical coefficient βTS
-        based on the load type and stage.
+    """Determine the empirical coefficient beta_TS based on the load type and
+    stage.
 
     fib Model Code 2020, Table 30.5-2
 
     Args:
         load_type (str): Type of loading ('short-term' or 'long-term').
-        stage (str): Cracking stage
-            ('crack_formation' or 'stabilized_cracking').
+        stage (str): Cracking stage ('crack_formation' or
+            'stabilized_cracking').
 
     Returns:
-        float: Empirical coefficient βTS.
+        float: Empirical coefficient beta_TS.
 
     Raises:
         ValueError: If load_type or stage is invalid.
@@ -563,23 +563,22 @@ def beta_TS(
 
 
 def phi_eq(diameters: List[float], counts: List[int]) -> float:
-    """Calculate the equivalent bar diameter φeq for
-        a section with different bar diameters.
+    """Calculate the equivalent bar diameter phi_eq for a section with
+    different bar diameters.
 
     fib Model Code 2020, eq. (30.5-15)
 
     Args:
         diameters (List[float]): List of bar diameters in mm.
-        counts (List[int]): List of number of bars
-            corresponding to each diameter.
+        counts (List[int]): List of number of bars corresponding to each
+            diameter.
 
     Returns:
-        float: Equivalent bar diameter φeq in mm.
+        float: Equivalent bar diameter phi_eq in mm.
 
     Raises:
-        ValueError: If the lists diameters and counts are
-            not of the same length, or if any diameter
-            or count is non-positive.
+        ValueError: If the lists diameters and counts are not of the same
+            length, or if any diameter or count is non-positive.
     """
     if len(diameters) != len(counts):
         raise ValueError(
@@ -603,26 +602,25 @@ def phi_eq(diameters: List[float], counts: List[int]) -> float:
 
 
 def sr_max_theta(sr_max_x: float, sr_max_y: float, theta: float) -> float:
-    """Calculate the maximum crack spacing s_r,max,θ
-        for orthogonally reinforced members.
+    """Calculate the maximum crack spacing s_r,max,theta for orthogonally
+    reinforced members.
 
     fib Model Code 2020, eq. (30.5-16)
 
     Args:
-        sr_max_x (float): Characteristic crack spacing
-            in the x direction in mm.
-        sr_max_y (float): Characteristic crack spacing
-            in the y direction in mm.
-        theta (float): Angle between the reinforcement in the
-            x direction and the direction of the
-                principal tensile stress in degrees.
+        sr_max_x (float): Characteristic crack spacing in the x direction in
+            mm.
+        sr_max_y (float): Characteristic crack spacing in the y direction in
+            mm.
+        theta (float): Angle between the reinforcement in the x direction and
+            the direction of the principal tensile stress in degrees.
 
     Returns:
-        float: Maximum crack spacing s_r,max,θ in mm.
+        float: Maximum crack spacing s_r,max,theta in mm.
 
     Raises:
-        ValueError: If sr_max_x or sr_max_y are negative,
-            or if theta is out of range.
+        ValueError: If sr_max_x or sr_max_y are negative, or if theta is out of
+            range.
     """
     if sr_max_x < 0:
         raise ValueError(f'sr_max_x must not be negative. Got {sr_max_x}')
@@ -647,8 +645,8 @@ def theta_reinf(
     rho_s_ef_x: float,
     rho_s_ef_y: float,
 ) -> float:
-    """Solve for the angle θ between the reinforcement in
-        the x direction and the direction of the principal tensile stress.
+    """Solve for the angle theta between the reinforcement in the x direction
+    and the direction of the principal tensile stress.
 
     fib Model Code 2020, eq. (30.5-17)
 
@@ -660,7 +658,7 @@ def theta_reinf(
         rho_s_ef_y (float): Effective reinforcement ratio in the y direction.
 
     Returns:
-        float: Angle θ in degrees.
+        float: Angle theta in degrees.
 
     Raises:
         ValueError: If any input is negative.
@@ -693,20 +691,21 @@ def theta_reinf(
 def eps_sm_x_eps_cm_x(
     sigma_s_x: float, sigma_sr_ef_x: float, Es: float, beta_TS_x: float
 ) -> float:
-    """Calculate the relative mean strain (εsm,x - εcm,x) in the x direction.
+    """Calculate the relative mean strain (eps_sm,x - eps_cm,x) in the x
+    direction.
 
     fib Model Code 2020, eq. (30.5-20)
 
     Args:
-        sigma_s_x (float): Reinforcing steel stress at the crack
-            in x direction in MPa.
-        sigma_sr_ef_x (float): Steel stress at the crack
-            formation stage in x direction in MPa.
+        sigma_s_x (float): Reinforcing steel stress at the crack in x direction
+            in MPa.
+        sigma_sr_ef_x (float): Steel stress at the crack formation stage in x
+            direction in MPa.
         Es (float): Modulus of elasticity of steel MPa.
         beta_TS_x (float): Empirical coefficient for x direction.
 
     Returns:
-        float: Relative mean strain (εsm,x - εcm,x).
+        float: Relative mean strain (eps_sm,x - eps_cm,x).
 
     Raises:
         ValueError: If any input is invalid.
@@ -731,20 +730,21 @@ def eps_sm_x_eps_cm_x(
 def eps_sm_y_eps_cm_y(
     sigma_s_y: float, sigma_sr_ef_y: float, Es: float, beta_TS_y: float
 ) -> float:
-    """Calculate the relative mean strain (εsm,y - εcm,y) in the y direction.
+    """Calculate the relative mean strain (eps_sm,y - eps_cm,y) in the y
+    direction.
 
     fib Model Code 2020, eq. (30.5-21)
 
     Args:
-        sigma_s_y (float): Reinforcing steel stress at
-            the crack in y direction in MPa.
-        sigma_sr_ef_y (float): Steel stress at the crack formation
-            stage in y direction in MPa.
+        sigma_s_y (float): Reinforcing steel stress at the crack in y direction
+            in MPa.
+        sigma_sr_ef_y (float): Steel stress at the crack formation stage in y
+            direction in MPa.
         Es (float): Modulus of elasticity of steel in MPa.
         beta_TS_y (float): Empirical coefficient for y direction.
 
     Returns:
-        float: Relative mean strain (εsm,y - εcm,y).
+        float: Relative mean strain (eps_sm,y - eps_cm,y).
 
     Raises:
         ValueError: If any input is invalid.
@@ -767,16 +767,15 @@ def eps_sm_y_eps_cm_y(
 
 
 def eps_2(tau_xy: float, Ec: float, theta: float) -> float:
-    """Calculate the principal compressive strain ε2.
+    """Calculate the principal compressive strain eps_2.
 
     fib Model Code 2020, eq. (30.5-19)
 
     Args:
         tau_xy (float): Shear stress in MPa.
         Ec (float): Modulus of elasticity of concrete in MPa.
-        theta (float): Angle between the x direction
-            reinforcement and the direction of principal
-            tensile stress in degrees.
+        theta (float): Angle between the x direction reinforcement and the
+            direction of principal tensile stress in degrees.
 
     Returns:
         float: Principal compressive strain ε2.
@@ -800,8 +799,8 @@ def eps_2(tau_xy: float, Ec: float, theta: float) -> float:
 def sigma_s_x(
     sigma_x: float, tau_xy: float, rho_s_ef_x: float, theta: float
 ) -> float:
-    """Calculate the reinforcing steel stress σs,x
-        at the crack in the x direction.
+    """Calculate the reinforcing steel stress sigma_s,x at the crack in the x
+    direction.
 
     fib Model Code 2020, eq. (30.5-21)
 
@@ -809,11 +808,11 @@ def sigma_s_x(
         sigma_x (float): Normal stress in x direction in MPa.
         tau_xy (float): Shear stress in MPa.
         rho_s_ef_x (float): Effective reinforcement ratio in the y direction.
-        theta (float): Angle between the y direction reinforcement
-            and the direction of principal tensile stress in degrees.
+        theta (float): Angle between the y direction reinforcement and the
+            direction of principal tensile stress in degrees.
 
     Returns:
-        float: Steel stress σs,y in the x direction in MPa.
+        float: Steel stress sigma_s,y in the x direction in MPa.
 
     Raises:
         ValueError: If any input is invalid.
@@ -830,8 +829,8 @@ def sigma_s_x(
 def sigma_s_y(
     sigma_y: float, tau_xy: float, rho_s_ef_y: float, theta: float
 ) -> float:
-    """Calculate the reinforcing steel stress σs,y
-        at the crack in the y direction.
+    """Calculate the reinforcing steel stress sigma_s,y at the crack in the y
+    direction.
 
     fib Model Code 2020, eq. (30.5-21)
 
@@ -843,7 +842,7 @@ def sigma_s_y(
             direction of principal tensile stress in degrees.
 
     Returns:
-        float: Steel stress σs,y in the y direction in MPa.
+        float: Steel stress sigma_s,y in the y direction in MPa.
 
     Raises:
         ValueError: If any input is invalid
@@ -860,20 +859,21 @@ def sigma_s_y(
 def beta_TS_x(
     beta_TS: float, sr_max_theta: float, theta: float, sr_max_x: float
 ) -> float:
-    """Calculate the empirical coefficient βTS for the x direction.
+    """Calculate the empirical coefficient beta_TS for the x direction.
 
     fib Model Code 2020, eqs. (30.5-20) and (30.5-21)
 
     Args:
-        beta_TS (float): Base βTS coefficient.
-        sr_max_theta (float): Maximum crack spacing in the θ direction in mm.
-        theta (float): Angle between the direction of reinforcement and
-            the direction of principal tensile stress in degrees.
-        sr_max_x (float): Characteristic crack spacing in the
-            given direction x in mm.
+        beta_TS (float): Base beta_TS coefficient.
+        sr_max_theta (float): Maximum crack spacing in the theta direction in
+            mm.
+        theta (float): Angle between the direction of reinforcement and the
+            direction of principal tensile stress in degrees.
+        sr_max_x (float): Characteristic crack spacing in the given direction x
+            in mm.
 
     Returns:
-        float: Empirical coefficient βTS for the specified direction.
+        float: Empirical coefficient beta_TS for the specified direction.
 
     Raises:
         ValueError: If any input is invalid.
@@ -891,20 +891,21 @@ def beta_TS_x(
 def beta_TS_y(
     beta_TS: float, sr_max_theta: float, theta: float, sr_max_y: float
 ) -> float:
-    """Calculate the empirical coefficient βTS for the y direction.
+    """Calculate the empirical coefficient beta_TS for the y direction.
 
     fib Model Code 2020, eqs. (30.5-20) and (30.5-21)
 
     Args:
-        beta_TS (float): Base βTS coefficient.
-        sr_max_theta (float): Maximum crack spacing in the θ direction in mm.
-        theta (float): Angle between the direction of reinforcement and
-            the direction of principal tensile stress in degrees.
-        sr_max_y (float): Characteristic crack spacing in the
-            given direction y in mm.
+        beta_TS (float): Base beta_TS coefficient.
+        sr_max_theta (float): Maximum crack spacing in the theta direction in
+            mm.
+        theta (float): Angle between the direction of reinforcement and the
+            direction of principal tensile stress in degrees.
+        sr_max_y (float): Characteristic crack spacing in the given direction y
+            in mm.
 
     Returns:
-        float: Empirical coefficient βTS for the specified direction.
+        float: Empirical coefficient beta_TS for the specified direction.
 
     Raises:
         ValueError: If any input is invalid.
@@ -922,17 +923,17 @@ def beta_TS_y(
 def eps_sm_eps_cm_theta(
     eps_sm_x_eps_cm_x: float, eps_sm_y_eps_cm_y: float, eps_2: float
 ) -> float:
-    """Computes the principal relative mean strain given
-    the relative strain in the x-y directions.
+    """Computes the principal relative mean strain given the relative strain in
+    the x-y directions.
 
     fib Model Code 2020, eqs. (30.5-18)
 
     Args:
-        eps_sm_x_eps_cm_x (float): relative strain in the x direction.
-        eps_sm_y_eps_cm_y (float): relative strain in the y direction.
+        eps_sm_x_eps_cm_x (float): Relative strain in the x direction.
+        eps_sm_y_eps_cm_y (float): Relative strain in the y direction.
 
     Returns:
-        float: the principal mean strain.
+        float: The principal mean strain.
 
     Raises:
         ValueError: If any input is invalid
@@ -949,8 +950,8 @@ def eps_sm_eps_cm_theta(
 
 
 def rho_s_p_ef(rho_s_ef: float, rho_p_ef: float, xi_1: float) -> float:
-    """Calculate the equivalent reinforcement ratio ρs+p,ef
-        for combined reinforcement.
+    """Calculate the equivalent reinforcement ratio rho_s+p,ef for combined
+    reinforcement.
 
     fib Model Code 2020, eq. (30.5-22)
 
@@ -960,7 +961,7 @@ def rho_s_p_ef(rho_s_ef: float, rho_p_ef: float, xi_1: float) -> float:
         xi_1 (float): Bond factor.
 
     Returns:
-        float: Equivalent reinforcement ratio ρs+p,ef.
+        float: Equivalent reinforcement ratio rho_s+p,ef.
 
     Raises:
         ValueError: If any input is invalid.
@@ -975,7 +976,7 @@ def rho_s_p_ef(rho_s_ef: float, rho_p_ef: float, xi_1: float) -> float:
 
 
 def xi_1(tau_bmp_tau_bms: float, phi: float, phi_p_eq: float) -> float:
-    """Calculate the bond factor ξ1 for prestressing steel.
+    """Calculate the bond factor xi_1 for prestressing steel.
 
     fib Model Code 2020, eq. (30.5-23)
 
@@ -985,7 +986,7 @@ def xi_1(tau_bmp_tau_bms: float, phi: float, phi_p_eq: float) -> float:
         phi_p_eq (float): Equivalent diameter of prestressing steel in mm.
 
     Returns:
-        float: Bond factor ξ1.
+        float: Bond factor xi_1.
 
     Raises:
         ValueError: If any input is invalid.
@@ -997,7 +998,7 @@ def xi_1(tau_bmp_tau_bms: float, phi: float, phi_p_eq: float) -> float:
 
 
 def phi_p_eq(Ap: float, up: float) -> float:
-    """Calculate the equivalent diameter φp,eq of the prestressing steel.
+    """Calculate the equivalent diameter phi_p,eq of the prestressing steel.
 
     fib Model Code 2020, eq. (30.5-23)
 
@@ -1006,7 +1007,7 @@ def phi_p_eq(Ap: float, up: float) -> float:
         up (float): Total equivalent perimeter of prestressing steel in mm.
 
     Returns:
-        float: Equivalent diameter φp,eq in mm.
+        float: Equivalent diameter phi_p,eq in mm.
 
     Raises:
         ValueError: If any input is invalid.
@@ -1030,11 +1031,10 @@ def up_i(
 
     Args:
         type_ (str): Type of prestressing steel ('bundle', '7-wire', '3-wire').
-        Ap_i (float, optional): Area of the prestressing
-            steel bundle or strand in mm2. Required for 'bundle'.
-        phi_wire (float, optional): Diameter of a single
-            wire in the strand in mm, required for
-            '7-wire' and '3-wire' types.
+        Ap_i (float, optional): Area of the prestressing steel bundle or strand
+            in mm2. Required for 'bundle'.
+        phi_wire (float, optional): Diameter of a single wire in the strand in
+            mm, required for '7-wire' and '3-wire' types.
 
     Returns:
         float: Equivalent perimeter up,i in mm.
@@ -1063,25 +1063,24 @@ def tau_bmp_tau_bms(
     ],
     tensioning_type: Literal['pretensioned', 'post-tensioned', 'no-bond'],
 ) -> float:
-    """Retrieve the bond factor τbmp/τbms for different
-        types of prestressing steel based on the surface
-        condition and tensioning type.
+    """Retrieve the bond factor τbmp/τbms for different types of prestressing
+    steel based on the surface condition and tensioning type.
 
     fib Model Code 2020, Table 30.5-3
 
     Args:
         surface_condition (str): Surface condition of the prestressing steel
-            ('no bond', 'smooth wire', 'strand',
-              'indented wire', 'ribbed bar').
-        tensioning_type (str): Type of tensioning
-            ('pretensioned' or 'post-tensioned').
+            ('no bond', 'smooth wire', 'strand', 'indented wire',
+            'ribbed bar').
+        tensioning_type (str): Type of tensioning ('pretensioned' or
+            'post-tensioned').
 
     Returns:
-        float: Bond factor τbmp/τbms.
+        float: Bond factor tau_bmp/tau_bms.
 
     Raises:
-        ValueError: If the surface_condition or tensioning_type is invalid
-            or if the combination is not supported.
+        ValueError: If the surface_condition or tensioning_type is invalid or
+            if the combination is not supported.
     """
     # Define the bond factors from Table 30.5-3
     if tensioning_type == 'no-bond':
@@ -1134,25 +1133,25 @@ def As_min_frc(
     h: float,
     kc: float = 1.0,
 ) -> float:
-    """Calculate the minimum reinforcement area
-        As,min for crack control in FRC.
+    """Calculate the minimum reinforcement area As,min for crack control in
+    FRC.
 
     fib Model Code 2020, eq. (30.5-##)
 
     Args:
-        fctm (float): Average value of the tensile strength of
-            the concrete matrix in MPa.
+        fctm (float): Average value of the tensile strength of the concrete
+            matrix in MPa.
         fFtsm (float): Average value of the residual strength of FRC in MPa.
         Act (float): Tensile part of the concrete cross-section in mm2.
-        sigma_s (float): Maximum tensile stress in the
-            reinforcement in the cracked state in MPa.
+        sigma_s (float): Maximum tensile stress in the reinforcement in the
+            cracked state in MPa.
         h (float): thickness of the flange or the web in mm.
-        kc (float): Coefficient accounting for the stress distribution
-            in the cross-section. Defaults to 1.0.
+        kc (float): Coefficient accounting for the stress distribution in the
+            cross-section. Defaults to 1.0.
 
     Returns:
-        float: Minimum reinforcement area As,min mm2.
-            If the calculated value is negative, returns 0.
+        float: Minimum reinforcement area As,min mm2. If the calculated value
+        is negative, returns 0.
 
     Raises:
         ValueError: If any input is invalid or negative.
@@ -1189,8 +1188,8 @@ def max_phi_crack(
     Es: float,
     c: float,
 ) -> float:
-    """Calculate the maximum allowable bar diameter φ for simplified
-        crack calculation.
+    """Calculate the maximum allowable bar diameter phi for simplified crack
+    calculation.
 
     fib Model Code 2020, eq. (30.5-24)
 
@@ -1200,8 +1199,8 @@ def max_phi_crack(
         d (float): Effective depth of the cross-section in mm.
         w_lim_cal (float): Design crack width limit in mm.
         beta_w (float): Coefficient related to crack width.
-        kfl_simpl (float): Coefficient related to
-            the stress state of the section.
+        kfl_simpl (float): Coefficient related to the stress state of the
+            section.
         kb (float): Coefficient accounting for bond conditions.
         k1_r_simpl (float): Simplified coefficient for stress redistribution.
         sigma_s (float): Tensile stress in the steel reinforcement in MPa.
@@ -1251,8 +1250,8 @@ def max_st_crack(
     Es: float,
     c: float,
 ) -> float:
-    """Calculate the maximum allowable bar spacing sl for
-        simplified crack calculation.
+    """Calculate the maximum allowable bar spacing sl for simplified crack
+    calculation.
 
     fib Model Code 2020, eq. (30.5-25)
 
@@ -1262,8 +1261,8 @@ def max_st_crack(
         d (float): Effective depth of the cross-section in mm.
         w_lim_cal (float): Design crack width limit in mm.
         beta_w (float): Coefficient related to crack width.
-        kfl_simpl (float): Coefficient related to the
-            stress state of the section.
+        kfl_simpl (float): Coefficient related to the stress state of the
+            section.
         kb (float): Coefficient accounting for bond conditions.
         k1_r_simpl (float): Simplified coefficient for stress redistribution.
         sigma_s (float): Tensile stress in the steel reinforcement in MPa.
@@ -1310,8 +1309,8 @@ def kfl_simpl(
     Args:
         ry (float): Radius of the reinforcement in mm.
         h (float): Total depth of the cross-section in mm.
-        tension (str): Wether the element has two sides or
-            both sides in tension.
+        tension (str): Wether the element has two sides or both sides in
+            tension.
 
     Returns:
         float: Coefficient kfl_simpl.
@@ -1334,14 +1333,14 @@ def kfl_simpl(
 def k1_r_simpl(
     rho_s_p_ef: float, h: float, d: float, state: Literal['bending', 'tension']
 ) -> float:
-    """Calculate the simplified coefficient
-        k1/r,simpl for stress redistribution.
+    """Calculate the simplified coefficient k1/r,simpl for stress
+    redistribution.
 
     fib Model Code 2020, related to Eq. (30.5-24)
 
     Args:
-        rho_s_p_ef (float): Effective reinforcement ratio
-            for combined reinforcement.
+        rho_s_p_ef (float): Effective reinforcement ratio for combined
+            reinforcement.
         h (float): Total depth of the cross-section in mm.
         d (float): Effective depth of the cross-section in mm.
         state (str): 'bending' or 'tension'.
