@@ -162,3 +162,5 @@ cython_debug/
 
 #Pyenv files
 *.python-version
+
+/branch_examples

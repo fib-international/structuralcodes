@@ -290,7 +290,8 @@ class GenericSectionCalculator(SectionCalculator):
     def _calculate_cracked_section_properties(
         self, n_ed=0, m_ed_1=0, m_ed_2=0
     ) -> s_res.CrackedProperties():
-        """Calculates the Cracked section properties of the reinforced concrete GenericSection.
+        """Calculates the Cracked section properties of the reinforced
+        concrete GenericSection.
 
         This function is private and called when the section is created
         It stores the result into the result object.
@@ -300,12 +301,12 @@ class GenericSectionCalculator(SectionCalculator):
         """
 
         def first_monotonic_series(arr):
-            """Get the first monotonic slice of the array"""
+            """Get the first monotonic slice of the array."""
             if len(arr) < 2:
                 return (
                     arr,
                     len(arr),
-                )  # If the array has fewer than 2 elements, it's already monotonic
+                )  # if 2 elements, it's already monotonic
 
             # Determine if it's increasing or decreasing
             if arr[1] >= arr[0]:
@@ -326,7 +327,8 @@ class GenericSectionCalculator(SectionCalculator):
             # Create an empty list to store SurfaceGeometry objects
             surface_geometries = []
 
-            # Iterate over the list of polygons and create a SurfaceGeometry for each one
+            # Iterate over the list of polygons and create a SurfaceGeometry
+            # for each one
             for polygon in polygons_list:
                 # Create a new SurfaceGeometry for the current polygon
                 surface_geometry = SurfaceGeometry(polygon, material)
@@ -1143,7 +1145,7 @@ class GenericSectionCalculator(SectionCalculator):
     def calculate_cracking_moment(self, n=0):
         """Calculate the cracking moment of a R.C section.
         A concrete material failing at fctm is used for the cracking moment
-        calculation. This method modify the constitutive law of concrete to reach
+        calculation. This method modify the constitutive law of to reach
         fctm in tension.
 
         Args:
@@ -1159,7 +1161,9 @@ class GenericSectionCalculator(SectionCalculator):
         def modify_consitutive_law(geom: SurfaceGeometry):
             """Add tension branch of concrete to constitutive law."""
             mat = geom.material
-            gamma_c = 1.5  # !!!! ISSUE. gamma_c should be readable from ConstitutiveLaw class (TODO)
+            gamma_c = 1.5
+            # !!!! ISSUE. gamma_c should be readable from
+            # ConstitutiveLaw class (TODO)
             if (
                 _CODE is None
             ):  # should be the code of the material used to create the section
