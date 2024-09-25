@@ -997,12 +997,12 @@ class GenericSectionCalculator(SectionCalculator):
             return y
 
         def first_monotonic_series(arr):
-            """Get the first monotonic slice of the array"""
+            """Get the first monotonic slice of the array."""
             if len(arr) < 2:
                 return (
                     arr,
                     len(arr),
-                )  # If the array has fewer than 2 elements, it's already monotonic
+                )  # 2 elements, it's already monotonic
 
             # Determine if it's increasing or decreasing
             if arr[1] >= arr[0]:
@@ -1177,7 +1177,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Step 2: Obtain the boundaries of theta (angle of moments)
         # corresponding to the quadrants of the alpha  for ultamate capacity.
-        # note that lower values of total M=sqrt(My^2+Mz^2) could get different bundarys
+        # !! lower values of M=sqrt(My^2+Mz^2) could get different boundaries
         # but this is an aproxximation that is then corrected with delta
         res = self.calculate_bending_strength(math.pi, n_ed)
         theta_0 = angle(res.m_y, res.m_z)
@@ -1266,7 +1266,7 @@ class GenericSectionCalculator(SectionCalculator):
             _chi_pre = _chi_current - delta_chi
             _chi_post = _chi_current + delta_chi
             # endregion
-            print(
+            """print(
                 f'My {round(My/1e6)} - '
                 f'Mz {round(Mz/1e6)} - '
                 f'alfa1 {round(math.degrees(alfa_1),1)} - '
@@ -1274,7 +1274,7 @@ class GenericSectionCalculator(SectionCalculator):
                 f'alfa2 {round(math.degrees(alfa_2),1)} - '
                 f'_theta {round(math.degrees(_theta),1)} - '
                 f'theta {round(math.degrees(theta),1)} - '
-            )
+            )"""
 
             _theta = angle(My, Mz)
             if _theta > theta:
