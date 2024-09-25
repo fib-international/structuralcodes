@@ -287,9 +287,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         return gp
 
-    def _calculate_cracked_section_properties(
+    def _calculate_cracked_section_properties(  # noqa: PLR0912, PLR0915
         self, n_ed=0, m_ed_1=0, m_ed_2=0
-    ) -> s_res.CrackedProperties():
+    ) -> s_res.CrackedProperties:
         """Calculates the Cracked section properties of the reinforced
         concrete GenericSection.
 
