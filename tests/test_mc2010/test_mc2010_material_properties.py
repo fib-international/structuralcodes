@@ -142,10 +142,10 @@ def test_Gf(test_input, expected):
         (20, 'SANDSTONE', 21500, 18961.8),
     ],
 )
-def test_E_ci(_fcm, agg_type, EC0, expected):
-    """Test E_ci function."""
+def test_Eci(_fcm, agg_type, EC0, expected):
+    """Test Eci function."""
     assert np.isclose(
-        _concrete_material_properties.E_ci(_fcm, agg_type, EC0),
+        _concrete_material_properties.Eci(_fcm, agg_type, EC0),
         expected,
         rtol=1e-5,
     )
@@ -194,7 +194,7 @@ def test_beta_e(beta_cc, expected):
 
 
 @pytest.mark.parametrize(
-    '_beta_e, _E_ci, expected',
+    '_beta_e, _Eci, expected',
     [
         (0.8799, 27088.3, 23835.0),
         (0.9658, 34129.1, 32961.9),
@@ -202,10 +202,10 @@ def test_beta_e(beta_cc, expected):
         (1.0315, 32506.0, 33529.9),
     ],
 )
-def test_E_ci_t(_beta_e, _E_ci, expected):
-    """Test E_ci_t function."""
+def test_E_ci_t(_beta_e, _Eci, expected):
+    """Test Eci_t function."""
     assert np.isclose(
-        _concrete_material_properties.E_ci_t(_beta_e, _E_ci),
+        _concrete_material_properties.Eci_t(_beta_e, _Eci),
         expected,
         rtol=1e-5,
     )

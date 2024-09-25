@@ -132,7 +132,7 @@ def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
 def test_Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected):
     """Test Vrdc_prin_stress function."""
     assert math.isclose(
-        shear.Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2),
+        shear.VRdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2),
         expected,
         rel_tol=1e-2,
     )
