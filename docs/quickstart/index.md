@@ -75,7 +75,7 @@ Call the {func}`.calculate_moment_curvature() <structuralcodes.sections.GenericS
 
 ```{eval-rst}
 .. literalinclude:: quickstart_example.py
-   :lines: 67-70
+   :lines: 67-68
 ```
 
 :::{seealso}
