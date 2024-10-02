@@ -101,7 +101,7 @@ class ConstitutiveLaw(abc.ABC):
     @abc.abstractmethod
     def get_ultimate_strain(self) -> t.Tuple[float, float]:
         """Each constitutive law should provide a method to return the
-        ultimate strain (positive and negative).
+        ultimate strain (negative and positive).
         """
 
     def preprocess_strains_with_limits(self, eps: ArrayLike) -> ArrayLike:
@@ -109,7 +109,7 @@ class ConstitutiveLaw(abc.ABC):
         near to ultimate strain limits to exactly ultimate strain limit.
         """
         eps = np.atleast_1d(np.asarray(eps))
-        eps_max, eps_min = self.get_ultimate_strain()
+        eps_min, eps_max = self.get_ultimate_strain()
 
         idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
         eps[idxs] = eps_max
@@ -138,7 +138,7 @@ class ConstitutiveLaw(abc.ABC):
             # All values are zero for x > 0
             return None
 
-        eps_max, eps_min = self.get_ultimate_strain()
+        eps_min, eps_max = self.get_ultimate_strain()
         eps_max = min(eps_max, 1)
         # Analise positive branch
         eps = np.linspace(0, eps_max, 10000)
