@@ -175,37 +175,74 @@ class UltimateBendingMomentResults:
 
 
 @dataclass
+class InteractionDomain:
+    """Class for storing common data on all interaction domain results.
+
+    Data contained:
+
+    strains: a numpy array with shape (n, 3) containing ea, ky and kz.
+    forces: a numpy array with shape (n, 3) containing n, my and mz.
+    field_num: a numpy array with shape (n,) cotaning a number between
+    1 and 6 indicating the failure field.
+    """
+
+    # array with shape (n,3) containing ea, ky, kz:
+    strains: ArrayLike = None
+    # array with shape(n,3) containing N, My, Mz
+    forces: ArrayLike = None
 class NMMInteractionDomain:
+
+    @property
+    def n(self):
+        """Return axial force."""
+        return self.forces[:, 0]
+
+    @property
+    def m_y(self):
+        """Return my."""
+        return self.forces[:, 1]
+
+    @property
+    def m_z(self):
+        """Return mz."""
+        return self.forces[:, 2]
+
+    @property
+    def e_a(self):
+        """Return ea."""
+        return self.strains[:, 0]
+
+    @property
+    def k_y(self):
+        """Return ky."""
+        return self.strains[:, 1]
+
+    @property
+    def k_z(self):
+        """Return kz."""
+        return self.strains[:, 2]
+
+
+@dataclass
+class NMMInteractionDomain(InteractionDomain):
     """Class for storing the NMM interaction domain results."""
 
     num_theta: int = 0  # number of discretizations along the angle
     num_axial: int = 0  # number of discretizations along axial load axis
 
-    strains: ArrayLike = None  # array with shape (n,3) containing strains
-    forces: ArrayLike = None  # array with shape(n,3) containing N, My, Mz
-
 
 @dataclass
-class NMInteractionDomain:
+class NMInteractionDomain(InteractionDomain):
     """Class for storing the NM interaction domain results."""
 
     theta: float = 0  # the inclination of n.a.
     num_axial: float = 0  # number of discretizations along axial load axis
 
-    n: ArrayLike = None  # Axial loads
-    m_y: ArrayLike = None  # Moments My
-    m_z: ArrayLike = None  # Moments Mz
-
-    strains: ArrayLike = None
-
 
 @dataclass
-class MMInteractionDomain:
+class MMInteractionDomain(InteractionDomain):
     """Class for storing the MM interaction domain results."""
 
     num_theta: float = 0  # number of discretizations along the angle
     n: float = 0  # axial load
-
-    theta: ArrayLike = None  # Angle theta respect axis Y
-    m_y: ArrayLike = None  # Moments My
-    m_z: ArrayLike = None  # Moments Mz
+    theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA

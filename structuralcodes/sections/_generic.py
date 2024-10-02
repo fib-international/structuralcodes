@@ -948,9 +948,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Save to results
         res.strains = strains
-        res.m_z = forces[:, 2]
-        res.m_y = forces[:, 1]
-        res.n = forces[:, 0]
+        res.forces = forces
 
         return res
 
@@ -1098,14 +1096,13 @@ class GenericSectionCalculator(SectionCalculator):
         eps_n = np.append(eps_n, eps_n_6)
         eps_p = np.append(eps_p, eps_p_6)
 
-        # rotate them
+        # compute strain components
         kappa_y = (eps_n - eps_p) / (y_n - y_p)
         eps_a = eps_n - kappa_y * y_n
-        kappa_z = np.zeros_like(kappa_y)
 
         # rotate back components to work in section CRS
         T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
-        components = np.vstack((kappa_y, kappa_z))
+        components = np.vstack((kappa_y, np.zeros_like(kappa_y)))
         rotated_components = T @ components
         return np.column_stack((eps_a, rotated_components.T))
 
@@ -1234,16 +1231,21 @@ class GenericSectionCalculator(SectionCalculator):
         # Prepare the results
         res = s_res.MMInteractionDomain()
         res.num_theta = num_theta
-        res.n = n
         # Create array of thetas
         res.theta = np.linspace(0, np.pi * 2, num_theta)
         # Initialize the result's arrays
-        res.m_y = np.zeros_like(res.theta)
-        res.m_z = np.zeros_like(res.theta)
+        res.forces = np.zeros((num_theta, 3))
+        res.strains = np.zeros((num_theta, 3))
         # Compute strength for given angle of NA
         for i, th in enumerate(res.theta):
             res_bend_strength = self.calculate_bending_strength(theta=th, n=n)
-            res.m_y[i] = res_bend_strength.m_y
-            res.m_z[i] = res_bend_strength.m_z
+            # Save forces
+            res.forces[i, 0] = n
+            res.forces[i, 1] = res_bend_strength.m_y
+            res.forces[i, 2] = res_bend_strength.m_z
+            # Save strains
+            res.strains[i, 0] = res_bend_strength.eps_a
+            res.strains[i, 1] = res_bend_strength.chi_y
+            res.strains[i, 2] = res_bend_strength.chi_z
 
         return res
