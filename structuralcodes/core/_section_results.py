@@ -2,8 +2,12 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import typing as t
 from dataclasses import dataclass, field, fields
 
+import matplotlib.pyplot as plt
+from matplotlib.axis import Axis
+from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 
 
@@ -197,6 +201,68 @@ class NMInteractionDomain:
     m_z: ArrayLike = None  # Moments Mz
 
     strains: ArrayLike = None
+
+    def get_2d_plot(
+        self,
+        horizontal_axis: t.Literal['n', 'my', 'mz'] = 'n',
+        vertical_axis: t.Literal['n', 'my', 'mz'] = 'my',
+        ax: t.Optional[Axis] = None,
+    ) -> t.Tuple[Figure, Axis]:
+        """Retuns figure and axes handlers for a matplotlib plot."""
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+        if horizontal_axis == 'n':
+            x = self.n
+        elif horizontal_axis == 'my':
+            x = self.m_y
+        elif horizontal_axis == 'mz':
+            x = self.m_z
+        if vertical_axis == 'n':
+            y = self.n
+        elif vertical_axis == 'my':
+            y = self.m_y
+        elif vertical_axis == 'mz':
+            y = self.m_z
+        ax.plot(x, y)
+        ax.set(xlabel=horizontal_axis, ylabel=vertical_axis)
+        return fig, ax
+
+    def get_3d_plot(
+        self,
+        x_axis: t.Literal['n', 'my', 'mz'] = 'n',
+        y_axis: t.Literal['n', 'my', 'mz'] = 'my',
+        z_axis: t.Literal['n', 'my', 'mz'] = 'mz',
+        ax: t.Optional[Axis] = None,
+    ) -> t.Tuple[Figure, Axis]:
+        """Retuns figure and axes handlers for a matplotlib 3d plot."""
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+        else:
+            fig = ax.get_figure()
+        if x_axis == 'n':
+            x = self.n
+        elif x_axis == 'my':
+            x = self.m_y
+        elif x_axis == 'mz':
+            x = self.m_z
+        if y_axis == 'n':
+            y = self.n
+        elif y_axis == 'my':
+            y = self.m_y
+        elif y_axis == 'mz':
+            y = self.m_z
+        if z_axis == 'n':
+            z = self.n
+        elif z_axis == 'my':
+            z = self.m_y
+        elif z_axis == 'mz':
+            z = self.m_z
+        ax.plot(x, y, z)
+        ax.set(xlabel=x_axis, ylabel=y_axis, zlabel=z_axis)
+        return fig, ax
 
 
 @dataclass
