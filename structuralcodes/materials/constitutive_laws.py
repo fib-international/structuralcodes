@@ -64,11 +64,11 @@ class Elastic(ConstitutiveLaw):
         return strains, coeff
 
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         # There is no real strain limit, so set it to very large values
         # unlesse specified by the user differently
         del kwargs
-        return self._eps_su or (100, -100)
+        return self._eps_su or (-100, 100)
 
     def set_ultimate_strain(
         self, eps_su=t.Union[float, t.Tuple[float, float]]
@@ -76,19 +76,20 @@ class Elastic(ConstitutiveLaw):
         """Set ultimate strains for Elastic Material if needed.
 
         Arguments:
-            eps_su (float or (float, float)): Defining ultimate strain if a
-                single value is provided the same is adopted for both positive
-                and negative strains.
+            eps_su (float or (float, float)): Defining ultimate strain. If a
+                single value is provided the same is adopted for both negative
+                and positive strains. If a tuple is provided, it should be
+                given as (negative, positive).
         """
         if isinstance(eps_su, float):
-            self._eps_su = (abs(eps_su), -abs(eps_su))
+            self._eps_su = (-abs(eps_su), abs(eps_su))
         elif isinstance(eps_su, tuple):
             if len(eps_su) < 2:
                 raise ValueError(
                     'Two values need to be provided when setting the tuple'
                 )
-            eps_su_p = eps_su[0]
-            eps_su_n = eps_su[1]
+            eps_su_n = eps_su[0]
+            eps_su_p = eps_su[1]
             if eps_su_p < eps_su_n:
                 eps_su_p, eps_su_n = eps_su_n, eps_su_p
             if eps_su_p < 0:
@@ -99,7 +100,7 @@ class Elastic(ConstitutiveLaw):
                 raise ValueError(
                     'Negative utimate strain should be non-positive'
                 )
-            self._eps_su = (eps_su_p, eps_su_n)
+            self._eps_su = (eps_su_n, eps_su_p)
         else:
             raise ValueError(
                 'set_ultimate_strain requires a single value or a tuple \
@@ -185,8 +186,8 @@ class ElasticPlastic(ConstitutiveLaw):
         """
         strains = []
         coeff = []
-        eps_sy_p, eps_sy_n = self.get_ultimate_strain(yielding=True)
-        eps_su_p, eps_su_n = self.get_ultimate_strain()
+        eps_sy_n, eps_sy_p = self.get_ultimate_strain(yielding=True)
+        eps_su_n, eps_su_p = self.get_ultimate_strain()
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # Understand in which branch are we
@@ -233,13 +234,13 @@ class ElasticPlastic(ConstitutiveLaw):
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (self._eps_sy, -self._eps_sy)
+            return (-self._eps_sy, self._eps_sy)
         # If not specified eps
         if self._eps_su is None:
-            return (self._eps_sy * 2, -self._eps_sy * 2)
-        return (self._eps_su, -self._eps_su)
+            return (-self._eps_sy * 2, self._eps_sy * 2)
+        return (-self._eps_su, self._eps_su)
 
 
 class ParabolaRectangle(ConstitutiveLaw):
@@ -399,10 +400,10 @@ class ParabolaRectangle(ConstitutiveLaw):
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (100, self._eps_0)
-        return (100, self._eps_u)
+            return (self._eps_0, 100)
+        return (self._eps_u, 100)
 
 
 class BilinearCompression(ConstitutiveLaw):
@@ -509,10 +510,10 @@ class BilinearCompression(ConstitutiveLaw):
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (100, self._eps_c)
-        return (100, self._eps_cu)
+            return (self._eps_c, 100)
+        return (self._eps_cu, 100)
 
 
 class Sargin(ConstitutiveLaw):
@@ -602,10 +603,10 @@ class Sargin(ConstitutiveLaw):
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (100, self._eps_c1)
-        return (100, self._eps_cu1)
+            return (self._eps_c1, 100)
+        return (self._eps_cu1, 100)
 
 
 class Popovics(ConstitutiveLaw):
@@ -713,10 +714,10 @@ class Popovics(ConstitutiveLaw):
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (100, self._eps_c)
-        return (100, self._eps_cu)
+            return (self._eps_c, 100)
+        return (self._eps_cu, 100)
 
 
 class UserDefined(ConstitutiveLaw):
@@ -875,9 +876,9 @@ class UserDefined(ConstitutiveLaw):
         return strains, coeff
 
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
-        """Return the ultimate strain (positive and negative)."""
+        """Return the ultimate strain (negative and positive)."""
         del kwargs
-        return (self._ultimate_strain_p, self._ultimate_strain_n)
+        return (self._ultimate_strain_n, self._ultimate_strain_p)
 
     def set_ultimate_strain(
         self, eps_su=t.Union[float, t.Tuple[float, float]]
@@ -885,9 +886,10 @@ class UserDefined(ConstitutiveLaw):
         """Set ultimate strains for Elastic Material if needed.
 
         Arguments:
-            eps_su (float or (float, float)): Defining ultimate strain if a
-                single value is provided the same is adopted for both positive
-                and negative strains.
+            eps_su (float or (float, float)): Defining ultimate strain. If a
+                single value is provided the same is adopted for both negative
+                and positive strains. If a tuple is provided, it should be
+                given as (negative, positive).
         """
         if isinstance(eps_su, float):
             self._ultimate_strain_p = abs(eps_su)
@@ -897,8 +899,8 @@ class UserDefined(ConstitutiveLaw):
                 raise ValueError(
                     'Two values need to be provided when setting the tuple'
                 )
-            eps_su_p = eps_su[0]
-            eps_su_n = eps_su[1]
+            eps_su_n = eps_su[0]
+            eps_su_p = eps_su[1]
             if eps_su_p < eps_su_n:
                 eps_su_p, eps_su_n = eps_su_n, eps_su_p
             if eps_su_p < 0:
