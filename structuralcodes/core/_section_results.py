@@ -190,36 +190,49 @@ class InteractionDomain:
     strains: ArrayLike = None
     # array with shape(n,3) containing N, My, Mz
     forces: ArrayLike = None
-class NMMInteractionDomain:
+    # array with shape(n,) containing the field number from 1 to 6
+    field_num: ArrayLike = None
 
     @property
     def n(self):
         """Return axial force."""
+        if self.forces is None:
+            return None
         return self.forces[:, 0]
 
     @property
     def m_y(self):
         """Return my."""
+        if self.forces is None:
+            return None
         return self.forces[:, 1]
 
     @property
     def m_z(self):
         """Return mz."""
+        if self.forces is None:
+            return None
         return self.forces[:, 2]
 
     @property
     def e_a(self):
         """Return ea."""
+        if self.strains is None:
+            return None
         return self.strains[:, 0]
 
     @property
     def k_y(self):
         """Return ky."""
+        if self.strains is None:
+            return None
         return self.strains[:, 1]
 
     @property
     def k_z(self):
         """Return kz."""
+        if self.strains is None:
+            return None
         return self.strains[:, 2]
 
 
@@ -244,5 +257,4 @@ class MMInteractionDomain(InteractionDomain):
     """Class for storing the MM interaction domain results."""
 
     num_theta: float = 0  # number of discretizations along the angle
-    n: float = 0  # axial load
     theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA

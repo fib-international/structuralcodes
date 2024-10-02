@@ -913,7 +913,7 @@ class GenericSectionCalculator(SectionCalculator):
             )
 
         # Get ultimate strain profiles for theta angle
-        strains = self._compute_ultimate_strain_profiles(
+        strains, field_num = self._compute_ultimate_strain_profiles(
             theta=theta,
             num_1=num_1,
             num_2=num_2,
@@ -949,6 +949,7 @@ class GenericSectionCalculator(SectionCalculator):
         # Save to results
         res.strains = strains
         res.forces = forces
+        res.field_num = field_num
 
         return res
 
@@ -1045,6 +1046,9 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Type of spacing not known: {type}')
 
         # For generation of fields 1 and 2 pivot on positive strain
+        field_num = np.repeat(
+            [1, 2, 3, 4, 5, 6], [num_1, num_2, num_3, num_4, num_5, num_6]
+        )
         # Field 1: pivot on positive strain
         eps_n = _np_space(eps_p_b, 0, num_1, type_1, endpoint=False)
         eps_p = np.zeros_like(eps_n) + eps_p_b
@@ -1104,7 +1108,7 @@ class GenericSectionCalculator(SectionCalculator):
         T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
         components = np.vstack((kappa_y, np.zeros_like(kappa_y)))
         rotated_components = T @ components
-        return np.column_stack((eps_a, rotated_components.T))
+        return np.column_stack((eps_a, rotated_components.T)), field_num
 
     def calculate_nmm_interaction_domain(
         self,
@@ -1177,7 +1181,7 @@ class GenericSectionCalculator(SectionCalculator):
         strains = np.empty((0, 3))
         for theta in thetas:
             # Get ultimate strain profiles for theta angle
-            strain = self._compute_ultimate_strain_profiles(
+            strain, field_num = self._compute_ultimate_strain_profiles(
                 theta=theta,
                 num_1=num_1,
                 num_2=num_2,
@@ -1213,6 +1217,7 @@ class GenericSectionCalculator(SectionCalculator):
         # Save to results
         res.strains = strains
         res.forces = forces
+        res.field_num = field_num
 
         return res
 
