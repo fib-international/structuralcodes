@@ -178,12 +178,13 @@ class UltimateBendingMomentResults:
 class InteractionDomain:
     """Class for storing common data on all interaction domain results.
 
-    Data contained:
-
-    strains: a numpy array with shape (n, 3) containing ea, ky and kz.
-    forces: a numpy array with shape (n, 3) containing n, my and mz.
-    field_num: a numpy array with shape (n,) cotaning a number between
-    1 and 6 indicating the failure field.
+    Attributes:
+        strains (numpy.Array): A numpy array with shape (n, 3) containing ea,
+        ky and kz.
+        forces (numpy.Array): A numpy array with shape (n, 3) containing n, my
+        and mz.
+        field_num (numpy.Array): a numpy array with shape (n,) containing a
+        number between 0 and 6 indicating the failure field.
     """
 
     # array with shape (n,3) containing ea, ky, kz:
