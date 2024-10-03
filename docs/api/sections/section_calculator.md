@@ -45,13 +45,32 @@
 ```
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.core._section_results.NMMInteractionDomain
+.. autoclass:: structuralcodes.core._section_results.NMInteractionDomain
+
+    .. autoproperty:: n
+    .. autoproperty:: m_y
+    .. autoproperty:: e_a
+    .. autoproperty:: k_y
 ```
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.core._section_results.NMInteractionDomain
+.. autoclass:: structuralcodes.core._section_results.NMMInteractionDomain
+
+    .. autoproperty:: n
+    .. autoproperty:: m_y
+    .. autoproperty:: m_z
+    .. autoproperty:: e_a
+    .. autoproperty:: k_y
+    .. autoproperty:: k_z
 ```
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.core._section_results.MMInteractionDomain
+
+    .. autoproperty:: n
+    .. autoproperty:: m_y
+    .. autoproperty:: m_z
+    .. autoproperty:: e_a
+    .. autoproperty:: k_y
+    .. autoproperty:: k_z
 ```
