@@ -180,11 +180,11 @@ class InteractionDomain:
 
     Attributes:
         strains (numpy.Array): A numpy array with shape (n, 3) containing ea,
-        ky and kz.
+            ky and kz.
         forces (numpy.Array): A numpy array with shape (n, 3) containing n, my
-        and mz.
+            and mz.
         field_num (numpy.Array): a numpy array with shape (n,) containing a
-        number between 1 and 6 indicating the failure field.
+            number between 1 and 6 indicating the failure field.
     """
 
     # array with shape (n,3) containing ea, ky, kz:
