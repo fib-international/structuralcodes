@@ -30,20 +30,37 @@ _DESIGN_CODES = {
 }
 
 
-def set_design_code(design_code: t.Optional[str] = None) -> None:
+def set_design_code(
+    design_code: t.Optional[t.Union[str, types.ModuleType]] = None,
+) -> None:
     """Set the current design code globally.
 
     Args:
-        design_code (str): The abbreviation of the code.
+        design_code (Union[str, Moduletype]): The abbreviation of the code
+            (str), or a module that represents the code (ModuleType).
 
     Note:
         Call get_design_codes() to get a list of the available codes.
     """
     global _CODE  # pylint: disable=W0603
-    if design_code is not None:
-        _CODE = _DESIGN_CODES.get(design_code.lower())
-    else:
+    if design_code is None:
+        # Reset to None
         _CODE = None
+    elif isinstance(design_code, str) and design_code.lower() in _DESIGN_CODES:
+        # The design code abbreviation is valid
+        _CODE = _DESIGN_CODES.get(design_code.lower())
+    elif isinstance(design_code, types.ModuleType) and all(
+        name in dir(design_code)
+        for name in ('__title__', '__year__', '__materials__')
+    ):
+        # The module is a valid design code
+        _CODE = design_code
+    else:
+        raise ValueError(
+            f'{design_code} is not a valid abbreviation for a design code, or'
+            ' a valid module representing a design code.\nType '
+            'get_design_codes() to list the available design codes.'
+        )
 
 
 def get_design_codes() -> t.List[str]:
@@ -77,5 +94,9 @@ def _use_design_code(
         Call get_design_codes() to get a list of the available codes.
     """
     if design_code is None:
+        # Returned the globally set design code
         return _CODE
-    return _DESIGN_CODES.get(design_code.lower())
+
+    # Set design code before returning
+    set_design_code(design_code)
+    return _CODE
