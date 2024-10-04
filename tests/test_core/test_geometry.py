@@ -13,6 +13,8 @@ from structuralcodes.geometry import (
     Geometry,
     PointGeometry,
     SurfaceGeometry,
+    add_reinforcement,
+    add_reinforcement_line,
     create_line_point_angle,
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
@@ -20,10 +22,6 @@ from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
     ParabolaRectangle,
-)
-from structuralcodes.sections._reinforcement import (
-    add_reinforcement,
-    add_reinforcement_line,
 )
 
 
