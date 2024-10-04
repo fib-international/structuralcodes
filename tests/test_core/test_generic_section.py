@@ -7,18 +7,18 @@ import pytest
 from shapely import Polygon
 
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
-from structuralcodes.geometry import SurfaceGeometry
+from structuralcodes.geometry import (
+    SurfaceGeometry,
+    add_reinforcement,
+    add_reinforcement_line,
+)
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import Sargin
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
 )
-from structuralcodes.sections._generic import GenericSection
-from structuralcodes.sections._reinforcement import (
-    add_reinforcement,
-    add_reinforcement_line,
-)
+from structuralcodes.sections import GenericSection
 
 
 # Test rectangular section

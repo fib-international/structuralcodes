@@ -11,15 +11,3 @@
     .. autoproperty:: gross_properties
 
 ```
-
-## Functions for adding reinforcement
-
-```{eval-rst}
-.. autofunction:: structuralcodes.sections.add_reinforcement
-
-```
-
-```{eval-rst}
-.. autofunction:: structuralcodes.sections.add_reinforcement_line
-
-```
