@@ -610,8 +610,8 @@ class GenericSectionCalculator(SectionCalculator):
         axial load.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to section y axis,
-                default = 0.
+            theta (float): Inclination of n.a. respect to section y axis in
+                radians, default = 0.
             n (float): Axial load applied to the section (+: tension, -:
                 compression), default = 0.
 
@@ -667,7 +667,8 @@ class GenericSectionCalculator(SectionCalculator):
         n.a. and axial load.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to y axis, default = 0.
+            theta (float): Inclination of n.a. respect to y axis in radians,
+                default = 0.
             n (float): Axial load applied to the section (+: tension, -:
                 compression), default = 0.
             chi_first (float): The first value of the curvature, default =
@@ -866,7 +867,7 @@ class GenericSectionCalculator(SectionCalculator):
         """Calculate the NM interaction domain.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to y axis
+            theta (float): Inclination of n.a. respect to y axis in radians
                 (Optional, default = 0).
             num_1 (int): Number of strain profiles in field 1
                 (Optional, default = 1).
