@@ -128,16 +128,115 @@ class GrossProperties:
 
 @dataclass
 class CrackedProperties:
-    """Simple dataclass for storing cracked section properties."""
+    """Simple dataclass for storing cracked section properties.
+    Cracked properties differs of the service loads n_ed, m_ed_1, m_ed_2.
+    If no provided, assumed n_ed=0 and m_ed_1, m_ed_2 = 50% ultimate moment.
+    """
 
+    n_ed: float = field(
+        default=0, metadata={'description': 'Axial load in SLS'}
+    )
+
+    # LOWER COMPRESION BLOCK
+    m_ed_1: float = field(
+        default=0, metadata={'description': 'Bending moment in SLS'}
+    )
     # second moments of area
-    i_yy: float = 0
-    i_zz: float = 0
-    i_yz: float = 0
-
+    i_yy_1: float = field(
+        default=0, metadata={'description': 'Product moment (Iyy_1)'}
+    )
+    i_zz_1: float = field(
+        default=0, metadata={'description': 'Product moment (Izz_1)'}
+    )
+    i_yz_1: float = field(
+        default=0, metadata={'description': 'Product moment (Iyz_1)'}
+    )
     # section cracked flexural rigidity
-    ei_yy: float = 0
-    ei_zz: float = 0
+    ei_yy_1: float = field(default=0, metadata={'description': 'E * Iyy_1'})
+    ei_zz_1: float = field(default=0, metadata={'description': 'E * Izz_1'})
+    # neutral axe
+    z_na_1: float = field(
+        default=0, metadata={'description': 'Neutral axe distance'}
+    )
+    m_cracking_1: float = field(
+        default=0, metadata={'description': 'Cracking moment'}
+    )
+
+    # UPPER COMPRESION BLOCK
+    m_ed_2: float = field(
+        default=0, metadata={'description': 'Bending moment in SLS'}
+    )
+    # second moments of area
+    i_yy_2: float = field(
+        default=0, metadata={'description': 'Product moment (Iyy_2)'}
+    )
+    i_zz_2: float = field(
+        default=0, metadata={'description': 'Product moment (Izz_2)'}
+    )
+    i_yz_2: float = field(
+        default=0, metadata={'description': 'Product moment (Iyz_2)'}
+    )
+    # section cracked flexural rigidity
+    ei_yy_2: float = field(default=0, metadata={'description': 'E * Iyy_2'})
+    ei_zz_2: float = field(default=0, metadata={'description': 'E * Izz_2'})
+    # neutral axe
+    z_na_2: float = field(
+        default=0, metadata={'description': 'Neutral axe distance'}
+    )
+    m_cracking_2: float = field(
+        default=0, metadata={'description': 'Cracking moment'}
+    )
+
+    def __init__(self, n_ed=0, m_ed_1=0, m_ed_2=0):
+        self.n_ed = n_ed
+        self.m_ed_1 = m_ed_1
+        self.m_ed_2 = m_ed_2
+
+    def __format__(self, spec: str) -> str:
+        """Defines the format for returning the string representation.
+
+        Arguments:
+        spec: the string specifying the format
+        """
+        output_string = (
+            'Cracked concrete section properties for SLS forces:\n'
+            f' - N = {self.n_ed}\n'
+            f' - M1 (compression on bottom) = {self.m_ed_1}\n'
+            f' - M2 (compression on top) = {self.m_ed_2}\n'
+        )
+
+        if self.m_ed_1 < self.m_cracking_1:
+            output_string += '1) No cracking expected for N+M1. Properties:\n'
+        else:
+            output_string += '1) Cracked properties fo N+M1:\n'
+        for f in fields(self):
+            if f.name.endswith('_1') and f.name not in ['n_ed', 'm_ed_1']:
+                value = getattr(self, f.name)
+                description = f.metadata.get(
+                    'description', 'No description available'
+                )
+                output_string += f'  {description}: {value:{spec}}\n'
+
+        if self.m_ed_2 > self.m_cracking_2:  # > because momentes are negative
+            output_string += '2) No cracking expected for N+M2. Properties:\n'
+        else:
+            output_string += '2) Cracked properties fo N+M2:\n'
+        for f in fields(self):
+            if f.name.endswith('_2') and f.name not in ['n_ed', 'm_ed_2']:
+                value = getattr(self, f.name)
+                description = f.metadata.get(
+                    'description', 'No description available'
+                )
+                output_string += f'  {description}: {value:{spec}}\n'
+
+        return output_string
+
+    def __str__(self) -> str:
+        """Returns the informal string representation.
+        Returns the informal string representation of the cracked concrete
+        section properties.
+        """
+        return f'{self}'
 
 
 @dataclass
