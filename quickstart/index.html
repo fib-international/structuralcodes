@@ -260,6 +260,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../theory/index.html">Theory reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../versioning/index.html">Versioning</a></li>
 </ul>
 
 </div>
@@ -311,10 +312,10 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">shapely</span> <span class="kn">import</span> <span class="n">Polygon</span>
 
 <span class="kn">from</span> <span class="nn">structuralcodes</span> <span class="kn">import</span> <span class="n">set_design_code</span>
-<span class="kn">from</span> <span class="nn">structuralcodes.geometry</span> <span class="kn">import</span> <span class="n">SurfaceGeometry</span>
+<span class="kn">from</span> <span class="nn">structuralcodes.geometry</span> <span class="kn">import</span> <span class="n">SurfaceGeometry</span><span class="p">,</span> <span class="n">add_reinforcement</span>
 <span class="kn">from</span> <span class="nn">structuralcodes.materials.concrete</span> <span class="kn">import</span> <span class="n">create_concrete</span>
 <span class="kn">from</span> <span class="nn">structuralcodes.materials.reinforcement</span> <span class="kn">import</span> <span class="n">create_reinforcement</span>
-<span class="kn">from</span> <span class="nn">structuralcodes.sections</span> <span class="kn">import</span> <span class="n">GenericSection</span><span class="p">,</span> <span class="n">add_reinforcement</span>
+<span class="kn">from</span> <span class="nn">structuralcodes.sections</span> <span class="kn">import</span> <span class="n">GenericSection</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -363,7 +364,7 @@
     <span class="p">]</span>
 <span class="p">)</span>  <span class="c1"># We leverage shapely to create geometries</span>
 <span class="n">geometry</span> <span class="o">=</span> <span class="n">SurfaceGeometry</span><span class="p">(</span>
-    <span class="n">polygon</span><span class="p">,</span> <span class="n">concrete</span>
+    <span class="n">poly</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">concrete</span>
 <span class="p">)</span>  <span class="c1"># A SurfaceGeometry is a shapely Polygon with an assigned material</span>
 </pre></div>
 </div>
@@ -423,10 +424,10 @@
 <span class="linenos"> 3</span><span class="kn">from</span> <span class="nn">shapely</span> <span class="kn">import</span> <span class="n">Polygon</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="kn">from</span> <span class="nn">structuralcodes</span> <span class="kn">import</span> <span class="n">set_design_code</span>
-<span class="linenos"> 6</span><span class="kn">from</span> <span class="nn">structuralcodes.geometry</span> <span class="kn">import</span> <span class="n">SurfaceGeometry</span>
+<span class="linenos"> 6</span><span class="kn">from</span> <span class="nn">structuralcodes.geometry</span> <span class="kn">import</span> <span class="n">SurfaceGeometry</span><span class="p">,</span> <span class="n">add_reinforcement</span>
 <span class="linenos"> 7</span><span class="kn">from</span> <span class="nn">structuralcodes.materials.concrete</span> <span class="kn">import</span> <span class="n">create_concrete</span>
 <span class="linenos"> 8</span><span class="kn">from</span> <span class="nn">structuralcodes.materials.reinforcement</span> <span class="kn">import</span> <span class="n">create_reinforcement</span>
-<span class="linenos"> 9</span><span class="kn">from</span> <span class="nn">structuralcodes.sections</span> <span class="kn">import</span> <span class="n">GenericSection</span><span class="p">,</span> <span class="n">add_reinforcement</span>
+<span class="linenos"> 9</span><span class="kn">from</span> <span class="nn">structuralcodes.sections</span> <span class="kn">import</span> <span class="n">GenericSection</span>
 <span class="linenos">10</span>
 <span class="linenos">11</span><span class="c1"># Set the active design code</span>
 <span class="linenos">12</span><span class="n">set_design_code</span><span class="p">(</span><span class="s1">&#39;ec2_2004&#39;</span><span class="p">)</span>
@@ -455,7 +456,7 @@
 <span class="linenos">35</span>    <span class="p">]</span>
 <span class="linenos">36</span><span class="p">)</span>  <span class="c1"># We leverage shapely to create geometries</span>
 <span class="linenos">37</span><span class="n">geometry</span> <span class="o">=</span> <span class="n">SurfaceGeometry</span><span class="p">(</span>
-<span class="linenos">38</span>    <span class="n">polygon</span><span class="p">,</span> <span class="n">concrete</span>
+<span class="linenos">38</span>    <span class="n">poly</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">concrete</span>
 <span class="linenos">39</span><span class="p">)</span>  <span class="c1"># A SurfaceGeometry is a shapely Polygon with an assigned material</span>
 <span class="linenos">40</span>
 <span class="linenos">41</span><span class="c1"># Add reinforcement</span>
@@ -555,6 +556,6 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
     <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../_static/tippy\quickstart\index.0b9049e4-ffe9-4e5e-bf45-f6950a98b844.js"></script>
+    <script defer="defer" src="../_static/tippy\quickstart\index.78a615ae-9756-495f-9755-35f21f3e2c6a.js"></script>
     </body>
 </html>

@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="Theory reference" href="../theory/index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Versioning" href="../versioning/index.html" /><link rel="prev" title="Theory reference" href="../theory/index.html" />
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Contributing - StructuralCodes documentation</title>
@@ -260,6 +260,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../theory/index.html">Theory reference</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../versioning/index.html">Versioning</a></li>
 </ul>
 
 </div>
@@ -306,20 +307,17 @@
         <article role="main" id="furo-main-content">
           <section id="contributing">
 <span id="id1"></span><h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h1>
-<p><a class="reference external" href="https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml"><img alt="Build" src="https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg" /></a>
-<a class="reference external" href="https://github.com/charliermarsh/ruff"><img alt="Code style: Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/format.json" /></a>
+<p><a class="reference external" href="https://github.com/charliermarsh/ruff"><img alt="Code style: Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/format.json" /></a>
 <a class="reference external" href="https://github.com/charliermarsh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" /></a></p>
-<section id="general">
-<h2>General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h2>
-<p>For the moment, the core team has completed an initial structure for the two lowest levels, i.e. how to structure the models from the structural design codes, and how to create classes that represent materials and sections. Contributions that seek to add content to the lowest level are highly appreciated.</p>
-<p>We have defined a set of <a class="reference external" href="https://github.com/fib-international/structuralcodes/milestones">milestones</a> that indicate our priorities. Issues are linked to each milesstone, and some of the issues include a to-do list and have linked pull requests. Contributions related to the milestones are highly appreciated. For the moment, our first priority is to add code related to <em>fib</em> Model Code 2020, but other contributions are of course also welcome!</p>
-</section>
+<p><a class="reference external" href="https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml"><img alt="Tests" src="https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg" /></a>
+<a class="reference external" href="https://github.com/fib-international/structuralcodes/actions/workflows/create-release.yml"><img alt="Publish" src="https://github.com/fib-international/structuralcodes/actions/workflows/create-release.yml/badge.svg" /></a>
+<a class="reference external" href="https://github.com/fib-international/structuralcodes/actions/workflows/sphinx.yml"><img alt="Docs" src="https://github.com/fib-international/structuralcodes/actions/workflows/sphinx.yml/badge.svg" /></a></p>
 <section id="contribution-guidelines">
 <h2>Contribution guidelines<a class="headerlink" href="#contribution-guidelines" title="Link to this heading">¶</a></h2>
 <p>Here is how to get started.</p>
 <p><em>First</em></p>
 <ul class="simple">
-<li><p>Take a look at the milestones, find one that suits your interests, and navigate to a related issue. Create a comment in the issue indicating the topic that you wish to contribute. Make sure that the topic is not already started by someone else.</p></li>
+<li><p>Take a look at the <a class="reference external" href="https://github.com/fib-international/structuralcodes/milestones">milestones</a>, find one that suits your interests, and navigate to a related issue. Create a comment in the issue indicating the topic that you wish to contribute. Make sure that the topic is not already started by someone else.</p></li>
 <li><p>If you didn’t find a suitable milestone or issue, please create a new issue where you describe your request or feature idea. Make sure that you get a GO from the core team before continuing your contribution, so that you do not waste your time duplicating the work of someone else. We promise to provide feedback as soon as we can.</p></li>
 </ul>
 <p><em>Then</em></p>
@@ -350,7 +348,15 @@
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="../versioning/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Versioning</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
           <a class="prev-page" href="../theory/index.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
@@ -400,7 +406,6 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Contributing</a><ul>
-<li><a class="reference internal" href="#general">General</a></li>
 <li><a class="reference internal" href="#contribution-guidelines">Contribution guidelines</a></li>
 <li><a class="reference internal" href="#set-up-your-local-development-environment">Set up your local development environment</a></li>
 </ul>
@@ -423,6 +428,6 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
     <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../_static/tippy\contributing\index.ef462919-d4bf-4177-b189-0687a5afcbe8.js"></script>
+    <script defer="defer" src="../_static/tippy\contributing\index.aea2d9d1-7fc3-4ef4-a31d-cd43c657fded.js"></script>
     </body>
 </html>

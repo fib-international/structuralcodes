@@ -69,3 +69,15 @@
 .. autofunction:: structuralcodes.geometry.create_line_point_angle
 
 ```
+
+## Functions for adding reinforcement
+
+```{eval-rst}
+.. autofunction:: structuralcodes.geometry.add_reinforcement
+
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.geometry.add_reinforcement_line
+
+```

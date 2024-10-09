@@ -260,6 +260,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../theory/index.html">Theory reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../versioning/index.html">Versioning</a></li>
 </ul>
 
 </div>
@@ -308,11 +309,12 @@
 <span id="api-codes-general"></span><h1>General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.set_design_code">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.</span></span><span class="sig-name descname"><span class="pre">set_design_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\__init__.py#L31-L44"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.set_design_code" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.</span></span><span class="sig-name descname"><span class="pre">set_design_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ModuleType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\__init__.py#L33-L63"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.set_design_code" title="Link to this definition">¶</a></dt>
 <dd><p>Set the current design code globally.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>design_code</strong> (<em>str</em>) – The abbreviation of the code.</p>
+<dd class="field-odd"><p><strong>design_code</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Moduletype</em><em>]</em>) – The abbreviation of the code
+(str), or a module that represents the code (ModuleType).</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -323,7 +325,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.get_design_codes">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.</span></span><span class="sig-name descname"><span class="pre">get_design_codes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\__init__.py#L47-L49"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.get_design_codes" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.</span></span><span class="sig-name descname"><span class="pre">get_design_codes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\__init__.py#L66-L68"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.get_design_codes" title="Link to this definition">¶</a></dt>
 <dd><p>Get a list of the available design codes.</p>
 </dd></dl>
 
@@ -414,6 +416,6 @@
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
     <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../../_static/tippy\api\codes\general.477ef520-4618-4a22-a010-4a6d8d107d74.js"></script>
+    <script defer="defer" src="../../_static/tippy\api\codes\general.4f6a6163-349c-4f6f-88f8-ce83d24eae17.js"></script>
     </body>
 </html>
