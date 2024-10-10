@@ -18,6 +18,7 @@ def add_reinforcement(
     coords: t.Tuple[float, float],
     diameter: float,
     material: t.Union[Material, ConstitutiveLaw],
+    group_label: t.Optional[str] = None,
 ) -> CompoundGeometry:
     """Add a single bar given coordinate.
 
@@ -28,12 +29,16 @@ def add_reinforcement(
         diameter (float): The diameter of the reinforcement.
         material (Union(Material, ConstitutiveLaw)): A material or a
             constitutive law for the behavior of the reinforcement.
+        group_label (Optional(str)): A label for grouping several objects
+            (default is None).
 
     Returns:
         CompoundGeometry: A compound geometry with the original geometry and
         the reinforcement.
     """
-    bar = PointGeometry(Point(coords), diameter, material)
+    bar = PointGeometry(
+        Point(coords), diameter, material, group_label=group_label
+    )
     return geo + bar
 
 
@@ -47,6 +52,7 @@ def add_reinforcement_line(
     s: float = 0.0,
     first: bool = True,
     last: bool = True,
+    group_label: t.Optional[str] = None,
 ) -> CompoundGeometry:
     """Adds a set of bars distributed in a line.
 
@@ -66,6 +72,8 @@ def add_reinforcement_line(
             True).
         last (bool): Boolean indicating if placing the last bar (default =
             True).
+        group_label (Optional(str)): A label for grouping several objects
+            (default is None).
 
     Note:
         At least n or s should be greater than zero.
@@ -110,6 +118,10 @@ def add_reinforcement_line(
             continue
         coords = p1 + v * s * i
         geo = add_reinforcement(
-            geo, (coords[0], coords[1]), diameter, material
+            geo,
+            (coords[0], coords[1]),
+            diameter,
+            material,
+            group_label=group_label,
         )
     return geo
