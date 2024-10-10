@@ -283,10 +283,10 @@ def simpl_span_depth_ratio(
     ss: Literal['ss', 'es', 'is', 'c'], wr: float, ll_tl: float
 ) -> float:
     """Interpolates or extrapolates the limiting span/effective depth ratios
-    (l/d) for reinforced concrete beams or slabs based on the structural system
-    ,mechanical reinforcement ratio, and load ratio.
+    (l/d) for reinforced concrete beams or slabs based on the structural
+    system, mechanical reinforcement ratio, and load ratio.
 
-    EN1992-1-1:2023 Table (9.3)
+    EN1992-1-1:2023 Table (9.3).
 
     This function adheres to the guidelines specified in Table 9.3 of the
     standards, which outline the limits on l/d ratios for various conditions.
@@ -295,30 +295,33 @@ def simpl_span_depth_ratio(
     the necessary values.
 
     Args:
-        ss (str): An integer corresponding to the structural system type:
-                  'ss' for simply supported beams/slabs,
-                  'es' for end spans or one-way spanning slab,
-                  'is' for interior spans or one-way spanning slab,
-                  'c' for cantilevers.
+        ss (str): An integer corresponding to the structural system type: 'ss'
+            for simply supported beams/slabs, 'es' for end spans or one-way
+            spanning slab, 'is' for interior spans or one-way spanning slab,
+            'c' for cantilevers.
         wr (float): The mechanical reinforcement ratio, expressed as a decimal
-                    (e.g., 0.1, 0.2, 0.3).
-        ll_tl (int): The percentage ratio of live load to total load
-            (e.g., 60, 45, 30).
+            (e.g., 0.1, 0.2, 0.3).
+        ll_tl (int): The percentage ratio of live load to total load (e.g., 60,
+            45, 30).
 
     Returns:
         float: The interpolated or extrapolated l/d ratio.
 
-    Notes:
-        - The function assumes the quasi-permanent value of the live load with
-            ψ2 = 0.3.
-        - It uses linear interpolation; however, cubic or nearest interpolation
-            methods can also be applied.
-        - Deflection limits are set to l/250, in line with the standards.
-        - The `wr` and `ll_tl` values should ideally be within the bounds given
-            in the table. Extrapolation is possible but may lead to less
-            accurate results.
-        - `l/d` values from the table are conservative for flanged sections and
-            should be interpreted accordingly.
+    Note:
+        The function assumes the quasi-permanent value of the live load with
+        psi_2 = 0.3.
+
+        It uses linear interpolation; however, cubic or nearest interpolation
+        methods can also be applied.
+
+        Deflection limits are set to l/250, in line with the standards.
+
+        The `wr` and `ll_tl` values should ideally be within the bounds given
+        in the table. Extrapolation is possible but may lead to less accurate
+        results.
+
+        `l/d` values from the table are conservative for flanged sections and
+        should be interpreted accordingly.
     """
     reinforcement_ratios = [0.3, 0.2, 0.1]
     load_ratios = [60, 45, 30]
@@ -450,23 +453,26 @@ def delta_gen(
 ) -> float:
     """General method for deflection calculations.
 
-    EN1992-1-1:2023 Eq. (9.28)
+    EN1992-1-1:2023 Eq. (9.28).
 
     Args:
-        alpha_I (float): deformation parameter calculated for the uncracked
+        alpha_I (float): Deformation parameter calculated for the uncracked
             condition. Could be a strain, curvature or rotation.
-        alpha_II (float): deformation parameter calculated for the cracked
+        alpha_II (float): Deformation parameter calculated for the cracked
             condition. Could be a strain, curvature or rotation.
-        load_type (str): used for getting the beta_parameter that takes
-            into consideration the type of the load. Short for 'short' loads
-            and 'cycle' for repeated loading.
-        sigma_sr_sigma_s (float): the ratio between the highest stress having
+        load_type (str): Used for getting the beta_parameter that takes into
+            consideration the type of the load. Short for 'short' loads and
+            'cycle' for repeated loading.
+        sigma_sr_sigma_s (float): The ratio between the highest stress having
             occurred up to the moment being analysed in the tension
             reinforcement calculated on the basis of a cracked section and the
-            stress in the tension reinforcement calculated on the basis of
-            a chacked section under loading conditions causing first cracking.
+            stress in the tension reinforcement calculated on the basis of a
+            cracked section under loading conditions causing first cracking.
             Can be replaced by Mcr/M or Ncr/N where Mcr is the cracking moment
-            andNcr is the cracking force.
+            and Ncr is the cracking force.
+
+    Returns:
+        float: The resulting deformation parameter.
     """
     beta = 1.0 if load_type == 'short' else 0.5
     zeta = max(0, 1 - beta * sigma_sr_sigma_s**2)
