@@ -1,6 +1,7 @@
 """Results."""
 
-# import typing as t
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 from dataclasses import dataclass, field, fields
 
 from numpy.typing import ArrayLike
@@ -12,9 +13,6 @@ class GrossProperties:
 
     # section areas
     area: float = field(default=0, metadata={'description': 'Total area'})
-    area_surface: float = field(
-        default=0, metadata={'description': 'Surface area'}
-    )
     area_reinforcement: float = field(
         default=0, metadata={'description': 'Reinforcement area'}
     )
@@ -108,7 +106,7 @@ class GrossProperties:
         """Defines the format for returning the string representation.
 
         Arguments:
-        spec: the string specifying the format
+            spec (str): The string specifying the format.
         """
         output_string = 'Gross Concrete Section Properties:\n'
         for f in fields(self):
@@ -122,8 +120,7 @@ class GrossProperties:
         return output_string
 
     def __str__(self) -> str:
-        """Returns the informal string representation.
-        Returns the informal string representation of the gross concrete
+        """Returns the informal string representation of the gross concrete
         section properties.
         """
         return f'{self}'
@@ -145,9 +142,9 @@ class CrackedProperties:
 
 @dataclass
 class MomentCurvatureResults:
-    """class for storing moment curvature results
-    the analysis will be done in general for a given inclination
-    of n.a.
+    """Class for storing moment curvature results.
+
+    The analysis will be done in general for a given inclination of n.a.
     """
 
     theta: float = 0  # the inclination of n.a.
@@ -164,8 +161,8 @@ class MomentCurvatureResults:
 
 @dataclass
 class UltimateBendingMomentResults:
-    """class for storing the ultimate bending moment computation
-    for a given inclination of n.a. and axial load.
+    """Class for storing the ultimate bending moment computation for a given
+    inclination of n.a. and axial load.
     """
 
     theta: float = 0  # the inclination of n.a.
@@ -178,35 +175,87 @@ class UltimateBendingMomentResults:
 
 
 @dataclass
-class NMMInteractionDomain:
+class InteractionDomain:
+    """Class for storing common data on all interaction domain results.
+
+    Attributes:
+        strains (numpy.Array): A numpy array with shape (n, 3) containing ea,
+            ky and kz.
+        forces (numpy.Array): A numpy array with shape (n, 3) containing n, my
+            and mz.
+        field_num (numpy.Array): a numpy array with shape (n,) containing a
+            number between 1 and 6 indicating the failure field.
+    """
+
+    # array with shape (n,3) containing ea, ky, kz:
+    strains: ArrayLike = None
+    # array with shape(n,3) containing N, My, Mz
+    forces: ArrayLike = None
+    # array with shape(n,) containing the field number from 1 to 6
+    field_num: ArrayLike = None
+
+    @property
+    def n(self):
+        """Return axial force."""
+        if self.forces is None:
+            return None
+        return self.forces[:, 0]
+
+    @property
+    def m_y(self):
+        """Return my."""
+        if self.forces is None:
+            return None
+        return self.forces[:, 1]
+
+    @property
+    def m_z(self):
+        """Return mz."""
+        if self.forces is None:
+            return None
+        return self.forces[:, 2]
+
+    @property
+    def e_a(self):
+        """Return ea."""
+        if self.strains is None:
+            return None
+        return self.strains[:, 0]
+
+    @property
+    def k_y(self):
+        """Return ky."""
+        if self.strains is None:
+            return None
+        return self.strains[:, 1]
+
+    @property
+    def k_z(self):
+        """Return kz."""
+        if self.strains is None:
+            return None
+        return self.strains[:, 2]
+
+
+@dataclass
+class NMMInteractionDomain(InteractionDomain):
     """Class for storing the NMM interaction domain results."""
 
     num_theta: int = 0  # number of discretizations along the angle
     num_axial: int = 0  # number of discretizations along axial load axis
 
-    strains: ArrayLike = None  # array with shape (n,3) containing strains
-    forces: ArrayLike = None  # array with shape(n,3) containing N, My, Mz
-
 
 @dataclass
-class NMInteractionDomain:
+class NMInteractionDomain(InteractionDomain):
     """Class for storing the NM interaction domain results."""
 
     theta: float = 0  # the inclination of n.a.
     num_axial: float = 0  # number of discretizations along axial load axis
 
-    n: ArrayLike = None  # Axial loads
-    m_y: ArrayLike = None  # Moments My
-    m_z: ArrayLike = None  # Moments Mz
-
 
 @dataclass
-class MMInteractionDomain:
+class MMInteractionDomain(InteractionDomain):
     """Class for storing the MM interaction domain results."""
 
     num_theta: float = 0  # number of discretizations along the angle
-    n: float = 0  # axial load
-
-    theta: ArrayLike = None  # Angle theta respect axis Y
-    m_y: ArrayLike = None  # Moments My
-    m_z: ArrayLike = None  # Moments Mz
+    theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA

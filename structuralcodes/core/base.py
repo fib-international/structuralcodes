@@ -1,5 +1,7 @@
 """Abstract base classes."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import abc
 import typing as t
 import warnings
@@ -85,13 +87,13 @@ class ConstitutiveLaw(abc.ABC):
         cls.constitutive_law_counter += 1
 
     @abc.abstractmethod
-    def get_stress(self, eps: float) -> float:
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Each constitutive law should provide a method to return the
         stress given the strain level.
         """
 
     @abc.abstractmethod
-    def get_tangent(self, eps: float) -> float:
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level.
         """
@@ -99,7 +101,7 @@ class ConstitutiveLaw(abc.ABC):
     @abc.abstractmethod
     def get_ultimate_strain(self) -> t.Tuple[float, float]:
         """Each constitutive law should provide a method to return the
-        ultimate strain (positive and negative).
+        ultimate strain (negative and positive).
         """
 
     def preprocess_strains_with_limits(self, eps: ArrayLike) -> ArrayLike:
@@ -107,7 +109,7 @@ class ConstitutiveLaw(abc.ABC):
         near to ultimate strain limits to exactly ultimate strain limit.
         """
         eps = np.atleast_1d(np.asarray(eps))
-        eps_max, eps_min = self.get_ultimate_strain()
+        eps_min, eps_max = self.get_ultimate_strain()
 
         idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
         eps[idxs] = eps_max
@@ -136,9 +138,8 @@ class ConstitutiveLaw(abc.ABC):
             # All values are zero for x > 0
             return None
 
-        eps_max, eps_min = self.get_ultimate_strain()
-        if eps_max > 1:
-            eps_max = 1
+        eps_min, eps_max = self.get_ultimate_strain()
+        eps_max = min(eps_max, 1)
         # Analise positive branch
         eps = np.linspace(0, eps_max, 10000)
         sig = self.get_stress(eps)
