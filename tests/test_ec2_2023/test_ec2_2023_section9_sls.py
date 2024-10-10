@@ -421,6 +421,33 @@ def test_wk_cal(
     assert math.isclose(epssm_epscm_, expected4, rel_tol=0.01)
 
 
+# Define test cases with expected results
+test_cases = [
+    ('ss', 0.3, 60, 15),
+    ('ss', 0.2, 45, 15),
+    ('ss', 0.1, 30, 17),
+    ('es', 0.3, 60, 20),
+    ('es', 0.2, 45, 20),
+    ('es', 0.1, 30, 22),
+    ('is', 0.3, 60, 23),
+    ('is', 0.2, 45, 23),
+    ('is', 0.1, 30, 26),
+    ('c', 0.3, 60, 7),
+    ('c', 0.2, 45, 7),
+    ('c', 0.1, 30, 8),
+    ('ss', 0.25, 50, 15.1667),  # This is an interpolated value
+    ('es', 0.25, 50, 19.6667),  # Another interpolated value
+]
+
+
+@pytest.mark.parametrize('ss, wr, ll_tl, expected', test_cases)
+def test_simpl_span_depth_ratio(ss, wr, ll_tl, expected):
+    """Test the limiting span/effective depth ratios formula."""
+    assert _section9_sls.simpl_span_depth_ratio(
+        ss, wr, ll_tl
+    ) == pytest.approx(expected, rel=1e-2)
+
+
 @pytest.mark.parametrize(
     (
         'test_input1, test_input2,test_input3,test_input4, test_input5, '
@@ -469,3 +496,27 @@ def test_delta_simpl(
         expected,
         rel_tol=0.01,
     )
+
+
+@pytest.mark.parametrize(
+    'alpha_I, alpha_II, load_type, sigma_sr_sigma_s, expected',
+    [
+        # Basic functionality with short load type
+        (1.0, 0.5, 'short', 0.0, 0.5),
+        (1.0, 0.5, 'short', 1.0, 1.0),
+        # Basic functionality with cycle load type
+        (1.0, 0.5, 'cycle', 0.0, 0.5),
+        (1.0, 0.5, 'cycle', 1.0, 0.75),
+        # Testing edge cases where sigma_sr_sigma_s is at boundary conditions
+        (1.0, 0.5, 'short', -1.0, 1.0),
+        (1.0, 0.5, 'cycle', -1.0, 0.75),
+        # Testing extremes of sigma_sr_sigma_s
+        (1.0, 0.5, 'short', 10.0, 1.0),
+        (1.0, 0.5, 'cycle', 10.0, 1.0),
+    ],
+)
+def test_delta_gen(alpha_I, alpha_II, load_type, sigma_sr_sigma_s, expected):
+    """Test the general method for deflection calculations."""
+    assert _section9_sls.delta_gen(
+        alpha_I, alpha_II, load_type, sigma_sr_sigma_s
+    ) == pytest.approx(expected)
