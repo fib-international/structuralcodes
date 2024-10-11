@@ -19,8 +19,17 @@ class IntegratorFactory:
         self.instances = {}
         self.registry = registry
 
-    def __call__(self, method: str) -> SectionIntegrator:
-        """Create an integrator based on its name."""
+    def __call__(
+        self, method: t.Literal['marin', 'fiber']
+    ) -> SectionIntegrator:
+        """Create an integrator based on its name.
+
+        Arguments:
+            method (str): The name of the integrator to use.
+
+        Returns:
+            SectionIntegrator: The section integrator.
+        """
         self.instances.setdefault(
             method.lower(), self.registry.get(method.lower(), MarinIntegrator)
         )

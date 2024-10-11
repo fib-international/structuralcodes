@@ -7,15 +7,15 @@ from math import cos, pi, sin
 def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
 
-    fib Model Code 2010, eq. (7.3-57)
+    fib Model Code 2010, eq. (7.3-57).
 
     Args:
-        V_ed (float): The acting shear force from the columns
+        V_ed (float): The acting shear force from the columns.
         v_prep_d_max (float): The maximum shear force per unit length
-        perpendiculerer to the basic control parameter (Figure 7.3-24)
+            perpendicular to the basic control parameter (Figure 7.3-24).
 
-    Return:
-    The shear-resisting control perimeter, b_0
+    Returns:
+        float: The shear-resisting control perimeter, b_0.
     """
     return v_ed / v_prep_d_max
 
@@ -33,24 +33,24 @@ def m_ed(
     """The average bending moment acting in the support strip.
 
     fib Model Code 2010, eq. (7.3-76), (7.3-71), (7.3-72), (7.3-73)
-    and (7.3-74)
+    and (7.3-74).
 
     Args:
-        v_ed (float): The acting shear force from the columns
+        v_ed (float): The acting shear force from the columns.
         e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        l_x (float): The width in x direction that the collumn carries
-        l_y (float): The width in y direction that the collumn carries
-        inner (bool): Is true only if the column is a inner column
+            forces with respect to the centroid.
+        l_x (float): The width in x direction that the collumn carries.
+        l_y (float): The width in y direction that the collumn carries.
+        inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
-        tension reinforcement parallel to the edge
+            tension reinforcement parallel to the edge.
         edge_per (bool): Is true only if the column is a edge column with
-        tension reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
+            tension reinforcement perpendicular to the edge.
+        corner (bool): Is true only if the column is a corner column.
 
-    Return:
-        The bending moment acting in the support strip regardless of the
-        position of the column
+    Returns:
+        float: The bending moment acting in the support strip regardless of the
+        position of the column.
     """
     r_sx = 0.22 * l_x
     r_sy = 0.22 * l_y
@@ -85,30 +85,30 @@ def psi_punching(
 ) -> float:
     """The rotation of the slab around the supported area.
 
-    fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77)
+    fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77).
 
     Args:
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_modulus for steel in MPa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
+        l_x (float): The distance between two columns in x direction.
+        l_y (float): The distance between two columns in y direction.
+        f_yd (float): Design strength of reinforment steel in MPa.
+        d (float): The mean value of the effective depth in mm.
+        e_s (float): The E_modulus for steel in MPa.
+        approx_lvl_p (float): The approx level for punching.
+        v_ed (float): The acting shear force from the columns.
         e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        inner (bool): Is true only if the column is a inner column
+            forces with respect to the centroid.
+        inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
-        tension reinforcement parallel to the edge
+            tension reinforcement parallel to the edge.
         edge_per (bool): Is true only if the column is a edge column with
-        tension reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
+            tension reinforcement perpendicular to the edge.
+        corner (bool): Is true only if the column is a corner column.
+        m_rd (float): The design average strength per unit length in MPa.
         m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
+            in MPa.
 
-    Return:
-    psi for the chosen approx level in punching
+    Returns:
+        float: psi for the chosen approx level in punching.
     """
     r_s = max(0.22 * l_x, 0.22 * l_y)
     if approx_lvl_p == 1:
@@ -147,36 +147,36 @@ def v_rdc_punching(
 ) -> float:
     """Punching resistance from the concrete.
 
-    fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63)
+    fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63).
 
     Args:
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_modulus for steel in MPa
-        approx_lvl_p (float): The approx level for punching
-        dg (float): Maximum size of aggregate
-        f_ck (float): Characteristic strength in MPa
-        d_v (float): The effective depth considering support in mm
-        v_ed (float): The acting shear force from the columns
+        l_x (float): The distance between two columns in x direction.
+        l_y (float): The distance between two columns in y direction.
+        f_yd (float): Design strength of reinforment steel in MPa.
+        d (float): The mean value of the effective depth in mm.
+        e_s (float): The E_modulus for steel in MPa.
+        approx_lvl_p (float): The approx level for punching.
+        dg (float): Maximum size of aggregate.
+        f_ck (float): Characteristic strength in MPa.
+        d_v (float): The effective depth considering support in mm.
+        v_ed (float): The acting shear force from the columns.
         e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        inner (bool): Is true only if the column is a inner column
+            forces with respect to the centroid.
+        inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
-        tension reinforcement parallel to the edge
+            tension reinforcement parallel to the edge.
         edge_per (bool): Is true only if the column is a edge column with
-        tension reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
+            tension reinforcement perpendicular to the edge.
+        corner (bool): Is true only if the column is a corner column.
+        m_rd (float): The design average strength per unit length in MPa.
         m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
+            in MPa.
         v_prep_d_max (float): The maximum shear force per unit length
-        perpendiculerer to the basic control parameter (Figure 7.3-24)
-        gamma_c: Safety factor for concrete
+            perpendicular to the basic control parameter (Figure 7.3-24).
+        gamma_c: Safety factor for concrete.
 
-    Return:
-    v_rdc for punching with the right approx level
+    Returns:
+        float: v_rdc for punching with the right approx level.
     """
     k_dg = max(32 / (16 + dg), 0.75)
     k_psi = min(
@@ -231,39 +231,41 @@ def v_rds_punching(
     a_sw: float,
     gamma_s: float,
 ):
-    """The punching resistance from shear reinforcement
-     fib Model Code 2010, eq. (7.3-64) and (7.3-65).
+    """The punching resistance from shear reinforcement.
+
+    fib Model Code 2010, eq. (7.3-64) and (7.3-65).
 
     Args:
         e_u (float): The ecentrisity of the result of shear forces
-        with respect to the centroid (Figure 7.3-27b)
-        b_u (float): The diamter of a circle with same surface as the
-        region inside the basic control perimeter (Figure 7.3-27b)
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_modulus for steel in MPa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
-        inner (bool): Is true only if the column is a inner column
+            with respect to the centroid (Figure 7.3-27b).
+        b_u (float): The diamter of a circle with same surface as the region
+            inside the basic control perimeter (Figure 7.3-27b).
+        l_x (float): The distance between two columns in x direction.
+        l_y (float): The distance between two columns in y direction.
+        f_yd (float): Design strength of reinforment steel in MPa.
+        d (float): The mean value of the effective depth in mm.
+        e_s (float): The E_modulus for steel in MPa.
+        approx_lvl_p (float): The approx level for punching.
+        v_ed (float): The acting shear force from the columns.
+        inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
-        tension reinforcement parallel to the edge
+            tension reinforcement parallel to the edge.
         edge_per (bool): Is true only if the column is a edge column with
-        tension reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-        alpha (float): Inclination of the stirrups in degrees
-        f_bd (float): The design bond strength in MPa
-        f_ywk (float): Characteristic yield strength of the shear
-        reinforcement in MPa
-        phi_w (float): The diameter of the shear reinforcement
-        a_sw (float): The area of the shear reinforcement in mm^2
-        gamma_s (float): Steels reduction factor
+            tension reinforcement perpendicular to the edge.
+        corner (bool): Is true only if the column is a corner column.
+        m_rd (float): The design average strength per unit length in MPa.
+        m_pd: (float): The average decompresstion moment due to prestressing in
+            MPa.
+        alpha (float): Inclination of the stirrups in degrees.
+        f_bd (float): The design bond strength in MPa.
+        f_ywk (float): Characteristic yield strength of the shear reinforcement
+            in MPa.
+        phi_w (float): The diameter of the shear reinforcement.
+        a_sw (float): The area of the shear reinforcement in mm^2.
+        gamma_s (float): Safety factor for reinforcement.
 
-    Return: Punching resistance that comes from reinforcement
+    Returns:
+        float: Punching resistance that comes from reinforcement.
     """
     f_ywd = f_ywk / gamma_s
     k_e = 1 / (1 + e_u / b_u)
@@ -323,42 +325,42 @@ def v_rd_max_punching(
     d_head: bool,
     stirrups_compression: bool,
     gamma_c: float = 1.5,
-):
+) -> float:
     """Finds the maximum value you can have for v_rd_punching.
 
-    fib Model Code 2010, eq. (7.3-68) and (7.3-69)
+    fib Model Code 2010, eq. (7.3-68) and (7.3-69).
 
     Args:
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_modulus for steel in MPa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
+        l_x (float): The distance between two columns in x direction.
+        l_y (float): The distance between two columns in y direction.
+        f_yd (float): Design strength of reinforment steel in MPa.
+        d (float): The mean value of the effective depth in mm.
+        e_s (float): The E_modulus for steel in MPa.
+        approx_lvl_p (float): The approx level for punching.
+        v_ed (float): The acting shear force from the columns.
         e_u (float): Refers to the eccentricity of the resultant of shear
-        forces with respect to the centroid
-        inner (bool): Is true only if the column is a inner column
+            forces with respect to the centroid.
+        inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
-        tension reinforcement parallel to the edge
+            tension reinforcement parallel to the edge.
         edge_per (bool): Is true only if the column is a edge column with
-        tension reinforcement perpendicular to the edge
-        dg (float): Maximum size of aggregate
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
+            tension reinforcement perpendicular to the edge.
+        dg (float): Maximum size of aggregate.
+        corner (bool): Is true only if the column is a corner column.
+        m_rd (float): The design average strength per unit length in MPa.
+        m_pd: (float): The average decompresstion moment due to prestressing in
+            MPa.
         v_prep_d_max (float): The maximum shear force per unit length
-        perpendiculerer to the basic control parameter (Figure 7.3-24)
-        d_v (float): The effective depth considering support in mm
-        f_ck (float): Characteristic strength in MPa
-        d_head (bool): True if diameter of heads is three times larger than
+            perpendiculerer to the basic control parameter (Figure 7.3-24).
+        d_v (float): The effective depth considering support in mm.
+        f_ck (float): Characteristic strength in MPa.
+        d_head (bool): True if diameter of heads is three times larger than.
         stirrups_compression: (bool): Stirrups with sufficient length at
-        compression face, and bent on tension face
-        gamma_c (float): Concrete reduction factor
+            compression face, and bent on tension face.
+        gamma_c (float): Safety factor for concrete.
 
     Return:
-        The maximum allowed punching resistance
+        float: The maximum allowed punching resistance.
     """
     if d_head:
         k_sys = 2.8
@@ -429,46 +431,47 @@ def v_rd_punching(
     stirrups_compression: bool,
     gamma_c: float = 1.5,
     gamma_s: float = 1.15,
-):
+) -> float:
     """The total resistance for punching, both Vrd,c and Vrd,s.
 
-     fib Model Code 2010, eq. (7.3-60)
+    fib Model Code 2010, eq. (7.3-60).
 
     Args:
-        e_u (float): The ecentrisity of the result of shear forces
-        with respect to the centroid (Figure 7.3-27b)
-        b_u (float): The diamter of a circle with same surface as the
-        region inside the basic control perimeter (Figure 7.3-27b)
-        l_x (float): The distance between two columns in x direction
-        l_y (float): The distance between two columns in y direction
-        f_yd (float): Design strength of reinforment steel in MPa
-        d (float): The mean value of the effective depth in mm
-        e_s (float): The E_modulus for steel in MPa
-        approx_lvl_p (float): The approx level for punching
-        v_ed (float): The acting shear force from the columns
-        inner (bool): Is true only if the column is a inner column
+        e_u (float): The ecentrisity of the result of shear forces with respect
+            to the centroid (Figure 7.3-27b).
+        b_u (float): The diamter of a circle with same surface as the region
+            inside the basic control perimeter (Figure 7.3-27b).
+        l_x (float): The distance between two columns in x direction.
+        l_y (float): The distance between two columns in y direction.
+        f_yd (float): Design strength of reinforment steel in MPa.
+        d (float): The mean value of the effective depth in mm.
+        e_s (float): The E_modulus for steel in MPa.
+        approx_lvl_p (float): The approx level for punching.
+        v_ed (float): The acting shear force from the columns.
+        inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
-        tension reinforcement parallel to the edge
+            tension reinforcement parallel to the edge.
         edge_per (bool): Is true only if the column is a edge column with
-        tension reinforcement perpendicular to the edge
-        corner (bool): Is true only if the column is a corner column
-        m_rd (float): The design average strength per unit length in MPa
-        m_pd: (float): The average decompresstion moment due to prestressing
-        in MPa
-        alpha (float): Inclination of the stirrups in degrees
-        f_bd (float): The design bond strength in MPa
+            tension reinforcement perpendicular to the edge.
+        corner (bool): Is true only if the column is a corner column.
+        m_rd (float): The design average strength per unit length in MPa.
+        m_pd: (float): The average decompresstion moment due to prestressing in
+            MPa.
+        alpha (float): Inclination of the stirrups in degrees.
+        f_bd (float): The design bond strength in MPa.
         f_ywk (float): Characteristic yield strength of the shear reinforcement
-        in MPa
-        phi_w (float): The diameter of the shear reinforcement
-        a_sw (float): The area of the shear reinforcement in mm^2
-        dg (float): Maximum size of aggregate
-        f_ck (float): Characteristic strength in MPa
-        d_v (float): The effective depth considering support in mm
+            in MPa.
+        phi_w (float): The diameter of the shear reinforcement.
+        a_sw (float): The area of the shear reinforcement in mm^2.
+        dg (float): Maximum size of aggregate.
+        f_ck (float): Characteristic strength in MPa.
+        d_v (float): The effective depth considering support in mm.
         v_prep_d_max (float): The maximum shear force per unit length
-        perpendiculerer to the basic control parameter (Figure 7.3-24)
+            perpendicular to the basic control parameter (Figure 7.3-24).
 
-    Return: The maximum allowed punching resistance, regardless of
-    values from v_rdc and v_rds
+    Return:
+        float: The maximum allowed punching resistance, regardless of values
+        from v_rdc and v_rds.
     """
     return min(
         v_rdc_punching(

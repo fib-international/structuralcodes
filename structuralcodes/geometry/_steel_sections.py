@@ -20,13 +20,13 @@ from structuralcodes.sections.section_integrators._marin_integration import (
 
 
 class BaseProfile:
-    """Base class representing a profille.
+    """Base class representing a profile.
 
-    Contains the common code for all sections
+    Contains the common code for all sections.
     """
 
     def __init__(self):
-        """Creates an empy base profile."""
+        """Creates an empty base profile."""
         self._polygon: Polygon = None
         self._A: float = None
         self._Iy: float = None
@@ -44,8 +44,8 @@ class BaseProfile:
     def _check_polygon_defined(self):
         """Just checks if polygon attribute is defined.
 
-        If the polygon is not defined (it should never happen),
-        an exception is Raised.
+        If the polygon is not defined (it should never happen), an exception
+        is Raised.
         """
         # The polygon attribute should be already defined
         if self._polygon is None:
@@ -91,8 +91,8 @@ class BaseProfile:
     def _find_delta_area_above_minus_below(self, z: float) -> float:
         """Returns area difference between above and below parts.
 
-        Above and below parts are computed splitting the polygon
-        with a line parallel to Y axes at z coordinate.
+        Above and below parts are computed splitting the polygon with a line
+        parallel to Y axes at z coordinate.
         """
         bounds = self._polygon.bounds
         xmax = max(abs(bounds[0]), bounds[2])
@@ -187,8 +187,8 @@ class BaseProfile:
     def Icsi(self) -> float:
         """Returns second moment of area around principal csi axis.
 
-        It is assumed that Icsi is maximum second moment, while Ieta is
-        the minimum one.
+        It is assumed that Icsi is maximum second moment, while Ieta is the
+        minimum one.
         """
         if self._Icsi is None:
             self._find_principals_direction_and_moments()
@@ -198,8 +198,8 @@ class BaseProfile:
     def Ieta(self) -> float:
         """Returns second moment of area around principal eta axis.
 
-        It is assumed that Icsi is maximum second moment, while Ieta is
-        the minimum one.
+        It is assumed that Icsi is maximum second moment, while Ieta is the
+        minimum one.
         """
         if self._Ieta is None:
             self._find_principals_direction_and_moments()
@@ -209,11 +209,11 @@ class BaseProfile:
     def theta(self) -> float:
         """Returns angle between x and principal eta axis.
 
-        It is assumed that Icsi is maximum second moment, while Ieta is
-        the minimum one.
+        It is assumed that Icsi is maximum second moment, while Ieta is the
+        minimum one.
 
         Returns:
-            (float): the angle in radians
+            float: The angle in radians.
         """
         if self._theta is None:
             self._find_principals_direction_and_moments()
@@ -228,8 +228,8 @@ class BaseProfile:
         xmax = max(abs(bounds[0]), bounds[2])
         ymax = max(abs(bounds[1]), bounds[3])
         # Then compute section modulus
-        self._Wely = self._Iy / ymax
-        self._Welz = self._Iz / xmax
+        self._Wely = self.Iy / ymax
+        self._Welz = self.Iz / xmax
 
     @property
     def Wely(self) -> float:
@@ -315,7 +315,7 @@ class BaseProfile:
 class IPE(BaseProfile):
     """Simple class for representing an IPE profile.
 
-    IPE 80-600 in accordance with standard Euronorm 19-57
+    IPE 80-600 in accordance with standard Euronorm 19-57.
     """
 
     parameters = {
@@ -382,52 +382,52 @@ class IPE(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the IPE section.
+            Polygon: The represention of the IPE section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of IPE section.
 
         Returns:
-            float: height h of IPE section.
+            float: Height h of IPE section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of IPE section.
 
         Returns:
-            float: width b of IPE section.
+            float: Width b of IPE section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of IPE section.
 
         Returns:
-            float: web thickness tw of IPE section.
+            float: Web thickness tw of IPE section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of IPE section.
 
         Returns:
-            float: flange thickness tw of IPE section.
+            float: Flange thickness tw of IPE section.
         """
         return self._tf
 
     @property
-    def r(self) -> Polygon:
+    def r(self) -> float:
         """Returns fillet radius of IPE section.
 
         Returns:
-            float: fillet radius r of IPE section.
+            float: Fillet radius r of IPE section.
         """
         return self._r
 
@@ -435,7 +435,7 @@ class IPE(BaseProfile):
 class HE(BaseProfile):
     """Simple class for representing an HE profile.
 
-    HE A, HE B, HE M 100-1000 in accordance with Standard Euronorm 53-62
+    HE A, HE B, HE M 100-1000 in accordance with Standard Euronorm 53-62.
     """
 
     parameters = {
@@ -564,52 +564,52 @@ class HE(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the HE section.
+            Polygon: The represention of the HE section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of HE section.
 
         Returns:
-            float: height h of HE section.
+            float: Height h of HE section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of HE section.
 
         Returns:
-            float: width b of HE section.
+            float: Width b of HE section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of HE section.
 
         Returns:
-            float: web thickness tw of HE section.
+            float: Web thickness tw of HE section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of HE section.
 
         Returns:
-            float: flange thickness tw of HE section.
+            float: Flange thickness tw of HE section.
         """
         return self._tf
 
     @property
-    def r(self) -> Polygon:
+    def r(self) -> float:
         """Returns fillet radius of HE section.
 
         Returns:
-            float: fillet radius r of HE section.
+            float: Fillet radius r of HE section.
         """
         return self._r
 
@@ -617,7 +617,7 @@ class HE(BaseProfile):
 class UB(BaseProfile):
     """Simple class for representing a UB profile.
 
-    Universal Beams
+    Universal Beams.
     """
 
     parameters = {
@@ -818,52 +818,52 @@ class UB(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the UB section.
+            Polygon: The represention of the UB section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of UB section.
 
         Returns:
-            float: height h of UB section.
+            float: Height h of UB section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of UB section.
 
         Returns:
-            float: width b of UB section.
+            float: Width b of UB section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of UB section.
 
         Returns:
-            float: web thickness tw of UB section.
+            float: Web thickness tw of UB section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of UB section.
 
         Returns:
-            float: flange thickness tw of UB section.
+            float: Flange thickness tw of UB section.
         """
         return self._tf
 
     @property
-    def r(self) -> Polygon:
+    def r(self) -> float:
         """Returns fillet radius of UB section.
 
         Returns:
-            float: fillet radius r of UB section.
+            float: Fillet radius r of UB section.
         """
         return self._r
 
@@ -871,7 +871,7 @@ class UB(BaseProfile):
 class UC(BaseProfile):
     """Simple class for representing a UC profile.
 
-    Universal Columns
+    Universal Columns.
     """
 
     parameters = {
@@ -1084,52 +1084,52 @@ class UC(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the UC section.
+            Polygon: The represention of the UC section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of UC section.
 
         Returns:
-            float: height h of UC section.
+            float: Height h of UC section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of UC section.
 
         Returns:
-            float: width b of UC section.
+            float: Width b of UC section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of UC section.
 
         Returns:
-            float: web thickness tw of UC section.
+            float: Web thickness tw of UC section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of UC section.
 
         Returns:
-            float: flange thickness tw of UC section.
+            float: Flange thickness tw of UC section.
         """
         return self._tf
 
     @property
-    def r(self) -> Polygon:
+    def r(self) -> float:
         """Returns fillet radius of UC section.
 
         Returns:
-            float: fillet radius r of UC section.
+            float: Fillet radius r of UC section.
         """
         return self._r
 
@@ -1137,7 +1137,7 @@ class UC(BaseProfile):
 class UBP(BaseProfile):
     """Simple class for representing a UBP profile.
 
-    Universal Bearing Pile
+    Universal Bearing Pile.
     """
 
     parameters = {
@@ -1301,52 +1301,52 @@ class UBP(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the UBP section.
+            Polygon: The represention of the UBP section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of UBP section.
 
         Returns:
-            float: height h of UBP section.
+            float: Height h of UBP section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of UBP section.
 
         Returns:
-            float: width b of UBP section.
+            float: Width b of UBP section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of UBP section.
 
         Returns:
-            float: web thickness tw of UBP section.
+            float: Web thickness tw of UBP section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of UBP section.
 
         Returns:
-            float: flange thickness tw of UBP section.
+            float: Flange thickness tw of UBP section.
         """
         return self._tf
 
     @property
-    def r(self) -> Polygon:
+    def r(self) -> float:
         """Returns fillet radius of UBP section.
 
         Returns:
-            float: fillet radius r of UBP section.
+            float: Fillet radius r of UBP section.
         """
         return self._r
 
@@ -1354,9 +1354,9 @@ class UBP(BaseProfile):
 class IPN(BaseProfile):
     """Simple class for representing an IPN profile.
 
-    IPN  in accordance with standard
+    IPN in accordance with standard.
 
-    14% slope in flange
+    14% slope in flange.
     """
 
     parameters = {
@@ -1611,61 +1611,61 @@ class IPN(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the IPN section.
+            Polygon: The represention of the IPN section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of IPN section.
 
         Returns:
-            float: height h of IPN section.
+            float: Height h of IPN section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of IPN section.
 
         Returns:
-            float: width b of IPN section.
+            float: Width b of IPN section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of IPN section.
 
         Returns:
-            float: web thickness tw of IPN section.
+            float: Web thickness tw of IPN section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of IPN section.
 
         Returns:
-            float: flange thickness tw of IPN section.
+            float: Flange thickness tw of IPN section.
         """
         return self._tf
 
     @property
-    def r1(self) -> Polygon:
+    def r1(self) -> float:
         """Returns fillet radius of IPN section.
 
         Returns:
-            float: fillet radius r1 of IPN section.
+            float: Fillet radius r1 of IPN section.
         """
         return self._r1
 
     @property
-    def r2(self) -> Polygon:
+    def r2(self) -> float:
         """Returns fillet radius of IPN section.
 
         Returns:
-            float: fillet radius r2 of IPN section.
+            float: Fillet radius r2 of IPN section.
         """
         return self._r2
 
@@ -1673,10 +1673,11 @@ class IPN(BaseProfile):
 class UPN(BaseProfile):
     """Simple class for representing an UPN profile.
 
-    European standard channels UPN 50 - 400
-    Taper flange Channels
+    European standard channels UPN 50 - 400.
 
-    14% slope in flange
+    Taper flange Channels.
+
+    14% slope in flange.
     """
 
     parameters = {
@@ -1915,61 +1916,61 @@ class UPN(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: the represention of the UPN section.
+            Polygon: The represention of the UPN section.
         """
         return self._polygon
 
     @property
-    def h(self) -> Polygon:
+    def h(self) -> float:
         """Returns height of UPN section.
 
         Returns:
-            float: height h of UPN section.
+            float: Height h of UPN section.
         """
         return self._h
 
     @property
-    def b(self) -> Polygon:
+    def b(self) -> float:
         """Returns width of UPN section.
 
         Returns:
-            float: width b of UPN section.
+            float: Width b of UPN section.
         """
         return self._b
 
     @property
-    def tw(self) -> Polygon:
+    def tw(self) -> float:
         """Returns thickness of web of UPN section.
 
         Returns:
-            float: web thickness tw of UPN section.
+            float: Web thickness tw of UPN section.
         """
         return self._tw
 
     @property
-    def tf(self) -> Polygon:
+    def tf(self) -> float:
         """Returns thickness of flange of UPN section.
 
         Returns:
-            float: flange thickness tw of UPN section.
+            float: Flange thickness tw of UPN section.
         """
         return self._tf
 
     @property
-    def r1(self) -> Polygon:
+    def r1(self) -> float:
         """Returns fillet radius of UPN section.
 
         Returns:
-            float: fillet radius r1 of UPN section.
+            float: Fillet radius r1 of UPN section.
         """
         return self._r1
 
     @property
-    def r2(self) -> Polygon:
+    def r2(self) -> float:
         """Returns fillet radius of UPN section.
 
         Returns:
-            float: fillet radius r2 of UPN section.
+            float: Fillet radius r2 of UPN section.
         """
         return self._r2
 
