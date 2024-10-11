@@ -1,22 +1,24 @@
+"""Functions from Section 8.2 of EN 1992-1-1:2023."""
+
 import math
 from typing import List, Literal
 
 
 def tao_Ed(VEd: float, bw: float, d: float) -> float:
-    """Calculate the average shear stress over the cross-section
-        for linear members.
+    """Calculate the average shear stress over the cross-section for linear
+    members.
 
-    EN1992-1-1:2923 Eq. (8.18)
+    EN1992-1-1:2923 Eq. (8.18).
 
-    Parameters:
-        VEd (float): Design shear force at the control section in
-            linear members in kN.
+    Args:
+        VEd (float): Design shear force at the control section in linear
+            members in kN.
         bw (float): Width of the cross-section of linear members in mm.
         d (float): Effective depth of the cross-section in mm.
 
     Returns:
-        float: Average shear stress over the cross-section
-            for linear members in Mpa.
+        float: Average shear stress over the cross-section for linear members
+        in Mpa.
     """
     if bw < 0:
         raise ValueError(f'bw must not be negative. Got {bw}')
@@ -28,19 +30,19 @@ def tao_Ed(VEd: float, bw: float, d: float) -> float:
 
 
 def tao_Ed_planar(vEd: float, d: float) -> float:
-    """Calculate the average shear stress over the cross-section
-        for planar members.
+    """Calculate the average shear stress over the cross-section for planar
+    members.
 
-    EN1992-1-1:2923 Eq. (8.19)
+    EN1992-1-1:2923 Eq. (8.19).
 
-    Parameters:
-        vEd (float): Design shear force per unit width in planar members
-            in kN/m.
+    Args:
+        vEd (float): Design shear force per unit width in planar members in
+            kN/m.
         d (float): Effective depth of the cross-section in mm.
 
     Returns:
-        float: Average shear stress over the cross-section for
-            planar members in MPa.
+        float: Average shear stress over the cross-section for planar members
+        in MPa.
     """
     if d < 0:
         raise ValueError(f'd must not be negative. Got {d}')
@@ -58,19 +60,19 @@ def tau_rdc_min(
 ) -> float:
     """Calculate the minimum shear stress resistance.
 
-    EN1992-1-1:2023 Eq. (8.20)
+    EN1992-1-1:2023 Eq. (8.20).
 
     Args:
         gamma_v (float): Partial factor for shear design.
-        f_ck (float): Characteristic compressive strength of
-            concrete in MPa (must be positive).
-        f_yd (float): Design value of the yield strength
-            in MPa (must be positive).
-        d (float): Effective depth of the flexural
-            reinforcement in mm (must be positive).
+        f_ck (float): Characteristic compressive strength of concrete in MPa
+            (must be positive).
+        f_yd (float): Design value of the yield strength in MPa (must be
+            positive).
+        d (float): Effective depth of the flexural reinforcement in mm (must be
+            positive).
         d_lower (float): Smallest value of the upper sieve size D in an
-            aggregate for the coarsest fraction of aggregates
-            in mm (must be positive).
+            aggregate for the coarsest fraction of aggregates in mm (must be
+            positive).
 
     Returns:
         float: Minimum shear stress resistance in MPa.
@@ -100,7 +102,7 @@ def tau_rdc_min(
 def v_Ed(vEd_x: float, vEd_y: float) -> float:
     """Calculate the design shear force per unit width (vEd).
 
-    EN1992-1-1:2023 Eq. (8.21)
+    EN1992-1-1:2023 Eq. (8.21).
 
     Args:
         vEd_x (float): Shear force in x-direction in kN/m.
@@ -123,7 +125,7 @@ def v_Ed(vEd_x: float, vEd_y: float) -> float:
 def d_eff(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
     """Calculate the effective depth (d) based on the ratio of shear forces.
 
-    EN1992-1-1:2023 Eq. (8.22), (8.23), (8.24)
+    EN1992-1-1:2023 Eq. (8.22), (8.23), (8.24).
 
     Args:
         dx (float): Effective depth in x-direction in mm.
@@ -157,9 +159,9 @@ def d_eff(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
 def d_eff_with_angle(
     dx: float, dy: float, vEd_x: float, vEd_y: float
 ) -> float:
-    """Calculate the effective depth (d) based on the angle αv.
+    """Calculate the effective depth (d) based on the angle alpha_v.
 
-    EN1992-1-1:2023 Eq. (8.25), (8.26)
+    EN1992-1-1:2023 Eq. (8.25), (8.26).
 
     Args:
         dx (float): Effective depth in x-direction in mm.
@@ -196,7 +198,7 @@ def tau_Rdc(
 ) -> float:
     """Calculate the design value of the shear stress resistance.
 
-    EN1992-1-1:2023 Eq. (8.27)
+    EN1992-1-1:2023 Eq. (8.27).
 
     Args:
         gamma_v (float): Partial factor for shear (unitless).
@@ -227,7 +229,7 @@ def tau_Rdc(
 def rho_l(A_sl: float, b_w: float, d: float) -> float:
     """Calculate the reinforcement ratio.
 
-    EN1992-1-1:2023 Eq. (8.28)
+    EN1992-1-1:2023 Eq. (8.28).
 
     Args:
         A_sl (float): Effective area of tensile reinforcement in mm2.
@@ -252,7 +254,7 @@ def rho_l(A_sl: float, b_w: float, d: float) -> float:
 def a_v(a_cs: float, d: float) -> float:
     """Calculate the effective shear span.
 
-    EN1992-1-1:2023 Eq. (8.30)
+    EN1992-1-1:2023 Eq. (8.30).
 
     Args:
         M_Ed (float): Bending moment kN·m.
@@ -275,7 +277,7 @@ def a_v(a_cs: float, d: float) -> float:
 def a_cs(M_Ed: float, V_Ed: float, d: float) -> float:
     """Calculate the effective shear span.
 
-    EN1992-1-1:2023 Eq. (8.30)
+    EN1992-1-1:2023 Eq. (8.30).
 
     Args:
         M_Ed (float): Bending moment kN·m.
@@ -297,7 +299,7 @@ def a_cs(M_Ed: float, V_Ed: float, d: float) -> float:
 def k_vp(N_Ed: float, V_Ed: float, d: float, a_cs: float) -> float:
     """Calculate the coefficient k_vp.
 
-    EN1992-1-1:2023 Eq. (8.31)
+    EN1992-1-1:2023 Eq. (8.31).
 
     Args:
         N_Ed (float): Axial force in kN.
@@ -325,10 +327,10 @@ def k_vp(N_Ed: float, V_Ed: float, d: float, a_cs: float) -> float:
 def tau_Rdc_0(
     gamma_v: float, rho_l: float, f_ck: float, d: float, d_g: float
 ) -> float:
-    """Calculate the design value of the shear stress
-        resistance without axial force effects.
+    """Calculate the design value of the shear stress resistance without axial
+    force effects.
 
-    EN1992-1-1:2023 Eq. (8.33)
+    EN1992-1-1:2023 Eq. (8.33).
 
     Args:
         gamma_v (float): Partial factor for shear (unitless).
@@ -356,19 +358,19 @@ def tau_Rdc_0(
 def tau_Rdc_comp(
     tau_Rdc_0: float, k1: float, sigma_cp: float, tau_Rdc_max: float
 ) -> float:
-    """Calculate the design value of the shear stress
-        resistance considering compressive normal forces.
+    """Calculate the design value of the shear stress resistance considering
+    compressive normal forces.
 
-    EN1992-1-1:2023 Eq. (8.32)
+    EN1992-1-1:2023 Eq. (8.32).
 
     Args:
-        tau_Rdc_0 (float): Design value of the shear stress resistance
-            without axial force effects in MPa.
-        k1 (float): Factor considering the effect of compressive
-            normal forces (unitless).
+        tau_Rdc_0 (float): Design value of the shear stress resistance without
+            axial force effects in MPa.
+        k1 (float): Factor considering the effect of compressive normal forces
+            (unitless).
         sigma_cp (float): Compressive stress due to axial force in MPa.
-        tau_Rdc_max (float): Maximum design value of the
-            shear stress resistance in MPa.
+        tau_Rdc_max (float): Maximum design value of the shear stress
+            resistance in MPa.
 
     Returns:
         float: The design value of the shear stress resistance in MPa.
@@ -395,16 +397,16 @@ def k1(
     z: float,
     d: float,
 ) -> float:
-    """Calculate the factor k1 considering the effect of
-        compressive normal forces.
+    """Calculate the factor k1 considering the effect of compressive normal
+    forces.
 
-    EN1992-1-1:2023 Eq. (8.34)
+    EN1992-1-1:2023 Eq. (8.34).
 
     Args:
-        a_cs_0 (float): Effective shear span without
-            considering prestressing effects in mm.
-        e_p (float): Eccentricity of the prestressing
-            force or external load in mm.
+        a_cs_0 (float): Effective shear span without considering prestressing
+            effects in mm.
+        e_p (float): Eccentricity of the prestressing force or external load in
+            mm.
         A_c (float): Area of concrete cross-section in mm2.
         b_w (float): Width of the cross-section in mm.
         z (float): Lever arm in mm.
@@ -429,13 +431,13 @@ def k1(
 def tau_Rdc_max(tau_Rdc_0: float, a_cs_0: float, d: float) -> float:
     """Calculate the maximum design value of the shear stress resistance.
 
-    EN1992-1-1:2023 Eq. (8.35)
+    EN1992-1-1:2023 Eq. (8.35).
 
     Args:
-        tau_Rdc_0 (float): Design value of the shear stress
-            resistance without axial force effects in MPa.
-        a_cs_0 (float): Effective shear span without
-            considering prestressing effects in mm.
+        tau_Rdc_0 (float): Design value of the shear stress resistance without
+            axial force effects in MPa.
+        a_cs_0 (float): Effective shear span without considering prestressing
+            effects in mm.
         d (float): Effective depth in mm.
 
     Returns:
@@ -455,21 +457,22 @@ def tau_Rdc_max(tau_Rdc_0: float, a_cs_0: float, d: float) -> float:
 
 
 def d_eff_p(ds: float, As: float, dp: float, Ap: float) -> float:
-    """Calculate the effective depth for prestressed
-        members with bonded tendons.
+    """Calculate the effective depth for prestressed members with bonded
+    tendons.
 
-    EN1992-1-1:2023 Eq. (8.36)
-    Parameters:
-        ds (float): Depth of the tension reinforcement in mm
-        As (float): Area of the tension reinforcement in mm2
-        dp (float): Depth of the prestressed reinforcement in mm
-        Ap (float): Area of the prestressed reinforcement in mm2
+    EN1992-1-1:2023 Eq. (8.36).
+
+    Args:
+        ds (float): Depth of the tension reinforcement in mm.
+        As (float): Area of the tension reinforcement in mm2.
+        dp (float): Depth of the prestressed reinforcement in mm.
+        Ap (float): Area of the prestressed reinforcement in mm2.
 
     Returns:
-        float: Effective depth in mm
+        float: Effective depth in mm.
 
     Raises:
-        ValueError: If any of the input values are negative
+        ValueError: If any of the input values are negative.
     """
     if ds < 0:
         raise ValueError(f'ds must not be negative. Got {ds}')
@@ -486,23 +489,24 @@ def d_eff_p(ds: float, As: float, dp: float, Ap: float) -> float:
 def rho_l_p(
     ds: float, As: float, dp: float, Ap: float, bw: float, d: float
 ) -> float:
-    """Calculate the reinforcement ratio for prestressed
-        members with bonded tendons.
+    """Calculate the reinforcement ratio for prestressed members with bonded
+    tendons.
 
-    EN1992-1-1:2023 Eq. (8.37)
-    Parameters:
-        ds (float): Depth of the tension reinforcement in mm
-        As (float): Area of the tension reinforcement in mm2
-        dp (float): Depth of the prestressed reinforcement in mm
-        Ap (float): Area of the prestressed reinforcement in mm2
-        bw (float): Width of the member in mm
-        d (float): Effective depth in mm
+    EN1992-1-1:2023 Eq. (8.37).
+
+    Args:
+        ds (float): Depth of the tension reinforcement in mm.
+        As (float): Area of the tension reinforcement in mm2.
+        dp (float): Depth of the prestressed reinforcement in mm.
+        Ap (float): Area of the prestressed reinforcement in mm2.
+        bw (float): Width of the member in mm.
+        d (float): Effective depth in mm.
 
     Returns:
-    float: Reinforcement ratio
+        float: Reinforcement ratio.
 
     Raises:
-        ValueError: If any of the input values are negative
+        ValueError: If any of the input values are negative.
     """
     if ds < 0:
         raise ValueError(f'ds must not be negative. Got {ds}')
@@ -523,23 +527,23 @@ def rho_l_p(
 def rho_l_planar(
     vEd_y: float, vEd_x: float, rho_l_x: float, rho_l_y: float
 ) -> float:
-    """Calculate the reinforcement ratio for planar members with
-        different reinforcement ratios in both directions.
+    """Calculate the reinforcement ratio for planar members with different
+    reinforcement ratios in both directions.
 
-    EN1992-1-1:2023 Eq. (8.38), (8.39), (8.40)
+    EN1992-1-1:2023 Eq. (8.38), (8.39), (8.40).
 
-    Parameters:
-        vEd_y (float): Shear force in y-direction (kN)
-        vEd_x (float): Shear force in x-direction (kN)
-        rho_l_x (float): Reinforcement ratio in x-direction
-        rho_l_y (float): Reinforcement ratio in y-direction
+    Args:
+        vEd_y (float): Shear force in y-direction (kN).
+        vEd_x (float): Shear force in x-direction (kN).
+        rho_l_x (float): Reinforcement ratio in x-direction.
+        rho_l_y (float): Reinforcement ratio in y-direction.
 
     Returns:
-        float: Reinforcement ratio
+        float: Reinforcement ratio.
 
     Raises:
-    ValueError: If any of the input values are negative or if the
-        shear force ratio is not in the valid range
+        ValueError: If any of the input values are negative or if the shear
+            force ratio is not in the valid range.
     """
     if vEd_y < 0:
         raise ValueError(f'vEd_y must not be negative. Got {vEd_y}')
@@ -572,9 +576,9 @@ def cot_theta_min(
     d: float,
 ) -> float:
     """Calculate the minimum cotangent of the compression field inclination
-        angle, θmin, according to the conditions provided.
+    angle, thetamin, according to the conditions provided.
 
-    EN1992-1-1:2023 Eq. (8.41)
+    EN1992-1-1:2023 Eq. (8.41).
 
     Args:
         NEd (float): Axial force in the member in kN.
@@ -586,8 +590,8 @@ def cot_theta_min(
         float: Minimum cotangent of the compression field inclination angle.
 
     Raises:
-        ValueError: If any of the dimensions or forces are negative,
-            or if d is zero.
+        ValueError: If any of the dimensions or forces are negative, or if d is
+            zero.
     """
     if d <= 0 or x < 0:
         raise ValueError(
@@ -606,7 +610,7 @@ def cot_theta_min(
 def tau_Rd_sy(rho_w: float, fywd: float, cot_theta: float) -> float:
     """Calculate the shear stress resistance of yielding shear reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.42)
+    EN1992-1-1:2023 Eq. (8.42).
 
     Args:
         rho_w (float): Shear reinforcement ratio (unitless).
@@ -628,9 +632,9 @@ def tau_Rd_sy(rho_w: float, fywd: float, cot_theta: float) -> float:
 
 
 def rho_w(Asw: float, bw: float, s: float) -> float:
-    """Calculate the shear reinforcement ratio ρw.
+    """Calculate the shear reinforcement ratio rho_w.
 
-    EN1992-1-1:2023 Eq. (8.43)
+    EN1992-1-1:2023 Eq. (8.43).
 
     Args:
         Asw (float): Area of shear reinforcement in mm2.
@@ -653,9 +657,9 @@ def rho_w(Asw: float, bw: float, s: float) -> float:
 def sigma_cd(
     tau_Ed: float, cot_theta: float, tan_theta: float, nu: float, f_cd: float
 ) -> float:
-    """Calculate the stress in the compression field σcd and verify it.
+    """Calculate the stress in the compression field sigma_cd and verify it.
 
-    EN1992-1-1:2023 Eq. (8.44)
+    EN1992-1-1:2023 Eq. (8.44).
 
     Args:
         tau_Ed (float): Design value of the shear stress in MPa.
@@ -665,7 +669,7 @@ def sigma_cd(
         f_cd (float): Design value of the concrete compressive strength in MPa.
 
     Returns:
-        float: Stress in the compression field σcd in MPa.
+        float: Stress in the compression field sigma_cd in MPa.
 
     Raises:
         ValueError: If any of the parameters are negative.
@@ -680,11 +684,11 @@ def sigma_cd(
 def tau_Rd(
     rho_w: float, fywd: float, cot_theta: float, nu: float, f_cd: float
 ) -> float:
-    """Calculate the shear stress resistance τRd considering the simultaneous
-        yielding of the shear reinforcement and failure of the compression
-        field.
+    """Calculate the shear stress resistance tau_Rd considering the
+    simultaneous yielding of the shear reinforcement and failure of the
+    compression field.
 
-    EN1992-1-1:2023 Eq. (8.42) and (8.44)
+    EN1992-1-1:2023 Eq. (8.42) and (8.44).
 
     Args:
         rho_w (float): Shear reinforcement ratio, unitless.
@@ -694,7 +698,7 @@ def tau_Rd(
         f_cd (float): Design value of the concrete compressive strength in MPa.
 
     Returns:
-        float: Shear stress resistance τRd in MPa.
+        float: Shear stress resistance tau_Rd in MPa.
 
     Raises:
         ValueError: If any of the parameters are negative.
@@ -710,10 +714,10 @@ def cot_theta(
     nu: float, f_cd: float, rho_w: float, fywd: float, cot_theta_min: float
 ) -> float:
     """Calculate the cotangent of the angle of the compression field
-        considering the simultaneous yielding of the shear reinforcement and
-        failure of the compression field.
+    considering the simultaneous yielding of the shear reinforcement and
+    failure of the compression field.
 
-    EN1992-1-1:2023 Eq. (8.44)
+    EN1992-1-1:2023 Eq. (8.44).
 
     Args:
         nu (float): Coefficient (usually 0.5 as per the note).
@@ -736,19 +740,19 @@ def cot_theta(
 
 
 def epsilon_xt(Ftd: float, Est: float, Ast: float) -> float:
-    """Calculate εxt.
+    """Calculate epsilon_xt.
 
-    EN1992-1-1:2023 Eq. (8.47)
+    EN1992-1-1:2023 Eq. (8.47).
 
     Args:
-        Ftd (float): Tensile force in the flexural tension chord in kN
-        Est (float): Modulus of elasticity of the steel in the
-            tension chord in MPa
-        Ast (float): Area of the longitudinal reinforcement in the
-            flexural tension chord in mm2
+        Ftd (float): Tensile force in the flexural tension chord in kN.
+        Est (float): Modulus of elasticity of the steel in the tension chord in
+            MPa.
+        Ast (float): Area of the longitudinal reinforcement in the flexural
+            tension chord in mm2.
 
     Returns:
-        float: εxt (strain)
+        float: epsilon_xt (strain).
     """
     if Est < 0:
         raise ValueError(f'Est must not be negative. Got {Est}')
@@ -758,19 +762,18 @@ def epsilon_xt(Ftd: float, Est: float, Ast: float) -> float:
 
 
 def epsilon_xc_comp(Fcd: float, Ecc: float, Acc: float) -> float:
-    """Calculate εxc for compression.
+    """Calculate epsilon_xc for compression.
 
-    EN1992-1-1:2023 Eq. (8.48)
+    EN1992-1-1:2023 Eq. (8.48).
 
     Args:
-        Fcd (float): Compressive force in the flexural compression chord in kN
-        Ecc (float): Modulus of elasticity of the concrete in the
-            compression chord in MPa
-        Acc (float): Area of the flexural compression
-            chord in mm2
+        Fcd (float): Compressive force in the flexural compression chord in kN.
+        Ecc (float): Modulus of elasticity of the concrete in the compression
+            chord in MPa.
+        Acc (float): Area of the flexural compression chord in mm2.
 
     Returns:
-        float: εxc (strain)
+        float: epsilon_xc (strain).
     """
     if Acc < 0:
         raise ValueError(f'Acc must not be negative. Got {Acc}')
@@ -780,19 +783,19 @@ def epsilon_xc_comp(Fcd: float, Ecc: float, Acc: float) -> float:
 
 
 def epsilon_xc_tens(Fcd: float, Esc: float, Asc: float) -> float:
-    """Calculate εxc.
+    """Calculate epsilon_xc.
 
-    EN1992-1-1:2023 Eq. (8.49)
+    EN1992-1-1:2023 Eq. (8.49).
 
     Args:
-        Fcd (float): Tensile force in the flexural compression chord kN
-        Esc (float): Modulus of elasticity of the steel in the
-            compression chord in MPa
+        Fcd (float): Tensile force in the flexural compression chord kN.
+        Esc (float): Modulus of elasticity of the steel in the compression
+            chord in MPa.
         Asc (float): Area of the longitudinal reinforcement in the flexural
-            compression chord mm2
+            compression chord mm2.
 
     Returns:
-        float: εxc (strain)
+        float: epsilon_xc (strain).
     """
     if Asc < 0:
         raise ValueError(f'Acc must not be negative. Got {Asc}')
@@ -802,33 +805,33 @@ def epsilon_xc_tens(Fcd: float, Esc: float, Asc: float) -> float:
 
 
 def epsilon_x(epsilon_xt: float, epsilon_xc: float) -> float:
-    """Calculate εx.
+    """Calculate epsilon_x.
 
-    EN1992-1-1:2023 Eq. (8.46)
+    EN1992-1-1:2023 Eq. (8.46).
 
     Args:
-        epsilon_xt (float): Strain in the flexural tension chord
-        epsilon_xc (float): Strain in the flexural compression chord
+        epsilon_xt (float): Strain in the flexural tension chord.
+        epsilon_xc (float): Strain in the flexural compression chord.
 
     Returns:
-        float: εx (strain)
+        float: epsilon_x (strain).
     """
     epsilon_x_value = (epsilon_xt + epsilon_xc) / 2
     return max(epsilon_x_value, 0)
 
 
 def nu(epsilon_x: float, cot_theta: float) -> float:
-    """Calculate ν.
+    """Calculate nu.
 
-    EN1992-1-1:2023 Eq. (8.45)
+    EN1992-1-1:2023 Eq. (8.45).
 
     Args:
-        epsilon_x (float): Average strain of the bottom and top chords
-        cot_theta (float): cotan of the compression field
-            inclination to the member axis.
+        epsilon_x (float): Average strain of the bottom and top chords.
+        cot_theta (float): cotan of the compression field inclination to the
+            member axis.
 
     Returns:
-        float: ν (dimensionless factor)
+        float: nu (dimensionless factor).
     """
     if epsilon_x < 0:
         raise ValueError(f'epsilon_x must not be negative. Got {epsilon_x}')
@@ -842,7 +845,7 @@ def nu(epsilon_x: float, cot_theta: float) -> float:
 def Nvd(VEd: float, cot_theta: float) -> float:
     """Calculate the additional tensile axial force NVd due to shear VEd.
 
-    EN1992-1-1:2023 Eq. (8.50)
+    EN1992-1-1:2023 Eq. (8.50).
 
     Args:
         VEd (float): Shear force in kN.
@@ -862,6 +865,8 @@ def Ftd(
 ) -> float:
     """Calculate the chord force Ftd.
 
+    EN1992-1-1:2023 Eq. (8.51).
+
     Args:
         MEd (float): Moment in kNm.
         z (float): Lever arm in mm.
@@ -874,8 +879,6 @@ def Ftd(
     Raises:
         ValueError: If any input is negative.
 
-    Reference:
-        EN1992-1-1:2023 Eq. (8.51)
     """
     return MEd * 1000 / z + (NVd + NE) / 2
 
@@ -888,7 +891,7 @@ def Fcd(
 ) -> float:
     """Calculate the chord force Fcd.
 
-    EN1992-1-1:2023 Eq. (8.52)
+    EN1992-1-1:2023 Eq. (8.52).
 
     Args:
         MEd (float): Moment in kNm.
@@ -908,10 +911,10 @@ def k_duct(
     wall_thickness: float,
     duct_diameter: float,
 ) -> float:
-    """Calculate the k_duct coefficient based on duct
-        material, filling, and wall thickness.
+    """Calculate the k_duct coefficient based on duct material, filling, and
+    wall thickness.
 
-    EN1992-1-1:2023 guidelines for k_duct
+    EN1992-1-1:2023 guidelines for k_duct.
 
     Args:
         duct_material (str): Material of the duct ('steel' or 'plastic').
@@ -959,14 +962,14 @@ def bw_nom(
 ) -> float:
     """Calculate the nominal web width considering the presence of ducts.
 
-    EN1992-1-1:2023 Eq. (8.54)
+    EN1992-1-1:2023 Eq. (8.54).
 
     Args:
         bw (float): Actual web width in mm.
-        duct_diameters (List[float]): List of duct diameters in mm
-            (each must be non-negative).
-        k_duct (float): Coefficient depending on the
-            material and filling of the duct.
+        duct_diameters (List[float]): List of duct diameters in mm (each must
+            be non-negative).
+        k_duct (float): Coefficient depending on the material and filling of
+            the duct.
 
     Returns:
         float: Nominal web width in mm.
@@ -999,20 +1002,21 @@ def tau_rd(
     rho_w: float,
     f_ywd: float,
 ) -> float:
-    """Calculate the enhanced shear stress resistance τRd.
+    """Calculate the enhanced shear stress resistance tau_Rd.
 
-    EN1992-1-1:2023 Eq. (8.55)
+    EN1992-1-1:2023 Eq. (8.55).
 
     Args:
-        nu (float): The factor ν (unitless).
+        nu (float): The factor nu (unitless).
         f_cd (float): Design value of concrete compressive strength in MPa.
         cot_theta (float): Cotangent of the inclination of compression field.
-        cot_beta_incl (float): Cotangent of the inclination of load (cotβincl).
-        rho_w (float): Reinforcement ratio ρw.
+        cot_beta_incl (float): Cotangent of the inclination of load (cot
+            beta_incl).
+        rho_w (float): Reinforcement ratio rho_w.
         f_ywd (float): Design yield strength of shear reinforcement in MPa.
 
     Returns:
-        float: Enhanced shear stress resistance τRd in MPa.
+        float: Enhanced shear stress resistance tau_Rd in MPa.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
@@ -1034,18 +1038,18 @@ def tau_rd(
 def sigma_swd(
     Es: float, eps_x: float, f_ywd: float, cot_theta: float
 ) -> float:
-    """Calculate the stress σswd in the shear reinforcement.
+    """Calculate the stress sigma_swd in the shear reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.56)
+    EN1992-1-1:2023 Eq. (8.56).
 
     Args:
         Es (float): Modulus of elasticity of steel Es in MPa.
-        eps_x (float): Longitudinal strain εx.
+        eps_x (float): Longitudinal strain epsilon_x.
         f_ywd (float): Design yield strength of shear reinforcement in MPa.
         cot_theta (float): Cotangent of the inclination of compression field.
 
     Returns:
-        float: Stress σswd in the shear reinforcement in MPa.
+        float: Stress sigma_swd in the shear reinforcement in MPa.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
@@ -1070,24 +1074,24 @@ def delta_MEd(
     a: float,
     x: float,
 ) -> float:
-    """Calculate the additional moment ΔMEd.
+    """Calculate the additional moment delta MEd.
 
-    EN1992-1-1:2023 Eq. (8.57)
+    EN1992-1-1:2023 Eq. (8.57).
 
     Args:
-        tau_ed (float): Shear stress τEd in MPa (should be positive).
-        rho_w (float): Reinforcement ratio ρw.
+        tau_ed (float): Shear stress tau_Ed in MPa (should be positive).
+        rho_w (float): Reinforcement ratio rho_w.
         f_ywd (float): Design yield strength of shear reinforcement in MPa.
         cot_theta (float): Cotangent of the inclination of compression field.
         z (float): Lever arm z in mm (should be positive).
         b_w (float): Width of the web bw in mm (should be positive).
-        a (float): Distance between the axis of the support and
-            the concentrated force in mm.
+        a (float): Distance between the axis of the support and the
+            concentrated force in mm.
         x (float): Distance between the support and the investigated
             cross-section in mm.
 
     Returns:
-        float: Additional moment ΔMEd in kNm.
+        float: Additional moment delta MEd in kNm.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
@@ -1117,31 +1121,32 @@ def tau_rd_sy(
     alpha_w: float,
     cot_theta_min: float,
 ) -> float:
-    """Calculate the shear stress resistance τRd,sy for inclined
-        shear reinforcement.
+    """Calculate the shear stress resistance tau_Rd,sy for inclined shear
+    reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.58), (8.59).
 
     Args:
-        rho_w (float): Reinforcement ratio ρw.
+        rho_w (float): Reinforcement ratio rho_w.
         f_ywd (float): Design yield strength of shear reinforcement in MPa.
-        cot_theta (float): Cotangent of the inclination of compression
-            field in radians (cotθ).
-        alpha_w (float): Angle of inclined shear reinforcement αw
-            in degrees (45° ≤ αw < 90°).
+        cot_theta (float): Cotangent of the inclination of compression field in
+            radians (cottheta).
+        alpha_w (float): Angle of inclined shear reinforcement alpha_w in
+            degrees (45 ≤ alpha_w < 90).
         cot_theta_min (float): max value for cot_theta.
 
     Returns:
-        float: Shear stress resistance τRd,sy in MPa.
+        float: Shear stress resistance tau_Rd,sy in MPa.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
-
-    Reference:
-        EN1992-1-1:2023 Eq. (8.58), (8.59)
     """
     if f_ywd < 0:
         raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
     if alpha_w < 45 or alpha_w >= 90:
-        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+        raise ValueError(
+            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+        )
 
     alpha_w_rad = math.radians(alpha_w)
     cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
@@ -1158,22 +1163,22 @@ def sigma_cd_s(
     f_cd: float,
     cot_theta_min: float,
 ) -> float:
-    """Calculate the compression stress σcd.
+    """Calculate the compression stress sigma_cd.
 
-    EN1992-1-1:2023 Eq. (8.58), (8.60)
+    EN1992-1-1:2023 Eq. (8.58), (8.60).
 
     Args:
-        tau_ed (float): Shear stress τEd in MPa.
-        cot_theta (float): Cotangent of the inclination of
-            compression field in radians (cotθ).
-        alpha_w (float): Angle of inclined shear reinforcement
-            αw in degrees (45° ≤ αw < 90°).
-        nu (float): The factor ν.
+        tau_ed (float): Shear stress tau_Ed in MPa.
+        cot_theta (float): Cotangent of the inclination of compression field in
+            radians (cottheta).
+        alpha_w (float): Angle of inclined shear reinforcement alpha_w in
+            degrees (45 ≤ alpha_w < 90).
+        nu (float): The factor nu.
         f_cd (float): Design value of concrete compressive strength in MPa.
         cot_theta_min (float): max value for cot_theta.
 
     Returns:
-        float: Compression stress σcd in MPa.
+        float: Compression stress sigma_cd in MPa.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
@@ -1183,7 +1188,9 @@ def sigma_cd_s(
     if f_cd < 0:
         raise ValueError(f'f_cd must not be negative. Got {f_cd}')
     if alpha_w < 45 or alpha_w >= 90:
-        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+        raise ValueError(
+            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+        )
 
     alpha_w_rad = math.radians(alpha_w)
     cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
@@ -1199,14 +1206,14 @@ def NVds(
 ) -> float:
     """Calculate the axial tensile force NVd.
 
-    EN1992-1-1:2023 Eq. (8.58), (8.61)
+    EN1992-1-1:2023 Eq. (8.58), (8.61).
 
     Args:
         VEd (float): Design shear force VEd in kN (should be positive).
-        cot_theta (float): Cotangent of the nclination of
-            compression field in radians (cotθ).
-        alpha_w (float): Angle of inclined shear reinforcement
-            αw in degrees (45° ≤ αw < 90°).
+        cot_theta (float): Cotangent of the nclination of compression field in
+            radians (cottheta).
+        alpha_w (float): Angle of inclined shear reinforcement alpha_w in
+            degrees (45 ≤ alpha_w < 90).
         cot_theta_min (float): max value for cot_theta.
 
     Returns:
@@ -1218,7 +1225,9 @@ def NVds(
     if VEd < 0:
         raise ValueError(f'VEd must not be negative. Got {VEd}')
     if alpha_w < 45 or alpha_w >= 90:
-        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+        raise ValueError(
+            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+        )
 
     alpha_w_rad = math.radians(alpha_w)
     cot_alpha_w = 1 / math.tan(alpha_w_rad)
@@ -1237,39 +1246,38 @@ def tau_rd_incl(
     alpha_w: float,
     cot_theta_min: float,
 ) -> float:
-    """Calculate the shear stress resistance τRd for members
-        with inclined shear reinforcement.
+    """Calculate the shear stress resistance tau_Rd for members with inclined
+    shear reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.62)
+    EN1992-1-1:2023 Eq. (8.62).
 
     Args:
-        nu (float): The factor ν (unitless).
+        nu (float): The factor nu (unitless).
         f_cd (float): Design value of concrete compressive strength in MPa.
-        cot_theta (float): Cotangent of the inclination of
-            compression field in radians.
-        cot_beta_incl (float): Cotangent of the inclination of
-            load in radians (cotβincl).
-        rho_w (float): Reinforcement ratio ρw (unitless).
+        cot_theta (float): Cotangent of the inclination of compression field in
+            radians.
+        cot_beta_incl (float): Cotangent of the inclination of load in radians
+            (cot beta_incl).
+        rho_w (float): Reinforcement ratio rho_w (unitless).
         f_ywd (float): Design yield strength of shear reinforcement in MPa.
-        alpha_w (float): Angle of inclined shear reinforcement
-            αw in degrees (45° ≤ αw < 90°).
+        alpha_w (float): Angle of inclined shear reinforcement alpha_w in
+            degrees (45 ≤ alpha_w < 90).
         cot_theta_min (float): max value for cot_theta.
 
     Returns:
-        float: Shear stress resistance τRd in MPa.
+        float: Shear stress resistance tau_Rd in MPa.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
-
-    Reference:
-
     """
     if f_cd < 0:
         raise ValueError(f'f_cd must not be negative. Got {f_cd}')
     if f_ywd < 0:
         raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
     if alpha_w < 45 or alpha_w >= 90:
-        raise ValueError(f'alpha_w must be between 45º and 90º. Got {alpha_w}')
+        raise ValueError(
+            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+        )
 
     alpha_w_rad = math.radians(alpha_w)
     cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
@@ -1287,23 +1295,22 @@ def tau_rd_incl(
 def sigma_swd_v2(
     Es: float, eps_x: float, cot_theta: float, alpha_w: float, f_ywd: float
 ) -> float:
-    """Calculate the stress σswd in the shear
-        reinforcement for compression field inclinations.
+    """Calculate the stress sigma_swd in the shear reinforcement for
+    compression field inclinations.
 
-    EN1992-1-1:2023 Eq. (8.63)
+    EN1992-1-1:2023 Eq. (8.63).
 
     Args:
         Es (float): Modulus of elasticity of steel Es in MPa.
-        eps_x (float): Longitudinal strain εx (unitless).
-        cot_theta (float): Cotangent inclination of compression
-            field in radians.
-        alpha_w (float): Angle of inclined shear
-            reinforcement αw in degrees (45° ≤ αw < 90°).
-        f_ywd (float): Design yield strength of shear
-            reinforcement in MPa.
+        eps_x (float): Longitudinal strain epsilon_x (unitless).
+        cot_theta (float): Cotangent inclination of compression field in
+            radians.
+        alpha_w (float): Angle of inclined shear reinforcement alpha_w in
+            degrees (45 ≤ alpha_w < 90).
+        f_ywd (float): Design yield strength of shear reinforcement in MPa.
 
     Returns:
-        float: Stress σswd in the shear reinforcement in MPa.
+        float: Stress sigma_swd in the shear reinforcement in MPa.
 
     Raises:
         ValueError: If any input parameter is negative where applicable.
@@ -1326,19 +1333,19 @@ def sigma_swd_v2(
 
 
 def tao_Rd_m(tau_rd: float, m_ed: float, m_rd: float) -> float:
-    """Calculate the shear stress resistance reduced
-        by the influence of transverse bending.
+    """Calculate the shear stress resistance reduced by the influence of
+    transverse bending.
 
-    EN1992-1-1:2023 Eq. (8.64)
+    EN1992-1-1:2023 Eq. (8.64).
 
     Args:
-        tau_rd (float): Shear resistance τRd in MPa.
+        tau_rd (float): Shear resistance tau_Rd in MPa.
         m_ed (float): Applied transverse bending moment mEd in kNm.
-        m_rd (float): Bending resistance
-            without interaction with shear mRd in kNm.
+        m_rd (float): Bending resistance without interaction with shear mRd in
+            kNm.
 
     Returns:
-        float: Reduced shear stress resistance τRdm in MPa.
+        float: Reduced shear stress resistance tau_Rdm in MPa.
 
     Raises:
         ValueError: If any of the input parameters are negative.
@@ -1358,19 +1365,19 @@ def tao_Ed_flang(
     hf: float,
     delta_x: float,
 ) -> float:
-    """Calculate the longitudinal shear stress at
-        the junction between a flange and web.
+    """Calculate the longitudinal shear stress at the junction between a flange
+    and web.
 
-    EN1992-1-1:2023 Eq. (8.65)
+    EN1992-1-1:2023 Eq. (8.65).
 
     Args:
-        delta_Fd (float): Change of axial
-            force in the flange over length Δx in kN.
+        delta_Fd (float): Change of axial force in the flange over length delta
+            x in kN.
         hf (float): Thickness of the flange at the junction in mm.
-        delta_x (float): Length under consideration Δx in mm.
+        delta_x (float): Length under consideration delta x in mm.
 
     Returns:
-        float: Longitudinal shear stress τEd in MPa.
+        float: Longitudinal shear stress tau_Ed in MPa.
 
     Raises:
         ValueError: If any of the input parameters are negative.
@@ -1391,7 +1398,7 @@ def Ast_min_flang(tau_ed: float, sf: float, hf: float, fyd: float) -> float:
     EN1992-1-1:2023 Eq. (8.66)
 
     Args:
-        tau_ed (float): Longitudinal shear stress τEd MPa.
+        tau_ed (float): Longitudinal shear stress tau_Ed MPa.
         sf (float): Spacing of reinforcement sf mm.
         hf (float): Thickness of the flange at the junction mm.
         fyd (float): Design yield strength of reinforcement fyd MPa.
@@ -1420,22 +1427,22 @@ def Asf_flang(
 ) -> float:
     """Calculate the transverse reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.69)
+    EN1992-1-1:2023 Eq. (8.69).
 
     Args:
-        tau_ed (float): Longitudinal shear stress τEd MPa.
+        tau_ed (float): Longitudinal shear stress tau_Ed MPa.
         sf (float): Spacing of reinforcement sf mm.
         hf (float): Thickness of the flange at the junction mm.
         fyd (float): Design yield strength of reinforcement fyd MPa.
         cot_theta_f (float): Cotangent of the inclination angle of the
-            compression field in the flange θf.
+            compression field in the flange thetaf.
 
     Returns:
         float: Required transverse reinforcement area Asf in mm2.
 
     Raises:
-        ValueError: If any of the input parameters are negative or
-            if cot_theta_f is out of the specified range.
+        ValueError: If any of the input parameters are negative or if
+            cot_theta_f is out of the specified range.
     """
     if tau_ed < 0:
         raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
@@ -1455,21 +1462,19 @@ def sigma_cd_flang(
     fcd: float,
     nu: float = 0.5,
 ) -> float:
-    """Computes the compression field stress in
-        the flange.
+    """Computes the compression field stress in the flange.
 
-    EN1992-1-1:2023 Eq. (8.70), (8.71)
+    EN1992-1-1:2023 Eq. (8.70), (8.71).
 
     Args:
-        tau_ed (float or int): Longitudinal shear stress τEd in MPa.
-        theta_f (float or int): Inclination angle of the
-            compression field in the flange θf (degrees).
-        fcd (float or int): Design compressive
-            strength of concrete fcd in MPa.
+        tau_ed (float or int): Longitudinal shear stress tau_Ed in MPa.
+        theta_f (float or int): Inclination angle of the compression field in
+            the flange thetaf (degrees).
+        fcd (float or int): Design compressive strength of concrete fcd in MPa.
         nu (float, optional): Strength reduction factor, default is 0.5.
 
     Returns:
-        bool: The compression field stress in MPa
+        bool: The compression field stress in MPa.
 
     Raises:
         ValueError: If any of the input parameters are
@@ -1491,9 +1496,8 @@ def sigma_cd_flang(
 
 
 def eps_x_flang(Ftd: float, Ast: float, Es: float) -> float:
-    """Calculate the longitudinal strain in the tensile flange based
-        on the thickness of the tensile flange and the
-        distance from the neutral axis.
+    """Calculate the longitudinal strain in the tensile flange based on the
+    thickness of the tensile flange and the distance from the neutral axis.
 
     EN1992-1-1:2023 Eq. (8.72)
 
@@ -1521,7 +1525,7 @@ def eps_x_flang(Ftd: float, Ast: float, Es: float) -> float:
 def tau_Edi(VEdi: float, Ai: float) -> float:
     """Calculate the design value of the shear stress at an interface.
 
-    EN1992-1-1:2023 Eq. (8.74)
+    EN1992-1-1:2023 Eq. (8.74).
 
     Args:
         VEdi (float): Shear force acting parallel to the interface in kN.
@@ -1544,8 +1548,8 @@ def tau_Edi(VEdi: float, Ai: float) -> float:
 def tau_Edi_composite(
     beta_new: float, VEd: float, z: float, bi: float
 ) -> float:
-    """Calculate the longitudinal shear stress between concrete
-        interfaces due to composite action.
+    """Calculate the longitudinal shear stress between concrete interfaces due
+    to composite action.
 
     EN1992-1-1:2023 Eq. (8.75).
 
@@ -1560,8 +1564,8 @@ def tau_Edi_composite(
         float: Longitudinal shear stress at the interface in MPa.
 
     Raises:
-        ValueError: If any input value is negative
-            or zero when it should not be.
+        ValueError: If any input value is negative or zero when it should not
+            be.
     """
     if beta_new < 0:
         raise ValueError(f'beta_new must not be negative. Got {beta_new}')
@@ -1586,27 +1590,27 @@ def tau_Rdi(
     mu_v: float,
     gamma_c: float,
 ) -> float:
-    """Calculate the design shear stress resistance at the
-        interface for scenarios without reinforcement or where
-            reinforcement is sufficiently anchored.
+    """Calculate the design shear stress resistance at the interface for
+    scenarios without reinforcement or where reinforcement is sufficiently
+    anchored.
 
-    EN1992-1-1:2023 Eq. (8.76)
+    EN1992-1-1:2023 Eq. (8.76).
 
     Args:
-        fck (float): Lowest compressive strength of the
-            concretes at the interface in MPa.
-        sigma_n (float): Compressive or tensile stress
-            over the interface area in MPa.
-        Ai (float): Area of the interface in mm2
-        Asi (float): Cross-sectional area of
-            bonded reinforcement crossing the interface in mm2.
+        fck (float): Lowest compressive strength of the concretes at the
+            interface in MPa.
+        sigma_n (float): Compressive or tensile stress over the interface area
+            in MPa.
+        Ai (float): Area of the interface in mm2.
+        Asi (float): Cross-sectional area of bonded reinforcement crossing the
+            interface in mm2.
         fyd (float): Design yield strength of the reinforcement in MPa.
-        alpha_deg (float): Angle of reinforcement
-            crossing the interface in degrees.
-        cv1 (float): Coefficient depending on the
-            roughness of the interface, dimensionless.
-        mu_v (float): Friction coefficient depending
-            on the roughness of the interface, dimensionless.
+        alpha_deg (float): Angle of reinforcement crossing the interface in
+            degrees.
+        cv1 (float): Coefficient depending on the roughness of the interface,
+            dimensionless.
+        mu_v (float): Friction coefficient depending on the roughness of the
+            interface, dimensionless.
         gamma_c (float): safety factory for concrete.
 
     Returns:
@@ -1641,10 +1645,10 @@ def cv1(
     ],
     tensile_stress: bool = False,
 ) -> float:
-    """Get the cv1 coefficient based on the
-        surface roughness and tensile stress condition.
+    """Get the cv1 coefficient based on the surface roughness and tensile
+    stress condition.
 
-    EC1992-1-1:2023 Table (8.2)
+    EC1992-1-1:2023 Table (8.2).
 
     Args:
         surface_roughness (str): Description of the surface roughness.
@@ -1676,7 +1680,7 @@ def mu_v(
 ) -> float:
     """Get the mu_v coefficient based on the surface roughness.
 
-    EC1992-1-1:2023 Table (8.2)
+    EC1992-1-1:2023 Table (8.2).
 
     Args:
         surface_roughness (str): Description of the surface roughness.
@@ -1701,10 +1705,10 @@ def cv2(
     surface_roughness: Literal['very smooth', 'smooth', 'rough', 'very rough'],
     tensile_stress: bool = False,
 ) -> float:
-    """Get the cv2 coefficient based on the
-        surface roughness and tensile stress condition.
+    """Get the cv2 coefficient based on the surface roughness and tensile
+    stress condition.
 
-    EC1992-1-1:2023 Table (8.2)
+    EC1992-1-1:2023 Table (8.2).
 
     Args:
         surface_roughness (str): Description of the surface roughness.
@@ -1733,7 +1737,7 @@ def kv(
 ) -> float:
     """Get the kv coefficient based on the surface roughness.
 
-    EC1992-1-1:2023 Table (8.2)
+    EC1992-1-1:2023 Table (8.2).
 
     Args:
         surface_roughness (str): Description of the surface roughness.
@@ -1758,7 +1762,7 @@ def kdowel(
 ) -> float:
     """Get the kdowel coefficient based on the surface roughness.
 
-    EC1992-1-1:2023 Table (8.2)
+    EC1992-1-1:2023 Table (8.2).
 
     Args:
         surface_roughness (str): Description of the surface roughness.
@@ -1789,14 +1793,14 @@ def tau_Rdi_ny(
     fyd: float,
     kdowel: float,
 ) -> float:
-    """Calculate the shear stress resistance at the interface when yielding
-         is not ensured at the interface.
+    """Calculate the shear stress resistance at the interface when yielding is
+    not ensured at the interface.
 
-    EN 1992-1-1:2022 Eq. (8.77)
+    EN 1992-1-1:2022 Eq. (8.77).
 
     Args:
-        cv2 (float): Coefficient depending on the roughness
-            of the interface (unitless).
+        cv2 (float): Coefficient depending on the roughness of the interface
+            (unitless).
         fck (float): Concrete compressive resistance in MPa.
         gamma_c (float): Partial safety factor for concrete (unitless).
         mu_v (float): Coefficient mu_v from the Eurocode (unitless).
@@ -1804,11 +1808,11 @@ def tau_Rdi_ny(
         kv (float): Coefficient kv from the Eurocode (unitless).
         rho_i (float): Reinforcement ratio at the interface (unitless).
         fyd (float): Design yield strength of reinforcement MPa.
-        kdowel (float): Coefficient for dowel action of
-            reinforcement (unitless).
+        kdowel (float): Coefficient for dowel action of reinforcement
+            (unitless).
 
     Returns:
-        float: Shear stress resistance τRdi MPa.
+        float: Shear stress resistance tau_Rdi MPa.
 
     Raises:
         ValueError: If any of the dimensions or resistances are negative.
@@ -1825,20 +1829,20 @@ def tau_Rdi_ny(
     )
     return min(
         tau_rdi, 0.25 * fck / gamma_c
-    )  # Cap τRdi according to the formula
+    )  # Cap tau_Rdi according to the formula
 
 
 def as_min(tmin: float, fctm: float, fyk: float) -> float:
-    """Calculate the minimum interface reinforcement per unit
-        length along the edge of composite slabs.
+    """Calculate the minimum interface reinforcement per unit length along the
+    edge of composite slabs.
 
     EN 1992-1-1:2022 Eq. (8.78).
 
     Args:
-        tmin (float): Smaller value of the thickness of new
-            and old concrete layers in mm.
-        fctm (float): Mean tensile strength of the respective
-            concrete layer in MPa.
+        tmin (float): Smaller value of the thickness of new and old concrete
+            layers in mm.
+        fctm (float): Mean tensile strength of the respective concrete layer in
+            MPa.
         fyk (float): Characteristic yield strength of the reinforcement in MPa.
 
     Returns:
