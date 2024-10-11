@@ -22,16 +22,15 @@ def get_exposure_classes(
 ) -> List[str]:
     """Returns a list with valid exposure classes.
 
-    EN1992-1-1:2023 Table (6.1)
+    EN1992-1-1:2023 Table (6.1).
 
     Args:
-        env_level (int, optional): filters the result by
-            only a determined env level.
-        env_name (str, optional): the name of the
-            environment agent.
+        env_level (int, optional): Filters the result by only a determined env
+            level.
+        env_name (str, optional): The name of the environment agent.
 
     Returns:
-        (List[str]): list with valid exposure classes.
+        (List[str]): List with valid exposure classes.
     """
     if env_level is not None and env_level not in range(1, 8):
         raise ValueError(
@@ -72,17 +71,17 @@ def get_exposure_classes(
 def get_exposure_class_description(exp_class: str) -> Dict[str, str]:
     """Returns the exposure class description.
 
-    EN1992-1-1:2023 Table (6.1)
+    EN1992-1-1:2023 Table (6.1).
 
     Args:
-        exp_class (str): exposure class code.
+        exp_class (str): Exposure class code.
 
     Returns:
-        (Dict[str,str]): a dictinary containing the environment,
-            the description and the examples.
+        (Dict[str,str]): A dictinary containing the environment, the
+        description and the examples.
 
     Raise:
-        ValueError: if exposure class does not exist.
+        ValueError: If exposure class does not exist.
     """
     data = {
         'X0': {
@@ -202,7 +201,7 @@ def get_exposure_class_description(exp_class: str) -> Dict[str, str]:
 def c_nom(c_min: float, delta_c_dev: float) -> float:
     """Calculate the nominal cover.
 
-    EN1992-1-1:2023 Eq. (6.1)
+    EN1992-1-1:2023 Eq. (6.1).
 
     Args:
         c_min (float): Minimum cover in mm.
@@ -230,11 +229,11 @@ def c_min(
 ) -> float:
     """Calculate the minimum cover.
 
-    EN1992-1-1:2023 Eq. (6.2)
+    EN1992-1-1:2023 Eq. (6.2).
 
     Args:
-        cmin_dur (float): Minimum cover required for
-            environmental conditions in mm.
+        cmin_dur (float): Minimum cover required for environmental conditions
+            in mm.
         sum_c (float): Sum of applicable reductions and additions in mm.
         c_min_b (float): Minimum cover for bond requirement in mm.
         additional_cover (float, optional): Additional cover for casting
@@ -275,23 +274,23 @@ def c_min_dur_carb(
 ) -> float:
     """Calculate the minimum concrete cover for durability against carbonation.
 
-    EN1992-1-1:2023 Table. (6.3)
+    EN1992-1-1:2023 Table. (6.3).
 
     Args:
-        exposure_class (Literal): Exposure class for carbonation
-            (XC1, XC2, XC3, XC4).
-        design_service_life (Literal): Design service
-            life in years (50 or 100).
-        exposure_resistance_class (Literal): Exposure resistance class
-            (XRC 0.5, XRC 1, XRC 2, XRC 3, XRC 4, XRC 5, XRC 6, XRC 7).
-        delta_c_dur_gamma (float): Increment in the
-            concrete cover in mm considering special requirements.
+        exposure_class (Literal): Exposure class for carbonation (XC1, XC2,
+            XC3, XC4).
+        design_service_life (Literal): Design service life in years (50 or
+            100).
+        exposure_resistance_class (Literal): Exposure resistance class (XRC
+            0.5, XRC 1, XRC 2, XRC 3, XRC 4, XRC 5, XRC 6, XRC 7).
+        delta_c_dur_gamma (float): Increment in the concrete cover in mm
+            considering special requirements.
 
     Returns:
         float: Minimum concrete cover in mm.
 
     Raise:
-        ValueError: if delta_c_dur_gamma is less than zero.
+        ValueError: If delta_c_dur_gamma is less than zero.
     """
     if delta_c_dur_gamma < 0:
         raise ValueError(
@@ -381,25 +380,25 @@ def c_min_dur_chlo(
 ) -> float:
     """Calculate the minimum concrete cover for durability against chlorides.
 
-    EN1992-1-1:2023 Table. (6.4)
+    EN1992-1-1:2023 Table. (6.4).
 
     Args:
-        exposure_class (Literal): Exposure class for chlorides
-            (XS1, XS2, XS3, XD1, XD2, XD3).
-        design_service_life (Literal): Design service
-            life in years (50 or 100).
-        exposure_resistance_class (Literal): Exposure resistance class
-            (XRDS 0.5, XRDS 1, XRDS 1.5, XRDS 2, XRDS 3, XRDS 4, XRDS 5,
-              XRDS 6, XRDS 8, XRDS 10).
-        delta_c_dur_gamma (float): Increment in the
-            concrete cover in mm considering special requirements.
+        exposure_class (Literal): Exposure class for chlorides (XS1, XS2, XS3,
+            XD1, XD2, XD3).
+        design_service_life (Literal): Design service life in years (50 or
+            100).
+        exposure_resistance_class (Literal): Exposure resistance class (XRDS
+            0.5, XRDS 1, XRDS 1.5, XRDS 2, XRDS 3, XRDS 4, XRDS 5, XRDS 6, XRDS
+            8, XRDS 10).
+        delta_c_dur_gamma (float): Increment in the concrete cover in mm
+            considering special requirements.
 
     Returns:
         float: Minimum concrete cover in mm.
 
     Raises:
-        ValueError: If input values are invalid or the combination of
-            exposure class, XDRS class and design service life is incompatible.
+        ValueError: If input values are invalid or the combination of exposure
+            class, XDRS class and design service life is incompatible.
     """
     if delta_c_dur_gamma < 0:
         raise ValueError(
@@ -514,81 +513,76 @@ def c_min_dur_chlo(
 
 
 def delta_c_min_30() -> float:
-    """Default reduction of minimum cover for
-    structures with design life of 30 years or less
-    unless specified in National Annex.
+    """Default reduction of minimum cover for structures with design life of 30
+    years or less unless specified in National Annex.
 
-    EN1992-1-1:2023 (6.5.2.2(2))
+    EN1992-1-1:2023 (6.5.2.2(2)).
 
     Returns:
-        float: reduction distance in mm
+        float: Reduction distance in mm.
     """
     return -5.0
 
 
 def delta_c_min_exc() -> float:
-    """Default reduction of minimum cover for
-    superior compaction or improved curing
-    unless specified in National Annex.
+    """Default reduction of minimum cover for superior compaction or improved
+    curing unless specified in National Annex.
 
-    EN1992-1-1:2023 (6.5.2.2(3))
+    EN1992-1-1:2023 (6.5.2.2(3)).
 
     Returns:
-        float: reduction distance in mm
+        float: Reduction distance in mm.
     """
     return -5.0
 
 
 def delta_c_min_p() -> float:
-    """Default addition of minimum cover for
-    prestressing tendons
-    unless specified in National Annex.
+    """Default addition of minimum cover for prestressing tendons unless
+    specified in National Annex.
 
-    EN1992-1-1:2023 Table. (6.5.2.2(4))
+    EN1992-1-1:2023 Table. (6.5.2.2(4)).
 
     Returns:
-    float: added distance in mm
+        float: Added distance in mm.
     """
     return 10.0
 
 
 def delta_dur_red_1() -> float:
-    """Default reduction of minimum cover for
-    use of special measures of reinforcing steel
-    unless specified in National Annex.
+    """Default reduction of minimum cover for use of special measures of
+    reinforcing steel unless specified in National Annex.
 
-    EN1992-1-1:2023 (6.5.2.2(5))
+    EN1992-1-1:2023 (6.5.2.2(5)).
 
     Returns:
-        float: reduction distance in mm
+        float: Reduction distance in mm.
     """
     return -10.0
 
 
 def delta_dur_red_2() -> float:
-    """Default reduction of minimum cover for
-    use of special measures of reinforcing steel
-    unless specified in National Annex.
+    """Default reduction of minimum cover for use of special measures of
+    reinforcing steel unless specified in National Annex.
 
-    EN1992-1-1:2023 (6.5.2.2(9))
+    EN1992-1-1:2023 (6.5.2.2(9)).
 
     Returns:
-        float: reduction distance in mm
+        float: Reduction distance in mm.
     """
     return -0.0
 
 
 def delta_dur_abr(xm_class: Literal['XM1', 'XM2', 'XM3']) -> float:
-    """Default addition of minimum cover for
-    abraion unless specified in National Annex.
+    """Default addition of minimum cover for abraion unless specified in
+    National Annex.
 
-    EN1992-1-1:2023 (6.5.2.2(6))
+    EN1992-1-1:2023 (6.5.2.2(6)).
 
     Args:
-        xm_class (str): the XM class
+        xm_class (str): The XM class.
 
     Returns:
-        float: added distance in mm
+        float: Added distance in mm.
     """
     data = {
         'XM1': 5.0,
