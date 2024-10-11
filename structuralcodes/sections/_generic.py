@@ -2,6 +2,7 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import math
 import typing as t
 import warnings
 from math import cos, sin
@@ -208,7 +209,9 @@ class GenericSectionCalculator(SectionCalculator):
             )
             # Change sign due to moment sign convention
             izz *= -1
-            if abs(abs(izy) - abs(iyz)) > 10:
+
+            # Check calculated cross moment
+            if not math.isclose(iyz, izy, rel_tol=1e-9, abs_tol=10):
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
