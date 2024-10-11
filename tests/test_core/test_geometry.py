@@ -13,6 +13,8 @@ from structuralcodes.geometry import (
     Geometry,
     PointGeometry,
     SurfaceGeometry,
+    add_reinforcement,
+    add_reinforcement_line,
     create_line_point_angle,
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
@@ -20,10 +22,6 @@ from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
     ParabolaRectangle,
-)
-from structuralcodes.sections._reinforcement import (
-    add_reinforcement,
-    add_reinforcement_line,
 )
 
 
@@ -206,7 +204,7 @@ def test_surface_geometry():  # noqa: PLR0915
 
     # Pass something else than a polygon
     with pytest.raises(TypeError) as excinfo:
-        SurfaceGeometry(poly=[0, 0, 1, 1], mat=C25)
+        SurfaceGeometry(poly=[0, 0, 1, 1], material=C25)
     assert (
         str(excinfo.value)
         == f'poly need to be a valid shapely.geometry.Polygon object. \
@@ -214,7 +212,7 @@ def test_surface_geometry():  # noqa: PLR0915
     )
     # Pass something else than a polygon
     with pytest.raises(TypeError) as excinfo:
-        SurfaceGeometry(poly=poly, mat=1)
+        SurfaceGeometry(poly=poly, material=1)
     assert (
         str(excinfo.value)
         == f'mat should be a valid structuralcodes.base.Material \
@@ -225,8 +223,8 @@ def test_surface_geometry():  # noqa: PLR0915
     # add two surfaces
     poly1 = Polygon(((-100, -200), (100, -200), (100, 200), (-100, 200)))
     poly2 = Polygon(((-500, 200), (500, 200), (500, 300), (-500, 300)))
-    geo1 = SurfaceGeometry(poly=poly1, mat=C25)
-    geo2 = SurfaceGeometry(poly=poly2, mat=C25)
+    geo1 = SurfaceGeometry(poly=poly1, material=C25)
+    geo2 = SurfaceGeometry(poly=poly2, material=C25)
     geo_add = geo1 + geo2
     assert isinstance(geo_add, CompoundGeometry)
     assert_geometries_equal(geo_add.geometries[0].polygon, geo1.polygon)
@@ -530,7 +528,7 @@ def test_property_reinforced_concrete(w, h, c):
                 (-w / 2, h / 2),
             ]
         ),
-        mat=mat,
+        material=mat,
         concrete=True,
     )
     geo_rc = add_reinforcement_line(
@@ -553,7 +551,7 @@ def test_property_reinforced_concrete(w, h, c):
                 (-w / 2, h / 2),
             ]
         ),
-        mat=mat,
+        material=mat,
     )
     geo_rc = add_reinforcement_line(
         geo_rect,

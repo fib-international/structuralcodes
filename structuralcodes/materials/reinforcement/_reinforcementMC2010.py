@@ -34,7 +34,7 @@ class ReinforcementMC2010(Reinforcement):
 
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
-            desnsity (float): Density of material in kg/m3 (default: 7850).
+            density (float): Density of material in kg/m3 (default: 7850).
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
@@ -58,6 +58,10 @@ class ReinforcementMC2010(Reinforcement):
         """The partial factor for reinforcement."""
         return self._gamma_s or 1.15
 
+    def ftd(self) -> float:
+        """The design ultimate strength."""
+        return mc2010.fyd(self.ftk, self.gamma_s)
+
     def epsud(self) -> float:
         """The design ultimate strain."""
         return mc2010.epsud(self.epsuk, self.gamma_eps)
@@ -66,3 +70,29 @@ class ReinforcementMC2010(Reinforcement):
     def gamma_eps(self) -> float:
         """The partial factor for ultimate strain."""
         return self._gamma_eps or 0.9
+
+    def __elastic__(self) -> dict:
+        """Returns kwargs for creating an elastic constitutive law."""
+        return {'E': self.Es}
+
+    def __elasticperfectlyplastic__(self) -> dict:
+        """Returns kwargs for ElasticPlastic constitutive law with no strain
+        hardening.
+        """
+        return {
+            'E': self.Es,
+            'fy': self.fyd(),
+            'eps_su': self.epsud(),
+        }
+
+    def __elasticplastic__(self) -> dict:
+        """Returns kwargs for ElasticPlastic constitutive law with strain
+        hardening.
+        """
+        Eh = (self.ftd() - self.fyd()) / (self.epsuk - self.epsyd)
+        return {
+            'E': self.Es,
+            'fy': self.fyd(),
+            'Eh': Eh,
+            'eps_su': self.epsud(),
+        }
