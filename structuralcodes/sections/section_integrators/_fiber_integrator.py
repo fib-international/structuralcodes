@@ -1,5 +1,7 @@
 """The fiber section integrator."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import typing as t
 
 import numpy as np
@@ -18,8 +20,11 @@ class FiberIntegrator(SectionIntegrator):
     def prepare_triangulation(self, geo: SurfaceGeometry) -> t.Dict:
         """Triangulate a SurfaceGeometry object.
 
-        Args:
-            geo (SurfaceGeometry): The geometry to triangulate
+        Arguments:
+            geo (SurfaceGeometry): The geometry to triangulate.
+
+        Returns:
+            Dict: The triangulation data.
         """
         # Create the tri dictionary
         tri: dict[str:ArrayLike] = {}
@@ -62,15 +67,19 @@ class FiberIntegrator(SectionIntegrator):
 
         Calculate the stresses based on strains in a set of points.
 
-        Args:
+        Keyword Arguments:
             geo (CompoundGeometry): The geometry of the section.
-            strain (ArrayLike): The strains and curvatures of the section.
-                                given in the format (ea, ky, kz) which are
-                                strain at 0,0
-                                curvature y axis
-                                curvature z axis
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
             mesh_size: Percentage of area (number from 0 to 1) max for triangle
-                        elements
+                elements.
+
+        Returns:
+            Tuple(List, Dict): The prepared input representing a list with
+            x-coordinates, y-coordinates and force for each fiber and a
+            dictionary containing the triangulation data that can be stored and
+            used later to avoid repetition of triangulation.
         """
         # This method should:
         #  - discretize the section in a number of fibers (mesh_size)
@@ -186,7 +195,14 @@ class FiberIntegrator(SectionIntegrator):
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
     ) -> t.Tuple[float, float, float]:
-        """Integrate stresses over the geometry."""
+        """Integrate stresses over the geometry.
+
+        Arguments:
+            prepared_input (List): The prepared input from .prepare_input().
+
+        Returns:
+            Tuple(float, float, float): The stress resultants N, Mx and My.
+        """
         # Integration over all fibers
         x, y, F = prepared_input[0]
 
@@ -199,7 +215,20 @@ class FiberIntegrator(SectionIntegrator):
     def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
-        """Integrate the strain response with the Marin algorithm."""
+        """Integrate the strain response with the fiber algorithm.
+
+        Arguments:
+            geo (CompoundGeometry): The geometry of the section.
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+            mesh_size: Percentage of area (number from 0 to 1) max for triangle
+                elements.
+
+        Returns:
+            Tuple(Tuple(float, float, float), Dict): The stress resultants N,
+            Mx and My and the triangulation data.
+        """
         # Prepare the general input based on the geometry and the input strains
         prepared_input, triangulated_data = self.prepare_input(
             geo, strain, **kwargs
