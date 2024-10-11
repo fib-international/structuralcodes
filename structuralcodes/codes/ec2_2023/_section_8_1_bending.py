@@ -6,18 +6,18 @@ from scipy.interpolate import interp1d
 def MEd_min(h: float, NEd: float) -> float:
     """Minimum eccentricity for effects of imperfections.
 
-    EN1992-1-1:2023 Eq.(8.1)
+    EN1992-1-1:2023 Eq.(8.1).
 
-    Computes the minimum moment for a determined h-height section
-    for taking into consideration geometric imperfections unless
-    second order effects are used.
+    Computes the minimum moment for a determined h-height section for taking
+    into consideration geometric imperfections unless second order effects are
+    used.
 
     Args:
-        h (float): height of the element in mm.
-        Ned (float): axial force in kN.
+        h (float): Height of the element in mm.
+        Ned (float): Axial force in kN.
 
     Returns:
-        float: minimum design moment in kN·m
+        float: minimum design moment in kNm.
     """
     ed_min = max(h / 30, 20) / 1000
     return NEd * ed_min
@@ -26,23 +26,23 @@ def MEd_min(h: float, NEd: float) -> float:
 def NRd0(Ac: float, fcd: float, As: float, fyd: float) -> float:
     """Design value of axial resistance in compression.
 
-    EN1992-1-1:2023 Eq. (8.3)
+    EN1992-1-1:2023 Eq. (8.3).
 
-    Computes the design value of axial resistance under compression
-    without accompanying moments.
+    Computes the design value of axial resistance under compression without
+    accompanying moments.
 
     Args:
-        Ac (float): concrete area in mm2
-        fcd (float): compressive design resistance of concrete in MPa.
-            If confined concrete, then replace by fcd,c (8.15)
-        As (float): reinforcement area in mm2
-        fyd (float): yield tensile resistance of steel in MPa
+        Ac (float): Concrete area in mm2.
+        fcd (float): Compressive design resistance of concrete in MPa. If
+            confined concrete, then replace by fcd,c (8.15).
+        As (float): Reinforcement area in mm2.
+        fyd (float): Yield tensile resistance of steel in MPa.
 
     Returns:
-        float: axial resistance in compression in kN
+        float: Axial resistance in compression in kN.
 
-    Raise:
-        ValueError: if any of Ac, fcd, As or Ayd is less than 0.
+    Raises:
+        ValueError: If any of Ac, fcd, As or Ayd is less than 0.
     """
     if Ac < 0:
         raise ValueError('Concrete area cannot be negative')
@@ -64,22 +64,22 @@ def biaxial_resistant_ratio(
 ) -> float:
     """Computes the resistant ratio in biaxial bending.
 
-    EN1992-1-1:2023 Eq. (8.2)
+    EN1992-1-1:2023 Eq. (8.2).
 
-    In the absence of an accurate cross-section design for biaxial beding
-    this criterion may be used.
+    In the absence of an accurate cross-section design for biaxial beding this
+    criterion may be used.
 
     Args:
-        MEdz_MRdz (float): ratio between the design bending moment and the
+        MEdz_MRdz (float): Ratio between the design bending moment and the
             resistance in the Z-axis.
-        MEdy_MRdy (float): ratio between the design bending moment and the
+        MEdy_MRdy (float): Ratio between the design bending moment and the
             resistance in the Y-axis.
-        Ned_NRd (float): ratio between the design axial force and the
-            axial compressive resistance.
-        section_type (str): the section geometry type.
+        Ned_NRd (float): Ratio between the design axial force and the axial
+            compressive resistance.
+        section_type (str): The section geometry type.
 
     Returns:
-        float: the resistance ratio (non-dimensional).
+        float: The resistance ratio (non-dimensional).
     """
     if section_type in ('elliptical', 'circular'):
         an = 2.0
@@ -96,20 +96,20 @@ def biaxial_resistant_ratio(
 def sigma_cd(fcd: float, eps_c: float) -> float:
     """Computes the stress distribution in the compression zones.
 
-    EN1992-1-1:2023 Eq. (8.4)
+    EN1992-1-1:2023 Eq. (8.4).
 
     Computes the scress distribution in the cmpressiopn zones (compressive
     shown as positive).
 
     Args:
-        fcd (float): compressive design resistance of concrete (MPa)
-        eps_c (float): strain value of concrete (non dimensional)
+        fcd (float): Compressive design resistance of concrete (MPa).
+        eps_c (float): Strain value of concrete (non dimensional).
 
     Returns:
-        float: concrete stress in MPa
+        float: Concrete stress in MPa.
 
     Raises:
-        ValueError: if strain greater than eps_c_u=0.0035
+        ValueError: If strain greater than eps_c_u=0.0035.
     """
     if eps_c <= 0:
         return 0.0
@@ -122,18 +122,18 @@ def sigma_cd(fcd: float, eps_c: float) -> float:
 
 
 def delta_fcd_confined(sigma_c2d: float, f_cd: float, ddg: float) -> float:
-    """Calculate the compressive strength increase (Δf_cd) due to a
-       transverse compressive stress.
+    """Calculate the compressive strength increase (delta_f_cd) due to a
+    transverse compressive stress.
 
-    EN1992-1-1:2023 Eq. (8.9 and 8.10)
+    EN1992-1-1:2023 Eq. (8.9 and 8.10).
 
-    Parameters:
-        sigma_c2d (float): Transverse compressive stress in MPa
-        f_cd (float): Compressive design strength in MPa
-        ddg (float): Maximum aggregate size in mm
+    Args:
+        sigma_c2d (float): Transverse compressive stress in MPa.
+        f_cd (float): Compressive design strength in MPa.
+        ddg (float): Maximum aggregate size in mm.
 
     Returns:
-        float: Compressive strength increase in MPa
+        float: Compressive strength increase in MPa.
     """
     if sigma_c2d < 0:
         raise ValueError(
@@ -160,20 +160,20 @@ def delta_fcd_confined(sigma_c2d: float, f_cd: float, ddg: float) -> float:
 def confinement_sigma_c2d_circular_square(
     A_s_conf: float, f_yd: float, b_cs: float, s: float
 ) -> float:
-    """Calculate the confinement stress (σc2d) for circular and square members
-    with single confinement reinforcement.
+    """Calculate the confinement stress (sigma_c2d) for circular and square
+    members with single confinement reinforcement.
 
-    EN1992-1-1:2023 Eq (8.11)
+    EN1992-1-1:2023 Eq (8.11).
 
     Args:
         A_s_conf (float): Cross-sectional area of one leg of confinement
-            reinforcement in mm2
-        f_yd (float): Yield strength of reinforcement in MPa
-        b_cs (float): Width of the confinement core in mm
-        s (float): Spacing of confinement reinforcement in mm
+            reinforcement in mm2.
+        f_yd (float): Yield strength of reinforcement in MPa.
+        b_cs (float): Width of the confinement core in mm.
+        s (float): Spacing of confinement reinforcement in mm.
 
     Returns:
-        float: Confinement stress in MPa
+        float: Confinement stress in MPa.
     """
     if A_s_conf < 0:
         raise ValueError(
@@ -192,21 +192,21 @@ def confinement_sigma_c2d_circular_square(
 def confinement_sigma_c2d_rectangular(
     A_s_conf: float, f_yd: float, b_csx: float, b_csy: float, s: float
 ) -> float:
-    """Calculate the confinement stress (σc2d)
-        for rectangular members with single confinement reinforcement.
+    """Calculate the confinement stress (sigma_c2d) for rectangular members
+    with single confinement reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.12)
+    EN1992-1-1:2023 Eq. (8.12).
 
     Args:
         A_s_conf (float): Cross-sectional area of one leg of confinement
-        reinforcement
-        f_yd (float): Yield strength of reinforcement
-        b_csx (float): Width of the confinement core in x direction
-        b_csy (float): Width of the confinement core in y direction
-        s (float): Spacing of confinement reinforcement
+            reinforcement.
+        f_yd (float): Yield strength of reinforcement.
+        b_csx (float): Width of the confinement core in x direction.
+        b_csy (float): Width of the confinement core in y direction.
+        s (float): Spacing of confinement reinforcement.
 
     Returns:
-        float: Confinement stress
+        float: Confinement stress.
     """
     if A_s_conf < 0:
         raise ValueError(
@@ -232,23 +232,23 @@ def confinement_sigma_c2d_multiple(
     b_csy: float,
     s: float,
 ) -> float:
-    """Calculate the confinement stress (σc2d) for members
-        with multiple confinement reinforcement.
+    """Calculate the confinement stress (sigma_c2d) for members with multiple
+    confinement reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.13)
+    EN1992-1-1:2023 Eq. (8.13).
 
-    Parameters:
+    Args:
         A_s_confx (List[float]): Cross-sectional areas of confinement
-            reinforcement in x direction in mm2
+            reinforcement in x direction in mm2.
         A_s_confy (List[float]): Cross-sectional areas of confinement
-            reinforcement in y direction in mm2
-        f_yd (float): Yield strength of reinforcement in MPa
-        b_csx (float): Width of the confinement core in x direction in mm
-        b_csy (float): Width of the confinement core in y direction in mm
-        s (float): Spacing of confinement reinforcement in mm
+            reinforcement in y direction in mm2.
+        f_yd (float): Yield strength of reinforcement in MPa.
+        b_csx (float): Width of the confinement core in x direction in mm.
+        b_csy (float): Width of the confinement core in y direction in mm.
+        s (float): Spacing of confinement reinforcement in mm.
 
     Returns:
-        float: Confinement stress in mm
+        float: Confinement stress in mm.
     """
     for value in A_s_confx:
         if value < 0:
@@ -280,22 +280,22 @@ def confinement_sigma_c2d_compression_zones(
     x_cs: float,
     s: float,
 ) -> float:
-    """Calculate the confinement stress (σc2d) for compression zones.
+    """Calculate the confinement stress (sigma_c2d) for compression zones.
 
-    EN1992-1-1:2023 Eq. (8.14)
+    EN1992-1-1:2023 Eq. (8.14).
 
-    Parameters:
+    Args:
         A_s_confx (List[float]): Cross-sectional area of confinement
-            reinforcement in x direction in mm2
+            reinforcement in x direction in mm2.
         A_s_confy (List[float]): Cross-sectional area of confinement
-            reinforcement in y direction in mm2
-        f_yd (float): Yield strength of reinforcement in MPa
-        b_csy (float): Width of the confinement core in y direction in mm
-        x_cs (float): Width of the confinement core in x direction in mm
-        s (float): Spacing of confinement reinforcement in mm
+            reinforcement in y direction in mm2.
+        f_yd (float): Yield strength of reinforcement in MPa.
+        b_csy (float): Width of the confinement core in y direction in mm.
+        x_cs (float): Width of the confinement core in x direction in mm.
+        s (float): Spacing of confinement reinforcement in mm.
 
     Returns:
-        float: Confinement stress in mm2
+        float: Confinement stress in mm2.
     """
     for value in A_s_confx:
         if value < 0:
@@ -324,7 +324,7 @@ def fcd_c(
 ) -> float:
     """Calculate the average concrete strength increase in the confined areas.
 
-    EN1992-1-1:2023 Eq. (8.15)
+    EN1992-1-1:2023 Eq. (8.15).
 
     Args:
         fcd (float): The concrete design strength in MPa.
@@ -332,11 +332,11 @@ def fcd_c(
             zone and confinement reinforcement (non-dimensional).
         kconf_s (float): Effectiveness factor for the spacing of the
             confinement reinforcement (non-dimensional).
-        delta_fcd (float): The increase in concrete design strength due
-            to confinement in MPa.
+        delta_fcd (float): The increase in concrete design strength due to
+            confinement in MPa.
 
     Returns:
-        float: The average concrete strength increase in MPa
+        float: The average concrete strength increase in MPa.
     """
     if fcd < 0:
         raise ValueError(f'fcd must be non-negative. Got {fcd} instead.')
@@ -357,10 +357,10 @@ def fcd_c(
 
 
 def kconf_b_square_single(bcs: float, b: float) -> float:
-    """Calculate the kconf_b effectiveness factor for square
-        members in compression with single confinement reinforcement.
+    """Calculate the kconf_b effectiveness factor for square members in
+    compression with single confinement reinforcement.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         bcs (float): Width of the confined section in mm.
@@ -378,10 +378,10 @@ def kconf_b_square_single(bcs: float, b: float) -> float:
 
 
 def kconf_s_square_single(s: float, bcs: float) -> float:
-    """Calculate the kconf_s effectiveness factor for square
-        members in compression with single confinement reinforcement.
+    """Calculate the kconf_s effectiveness factor for square members in
+    compression with single confinement reinforcement.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         s (float): Spacing of the confinement reinforcement in mm.
@@ -399,10 +399,10 @@ def kconf_s_square_single(s: float, bcs: float) -> float:
 
 
 def kconf_b_circular(bcs: float, b: float) -> float:
-    """Calculate the kconf_b effectiveness factor for circular
-        members in compression with circular confinement reinforcement.
+    """Calculate the kconf_b effectiveness factor for circular members in
+    compression with circular confinement reinforcement.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         bcs (float): Diameter of the confined section in mm.
@@ -423,9 +423,9 @@ def kconf_b_multiple(
     bcsx: float, bcsy: float, b_i: List[float], bx: float, by: float
 ) -> float:
     """Calculate the kconf_b effectiveness factor for square and rectangular
-        members in compression with multiple confinement reinforcement.
+    members in compression with multiple confinement reinforcement.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         bcsx (float): Width of the confined section in x-direction in mm.
@@ -457,11 +457,10 @@ def kconf_b_multiple(
 
 
 def kconf_s_multiple(s: float, bcsx: float, bcsy: float) -> float:
-    """Calculate the kconf_s effectiveness factor for square and
-        rectangular members in compression with multiple
-        confinement reinforcement.
+    """Calculate the kconf_s effectiveness factor for square and rectangular
+    members in compression with multiple confinement reinforcement.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         s (float): Spacing of the confinement reinforcement in mm.
@@ -482,10 +481,10 @@ def kconf_s_multiple(s: float, bcsx: float, bcsy: float) -> float:
 
 
 def kconf_b_bending(Ac_conf: float, Acc: float, b_i: List[float]) -> float:
-    """Calculate the kconf_b effectiveness factor for compression
-        zones due to bending and axial force.
+    """Calculate the kconf_b effectiveness factor for compression zones due to
+    bending and axial force.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         Ac_conf (float): Confined area within the centrelines of the
@@ -514,10 +513,10 @@ def kconf_b_bending(Ac_conf: float, Acc: float, b_i: List[float]) -> float:
 
 
 def kconf_s_bending(s: float, xcs: float, bcsx: float, bcsy: float) -> float:
-    """Calculate the kconf_s effectiveness factor for
-        compression zones due to bending and axial force.
+    """Calculate the kconf_s effectiveness factor for compression zones due to
+    bending and axial force.
 
-    EN1992-1-1:2023 Table (8.1)
+    EN1992-1-1:2023 Table (8.1).
 
     Args:
         s (float): Spacing of the confinement reinforcement.
@@ -544,13 +543,13 @@ def kconf_s_bending(s: float, xcs: float, bcsx: float, bcsy: float) -> float:
 def epsc2_c(epsc2: float, delta_fcd: float, fcd: float) -> float:
     """Calculate the confined concrete strain limit at maximum stress.
 
-    EN1992-1-1:2023 Eq. (8.16)
+    EN1992-1-1:2023 Eq. (8.16).
 
     Args:
-        epsc2 (float): The strain limit at maximum stress for
-            unconfined concrete.
-        delta_fcd (float): The increase in concrete design strength
-            due to confinement in MPa.
+        epsc2 (float): The strain limit at maximum stress for unconfined
+            concrete.
+        delta_fcd (float): The increase in concrete design strength due to
+            confinement in MPa.
         fcd (float): The concrete design strength in MPa.
 
     Returns:
@@ -571,7 +570,7 @@ def epsc2_c(epsc2: float, delta_fcd: float, fcd: float) -> float:
 def epscu_c(epscu: float, sigma_c2d: float, fcd: float) -> float:
     """Calculate the confined concrete ultimate strain limit.
 
-    EN1992-1-1:2023 Eq. (8.17)
+    EN1992-1-1:2023 Eq. (8.17).
 
     Args:
         epscu (float): The ultimate strain limit for unconfined concrete.
