@@ -5,7 +5,6 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 import math
 import typing as t
 import warnings
-from math import cos, sin
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -577,7 +576,12 @@ class GenericSectionCalculator(SectionCalculator):
         """Rotate triangulated data of angle theta."""
         rotated_triangulated_data = []
         for tr in self.triangulated_data:
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             coords = np.vstack((tr[0], tr[1]))
             coords_r = T @ coords
             rotated_triangulated_data.append(
@@ -639,7 +643,9 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         # Rotate back to section CRS TODO Check
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         M = T @ np.array([[My], [Mz]])
         if self.triangulated_data is not None:
             # Rotate back also triangulated data!
@@ -774,7 +780,12 @@ class GenericSectionCalculator(SectionCalculator):
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             M = T @ np.array([[My], [Mz]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
@@ -1109,7 +1120,9 @@ class GenericSectionCalculator(SectionCalculator):
         eps_a = eps_n - kappa_y * y_n
 
         # rotate back components to work in section CRS
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         components = np.vstack((kappa_y, np.zeros_like(kappa_y)))
         rotated_components = T @ components
         return np.column_stack((eps_a, rotated_components.T)), field_num
