@@ -2,10 +2,10 @@
 Annex B.
 """
 
-import math
 import typing as t
 
 import numpy as np
+import numpy.typing as npt
 
 ALPHA_CEMENT_DICT = {'R': 1, 'N': 0, 'S': -1}
 ALPHA_DS_DICT = {
@@ -20,8 +20,8 @@ def phi(
     f_cm: float,
     RH: int = 50,
     cement_class: t.Literal['R', 'N', 'S'] = 'R',
-    t0: int = 7,
-    t: int = 18263,
+    t0: float = 7,
+    t: npt.ArrayLike = 18263,
 ) -> float:
     """Calculates the creep number.
 
@@ -36,9 +36,9 @@ def phi(
     Keyword Args:
         cement_class (str): The cement class, defaults to 'R'. Possible values:
             'R', 'N', 'S',
-        t0: The age of the concrete at the time (in days) of loading.
-        t: The age of the concrete at the time (in days) of evaluation (50
-            years default).
+        t0 (float): The age of the concrete at the time (in days) of loading.
+        t (ArrayLike): The age of the concrete at the time (in days) of
+            evaluation (50 years default).
 
     Returns:
         float: The creep value for the load, phi(t, t0).
@@ -65,20 +65,22 @@ def phi(
     return phi_0 * _beta_c
 
 
-def beta_c(t0: float, t: float, beta_H: float) -> float:
+def beta_c(t0: float, t: npt.ArrayLike, beta_H: float) -> float:
     """Calculates the factor beta_c.
 
     EN 1992-1-1:2004, Eq. (B.7).
 
     Args:
         t0 (float): The concrete age in days a the time of loading.
-        t (float): The concrete age at the evaluated time.
-        beta_H: Parameter defined in (B.8).
+        t (ArrayLike): The concrete age at the evaluated time.
+        beta_H (float): Parameter defined in (B.8).
 
     Returns:
         float: Parameter defined by Equation (B.7), beta_c.
     """
-    return ((t - t0) / (beta_H + t - t0)) ** 0.3
+    t_load = np.atleast_1d(t - t0)
+    t_load[t_load < 0.0] = 0.0
+    return (t_load / (beta_H + t_load)) ** 0.3
 
 
 def t0_adj(t0: float, alpha_cement: float) -> float:
@@ -110,7 +112,7 @@ def beta_fcm(f_cm: float) -> float:
     return 16.8 / f_cm**0.5
 
 
-def phi_RH(h_0: float, f_cm: float, RH: int) -> float:
+def phi_RH(h_0: float, f_cm: float, RH: float) -> float:
     """Calculates phi_RH.
 
     EN 1992-1-1:2004, Eq. (B.3).
@@ -118,7 +120,7 @@ def phi_RH(h_0: float, f_cm: float, RH: int) -> float:
     Args:
         h_0 (float): The effective cross sectional thickness, Equation (B.6).
         f_cm (float): The mean concrete strength.
-        RH (int): The relative humidity in percent.
+        RH (float): The relative humidity in percent.
 
     Returns:
         float: The calculation parameter (B.3).
@@ -134,7 +136,7 @@ def phi_RH(h_0: float, f_cm: float, RH: int) -> float:
     return (1 + (1 - RH / 100) / (0.1 * h_0 ** (1 / 3)) * alpha_1) * alpha_2
 
 
-def beta_H(h_0: float, f_cm: float, RH: int) -> float:
+def beta_H(h_0: float, f_cm: float, RH: float) -> float:
     """Calculates beta_H.
 
     EN 1992-1-1:2004, Eq. (B.8a and b).
@@ -142,7 +144,7 @@ def beta_H(h_0: float, f_cm: float, RH: int) -> float:
     Args:
         h_0 (float): The effective cross sectional thickness, Equation (B.6).
         f_cm (float): The mean concrete strength.
-        RH (int): The relative humidity in percent.
+        RH (float): The relative humidity in percent.
 
     Returns:
         float: The calculation parameter defined in (B.8).
@@ -164,10 +166,10 @@ def eps_cs(
     h_0: float,
     f_cm: float,
     cement_class: t.Literal['R', 'N', 'S'] = 'R',
-    RH: int = 50,
-    t_S: int = 28,
-    t: int = 18263,
-) -> float:
+    RH: float = 50,
+    t_S: float = 28,
+    t: npt.ArrayLike = 18263,
+) -> npt.ArrayLike:
     """Calculates the shrinkage strain.
 
     EN 1992-1-1:2004, Eq. (3.8).
@@ -179,10 +181,11 @@ def eps_cs(
             'R', 'N', 'S'.
 
     Keyword Args:
-        RH (int): The relative humidity in percent, defaults to 50.
-        t_S (int): the number of days when shrinkage begins, default: 28 days.
-        t (int): the concrete age at the time (in days) of evaluation, default:
-            50 years.
+        RH (float): The relative humidity in percent, defaults to 50.
+        t_S (float): the number of days when shrinkage begins, default: 28
+            days.
+        t (ArrayLike): the concrete age at the time (in days) of evaluation,
+            default: 50 years.
 
     Returns:
         float: The shrinkage. Given as absolute, not in percent or ppm.
@@ -191,8 +194,10 @@ def eps_cs(
         ValueError: Checks if the cement class equals R, N or S.
     """
     _cement_class = cement_class.upper().strip()
-    beta_ds = (t - t_S) / (t - t_S + 0.04 * h_0 ** (1 / 3))  # (3.10)
-    beta_as = 1 - math.exp(-0.2 * t**0.5)  # (3.13)
+    t_drying = np.atleast_1d(t - t_S)
+    t_drying[t_drying < 0.0] = 0.0
+    beta_ds = t_drying / (t_drying + 0.04 * h_0 ** (1 / 3))  # (3.10)
+    beta_as = 1 - np.exp(-0.2 * t**0.5)  # (3.13)
 
     # k_h is defined in Table 3.3 under (3.9)
     if h_0 >= 500:
@@ -208,16 +213,16 @@ def eps_cs(
     return eps_cd + eps_ca  # (3.8)
 
 
-def beta_RH(RH: int, RH_0: int = 100) -> float:
+def beta_RH(RH: float, RH_0: float = 100) -> float:
     """Calculates beta_RH.
 
     EN 1992-1-1:2004, Eq. (B.12).
 
     Args:
-        RH (int): The relative humidity in percent.
+        RH (float): The relative humidity in percent.
 
     Keyword Args:
-        RH_0 (int): The reference relative humidity, default: 100%.
+        RH_0 (float): The reference relative humidity, default: 100%.
 
     Returns:
         float: Calculation parameter from Equation (B.12).
@@ -225,7 +230,7 @@ def beta_RH(RH: int, RH_0: int = 100) -> float:
     return 1.55 * (1 - (RH / RH_0) ** 3)
 
 
-def eps_cd_0(cement_class: str, f_cm: float, RH: int) -> float:
+def eps_cd_0(cement_class: str, f_cm: float, RH: float) -> float:
     """Calculates eps_cd_0.
 
     EN 1992-1-1:2004, Eq. (B.11).
@@ -234,7 +239,7 @@ def eps_cd_0(cement_class: str, f_cm: float, RH: int) -> float:
         cement_class (str): The cement class, defaults to 'R'. Possible values:
             'R', 'N', 'S'.
         f_cm (float): The mean concrete strength.
-        RH (int): The relative humidity in percent.
+        RH (float): The relative humidity in percent.
 
     Returns:
         float: The nominal value for shrinkage.
@@ -251,7 +256,7 @@ def eps_cd_0(cement_class: str, f_cm: float, RH: int) -> float:
 
     return (
         0.85
-        * ((220 + 110 * alpha_ds1) * math.exp(-alpha_ds2 * f_cm / 10))
+        * ((220 + 110 * alpha_ds1) * np.exp(-alpha_ds2 * f_cm / 10))
         * 1e-6
         * beta_RH(RH)
     )  # (B.11)
