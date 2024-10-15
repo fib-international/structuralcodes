@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import typing as t
+import structuralcodes.core._section_results as s_res
 from shapely import Polygon
 from structuralcodes.sections._generic import GenericSection
 from structuralcodes.geometry import SurfaceGeometry
@@ -50,11 +51,22 @@ class RectangularSection(GenericSection):
         area: float = height * width
         perimeter: float = 2 * (height + width)
         ea: float = area * geometry.material.get_tangent(eps=0)[0]
+        for geo in self.geometry.geometries:
+            pass
+        for geo in self.geometry.point_geometries:
+            pass
+
         if geometry.density is not None:
             mass = area * geometry.density * 1e-9
         else:
             mass = 0
 
+
+        gp = s_res.GrossProperties()
+        gp.area = area
+        gp.perimeter = perimeter
+        gp.ea = ea
+        gp.mass = mass
         # TODO: more gross sectional properties, and store them in self._gross_properties
 
     @property
