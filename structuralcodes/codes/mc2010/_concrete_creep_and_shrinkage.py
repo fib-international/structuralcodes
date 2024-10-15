@@ -291,7 +291,9 @@ def beta_ds(
         numpy.ndarray: Multiplication factor used for calculating the drying
         shrinkage as a function of time.
     """
-    return np.sqrt((time - ts) / (0.035 * (notional_size) ** 2 + (time - ts)))
+    time_drying = np.atleast_1d(time - ts)
+    time_drying[time_drying < 0.0] = 0.0
+    return np.sqrt(time_drying / (0.035 * (notional_size) ** 2 + time_drying))
 
 
 def beta_s1(fcm: float) -> float:
