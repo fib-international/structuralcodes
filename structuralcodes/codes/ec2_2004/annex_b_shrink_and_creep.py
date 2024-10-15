@@ -196,7 +196,7 @@ def eps_cs(
     _cement_class = cement_class.upper().strip()
     t_drying = np.atleast_1d(t - t_S)
     t_drying[t_drying < 0.0] = 0.0
-    beta_ds = t_drying / (t_drying + 0.04 * h_0 ** (1 / 3))  # (3.10)
+    beta_ds = t_drying / (t_drying + 0.04 * h_0 ** (3 / 2))  # (3.10)
     beta_as = 1 - np.exp(-0.2 * t**0.5)  # (3.13)
 
     # k_h is defined in Table 3.3 under (3.9)
