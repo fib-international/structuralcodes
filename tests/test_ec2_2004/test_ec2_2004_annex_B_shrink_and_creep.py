@@ -19,7 +19,34 @@ def test_creep_returns_expected_values(
 ):
     """Test that phi returns expected values."""
     creep = annex_b_shrink_and_creep.phi(
-        test_h_0, test_f_cm, test_RH, test_c_class, test_t0, test_t
+        annex_b_shrink_and_creep.phi_0(
+            annex_b_shrink_and_creep.phi_RH(
+                test_h_0,
+                test_f_cm,
+                test_RH,
+                annex_b_shrink_and_creep.alpha_1(test_f_cm),
+                annex_b_shrink_and_creep.alpha_2(test_f_cm),
+            ),
+            annex_b_shrink_and_creep.beta_fcm(test_f_cm),
+            annex_b_shrink_and_creep.beta_t0(
+                annex_b_shrink_and_creep.t0_adj(
+                    test_t0,
+                    annex_b_shrink_and_creep.alpha_cement(test_c_class),
+                )
+            ),
+        ),
+        annex_b_shrink_and_creep.beta_c(
+            annex_b_shrink_and_creep.t0_adj(
+                test_t0, annex_b_shrink_and_creep.alpha_cement(test_c_class)
+            ),
+            test_t,
+            annex_b_shrink_and_creep.beta_H(
+                test_h_0,
+                test_f_cm,
+                test_RH,
+                annex_b_shrink_and_creep.alpha_3(test_f_cm),
+            ),
+        ),
     )
     assert np.isclose(creep, expected, atol=1e-3)
 
@@ -37,22 +64,48 @@ def test_creep_array_input():
     t = np.linspace(0, t_final, num_time)
 
     # Act
-    creep = annex_b_shrink_and_creep.phi(
-        h_0=h_0,
-        f_cm=f_cm,
-        RH=RH,
-        cement_class=cement_class,
-        t0=t0,
-        t=t,
+    phi_RH = annex_b_shrink_and_creep.phi_RH(
+        h_0,
+        f_cm,
+        RH,
+        annex_b_shrink_and_creep.alpha_1(f_cm),
+        annex_b_shrink_and_creep.alpha_2(f_cm),
     )
-    creep_final = annex_b_shrink_and_creep.phi(
-        h_0=h_0,
-        f_cm=f_cm,
-        RH=RH,
-        cement_class=cement_class,
-        t0=t0,
-        t=t[-1],
+    beta_fcm = annex_b_shrink_and_creep.beta_fcm(f_cm)
+    beta_t0 = annex_b_shrink_and_creep.beta_t0(
+        annex_b_shrink_and_creep.t0_adj(
+            t0,
+            annex_b_shrink_and_creep.alpha_cement(cement_class),
+        )
     )
+    phi_0 = annex_b_shrink_and_creep.phi_0(phi_RH, beta_fcm, beta_t0)
+    beta_c_array = annex_b_shrink_and_creep.beta_c(
+        annex_b_shrink_and_creep.t0_adj(
+            t0, annex_b_shrink_and_creep.alpha_cement(cement_class)
+        ),
+        t,
+        annex_b_shrink_and_creep.beta_H(
+            h_0,
+            f_cm,
+            RH,
+            annex_b_shrink_and_creep.alpha_3(f_cm),
+        ),
+    )
+    beta_c_float = annex_b_shrink_and_creep.beta_c(
+        annex_b_shrink_and_creep.t0_adj(
+            t0, annex_b_shrink_and_creep.alpha_cement(cement_class)
+        ),
+        t[-1],
+        annex_b_shrink_and_creep.beta_H(
+            h_0,
+            f_cm,
+            RH,
+            annex_b_shrink_and_creep.alpha_3(f_cm),
+        ),
+    )
+
+    creep = annex_b_shrink_and_creep.phi(phi_0, beta_c_array)
+    creep_final = annex_b_shrink_and_creep.phi(phi_0, beta_c_float)
 
     # Assert
     assert len(creep) == num_time
@@ -96,7 +149,7 @@ invalid_cement_classes = pytest.mark.parametrize(
 def test_creep_wrong_cement_class(cement_class):
     """Test that ValueError is raised if a wrong cement class is provided."""
     with pytest.raises(ValueError):
-        annex_b_shrink_and_creep.phi(300, 38, 50, cement_class)
+        annex_b_shrink_and_creep.alpha_cement(cement_class)
 
 
 @invalid_cement_classes
