@@ -15,8 +15,17 @@
    .. automethod:: fyd
    .. automethod:: ftd
    .. automethod:: epsud
+   .. autoproperty:: fyk
+   .. autoproperty:: Es
+   .. autoproperty:: ftk
+   .. autoproperty:: epsuk
+   .. autoproperty:: epsyk
+   .. autoproperty:: epsyd
+   .. autoproperty:: constitutive_law
    .. autoproperty:: gamma_s
    .. autoproperty:: gamma_eps
+   .. autoproperty:: name
+   .. autoproperty:: density
 ```
 
 ## _fib_ Model Code 2010
@@ -27,8 +36,17 @@
    .. automethod:: fyd
    .. automethod:: ftd
    .. automethod:: epsud
+   .. autoproperty:: fyk
+   .. autoproperty:: Es
+   .. autoproperty:: ftk
+   .. autoproperty:: epsuk
+   .. autoproperty:: epsyk
+   .. autoproperty:: epsyd
+   .. autoproperty:: constitutive_law
    .. autoproperty:: gamma_s
    .. autoproperty:: gamma_eps
+   .. autoproperty:: name
+   .. autoproperty:: density
 ```
 
 ## Eurocode 2 (2023)
@@ -39,5 +57,14 @@
    .. automethod:: fyd
    .. automethod:: ftd
    .. automethod:: epsud
+   .. autoproperty:: fyk
+   .. autoproperty:: Es
+   .. autoproperty:: ftk
+   .. autoproperty:: epsuk
+   .. autoproperty:: epsyk
+   .. autoproperty:: epsyd
+   .. autoproperty:: constitutive_law
    .. autoproperty:: gamma_s
+   .. autoproperty:: name
+   .. autoproperty:: density
 ```
