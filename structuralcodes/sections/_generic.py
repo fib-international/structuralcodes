@@ -209,8 +209,12 @@ class GenericSectionCalculator(SectionCalculator):
             # Change sign due to moment sign convention
             izz *= -1
 
+            # Compute reasonable value for absolute tolerance for checking iyz
+            rel_tol = 1e-9
+            abs_tol = 0.5 * (iyy + izz) * rel_tol
+
             # Check calculated cross moment
-            if not math.isclose(iyz, izy, rel_tol=1e-9, abs_tol=10):
+            if not math.isclose(iyz, izy, rel_tol=rel_tol, abs_tol=abs_tol):
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
