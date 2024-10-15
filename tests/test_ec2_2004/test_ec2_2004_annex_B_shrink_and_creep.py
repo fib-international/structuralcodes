@@ -130,9 +130,21 @@ def test_shrinkage_returns_expected_values(
     test_h_0, test_f_cm, test_c_class, test_RH, test_t_S, test_t, expected
 ):
     """Test that eps_cs returns expected values."""
-    shrinkage = annex_b_shrink_and_creep.eps_cs(
-        test_h_0, test_f_cm, test_c_class, test_RH, test_t_S, test_t
+    eps_ca = annex_b_shrink_and_creep.eps_ca(
+        annex_b_shrink_and_creep.beta_as(test_t),
+        annex_b_shrink_and_creep.eps_ca_inf(test_f_cm - 8),
     )
+    eps_cd = annex_b_shrink_and_creep.eps_cd(
+        annex_b_shrink_and_creep.beta_ds(test_t, test_t_S, test_h_0),
+        annex_b_shrink_and_creep.k_h(test_h_0),
+        annex_b_shrink_and_creep.eps_cd_0(
+            annex_b_shrink_and_creep.alpha_ds1(test_c_class),
+            annex_b_shrink_and_creep.alpha_ds2(test_c_class),
+            test_f_cm,
+            annex_b_shrink_and_creep.beta_RH(test_RH),
+        ),
+    )
+    shrinkage = annex_b_shrink_and_creep.eps_cs(eps_ca=eps_ca, eps_cd=eps_cd)
     assert np.isclose(shrinkage, expected, atol=1e-6)
 
 
@@ -156,7 +168,9 @@ def test_creep_wrong_cement_class(cement_class):
 def test_shrinkage_wrong_cement_class(cement_class):
     """Test that ValueError is raised if a wrong cement class is provided."""
     with pytest.raises(ValueError):
-        annex_b_shrink_and_creep.eps_cd_0(cement_class, 38, 50)
+        annex_b_shrink_and_creep.alpha_ds1(cement_class)
+    with pytest.raises(ValueError):
+        annex_b_shrink_and_creep.alpha_ds2(cement_class)
 
 
 def test_shrinkage_array_input():
@@ -172,21 +186,38 @@ def test_shrinkage_array_input():
     t = np.linspace(0, t_final, num_time)
 
     # Act
+    eps_ca_inf = annex_b_shrink_and_creep.eps_ca_inf(f_cm - 8)
+    beta_as_array = annex_b_shrink_and_creep.beta_as(t)
+    beta_as_float = annex_b_shrink_and_creep.beta_as(t_final)
+    eps_ca_array = annex_b_shrink_and_creep.eps_ca(beta_as_array, eps_ca_inf)
+    eps_ca_float = annex_b_shrink_and_creep.eps_ca(beta_as_float, eps_ca_inf)
+    beta_ds_array = annex_b_shrink_and_creep.beta_ds(t, t_s, h_0)
+    beta_ds_float = annex_b_shrink_and_creep.beta_ds(t_final, t_s, h_0)
+    alpha_ds1, alpha_ds2 = (
+        annex_b_shrink_and_creep.alpha_ds1(cement_class),
+        annex_b_shrink_and_creep.alpha_ds2(cement_class),
+    )
+    k_h = annex_b_shrink_and_creep.k_h(h_0)
+    beta_RH = annex_b_shrink_and_creep.beta_RH(RH)
+    eps_cd_0 = annex_b_shrink_and_creep.eps_cd_0(
+        alpha_ds1,
+        alpha_ds2,
+        f_cm,
+        beta_RH,
+    )
+    beta_ds_array = annex_b_shrink_and_creep.beta_ds(t, t_s, h_0)
+    beta_ds_float = annex_b_shrink_and_creep.beta_ds(t_final, t_s, h_0)
+    eps_cd_array = annex_b_shrink_and_creep.eps_cd(
+        beta_ds_array, k_h, eps_cd_0
+    )
+    eps_cd_float = annex_b_shrink_and_creep.eps_cd(
+        beta_ds_float, k_h, eps_cd_0
+    )
     shrinkage = annex_b_shrink_and_creep.eps_cs(
-        h_0=h_0,
-        f_cm=f_cm,
-        cement_class=cement_class,
-        RH=RH,
-        t_S=t_s,
-        t=t,
+        eps_ca=eps_ca_array, eps_cd=eps_cd_array
     )
     shrinkage_final = annex_b_shrink_and_creep.eps_cs(
-        h_0=h_0,
-        f_cm=f_cm,
-        cement_class=cement_class,
-        RH=RH,
-        t_S=t_s,
-        t=t[-1],
+        eps_ca=eps_ca_float, eps_cd=eps_cd_float
     )
 
     # Assert

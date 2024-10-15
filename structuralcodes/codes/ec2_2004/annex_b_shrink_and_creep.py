@@ -19,6 +19,235 @@ ALPHA_DS_DICT = {
 }
 
 
+def eps_cs(eps_cd: npt.ArrayLike, eps_ca: npt.ArrayLike) -> npt.ArrayLike:
+    """Calculates the total shrinkage strain.
+
+    EN 1992-1-1:2004, Eq. (3.8).
+
+    Args:
+        eps_cd (npt.ArrayLike): The drying shrinkage defined in Eq. (3.9).
+        eps_ca (npt.ArrayLike): The autogenous shrinkage defined in Eq. (3.11).
+
+    Returns:
+        npt.ArrayLike: The total shrinkage strain.
+    """
+    return eps_cd + eps_ca
+
+
+def eps_cd(
+    beta_ds: npt.ArrayLike, k_h: float, eps_cd_0: float
+) -> npt.ArrayLike:
+    """Calculates the drying shrinkage.
+
+    EN 1992-1-1:2004, Eq. (3.9).
+
+    Args:
+        beta_ds (npt.ArrayLike): A coefficient taking into account the time of
+            drying defined in Eq. (3.10).
+        k_h (float): A coefficient depending on the effective thickness of the
+            section defined in Tab. 3.3.
+        eps_cd_0 (float): The nominal value of drying shrinkage defined in Eq.
+            (B.11).
+
+    Returns:
+        npt.ArrayLike: The drying shrinkage.
+
+    Note:
+        In EC2 (2004), the shrinkage strain is calculated as a positive number.
+    """
+    return beta_ds * k_h * eps_cd_0
+
+
+def beta_ds(t: npt.ArrayLike, t_s: float, h_0: float):
+    """Calculates the coefficient taking into account the time of drying.
+
+    EN 1992-1-1:2004, Eq. (3.10).
+
+    Args:
+        t (npt.ArrayLike): The age of the concrete in days.
+        t_s (float): The age of the concrete in days at the start of drying.
+        h_0 (float): The effective cross section thichkness.
+
+    Returns:
+        npt.ArrayLike: The coefficient taking into account the time of drying.
+    """
+    t_drying = np.atleast_1d(t - t_s)
+    t_drying[t_drying < 0.0] = 0.0
+    return t_drying / (t_drying + 0.04 * h_0 ** (3 / 2))
+
+
+def k_h(h_0: float) -> float:
+    """Calculate the coefficient depending on the effective section thickness.
+
+    EN 1992-1-1:2004, Tab. 3.3.
+
+    Args:
+        h_0 (float): The effective section thickness in mm.
+
+    Returns:
+        float: The coefficient depending on the effective section thickness.
+    """
+    if h_0 >= 500:
+        k_h = 0.70
+    elif h_0 <= 100:
+        k_h = 1.0
+    else:
+        k_h = np.interp(h_0, [100, 200, 300, 500], [1.0, 0.85, 0.75, 0.7])
+    return k_h
+
+
+def eps_cd_0(
+    alpha_ds1: float,
+    alpha_ds2: float,
+    fcm: float,
+    beta_RH: float,
+    fcm_0: float = 10,
+) -> float:
+    """Calculates the nominal value of drying shrinkage.
+
+    EN 1992-1-1:2004, Eq. (B.11).
+
+    Args:
+        alpha_ds1 (float): A coefficient depending on the cement type, defined
+            in EC2 (2004), Sec. B.2.
+        alpha_ds2 (float): A coefficient depending on the cement type, defined
+            in EC2 (2004), Sec. B.2.
+        fcm (float): The mean compressive strength in MPa.
+        beta_RH (float): A factor describing the effect of relative humidity,
+            defined in Eq. (B.12).
+
+    Keyword Args:
+        fcm_0 (float): A reference strength in MPa, default 10 MPa.
+
+    Returns:
+        float: The nominal value of drying shrinkage.
+    """
+    return (
+        0.85
+        * ((220 + 110 * alpha_ds1) * np.exp(-alpha_ds2 * fcm / fcm_0))
+        * 1e-6
+        * beta_RH
+    )
+
+
+def alpha_ds1(cement_class: t.Literal['S', 'N', 'R']) -> float:
+    """A coefficient depending on the cement class.
+
+    EN 1992-1-1:2004, Sec. B.2.
+
+    Args:
+        cement_class (str): The cement class, either 'S', 'N' or 'R'.
+
+    Returns:
+        float: The exponent that depends on the cement type.
+
+    Raises:
+        ValueError: If an invalid cement class is provided.
+    """
+    _alpha_ds = _get_alpha_ds_dict(cement_class=cement_class)
+    return _alpha_ds['alpha_ds1']
+
+
+def alpha_ds2(cement_class: t.Literal['S', 'N', 'R']) -> float:
+    """A coefficient depending on the cement class.
+
+    EN 1992-1-1:2004, Sec. B.2.
+
+    Args:
+        cement_class (str): The cement class, either 'S', 'N' or 'R'.
+
+    Returns:
+        float: The exponent that depends on the cement type.
+
+    Raises:
+        ValueError: If an invalid cement class is provided.
+    """
+    _alpha_ds = _get_alpha_ds_dict(cement_class=cement_class)
+    return _alpha_ds['alpha_ds2']
+
+
+def _get_alpha_ds_dict(cement_class: str) -> t.Dict:
+    """Internal function for getting a dictionary with values for aplha_ds1 and
+    alpha_ds2.
+    """
+    _alpha_ds = ALPHA_DS_DICT.get(cement_class.upper().strip())
+
+    if _alpha_ds is None:
+        raise ValueError(
+            (
+                f'"{cement_class}" is not a valid cement class. '
+                'Use either S, N or R.'
+            )
+        )
+    return _alpha_ds
+
+
+def beta_RH(RH: float, RH_0: float = 100) -> float:
+    """Calculates the factor describing the effect of relative humidity.
+
+    EN 1992-1-1:2004, Eq. (B.12).
+
+    Args:
+        RH (float): The relative humidity in percent.
+
+    Keyword Args:
+        RH_0 (float): The reference relative humidity, default: 100%.
+
+    Returns:
+        float: The factor taking into account the relative humidity.
+    """
+    return 1.55 * (1 - (RH / RH_0) ** 3)
+
+
+def eps_ca(beta_as: npt.ArrayLike, eps_ca_inf: float) -> npt.ArrayLike:
+    """Calculates the autogenous shrinkage.
+
+    EN 1992-1-1:2004, Eq. (3.11).
+
+    Args:
+        beta_as (npt.ArrayLike): A factor describing the autogenous shrinkage
+            development.
+        eps_ca_inf (float): The final autogenous shrinkage.
+
+    Returns:
+        npt.ArrayLike: The autogenous shrinkage.
+
+    Note:
+        In EC2 (2004), the shrinkage strain is calculated as a positive number.
+    """
+    return beta_as * eps_ca_inf
+
+
+def eps_ca_inf(fck: float) -> float:
+    """Calculates the final autogenous shrinkage.
+
+    EN 1992-1-1:2004, Eq. 3.12.
+
+    Args:
+        fck (float): The characteristic compressive strength in MPa.
+
+    Returns:
+        float: The final autogenous shrinkage.
+    """
+    return 2.5 * (fck - 10) * 1e-6
+
+
+def beta_as(t: npt.ArrayLike) -> npt.ArrayLike:
+    """Calculates the factor describing the development of autogenous
+    shrinkage.
+
+    EN 1992-1-1:2004, Eq. (3.13).
+
+    Args:
+        t (npt.ArrayLike): The age of the concrete in days.
+
+    Returns:
+        npt.ArrayLike: The factor describing the development of autogenous
+        shrinkage.
+    """
+    return 1 - np.exp(-0.2 * t**0.5)
+
+
 def phi(phi_0: float, beta_c: npt.ArrayLike) -> npt.ArrayLike:
     """Calculate the creep number.
 
@@ -263,103 +492,3 @@ def alpha_cement(cement_class: t.Literal['S', 'N', 'R']) -> float:
             )
         )
     return _alpha_cement
-
-
-def eps_cs(
-    h_0: float,
-    f_cm: float,
-    cement_class: t.Literal['R', 'N', 'S'] = 'R',
-    RH: float = 50,
-    t_S: float = 28,
-    t: npt.ArrayLike = 18263,
-) -> npt.ArrayLike:
-    """Calculates the shrinkage strain.
-
-    EN 1992-1-1:2004, Eq. (3.8).
-
-    Args:
-        h_0 (float): The effective cross sectional thickness, Equation (B.6).
-        f_cm (float): The mean concrete strength.
-        cement_class (str): The cement class, defaults to 'R'. Possible values:
-            'R', 'N', 'S'.
-
-    Keyword Args:
-        RH (float): The relative humidity in percent, defaults to 50.
-        t_S (float): the number of days when shrinkage begins, default: 28
-            days.
-        t (ArrayLike): the concrete age at the time (in days) of evaluation,
-            default: 50 years.
-
-    Returns:
-        float: The shrinkage. Given as absolute, not in percent or ppm.
-
-    Raises:
-        ValueError: Checks if the cement class equals R, N or S.
-    """
-    _cement_class = cement_class.upper().strip()
-    t_drying = np.atleast_1d(t - t_S)
-    t_drying[t_drying < 0.0] = 0.0
-    beta_ds = t_drying / (t_drying + 0.04 * h_0 ** (3 / 2))  # (3.10)
-    beta_as = 1 - np.exp(-0.2 * t**0.5)  # (3.13)
-
-    # k_h is defined in Table 3.3 under (3.9)
-    if h_0 >= 500:
-        k_h = 0.70
-    elif h_0 <= 100:
-        k_h = 1.0
-    else:
-        k_h = np.interp(h_0, [100, 200, 300, 500], [1.0, 0.85, 0.75, 0.7])
-
-    eps_ca_infinite = 2.5 * (f_cm - 18) * 1e-6  # (3.12)
-    eps_ca = beta_as * eps_ca_infinite  # (3.11)
-    eps_cd = beta_ds * k_h * eps_cd_0(_cement_class, f_cm, RH)  # (3.9)
-    return eps_cd + eps_ca  # (3.8)
-
-
-def beta_RH(RH: float, RH_0: float = 100) -> float:
-    """Calculates beta_RH.
-
-    EN 1992-1-1:2004, Eq. (B.12).
-
-    Args:
-        RH (float): The relative humidity in percent.
-
-    Keyword Args:
-        RH_0 (float): The reference relative humidity, default: 100%.
-
-    Returns:
-        float: Calculation parameter from Equation (B.12).
-    """
-    return 1.55 * (1 - (RH / RH_0) ** 3)
-
-
-def eps_cd_0(cement_class: str, f_cm: float, RH: float) -> float:
-    """Calculates eps_cd_0.
-
-    EN 1992-1-1:2004, Eq. (B.11).
-
-    Args:
-        cement_class (str): The cement class, defaults to 'R'. Possible values:
-            'R', 'N', 'S'.
-        f_cm (float): The mean concrete strength.
-        RH (float): The relative humidity in percent.
-
-    Returns:
-        float: The nominal value for shrinkage.
-
-    Raises:
-        ValueError: Checks if the cement class equals R, N or S.
-    """
-    _cement_class = cement_class.upper().strip()
-    alpha = ALPHA_DS_DICT.get(_cement_class)
-    if alpha is None:
-        raise ValueError(f'cement_class={cement_class}, expected R, N or S')
-    alpha_ds1 = alpha['alpha_ds1']
-    alpha_ds2 = alpha['alpha_ds2']
-
-    return (
-        0.85
-        * ((220 + 110 * alpha_ds1) * np.exp(-alpha_ds2 * f_cm / 10))
-        * 1e-6
-        * beta_RH(RH)
-    )  # (B.11)
