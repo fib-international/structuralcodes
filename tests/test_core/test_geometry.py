@@ -23,6 +23,7 @@ from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
     ParabolaRectangle,
 )
+from structuralcodes.materials.reinforcement import ReinforcementMC2010
 
 
 # Test create line
@@ -562,3 +563,89 @@ def test_property_reinforced_concrete(w, h, c):
         n=4,
     )
     assert geo_rc.reinforced_concrete
+
+
+def test_reinforcement_group_label_one():
+    """Test adding one reinforcement with a group label to a section."""
+    # Arrange
+    group_label = 'bottom-reinf'
+    width = 200
+    height = 500
+    cover = 50
+    diameter = 16
+
+    concrete = ConcreteMC2010(fck=35)
+    reinforcement = ReinforcementMC2010(
+        fyk=500, ftk=520, epsuk=0.05, Es=200000
+    )
+
+    geometry = SurfaceGeometry(
+        poly=Polygon(
+            (
+                (-width / 2, -height / 2),
+                (width / 2, -height / 2),
+                (width / 2, height / 2),
+                (-width / 2, height / 2),
+            )
+        ),
+        material=concrete,
+    )
+
+    # Act
+    geometry = add_reinforcement(
+        geometry,
+        (0, -height / 2 + cover),
+        diameter,
+        reinforcement,
+        group_label=group_label,
+    )
+    point_geometries = geometry.point_geometries
+
+    # Assert
+    assert len(point_geometries) == 1
+    assert point_geometries[0].group_label == group_label
+
+
+def test_reinforcement_group_label_line():
+    """Test adding reinforcement with a group label along a line."""
+    # Arrange
+    group_label = 'bottom-reinf'
+    width = 200
+    height = 500
+    cover = 50
+    diameter = 16
+    n_bars = 3
+
+    concrete = ConcreteMC2010(fck=35)
+    reinforcement = ReinforcementMC2010(
+        fyk=500, ftk=520, epsuk=0.05, Es=200000
+    )
+
+    geometry = SurfaceGeometry(
+        poly=Polygon(
+            (
+                (-width / 2, -height / 2),
+                (width / 2, -height / 2),
+                (width / 2, height / 2),
+                (-width / 2, height / 2),
+            )
+        ),
+        material=concrete,
+    )
+
+    # Act
+    geometry = add_reinforcement_line(
+        geometry,
+        (-width / 2 + cover, -height / 2 + cover),
+        (width / 2 - cover, -height / 2 + cover),
+        diameter,
+        reinforcement,
+        n_bars,
+        group_label=group_label,
+    )
+    point_geometries = geometry.point_geometries
+
+    # Assert
+    assert len(point_geometries) == n_bars
+    for point in point_geometries:
+        assert point.group_label == group_label
