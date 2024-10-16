@@ -223,3 +223,46 @@ def test_shrinkage_array_input():
     # Assert
     assert len(shrinkage) == num_time
     assert np.isclose(shrinkage[-1], shrinkage_final)
+
+
+def test_maturity():
+    """Test calculating the maturity of concrete."""
+    # Arrange
+    T = [19, 20, 20, 21, 22, 23]
+    dt = [1, 2, 1, 1, 1, 2]
+
+    # Act
+    t_T = annex_b_shrink_and_creep.t_T(T=T, dt=dt)
+
+    # Assert
+    assert np.isclose(t_T, 8.37986781)
+
+
+@pytest.mark.parametrize(
+    'T, dt',
+    (
+        ([19, 20, 20, 21, 22, 23], [1, 2, 1, 1, 1]),
+        ([19, 20, 20, 21, 22], [1, 2, 1, 1, 1, 2]),
+    ),
+)
+def test_maturity_invalid_arrays(T, dt):
+    """Test if maturity calculation raises an exception."""
+    # Act and assert
+    with pytest.raises(ValueError):
+        annex_b_shrink_and_creep.t_T(T=T, dt=dt)
+
+
+def test_calculate_h0():
+    """Test calculating the effective section thickness."""
+    # Arrange
+    width = 250
+    height = 350
+    Ac = width * height
+    u = 2 * (width + height)
+    expected_h0 = 145.8333333
+
+    # Act
+    h_0 = annex_b_shrink_and_creep.h_0(Ac=Ac, u=u)
+
+    # Assert
+    assert np.isclose(h_0, expected_h0)
