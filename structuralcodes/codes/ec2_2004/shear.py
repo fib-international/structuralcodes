@@ -1,6 +1,7 @@
 """Design rules according to EN 1992-1-1 regarding shear."""
 
 import math
+import typing as t
 
 # General functions
 
@@ -171,6 +172,7 @@ def VRdc(
     fcd: float,
     k1: float = 0.15,
     gamma_c: float = 1.5,
+    CRdc: t.Optional[float] = None,
 ) -> float:
     """Compute the design strength of the shear resistance.
 
@@ -194,11 +196,13 @@ def VRdc(
             value might differ between National Annexes.
         gamma_c (float): Partial factor for concrete. Default value = 1.5,
             value might differ between National Annexes.
+        CRdc (Optional[float]): Scaling factor for the shear resistance.
+            Default value is 0.18 / gamma_c.
 
     Returns:
         float: The concrete shear resistance in MPa.
     """
-    CRdc = 0.18 / gamma_c
+    CRdc = CRdc or 0.18 / gamma_c
     return (
         max(
             CRdc * _k(d) * (100 * _rho_L(Asl, bw, d) * fck) ** (1.0 / 3.0)
