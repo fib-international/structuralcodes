@@ -15,6 +15,7 @@
    .. automethod:: __init__
 
    .. automethod:: fcd
+   .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: fctm
    .. autoproperty:: fctk_5
@@ -30,6 +31,9 @@
    .. autoproperty:: n_parabolic_rectangular
    .. autoproperty:: eps_c3
    .. autoproperty:: eps_cu3
+   .. autoproperty:: constitutive_law
+   .. autoproperty:: name
+   .. autoproperty:: density
 ```
 
 ## _fib_ Model Code 2010
@@ -40,6 +44,7 @@
    .. automethod:: __init__
    
    .. automethod:: fcd
+   .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: Eci
    .. autoproperty:: fctm
@@ -56,6 +61,9 @@
    .. autoproperty:: n_parabolic_rectangular
    .. autoproperty:: eps_c3
    .. autoproperty:: eps_cu3
+   .. autoproperty:: constitutive_law
+   .. autoproperty:: name
+   .. autoproperty:: density
 ```
 
 ## Eurocode 2 (2023)
@@ -67,6 +75,7 @@
 
    .. automethod:: fcd
    .. automethod:: fctd
+   .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: fctm
    .. autoproperty:: fctk_5
@@ -79,4 +88,7 @@
    .. autoproperty:: eps_c2
    .. autoproperty:: eps_cu2
    .. autoproperty:: n_parabolic_rectangular
+   .. autoproperty:: constitutive_law
+   .. autoproperty:: name
+   .. autoproperty:: density
 ```
