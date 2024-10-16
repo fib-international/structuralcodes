@@ -7,10 +7,6 @@ import typing as t
 import numpy as np
 import numpy.typing as npt
 
-from structuralcodes.codes.mc2010._concrete_creep_and_shrinkage import (
-    t_T as t_T_mc2010,
-)
-
 ALPHA_CEMENT_DICT = {'R': 1.0, 'N': 0.0, 'S': -1.0}
 ALPHA_DS_DICT = {
     'R': {'alpha_ds1': 6, 'alpha_ds2': 0.11},
@@ -447,27 +443,33 @@ def t0_adj(t0: float, alpha_cement: float) -> float:
     return max(t0 * (9 / (2 + t0**1.2) + 1) ** alpha_cement, 0.5)
 
 
-def t_T(
-    t: npt.ArrayLike, T_cur: npt.ArrayLike, dt: npt.ArrayLike = None
-) -> npt.ArrayLike:
+def t_T(T: npt.ArrayLike, dt: npt.ArrayLike) -> float:
     """Calculates the maturity of the concrete.
 
     EN 1992-1-1:2004, Eq. (B.10).
 
     Args:
-        t (npt.ArrayLike): The age of the concrete in days.
-        T_cur (npt.ArrayLike): The temperature of the environment during curing
-            in degrees Celcius.
-
-    Keyword Args:
-        dt (npt.ArrayLike): Number of days at which T_cur prevails. Required
-            when providing a list for T_cur.
+        T (npt.ArrayLike): The curing temperature history in degrees Celcius.
+        dt (npt.ArrayLike): The number of days with temperature T.
 
     Returns:
-        np.ndarray: The temperature corrected age of the concrete in days at
-        loading.
+        float: The maturity of the concrete.
+
+    Note:
+        The two arrays T and dt should have the same length.
     """
-    return t_T_mc2010(t0=t, T_cur=T_cur, dt=dt)
+    # Prepare the input
+    T = np.atleast_1d(T)
+    dt = np.atleast_1d(dt)
+
+    # Check the shape of the input arrays
+    if T.shape != dt.shape:
+        raise ValueError(
+            f'T {T.shape} and dt {dt.shape} should have the same shape.'
+        )
+
+    # Return the sum of the temperature adjusted time increments
+    return float(np.sum(np.exp(13.65 - 4000 / (273 + T)) * dt))
 
 
 def alpha_cement(cement_class: t.Literal['S', 'N', 'R']) -> float:
