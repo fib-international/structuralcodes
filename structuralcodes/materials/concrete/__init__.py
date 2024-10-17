@@ -36,23 +36,23 @@ def create_concrete(
     """A factory function to create the correct type of concrete based on the
     desired design code.
 
-    Args:
-        fck (float): Characteristic strength of concrete in MPa.
-            (if existing it is intended as the mean strength)
+    Arguments:
+        fck (float): Characteristic strength of concrete in MPa. (if existing
+            it is intended as the mean strength).
 
-    Keyword Args:
-        density (float): Density of Concrete in kg/m3 (default: 2400)
+    Keyword Arguments:
+        density (float): Density of Concrete in kg/m3 (default: 2400).
         gamma_c (Optional(float)): The partial factor for concrete.
-        existing (bool): Boolean indicating if the concrete is of an
-            existing structure (default: False)
+        existing (bool): Boolean indicating if the concrete is of an existing
+            structure (default: False).
         design_code (str): Optional string (default: None) indicating the
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
 
     Raises:
-        ValueError: if the design code is not valid or does not cover
-            concrete as a material.
+        ValueError: if the design code is not valid or does not cover concrete
+            as a material.
     """
     # Get the code from the global variable
     _code = _use_design_code(design_code)
