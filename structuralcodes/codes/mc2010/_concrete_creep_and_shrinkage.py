@@ -8,12 +8,15 @@ Todo:
    (see 5.1.10.7 of [1])
 """
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
+import typing as t
 import warnings
 
 import numpy as np
 import numpy.typing as npt
 
-_alpha = {
+ALPHA = {
     '32.5 R': 0,
     '42.5 N': 0,
     '42.5 R': 1,
@@ -21,7 +24,7 @@ _alpha = {
     '52.5 R': 1,
     '32.5 N': -1,
 }
-_alpha_as = {
+ALPHA_BS = {
     '32.5 R': 700,
     '42.5 N': 700,
     '42.5 R': 600,
@@ -29,7 +32,7 @@ _alpha_as = {
     '52.5 R': 600,
     '32.5 N': 800,
 }
-_alpha_ds1 = {
+ALPHA_DS1 = {
     '32.5 R': 4,
     '42.5 N': 4,
     '42.5 R': 6,
@@ -37,7 +40,7 @@ _alpha_ds1 = {
     '52.5 R': 6,
     '32.5 N': 3,
 }
-_alpha_ds2 = {
+ALPHA_DS2 = {
     '32.5 R': 0.012,
     '42.5 N': 0.012,
     '42.5 R': 0.012,
@@ -54,12 +57,11 @@ def _check_fcm(fcm: float) -> None:
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
     Args:
-        fcm (float): The mean compressive strength of the concrete in
-            MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
-        Raises a ValueError if the mean compressive strength is outside
-            of the specified range.
+        Raises a ValueError if the mean compressive strength is outside of the
+        specified range.
     """
     if fcm < 20 or fcm > 130:
         raise ValueError(
@@ -79,14 +81,14 @@ def _check_initial_stress(sigma: float, fcm: float) -> None:
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
     Args:
-        sigma (float): The compressive stress applied to the concrete
-            at t0 in MPa.
-        fcm (float): The mean compressive strength of the concrete in
-            MPa. Note that its value is non-negative.
+        sigma (float): The compressive stress applied to the concrete at t0 in
+            MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa. Note
+            that its value is non-negative.
 
-    Returns:
-        Raises a warning if the initial compressive stress is
-            greater than 0.4*fcm.
+    Raises:
+        Raises a warning if the initial compressive stress is greater than
+            0.4*fcm.
         Raises a ValueError if the compressive stress is greater than 0.6*fcm.
     """
     if abs(sigma) > 0.6 * fcm:
@@ -113,10 +115,10 @@ def _check_age_at_loading(t0: float) -> None:
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
     Args:
-        t0 (float): The age of the concrete in days at which the
-            loading is applied.
+        t0 (float): The age of the concrete in days at which the loading is
+            applied.
 
-    Returns:
+    Raises:
         Raises a ValueError if the age of the concrete is too low.
     """
     if t0 < 1:
@@ -139,9 +141,9 @@ def _check_RH(rh: float) -> None:
         rh (float): The relative humidity of the environment. Value can be
             provided as percentage (i.e. 40--100), or as ratio (i.e. 0.4--1).
 
-    Returns:
-        Raises a ValueError if the relative humidity is outside of the
-            range of applicability.
+    Raises:
+        Raises a ValueError if the relative humidity is outside of the range of
+            applicability.
     """
     if (rh < 0.4 or rh > 1) and (rh < 40 or rh > 100):
         raise ValueError(
@@ -154,17 +156,17 @@ def _check_RH(rh: float) -> None:
 
 
 def _check_env_temp(T: float) -> None:
-    """Check if the given environmental temperature is within the range
-        of applicability.
+    """Check if the given environmental temperature is within the range of
+    applicability.
 
     Defined in fib Model Code 2010 (2013), section 5.1.9.4.2.
 
     Args:
         T (float): The environmental temperature in degrees Celcius.
 
-    Returns:
-        Raises a warning if the applied environmental temperature is
-            outside of the range of applicability.
+    Raises:
+        Raises a warning if the applied environmental temperature is outside of
+            the range of applicability.
     """
     if T < 5 or T > 30:
         warnings.warn(
@@ -182,8 +184,8 @@ def t_T(
 ) -> np.ndarray:
     """Calculate the temperature corrected concrete age in days at t0.
 
-    Defined in fib Model Code 2010 (2013). Eq. 5.1-85 (only for a single
-     time value input, as required in Eq. 5.1-73).
+    Defined in fib Model Code 2010 (2013). Eq. 5.1-85 (only for a single time
+    value input, as required in Eq. 5.1-73).
 
     Args:
         t0 (np.typing.ArrayLike): The age of the concrete in days at which the
@@ -196,8 +198,8 @@ def t_T(
             Required when providing a list for T_cur.
 
     Returns:
-        np.ndarray: The temperature corrected age of the concrete in days
-            at loading.
+        np.ndarray: The temperature corrected age of the concrete in days at
+        loading.
     """
     _check_age_at_loading(t0)
     if dt is None:
@@ -215,50 +217,58 @@ def t_T(
     return np.sum(dt * np.exp(13.65 - (4000 / (273 + T_cur))))
 
 
-def t0_adj(_tT: float, cem_class: str) -> float:
-    """Calculate the modified age at loading (t0) to account for the
-        effect of the type of cement and curing temperature on the
-        degree of hydration and - in turn - on creep.
+def t0_adj(
+    t_T: float,
+    cem_class: t.Literal[
+        '32.5 N',
+        '32.5 R',
+        '42.5 N',
+        '42.5 R',
+        '52.5 N',
+        '52.5 R',
+    ],
+) -> float:
+    """Calculate the modified age at loading (t0) to account for the effect of
+    the type of cement and curing temperature on the degree of hydration and -
+    in turn - on creep.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-73.
 
     Args:
-        _tT (float): Temperature adjusted concrete age in days.
-        cem_class (str): The cement strength class that is used.
-            The choices are:
-                '32.5 N',
-                '32.5 R', '42.5 N',
-                '42.5 R', '52.5 N', '52.5 R'.
+        t_T (float): Temperature adjusted concrete age in days.
+        cem_class (str): The cement strength class that is used. The choices
+            are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
         float: The temperature corrected age of the concrete in days at
-            loading, accounting for the effect of the cement type.
-            For slow hardening concrete, the creep coefficient is
-            increased due to the lower modified age at loading.
+        loading, accounting for the effect of the cement type. For slow
+        hardening concrete, the creep coefficient is increased due to the lower
+        modified age at loading.
     """
-    return max(_tT * ((9 / (2 + _tT**1.2)) + 1) ** _alpha[cem_class], 0.5)
+    return max(t_T * ((9 / (2 + t_T**1.2)) + 1) ** ALPHA[cem_class], 0.5)
 
 
-def eps_cds0(fcm: float, cem_class: str) -> float:
+def eps_cds0(
+    fcm: float,
+    cem_class: t.Literal[
+        '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'
+    ],
+) -> float:
     """Calculate the notional drying shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-80.
 
     Args:
-        fcm (float): The mean compressive strength of the concrete in
-            MPa.
-        cem_class (str): The cement strength class that is used.
-            The choices are:
-                '32.5 N',
-                '32.5 R', '42.5 N',
-                '42.5 R', '52.5 N', '52.5 R'.
+        fcm (float): The mean compressive strength of the concrete in MPa.
+        cem_class (str): The cement strength class that is used. The choices
+            are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
-        float: The notional drying shrinkage in mm/mm.
+        float: The notional drying shrinkage, no units.
     """
     return (
-        (220 + 110 * _alpha_ds1[cem_class])
-        * np.exp(-_alpha_ds2[cem_class] * fcm)
+        (220 + 110 * ALPHA_DS1[cem_class])
+        * np.exp(-ALPHA_DS2[cem_class] * fcm)
         * 1e-6
     )
 
@@ -271,18 +281,19 @@ def beta_ds(
     Defined in fib Model Code 2010 (2013), Eq. 5.1-82.
 
     Args:
-        time (numpy.typing.ArrayLike): The different times in days at which
-            the shrinkage strain is determined.
-        ts (float): Age of the concrete when exposed to the
-            environment.
-        notional_size (float): The notional size of the considered
-            element in mm, defined as 2A/u.
+        time (numpy.typing.ArrayLike): The different times in days at which the
+            shrinkage strain is determined.
+        ts (float): Age of the concrete when exposed to the environment.
+        notional_size (float): The notional size of the considered element in
+            mm, defined as 2A/u.
 
     Returns:
-        numpy.ndarray: Multiplication factor used for calculating the
-            drying shrinkage as a function of time.
+        numpy.ndarray: Multiplication factor used for calculating the drying
+        shrinkage as a function of time.
     """
-    return np.sqrt((time - ts) / (0.035 * (notional_size) ** 2 + (time - ts)))
+    time_drying = np.atleast_1d(time - ts)
+    time_drying[time_drying < 0.0] = 0.0
+    return np.sqrt(time_drying / (0.035 * (notional_size) ** 2 + time_drying))
 
 
 def beta_s1(fcm: float) -> float:
@@ -291,17 +302,16 @@ def beta_s1(fcm: float) -> float:
     Defined in fib Model Code 2010 (2013), Eq. 5.1-83.
 
     Args:
-        fcm (float): The mean compressive strength of the concrete in
-            MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
         float: Multiplication factor used when calculating the drying
-            shrinkage.
+        shrinkage.
     """
     return min((35 / fcm) ** 0.1, 1.0)
 
 
-def beta_RH(rh: float, _beta_s1: float) -> float:
+def beta_RH(rh: float, beta_s1: float) -> float:
     """Calculate the multiplication factor beta_RH.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-81
@@ -309,20 +319,20 @@ def beta_RH(rh: float, _beta_s1: float) -> float:
     Args:
         rh (float): The relative humidity of the environment. Value can be
             provided as percentage (i.e. 40--100), or as ratio (i.e. 0.4--1).
-        _beta_s1 (float): Multiplication factor as calculated in the
-            fib Model Code 2010 (2013), Eq. 5.1-83.
+        beta_s1 (float): Multiplication factor as calculated in the fib Model
+            Code 2010 (2013), Eq. 5.1-83.
 
     Returns:
         float: Multiplication factor used when calculating the drying
-            shrinkage.
+        shrinkage.
     """
     _check_RH(rh)
     if rh > 1:
         rh = rh / 100
 
-    if rh >= 0.99 * _beta_s1:
+    if rh >= 0.99 * beta_s1:
         return 0.25
-    if 0.4 * _beta_s1 <= rh < 0.99 * _beta_s1:
+    if 0.4 * beta_s1 <= rh < 0.99 * beta_s1:
         return -1.55 * (1 - rh**3)
     raise ValueError(
         'The specified rh*beta_s1 is not in the range of application.'
@@ -330,97 +340,95 @@ def beta_RH(rh: float, _beta_s1: float) -> float:
 
 
 def eps_cds(
-    _eps_cds0: float,
-    _beta_ds: npt.ArrayLike,
-    _beta_rh: float,
+    eps_cds0: float,
+    beta_ds: npt.ArrayLike,
+    beta_rh: float,
 ) -> np.ndarray:
     """Calculate the drying shrinkage of the concrete element.
 
     Defined in fib Model Code 2010 (2013), Eqs. 5.1-77.
 
     Args:
-        _eps_cds0 (float):  The notional drying shrinkage in mm/mm, as defined
+        eps_cds0 (float):  The notional drying shrinkage, no units, as defined
             in fib Model Code 2010 (2013), Eq. 5.1-80.
-        _beta_ds (numpy.typing.ArrayLike): Multiplication factor used for
+        beta_ds (numpy.typing.ArrayLike): Multiplication factor used for
             calculating the drying shrinkage as a function of time, as defined
             in fib Model Code 2010 (2013), Eq. 5.1-82.
-        _beta_rh (float): Multiplication factor used when calculating the
+        beta_rh (float): Multiplication factor used when calculating the
             drying shrinkage.
 
     Returns:
-        numpy.ndarray: The drying shrinkage strains for the given times in
-            mm/mm.
+        numpy.ndarray: The drying shrinkage strains for the given times, no
+        units.
     """
-    return _eps_cds0 * _beta_rh * _beta_ds
+    return eps_cds0 * beta_rh * beta_ds
 
 
-def eps_cas0(fcm: float, cem_class: str) -> float:
-    """Calculate the notional autogenous shrinkage.
+def eps_cbs0(
+    fcm: float,
+    cem_class: t.Literal[
+        '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'
+    ],
+) -> float:
+    """Calculate the notional basic shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-78.
 
     Args:
         fcm (float): The mean compressive strength of the concrete in
             MPa.
-        cem_class (str): The cement strength class that is used.
-            The choices are:
-                '32.5 N',
-                '32.5 R', '42.5 N',
-                '42.5 R', '52.5 N', '52.5 R'.
+        cem_class (str): The cement strength class that is used. The choices
+            are: '32.5 N', '32.5 R', '42.5 N', '42.5 R', '52.5 N', '52.5 R'.
 
     Returns:
-        float: The notional autogenous shrinkage in mm/mm.
+        float: The notional basic shrinkage, no units.
     """
-    return (
-        -_alpha_as[cem_class] * ((0.1 * fcm) / (6 + 0.1 * fcm)) ** 2.5 * 1e-6
-    )
+    return -ALPHA_BS[cem_class] * ((0.1 * fcm) / (6 + 0.1 * fcm)) ** 2.5 * 1e-6
 
 
-def beta_as(time: npt.ArrayLike) -> np.ndarray:
-    """Calculate multiplication factor beta_as which is used to
-        determine the autogenous shrinkage.
+def beta_bs(time: npt.ArrayLike) -> np.ndarray:
+    """Calculate multiplication factor beta_bs which is used to determine the
+    basic shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-79.
 
     Args:
-        time (numpy.typing.ArrayLike): The different times in days at which
-            the autogenous strain is determined.
+        time (numpy.typing.ArrayLike): The different times in days at which the
+            basic strain is determined.
 
     Returns:
-        numpy.ndarray: Multiplication factor that is used to determine
-            the autogenous shrinkage.
+        numpy.ndarray: Multiplication factor that is used to determine the
+        basic shrinkage.
     """
     return 1 - np.exp(-0.2 * np.sqrt(time))
 
 
-def eps_cas(_eps_cas0: float, _beta_as: npt.ArrayLike) -> np.ndarray:
-    """Calculate the autogenous shrinkage.
+def eps_cbs(eps_cbs0: float, beta_bs: npt.ArrayLike) -> np.ndarray:
+    """Calculate the basic shrinkage.
 
     Defined in fib Model Code 2010 (2013), Eqs. 5.1-76.
 
     Args:
-        _eps_cas0 (float): Notional autogeneous shrinkage, as defined in fib
-            Model Code 2010 (2013), Eq. 5.1-78.
-        _beta_as (numpy.typing.ArrayLike): Time function for autogeneous
-            shrinkage, as defined in fib Model Code 2010 (2013), Eq. 5.1-79.
+        eps_cbs0 (float): Notional basic shrinkage, as defined in fib Model
+            Code 2010 (2013), Eq. 5.1-78.
+        beta_bs (numpy.typing.ArrayLike): Time function for basic shrinkage,
+            as defined in fib Model Code 2010 (2013), Eq. 5.1-79.
 
     Returns:
-        numpy.ndarray: The autogenous shrinkage strains for the given
-            times.
+        numpy.ndarray: The basic shrinkage strains for the given times.
     """
-    return _eps_cas0 * _beta_as
+    return eps_cbs0 * beta_bs
 
 
 def beta_bc_fcm(fcm: float) -> float:
-    """Calculate multiplication factor that accounts for the effect of
-        the compressive strength of the concrete to calculate the basic
-        creep coefficient.
+    """Calculate multiplication factor that accounts for the effect of the
+    compressive strength of the concrete to calculate the basic creep
+    coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-65.
 
     Args:
-        fcm (float): The mean compressive strength of the concrete in
-            MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
         float: Multiplication factor beta_bc_fcm.
@@ -428,59 +436,54 @@ def beta_bc_fcm(fcm: float) -> float:
     return 1.8 / fcm**0.7
 
 
-def beta_bc_t(time: npt.ArrayLike, t0: float, _t0_adj: float) -> np.ndarray:
-    """Calculate multiplication factor that accounts for the effect of
-        the age of the of the concrete to calculate the basic
-        creep coefficient.
+def beta_bc_t(time: npt.ArrayLike, t0: float, t0_adj: float) -> np.ndarray:
+    """Calculate multiplication factor that accounts for the effect of the age
+    of the of the concrete to calculate the basic creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-66.
 
     Args:
-        time (numpy.typing.ArrayLike): The different times in days at which
-            the basic creep coefficient is determined.
-        t0 (float): The age of the concrete in days at which the
-            loading is applied.
-        _t0_adj (float): The temperature corrected age of the concrete
-            when the loading is applied in days, as defined in fib
-            Model Code 2010 (2013). Eq. 5.1-85.
+        time (numpy.typing.ArrayLike): The different times in days at which the
+            basic creep coefficient is determined.
+        t0 (float): The age of the concrete in days at which the loading is
+            applied.
+        t0_adj (float): The temperature corrected age of the concrete when the
+            loading is applied in days, as defined in fib Model Code 2010
+            (2013). Eq. 5.1-85.
 
     Returns:
         numpy.ndarray: Multiplication factors beta_bc_t.
     """
-    return np.log(((30 / _t0_adj + 0.035) ** 2) * (time - t0) + 1)
+    return np.log(((30 / t0_adj + 0.035) ** 2) * (time - t0) + 1)
 
 
-def phi_bc(_beta_bc_fcm: float, _beta_bc_t: npt.ArrayLike) -> np.ndarray:
+def phi_bc(beta_bc_fcm: float, beta_bc_t: npt.ArrayLike) -> np.ndarray:
     """Calculate the basic creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-64.
 
     Args:
-        _beta_bc_fcm (float): Multiplication factor that accounts for
-            the influence of the concrete strength of the creep
-            behaviour, as defined in fib Model Code 2010 (2013),
-            Eq. 5.1-65.
-        _beta_bc_t (numpy.typing.ArrayLike): Multiplication factor that
+        beta_bc_fcm (float): Multiplication factor that accounts for the
+            influence of the concrete strength of the creep behaviour, as
+            defined in fib Model Code 2010 (2013), Eq. 5.1-65.
+        beta_bc_t (numpy.typing.ArrayLike): Multiplication factor that
             accounts for the influence of the age of the concrete of the creep
-            behaviour, as defined in fib Model Code 2010 (2013),
-            Eq. 5.1-66.
+            behaviour, as defined in fib Model Code 2010 (2013), Eq. 5.1-66.
 
     Returns:
         numpy.ndarray: The basic creep coefficient.
     """
-    return _beta_bc_fcm * _beta_bc_t
+    return beta_bc_fcm * beta_bc_t
 
 
 def beta_dc_fcm(fcm: float) -> float:
-    """Calculate multiplication factor that accounts for the effect of
-        the strength of the concrete to calculate the drying creep
-        coefficient.
+    """Calculate multiplication factor that accounts for the effect of the
+    strength of the concrete to calculate the drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-68.
 
     Args:
-        fcm (float): The mean compressive strength of the concrete in
-            MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
         float: Multiplication factor beta_dc_fcm.
@@ -489,17 +492,17 @@ def beta_dc_fcm(fcm: float) -> float:
 
 
 def beta_dc_RH(rh: float, notional_size: float) -> float:
-    """Calculate multiplication factor that accounts for the effect of
-        the relative humidity of the environment to calculate the
-        drying creep coefficient.
+    """Calculate multiplication factor that accounts for the effect of the
+    relative humidity of the environment to calculate the drying creep
+    coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-69.
 
     Args:
         rh (float): The relative humidity of the environment. Value can be
             provided as percentage (i.e. 40--100), or as ratio (i.e. 0.4--1).
-        notional_size (float): The notional size of the considered
-            element in mm, defined as 2A/u.
+        notional_size (float): The notional size of the considered element in
+            mm, defined as 2A/u.
 
     Returns:
         float: Multiplication factor beta_RH.
@@ -510,34 +513,32 @@ def beta_dc_RH(rh: float, notional_size: float) -> float:
     return (1 - rh) / ((0.1 * notional_size / 100) ** (1 / 3))
 
 
-def beta_dc_t0(_t0_adj: float) -> float:
-    """Calculate multiplication factor that accounts for the effect of
-        the (temperature corrected) age of the concrete when loading is
-        applied to calculate the drying creep coefficient.
+def beta_dc_t0(t0_adj: float) -> float:
+    """Calculate multiplication factor that accounts for the effect of the
+    (temperature corrected) age of the concrete when loading is applied to
+    calculate the drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-70.
 
     Args:
-        _t0_adj (float): The temperature corrected age of the concrete
-            when the loading is applied in days, as defined in fib
-            Model Code 2010 (2013). Eq. 5.1-85.
+        t0_adj (float): The temperature corrected age of the concrete when the
+            loading is applied in days, as defined in fib Model Code 2010
+            (2013). Eq. 5.1-85.
 
     Returns:
         float: Multiplication factor beta_dc_t0.
     """
-    return 1 / (0.1 + _t0_adj**0.2)
+    return 1 / (0.1 + t0_adj**0.2)
 
 
 def alpha_fcm(fcm: float) -> float:
-    """Calculate multiplication factor that accounts for the effect of
-        the strength of the concrete to calculate the drying creep
-        coefficient.
+    """Calculate multiplication factor that accounts for the effect of the
+    strength of the concrete to calculate the drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-71d.
 
     Args:
-        fcm (float): The mean compressive strength of the concrete in
-            MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
         float: Multiplication factor alpha_fcm.
@@ -545,146 +546,140 @@ def alpha_fcm(fcm: float) -> float:
     return np.sqrt(35 / fcm)
 
 
-def beta_h(notional_size: float, _alpha_fcm: float) -> float:
-    """Calculate multiplication factor that accounts for the effect of
-        the notional size of the to calculate the drying creep
-        coefficient.
+def beta_h(notional_size: float, alpha_fcm: float) -> float:
+    """Calculate multiplication factor that accounts for the effect of the
+    notional size of the to calculate the drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-71c
 
     Args:
-        notional_size (float): The notional size of the considered
-            element in mm, defined as 2A/h.
-        _alpha_fcm (float): Multiplication factor that accounts for the
-            effect of the strength of the concrete on the drying creep
-            coefficient.
+        notional_size (float): The notional size of the considered element in
+            mm, defined as 2A/h.
+        alpha_fcm (float): Multiplication factor that accounts for the effect
+            of the strength of the concrete on the drying creep coefficient.
 
     Returns:
         float: Multiplication factor beta_h.
     """
-    return min(1.5 * notional_size + 250 * _alpha_fcm, 1500 * _alpha_fcm)
+    return min(1.5 * notional_size + 250 * alpha_fcm, 1500 * alpha_fcm)
 
 
-def gamma_t0(_t0_adj: float) -> float:
-    """Calculate exponent that accounts for the effect of the
-        (temperature corrected) age of the concrete when loaded. Used
-        to calculate the drying creep coefficient.
+def gamma_t0(t0_adj: float) -> float:
+    """Calculate exponent that accounts for the effect of the (temperature
+    corrected) age of the concrete when loaded. Used to calculate the drying
+    creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-71b.
 
     Args:
-        _t0_adj (float): The temperature corrected age of the concrete
-            when the loading is applied in days, as defined in fib
-            Model Code 2010 (2013). Eq. 5.1-85.
+        t0_adj (float): The temperature corrected age of the concrete when the
+            loading is applied in days, as defined in fib Model Code 2010
+            (2013). Eq. 5.1-85.
 
     Returns:
         float: Exponent gamma_t0.
     """
-    return 1 / (2.3 + 3.5 / np.sqrt(_t0_adj))
+    return 1 / (2.3 + 3.5 / np.sqrt(t0_adj))
 
 
 def beta_dc_t(
-    time: npt.ArrayLike, t0: float, _beta_h: float, _gamma_t0: float
+    time: npt.ArrayLike, t0: float, beta_h: float, gamma_t0: float
 ) -> np.ndarray:
     """Calculate multiplication factor that accounts for the different
-        considered values of time. Used to calculate the drying creep
-        coefficient.
+    considered values of time. Used to calculate the drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-71a.
 
     Args:
-        time (numpy.typing.ArrayLike): The different times in days at which
-            the drying creep coefficient is determined.
-        t0 (float): The age of the concrete concrete
-            when the loading is applied in days.
-        _beta_h (float): Multiplication factor that accounts for the effect of
+        time (numpy.typing.ArrayLike): The different times in days at which the
+            drying creep coefficient is determined.
+        t0 (float): The age of the concrete concrete when the loading is
+            applied in days.
+        beta_h (float): Multiplication factor that accounts for the effect of
             the notional size, as calculated by Eq. 5.1-71c
-        _gamma_t0 (float): Exponent that accounts for the effect of the
-            (temperature corrected) age of the concrete when loaded,
-            as calculated by Eq. 5.1-71b.
+        gamma_t0 (float): Exponent that accounts for the effect of the
+            (temperature corrected) age of the concrete when loaded, as
+            calculated by Eq. 5.1-71b.
 
     Returns:
-        numpy.ndarray: Multiplcation factor beta_dc_t for the
-            considered values of time.
+        numpy.ndarray: Multiplcation factor beta_dc_t for the considered values
+        of time.
     """
-    return ((time - t0) / (_beta_h + (time - t0))) ** _gamma_t0
+    return ((time - t0) / (beta_h + (time - t0))) ** gamma_t0
 
 
 def phi_dc(
-    _beta_dc_fcm: float,
-    _beta_dc_RH: float,
-    _beta_dc_t0: float,
-    _beta_dc_t: npt.ArrayLike,
+    beta_dc_fcm: float,
+    beta_dc_RH: float,
+    beta_dc_t0: float,
+    beta_dc_t: npt.ArrayLike,
 ) -> np.ndarray:
     """Calculate drying creep coefficient.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-67.
 
     Args:
-        _beta_dc_fcm (float): Multiplication factor that accounts for
-            the effect of the strength of the concrete, as calculated
-            by Eq. 5.1-68.
-        _beta_dc_RH (float): Multiplication factor that accounts for the
-            effect of the relative humidity of the environment, as
-            calculated by Eq. 5.1-69.
-        _beta_dc_t0 (float): multiplication factor that accounts for
-            the effect of the (temperature corrected) age of the
-            concrete when loading is applied, as calculated by Eq.
-            5.1-70.
-        _beta_dc_t (numpy.typing.ArrayLike): multiplication factor that
-            accounts for the different considered values of time, as
-            calculated by Eq. 5.1-71a.
+        beta_dc_fcm (float): Multiplication factor that accounts for the
+            effect of the strength of the concrete, as calculated by Eq.
+            5.1-68.
+        beta_dc_RH (float): Multiplication factor that accounts for the effect
+            of the relative humidity of the environment, as calculated by Eq.
+            5.1-69.
+        beta_dc_t0 (float): multiplication factor that accounts for the effect
+            of the (temperature corrected) age of the concrete when loading is
+            applied, as calculated by Eq. 5.1-70.
+        beta_dc_t (numpy.typing.ArrayLike): multiplication factor that
+            accounts for the different considered values of time, as calculated
+            by Eq. 5.1-71a.
 
     Returns:
         numpy.ndarray: Drying creep coeffcient.
     """
-    return _beta_dc_fcm * _beta_dc_RH * _beta_dc_t0 * _beta_dc_t
+    return beta_dc_fcm * beta_dc_RH * beta_dc_t0 * beta_dc_t
 
 
 def k_sigma(sigma: float, fcm: float) -> float:
-    """Calculate the ratio between the applied stress and the mean
-        concrete compressive strength.
+    """Calculate the ratio between the applied stress and the mean concrete
+    compressive strength.
 
     Defined in fib Model Code 2010 (2013), Eq. 5.1-74.
 
     Args:
-        sigma (float): The compressive stress applied to the concrete
-            at ts in MPa.
-        fcm (float): The mean compressive strength of the concrete in
+        sigma (float): The compressive stress applied to the concrete at ts in
             MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
-        float: Absolute value of the ratio between the stress in the
-            concrete and the mean concrete strength.
+        float: Absolute value of the ratio between the stress in the concrete
+        and the mean concrete strength.
     """
     _check_initial_stress(sigma, fcm)
     return abs(sigma / fcm)
 
 
 def phi(
-    _phi_bc: npt.ArrayLike, _phi_dc: npt.ArrayLike, sigma: float, fcm: float
+    phi_bc: npt.ArrayLike, phi_dc: npt.ArrayLike, sigma: float, fcm: float
 ) -> np.ndarray:
     """Calculate the creep coefficient distinguishing between linear and
-        non-linear creep for compressive stresses sigma <= 0.4fcm, and
-        0.4fcm < sigma <= 0.6fcm, respectively.
+    non-linear creep for compressive stresses sigma <= 0.4fcm, and 0.4fcm <
+    sigma <= 0.6fcm, respectively.
 
     Defined in fib Model Code 2010, Eqs. 5.1-63 and 5.1-74.
 
     Args:
-        _phi_bc (numpy.typing.ArrayLike): Basic creep coefficient, as defined
+        phi_bc (numpy.typing.ArrayLike): Basic creep coefficient, as defined
             in fib Model Code 2010 (2013), Eq. 5.1-64.
-        _phi_dc (numpy.typing.ArrayLike): Drying creep coefficient, as defined
+        phi_dc (numpy.typing.ArrayLike): Drying creep coefficient, as defined
             in fib Model Code 2010 (2013), Eq. 5.1-67.
-        sigma (float): The compressive stress applied to the concrete
-            at ts in MPa.
-        fcm (float): The mean compressive strength of the concrete in
+        sigma (float): The compressive stress applied to the concrete at ts in
             MPa.
+        fcm (float): The mean compressive strength of the concrete in MPa.
 
     Returns:
         numpy.ndarray: The creep coefficient.
     """
     # Calculate the creep coefficient (phi) (see Eq. 5.1-63)
-    _phi = _phi_bc + _phi_dc
+    _phi = phi_bc + phi_dc
     # Include the effect of high stress if needed (see Eq. 5.1-74 of [1]):
     _k_sigma = k_sigma(sigma, fcm)
     if 0.4 < _k_sigma <= 0.6:
@@ -692,20 +687,20 @@ def phi(
     return _phi
 
 
-def calc_J(_E_ci_t0: float, _phi: npt.ArrayLike, _E_ci: float) -> np.ndarray:
+def calc_J(E_ci_t0: float, phi: npt.ArrayLike, E_ci: float) -> np.ndarray:
     """Calculate the creep compliance function.
 
     Defined in fib Model Code 2010, Eq. 5.1-61.
 
     Args:
-        _E_ci_t0 (float): Modulus of elasticity at time of loading t0, as
+        E_ci_t0 (float): Modulus of elasticity at time of loading t0, as
             defined in fib Model Code 2010 (2013), Eq. 5.1-56.
-        _phi (numpy.typing.ArrayLike): Creep coefficient, as defined in fib
+        phi (numpy.typing.ArrayLike): Creep coefficient, as defined in fib
             Model Code 2010 (2013), Eq. 5.1-63.
-        _E_ci (float) Modulus of elasticity of the concrete at 28 days, as
+        E_ci (float) Modulus of elasticity of the concrete at 28 days, as
             defined in fib Model Code 2010 (2013), Eq. 5.1-21.
 
     Returns:
         numpy.ndarray: The creep compliance function.
     """
-    return (1 / _E_ci_t0) + (_phi / _E_ci)
+    return (1 / E_ci_t0) + (phi / E_ci)

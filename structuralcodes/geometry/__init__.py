@@ -7,6 +7,7 @@ from ._geometry import (
     SurfaceGeometry,
     create_line_point_angle,
 )
+from ._reinforcement import add_reinforcement, add_reinforcement_line
 from ._steel_sections import HE, IPE, IPN, UB, UBP, UC, UPN
 
 __all__ = [
@@ -22,4 +23,6 @@ __all__ = [
     'UBP',
     'IPN',
     'UPN',
+    'add_reinforcement',
+    'add_reinforcement_line',
 ]
