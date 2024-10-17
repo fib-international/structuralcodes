@@ -13,15 +13,15 @@ def sigma_Rd_u(
     eb: float = 0,
     nu_part: float = 3.0,
 ) -> float:
-    """Calculate the design resistance for partially loaded areas
-        without horizontal force components.
+    """Calculate the design resistance for partially loaded areas without
+    horizontal force components.
 
-    EN1992-1-1:2023 Eq. (8.126)
+    EN1992-1-1:2023 Eq. (8.126).
 
     Args:
         fcd (float): Design value of concrete compressive strength in MPa.
-        a0 (float): Length of the loaded area in the direction perpendicular
-            to the closest edge in mm.
+        a0 (float): Length of the loaded area in the direction perpendicular to
+            the closest edge in mm.
         b0 (float): Width of the loaded area in mm.
         a1 (float): Length of the load introduction block parallel to a0 in mm.
         b (float): Total width of the supporting area in mm.
