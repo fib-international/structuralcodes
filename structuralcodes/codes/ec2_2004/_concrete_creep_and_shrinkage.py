@@ -1,5 +1,5 @@
-"""Calculation routine for shrinkage and creep from EUROCODE 1992-1-1:2004
-Annex B.
+"""Collection of functions from EUROCODE 1992-1-1:2004 related to creep and
+shrinkage.
 """
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
