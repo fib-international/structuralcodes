@@ -50,8 +50,10 @@ from ._section9_sls import (
     wk_cal,
     wk_cal2,
 )
+from ._section_8_6_partially_loaded_areas import sigma_Rd_u
 
 __all__ = [
+    'sigma_Rd_u',
     'A_phi_correction_exp',
     'alpha_c_th',
     'alpha_s_th',
