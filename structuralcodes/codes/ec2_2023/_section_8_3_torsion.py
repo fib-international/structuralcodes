@@ -6,16 +6,16 @@ from typing import List
 def tau_t_i(TEd: float, Ak: float, teff_i: float) -> float:
     """Calculate the torsional shear stress in a wall element.
 
-    EN1992-1-1:2023 Eq. (8.79)
+    EN1992-1-1:2023 Eq. (8.79).
 
     Args:
-        TEd (float): Torsional moment applied to the section in kNm
+        TEd (float): Torsional moment applied to the section in kNm.
         Ak (float): Area enclosed by the center-lines of the connecting walls,
             including inner hollow areas in mm2.
-        teff_i (float): Effective wall thickness. It may be taken as A/u,
-            but should not be taken as less than twice the distance
-            between the outer concrete surface and the center of the
-            longitudinal reinforcement in mm.
+        teff_i (float): Effective wall thickness. It may be taken as A/u, but
+            should not be taken as less than twice the distance between the
+            outer concrete surface and the center of the longitudinal
+            reinforcement in mm.
 
     Returns:
         float: Torsional shear stress in i-wall in MPa.
@@ -34,7 +34,7 @@ def tau_t_i(TEd: float, Ak: float, teff_i: float) -> float:
 def VEd_i(tau_t_i: float, teff_i: float, zi: float) -> float:
     """Calculate the shear force in a wall element due to torsion.
 
-    EN1992-1-1:2023 Eq. (8.80)
+    EN1992-1-1:2023 Eq. (8.80).
 
     Args:
         tau_t_i (float): Torsional shear stress in i-wall in MPa.
@@ -63,10 +63,10 @@ def tau_t_rd_sw(
     cot_theta: float,
     cot_theta_min: float,
 ) -> float:
-    """Calculate the torsional capacity governed by
-        yielding of the shear reinforcement.
+    """Calculate the torsional capacity governed by yielding of the shear
+    reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.82), (8.85)
+    EN1992-1-1:2023 Eq. (8.82), (8.85).
 
     Args:
         Asw (float): Cross-sectional area of the shear reinforcement in mm2.
@@ -75,7 +75,7 @@ def tau_t_rd_sw(
         s (float): Spacing between the shear reinforcement in mm.
         theta (float): Cotangent of the angle of compression field with respect
             to the longitudinal axis.
-        cot_theta_min (float): limit value for the cotangent.
+        cot_theta_min (float): Limit value for the cotangent.
 
     Returns:
         float: Torsional capacity in MPa.
@@ -101,10 +101,10 @@ def tau_t_rd_sl(
     cot_theta: float,
     cot_theta_min: float,
 ) -> float:
-    """Calculate the torsional capacity governed by yielding of
-        the longitudinal reinforcement.
+    """Calculate the torsional capacity governed by yielding of the
+    longitudinal reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.83), (8.85)
+    EN1992-1-1:2023 Eq. (8.83), (8.85).
 
     Args:
         Asl (float): List of cross-sectional areas of the longitudinal
@@ -113,9 +113,9 @@ def tau_t_rd_sl(
             reinforcement in MPa.
         teff (float): Effective wall thickness in mm.
         uk (float): Perimeter of the area in mm.
-        cot_theta (float): Cotangent of the angle of compression
-            field with respect to the longitudinal axis.
-        cot_theta_min (float): limit value for the cotangent.
+        cot_theta (float): Cotangent of the angle of compression field with
+            respect to the longitudinal axis.
+        cot_theta_min (float): Limit value for the cotangent.
 
     Returns:
         float: Torsional capacity in MPa.
@@ -148,17 +148,17 @@ def tau_t_rd_sl(
 def tau_t_rd_max(
     nu: float, fcd: float, cot_theta: float, cot_theta_min: float
 ) -> float:
-    """Calculate the torsional capacity governed by crushing
-        of the compression field in concrete.
+    """Calculate the torsional capacity governed by crushing of the compression
+    field in concrete.
 
-    EN1992-1-1:2023 Eq. (8.84), (8.85)
+    EN1992-1-1:2023 Eq. (8.84), (8.85).
 
     Args:
         nu (float): Coefficient as determined by the formulae in Annex G.
         fcd (float): Design value of concrete compressive strength in MPa.
-        cot_theta (float): Cotangent Angle of compression field with respect
-            to the longitudinal axis.
-        cot_theta_min (float): limit value for the cotangent.
+        cot_theta (float): Cotangent Angle of compression field with respect to
+            the longitudinal axis.
+        cot_theta_min (float): Limit value for the cotangent.
 
     Returns:
         float: Torsional capacity in MPa.
@@ -179,17 +179,17 @@ def tau_t_rd_max(
 def tau_t_rd(
     tau_t_rd_sw: float, tau_t_rd_sl: float, tau_t_rd_max: float
 ) -> float:
-    """Calculate the design torsional capacity for a
-        single cell or thin-walled section.
+    """Calculate the design torsional capacity for a single cell or thin-walled
+    section.
 
-    EN1992-1-1:2023 Eq. (8.81)
+    EN1992-1-1:2023 Eq. (8.81).
 
     Args:
-        tau_t_rd_sw (float): torsional capacity governed by yielding of the
+        tau_t_rd_sw (float): Torsional capacity governed by yielding of the
             shear reinforcement in MPa.
-        tau_t_rd_sl (float): torsional capacity governed by yielding of the
+        tau_t_rd_sl (float): Torsional capacity governed by yielding of the
             longitudinal reinforcement in MPa.
-        tau_t_rd_max (float): torsional capacity governed by crushing of the
+        tau_t_rd_max (float): Torsional capacity governed by crushing of the
             compression field in concrete in MPa.
 
     Returns:
