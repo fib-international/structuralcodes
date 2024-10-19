@@ -32,6 +32,8 @@ def eps_cs(eps_cd: npt.ArrayLike, eps_ca: npt.ArrayLike) -> npt.ArrayLike:
     Note:
         In EC2 (2004), the shrinkage strain is calculated as a positive number.
     """
+    eps_cd = eps_cd if np.isscalar(eps_cd) else np.atleast_1d(eps_cd)
+    eps_ca = eps_ca if np.isscalar(eps_ca) else np.atleast_1d(eps_ca)
     return eps_cd + eps_ca
 
 
@@ -56,6 +58,7 @@ def eps_cd(
     Note:
         In EC2 (2004), the shrinkage strain is calculated as a positive number.
     """
+    beta_ds = beta_ds if np.isscalar(beta_ds) else np.atleast_1d(beta_ds)
     return beta_ds * k_h * eps_cd_0
 
 
@@ -72,8 +75,12 @@ def beta_ds(t: npt.ArrayLike, t_s: float, h_0: float):
     Returns:
         npt.ArrayLike: The coefficient taking into account the time of drying.
     """
-    t_drying = np.atleast_1d(t - t_s)
-    t_drying[t_drying < 0.0] = 0.0
+    t = t if np.isscalar(t) else np.atleast_1d(t)
+    t_drying = t - t_s
+    if np.isscalar(t_drying):
+        t_drying = max(t_drying, 0.0)
+    else:
+        t_drying[t_drying < 0.0] = 0.0
     return t_drying / (t_drying + 0.04 * h_0 ** (3 / 2))
 
 
@@ -214,6 +221,7 @@ def eps_ca(beta_as: npt.ArrayLike, eps_ca_inf: float) -> npt.ArrayLike:
     Note:
         In EC2 (2004), the shrinkage strain is calculated as a positive number.
     """
+    beta_as = beta_as if np.isscalar(beta_as) else np.atleast_1d(beta_as)
     return beta_as * eps_ca_inf
 
 
@@ -244,6 +252,7 @@ def beta_as(t: npt.ArrayLike) -> npt.ArrayLike:
         npt.ArrayLike: The factor describing the development of autogenous
         shrinkage.
     """
+    t = t if np.isscalar(t) else np.atleast_1d(t)
     return 1 - np.exp(-0.2 * t**0.5)
 
 
@@ -261,6 +270,7 @@ def phi(phi_0: float, beta_c: npt.ArrayLike) -> npt.ArrayLike:
     Returns:
         float: The creep number.
     """
+    beta_c = beta_c if np.isscalar(beta_c) else np.atleast_1d(beta_c)
     return phi_0 * beta_c
 
 
@@ -371,8 +381,12 @@ def beta_c(t0: float, t: npt.ArrayLike, beta_H: float) -> float:
     Returns:
         float: Parameter defined by Equation (B.7), beta_c.
     """
-    t_load = np.atleast_1d(t - t0)
-    t_load[t_load < 0.0] = 0.0
+    t = t if np.isscalar(t) else np.atleast_1d(t)
+    t_load = t - t0
+    if np.isscalar(t_load):
+        t_load = max(t_load, 0.0)
+    else:
+        t_load[t_load < 0.0] = 0.0
     return (t_load / (beta_H + t_load)) ** 0.3
 
 
@@ -470,17 +484,30 @@ def t_T(T: npt.ArrayLike, dt: npt.ArrayLike) -> float:
         the average temperature in that time interval.
     """
     # Prepare the input
-    T = np.atleast_1d(T)
-    dt = np.atleast_1d(dt)
+    T = T if np.isscalar(T) else np.atleast_1d(T)
+    dt = dt if np.isscalar(dt) else np.atleast_1d(dt)
+
+    # Check that both are scalar or both are arrays
+    if any(np.isscalar(this_check) for this_check in (T, dt)) and any(
+        not np.isscalar(this_check) for this_check in (T, dt)
+    ):
+        raise ValueError(
+            (
+                f'T ({type(T)}) and dt ({type(dt)}) should either both be '
+                'ArrayLike or scalars.'
+            )
+        )
 
     # Check the shape of the input arrays
-    if T.shape != dt.shape:
+    if not all((np.isscalar(T), np.isscalar(dt))) and T.shape != dt.shape:
         raise ValueError(
             f'T {T.shape} and dt {dt.shape} should have the same shape.'
         )
 
     # Return the sum of the temperature adjusted time increments
-    return float(np.sum(np.exp(13.65 - 4000 / (273 + T)) * dt))
+    if not all((np.isscalar(T), np.isscalar(dt))):
+        return float(np.sum(np.exp(13.65 - 4000 / (273 + T)) * dt))
+    return np.exp(13.65 - 4000 / (273 + T)) * dt
 
 
 def alpha_cement(cement_class: t.Literal['S', 'N', 'R']) -> float:

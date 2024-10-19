@@ -273,3 +273,17 @@ def test_calculate_h0():
 
     # Assert
     assert np.isclose(h_0, expected_h0)
+
+
+@pytest.mark.parametrize(
+    'T, dt',
+    (
+        ([1, 2, 3], 1),  # Array and scalar
+        (1, [1, 2, 3]),  # Scalar and array
+        ([1, 2], [1, 2, 3]),  # Arrays with different lengts
+    ),
+)
+def test_calculate_maturity_invalid_input(T, dt):
+    """Test calculating maturity with invalid input."""
+    with pytest.raises(ValueError):
+        _concrete_creep_and_shrinkage.t_T(T, dt)
