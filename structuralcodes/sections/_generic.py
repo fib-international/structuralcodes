@@ -55,6 +55,16 @@ class GenericSection(Section):
                 of the section.
             name (str): The name of the section.
             integrator (str): The name of the SectionIntegrator to use.
+            kwargs (dict): A collection of keyword arguments to pass on to the
+                section calculator.
+
+        Note:
+            The GenericSection uses a GenericSectionCalculator for all
+            calculations. The GenericSectionCalculator uses a SectionIntegrator
+            for integrating over the section. Any additional keyword arguments
+            used when creating the GenericSection are passed on to the
+            SectionCalculator to customize the behaviour. See
+            GenericSectionCalculator for available keyword arguments.
         """
         if name is None:
             name = 'GenericSection'
@@ -98,7 +108,7 @@ class GenericSectionCalculator(SectionCalculator):
                 (default = 'marin').
 
         Note:
-            When using 'fiber' integrator the kwarg 'mesh_size' can be used to
+            When using `fiber` integrator the kwarg `mesh_size` can be used to
             specify a dimensionless number (between 0 and 1) specifying the
             size of the resulting mesh.
         """
