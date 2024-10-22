@@ -557,6 +557,7 @@ class SurfaceGeometry:
             poly=affinity.translate(self.polygon, dx, dy),
             material=self.material,
             density=self._density,
+            concrete=self.concrete
         )
 
     def rotate(
@@ -584,6 +585,7 @@ class SurfaceGeometry:
             ),
             material=self.material,
             density=self._density,
+            concrete=self.concrete,
         )
 
     @staticmethod
