@@ -3,15 +3,13 @@
 import typing as t
 
 from ...core.base import ConstitutiveLaw, Material
-from ._constitutive_laws import (
-    BilinearCompression,
-    Elastic,
-    ElasticPlastic,
-    ParabolaRectangle,
-    Popovics,
-    Sargin,
-    UserDefined,
-)
+from ._bilinearcompression import BilinearCompression
+from ._elastic import Elastic
+from ._elasticplastic import ElasticPlastic
+from ._parabolarectangle import ParabolaRectangle
+from ._popovics import Popovics
+from ._sargin import Sargin
+from ._userdefined import UserDefined
 
 __all__ = [
     'Elastic',
