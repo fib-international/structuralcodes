@@ -35,12 +35,14 @@ class Elastic(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return stress given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         return self._E * eps
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent."""
-        eps = np.atleast_1d(np.asarray(eps))
+        if np.isscalar(eps):
+            return self._E
+        eps = np.atleast_1d(eps)
         return np.ones_like(eps) * self._E
 
     def __marin__(
@@ -148,12 +150,22 @@ class ElasticPlastic(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
         sig = self._E * eps
         delta_sig = self._fy * (1 - self._Eh / self._E)
+        if np.isscalar(sig):
+            if sig < -self._fy:
+                sig = eps * self._Eh - delta_sig
+            if sig > self._fy:
+                sig = eps * self._Eh + delta_sig
+            if (self._eps_su is not None) and (
+                eps > self._eps_su or eps < -self._eps_su
+            ):
+                sig = 0
+            return sig
         sig[sig < -self._fy] = eps[sig < -self._fy] * self._Eh - delta_sig
         sig[sig > self._fy] = eps[sig > self._fy] * self._Eh + delta_sig
         if self._eps_su is not None:
@@ -163,10 +175,23 @@ class ElasticPlastic(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent for given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        if np.isscalar(eps):
+            tangent = (
+                self._E if -self._eps_sy <= eps <= self._eps_sy else self._Eh
+            )
+            if (self._eps_su is not None) and (
+                eps > self._eps_su or eps < -self._eps_su
+            ):
+                tangent = 0
+            return tangent
+
+        eps = np.atleast_1d(eps)
         tangent = np.ones_like(eps) * self._E
         tangent[eps > self._eps_sy] = self._Eh
         tangent[eps < -self._eps_sy] = self._Eh
+        if self._eps_su is not None:
+            tangent[eps > self._eps_su] = 0
+            tangent[eps < -self._eps_su] = 0  # pylint: disable=E1130
 
         return tangent
 
@@ -191,7 +216,7 @@ class ElasticPlastic(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # Understand in which branch are we
-            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
             if strain[0] > eps_sy_p and strain[0] <= eps_su_p:
                 # We are in the Hardening part positive
                 strains = None
@@ -282,10 +307,19 @@ class ParabolaRectangle(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
+        # If it is a scalar
+        if np.isscalar(eps):
+            sig = 0
+            if self._eps_0 <= eps <= 0:
+                sig = self._fc * (1 - (1 - eps / self._eps_0) ** self._n)
+            if self._eps_u <= eps < self._eps_0:
+                sig = self._fc
+            return sig
+        # If it is an array
         sig = np.zeros_like(eps)
         # Parabolic branch
         sig[(eps <= 0) & (eps >= self._eps_0)] = self._fc * (
@@ -302,7 +336,19 @@ class ParabolaRectangle(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+        # If it is a scalar
+        if np.isscalar(eps):
+            tangent = 0
+            if self._eps_0 <= eps <= 0:
+                tangent = (
+                    self._n
+                    * self._fc
+                    / self._eps_0
+                    * (1 - (eps / self._eps_0)) ** (self._n - 1)
+                )
+            return tangent
+        # If it is an array
         # parabolic branch
         tangent = np.zeros_like(eps)
         tangent[(eps <= 0) & (eps >= self._eps_0)] = (
@@ -341,7 +387,7 @@ class ParabolaRectangle(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # understand in which branch are we
-            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
             if strain[0] > 0:
                 # We are in tensile branch
                 strains = None
@@ -439,10 +485,17 @@ class BilinearCompression(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
+        # If it is a scalar
+        if np.isscalar(eps):
+            sig = 0
+            if self._fc / self._E <= eps <= 0:
+                sig = self._E * eps
+            return sig
+        # If it is an array
         sig = self._E * eps
         sig[sig < self._fc] = self._fc
         sig[eps > 0] = 0
@@ -451,7 +504,14 @@ class BilinearCompression(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent for given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+        # If it is a scalar
+        if np.isscalar(eps):
+            tangent = 0
+            if self._fc / self._E <= eps <= 0:
+                tangent = self._E
+            return tangent
+        # If it is an array
         tangent = np.ones_like(eps) * self._E
         tangent[eps < self._eps_c] = 0.0
 
@@ -476,7 +536,7 @@ class BilinearCompression(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # understand in which branch we are
-            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
             if strain[0] > 0:
                 # We are in tensile branch
                 strains = None
@@ -567,7 +627,7 @@ class Sargin(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given the strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
@@ -577,14 +637,18 @@ class Sargin(ConstitutiveLaw):
         sig = self._fc * (self._k * eta - eta**2) / (1 + (self._k - 2) * eta)
 
         # Elsewhere stress is 0.0
-        sig[eps < self._eps_cu1] = 0.0
-        sig[eps > 0] = 0.0
+        if np.isscalar(eps):
+            if eps < self._eps_cu1 or eps > 0:
+                return 0.0
+        else:
+            sig[eps < self._eps_cu1] = 0.0
+            sig[eps > 0] = 0.0
 
         return sig
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # polynomial branch
         eta = eps / self._eps_c1
 
@@ -595,8 +659,12 @@ class Sargin(ConstitutiveLaw):
             / (1 + (self._k - 2) * eta) ** 2
         )
         # Elsewhere tangent is zero
-        tangent[eps < self._eps_cu1] = 0.0
-        tangent[eps > 0] = 0.0
+        if np.isscalar(eps):
+            if eps < self._eps_cu1 or eps > 0:
+                return 0
+        else:
+            tangent[eps < self._eps_cu1] = 0.0
+            tangent[eps > 0] = 0.0
 
         return tangent
 
@@ -674,7 +742,7 @@ class Popovics(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given the strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
@@ -684,14 +752,18 @@ class Popovics(ConstitutiveLaw):
         sig = self._fc * eta * self._n / (self._n - 1 + eta**self._n)
 
         # Elsewhere stress is 0.0
-        sig[eps < self._eps_cu] = 0.0
-        sig[eps > 0] = 0.0
+        if np.isscalar(eps):
+            if eps < self._eps_cu or eps > 0:
+                return 0.0
+        else:
+            sig[eps < self._eps_cu] = 0.0
+            sig[eps > 0] = 0.0
 
         return sig
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compression branch
@@ -706,8 +778,12 @@ class Popovics(ConstitutiveLaw):
             / self._eps_c
         )
         # Elsewhere tangent is zero
-        tangent[eps < self._eps_cu] = 0.0
-        tangent[eps > 0] = 0.0
+        if np.isscalar(eps):
+            if eps < self._eps_cu or eps > 0:
+                return 0
+        else:
+            tangent[eps < self._eps_cu] = 0.0
+            tangent[eps > 0] = 0.0
 
         return tangent
 
@@ -802,7 +878,7 @@ class UserDefined(ConstitutiveLaw):
 
     def get_stress(self, eps: ArrayLike) -> ArrayLike:
         """Return the stress given strain."""
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
         # Compute stress
@@ -810,7 +886,7 @@ class UserDefined(ConstitutiveLaw):
 
     def get_tangent(self, eps: ArrayLike) -> ArrayLike:
         """Return the tangent given strain."""
-        eps = np.atleast_1d(np.array(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
 
         # Find the segment index for each x value
         indices = np.searchsorted(self._x, eps) - 1
@@ -822,8 +898,12 @@ class UserDefined(ConstitutiveLaw):
         tangent = self._slopes[indices]
 
         # Elsewhere tangent is zero
-        tangent[eps < self._x[0]] = 0.0
-        tangent[eps > self._x[-1]] = 0.0
+        if np.isscalar(eps):
+            if eps < self._x[0] or eps > self._x[-1]:
+                tangent = 0
+        else:
+            tangent[eps < self._x[0]] = 0.0
+            tangent[eps > self._x[-1]] = 0.0
 
         return tangent
 
@@ -846,7 +926,7 @@ class UserDefined(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             # understand in which branch are we
-            strain[0] = self.preprocess_strains_with_limits(strain[0])[0]
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
             found = False
             for i in range(len(self._x) - 1):
                 if self._x[i] <= strain[0] and self._x[i + 1] >= strain[0]:

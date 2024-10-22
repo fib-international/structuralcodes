@@ -108,9 +108,15 @@ class ConstitutiveLaw(abc.ABC):
         """Preprocess strain arrays setting those strains sufficiently
         near to ultimate strain limits to exactly ultimate strain limit.
         """
-        eps = np.atleast_1d(np.asarray(eps))
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         eps_min, eps_max = self.get_ultimate_strain()
 
+        if np.isscalar(eps):
+            if np.isclose(eps, eps_max, atol=1e-6):
+                return eps_max
+            if np.isclose(eps, eps_min, atol=1e-6):
+                return eps_min
+            return eps
         idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
         eps[idxs] = eps_max
         idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
