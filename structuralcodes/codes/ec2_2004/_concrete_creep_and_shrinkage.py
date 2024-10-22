@@ -69,7 +69,8 @@ def beta_ds(t: npt.ArrayLike, t_s: float, h_0: float):
 
     Args:
         t (npt.ArrayLike): The age of the concrete in days.
-        t_s (float): The age of the concrete in days at the start of drying.
+        t_s (float): The age of the concrete in days at the start of drying
+            (normally this is the point in time when curing measures end).
         h_0 (float): The effective cross section thichkness in mm.
 
     Returns:
@@ -85,15 +86,15 @@ def beta_ds(t: npt.ArrayLike, t_s: float, h_0: float):
 
 
 def k_h(h_0: float) -> float:
-    """Calculate the coefficient depending on the effective section thickness.
+    """Calculate the coefficient depending on the notional size.
 
     EN 1992-1-1:2004, Tab. 3.3.
 
     Args:
-        h_0 (float): The effective section thickness in mm.
+        h_0 (float): The notional size of the cross-section in mm.
 
     Returns:
-        float: The coefficient depending on the effective section thickness.
+        float: The coefficient depending on the notional size.
     """
     return np.interp(h_0, [100, 200, 300, 500], [1.0, 0.85, 0.75, 0.7])
 
@@ -327,8 +328,8 @@ def beta_fcm(fcm: float) -> float:
 
 
 def beta_t0(t0: float) -> float:
-    """Calculate the effect of age at loading on the standardized creep
-    number.
+    """Calculate the effect of age at loading on the notional creep
+    coefficient.
 
     EN 1992-1-1:2004, Eq. (B.5).
 
