@@ -7,7 +7,7 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ..core.base import ConstitutiveLaw, Material
+from ...core.base import ConstitutiveLaw
 
 
 class Elastic(ConstitutiveLaw):
@@ -998,64 +998,3 @@ class UserDefined(ConstitutiveLaw):
                 'set_ultimate_strain requires a single value or a tuple \
                 with  two values'
             )
-
-
-CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
-    'elastic': Elastic,
-    'elasticplastic': ElasticPlastic,
-    'elasticperfectlyplastic': ElasticPlastic,
-    'bilinearcompression': BilinearCompression,
-    'parabolarectangle': ParabolaRectangle,
-    'popovics': Popovics,
-    'sargin': Sargin,
-}
-
-
-def get_constitutive_laws_list() -> t.List[str]:
-    """Returns a list with valid keywords for constitutive law factory."""
-    return list(CONSTITUTIVE_LAWS.keys())
-
-
-def create_constitutive_law(
-    constitutive_law_name: str, material: Material
-) -> ConstitutiveLaw:
-    """A factory function to create the constitutive law.
-
-    Arguments:
-        constitutive_law_name (str): A string defining a valid constitutive law
-            type. The available keys can be get with the method
-            `get_constitutive_laws_list`.
-        material (Material): The material containing the properties needed for
-            the definition of the constitutive law.
-
-    Note:
-        For working with this facotry function, the material class
-        implementations need to provide special dunder methods (__elastic__,
-        __parabolarectangle__, etc.) needed for the specific material that
-        return the kwargs needed to create the corresponding constitutive
-        law object. If the special dunder method is not found an exception
-        will be raised.
-
-        If the consitutive law selected is not available for the specific
-        material, an exception will be raised.
-    """
-    law = None
-    const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name.lower())
-    if const_law is not None:
-        method_name = f'__{constitutive_law_name}__'
-        # check if the material object has the special method needed
-        if hasattr(material, method_name):
-            method = getattr(material, method_name)
-            if callable(method):
-                # get the kwargs from the special dunder method
-                kwargs = method()
-                # create the constitutive law
-                law = const_law(**kwargs)
-        else:
-            raise ValueError(
-                f'Constitutive law {constitutive_law_name} not available for'
-                f' material {material.__class__.__name__}'
-            )
-    else:
-        raise ValueError(f'Unknown constitutive law: {constitutive_law_name}')
-    return law
