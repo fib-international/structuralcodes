@@ -95,13 +95,7 @@ def k_h(h_0: float) -> float:
     Returns:
         float: The coefficient depending on the effective section thickness.
     """
-    if h_0 >= 500:
-        k_h = 0.70
-    elif h_0 <= 100:
-        k_h = 1.0
-    else:
-        k_h = np.interp(h_0, [100, 200, 300, 500], [1.0, 0.85, 0.75, 0.7])
-    return k_h
+    return np.interp(h_0, [100, 200, 300, 500], [1.0, 0.85, 0.75, 0.7])
 
 
 def eps_cd_0(
