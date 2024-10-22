@@ -9,12 +9,12 @@ import typing as t
 import numpy as np
 import numpy.typing as npt
 
-ALPHA_CEMENT_DICT = {'R': 1.0, 'N': 0.0, 'S': -1.0}
+ALPHA_CEMENT_DICT = {'R': 1.0, 'N': 0.0, 'S': -1.0}  # As defined in Eq. (B.9)
 ALPHA_DS_DICT = {
     'R': {'alpha_ds1': 6, 'alpha_ds2': 0.11},
     'N': {'alpha_ds1': 4, 'alpha_ds2': 0.12},
     'S': {'alpha_ds1': 3, 'alpha_ds2': 0.13},
-}
+}  # As defined in Eq. (B.11)
 
 
 def eps_cs(eps_cd: npt.ArrayLike, eps_ca: npt.ArrayLike) -> npt.ArrayLike:
