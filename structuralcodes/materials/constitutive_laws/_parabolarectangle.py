@@ -1,4 +1,4 @@
-"""Collection of some standard constitutive laws."""
+"""Parabola-Rectangle constitutive law."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -47,7 +47,9 @@ class ParabolaRectangle(ConstitutiveLaw):
         self._eps_u = -abs(eps_u)
         self._n = n
 
-    def get_stress(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the stress given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
@@ -76,7 +78,9 @@ class ParabolaRectangle(ConstitutiveLaw):
         sig[eps > 0] = 0
         return sig
 
-    def get_tangent(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the tangent given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # If it is a scalar

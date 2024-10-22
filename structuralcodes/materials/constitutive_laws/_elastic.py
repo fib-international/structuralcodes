@@ -1,4 +1,4 @@
-"""Collection of some standard constitutive laws."""
+"""Elastic constitutive law."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -33,12 +33,16 @@ class Elastic(ConstitutiveLaw):
         self._E = E
         self._eps_su = None
 
-    def get_stress(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return stress given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         return self._E * eps
 
-    def get_tangent(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the tangent."""
         if np.isscalar(eps):
             return self._E

@@ -1,4 +1,4 @@
-"""Collection of some standard constitutive laws."""
+"""Sargin constitutive law."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -59,7 +59,9 @@ class Sargin(ConstitutiveLaw):
         self._eps_cu1 = -abs(eps_cu1)
         self._k = k
 
-    def get_stress(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the stress given the strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
@@ -80,7 +82,9 @@ class Sargin(ConstitutiveLaw):
 
         return sig
 
-    def get_tangent(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the tangent given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # polynomial branch

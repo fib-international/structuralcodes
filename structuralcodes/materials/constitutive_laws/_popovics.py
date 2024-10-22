@@ -1,4 +1,4 @@
-"""Collection of some standard constitutive laws."""
+"""Popovics constitutive law."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -73,7 +73,9 @@ class Popovics(ConstitutiveLaw):
         E_sec = self._fc / self._eps_c
         self._n = Ec / (Ec - E_sec)
 
-    def get_stress(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the stress given the strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
@@ -94,7 +96,9 @@ class Popovics(ConstitutiveLaw):
 
         return sig
 
-    def get_tangent(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the tangent given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order

@@ -1,4 +1,4 @@
-"""Collection of some standard constitutive laws."""
+"""Bilinear compression constitutive law."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -41,7 +41,9 @@ class BilinearCompression(ConstitutiveLaw):
         self._eps_cu = -abs(eps_cu)
         self._E = self._fc / self._eps_c
 
-    def get_stress(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the stress given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
@@ -60,7 +62,9 @@ class BilinearCompression(ConstitutiveLaw):
         sig[eps < self._eps_cu] = 0
         return sig
 
-    def get_tangent(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the tangent for given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # If it is a scalar

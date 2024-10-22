@@ -1,4 +1,4 @@
-"""Collection of some standard constitutive laws."""
+"""User defined constitutive law."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -90,7 +90,9 @@ class UserDefined(ConstitutiveLaw):
         # Compute slope of each segment
         self._slopes = np.diff(self._y) / np.diff(self._x)
 
-    def get_stress(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the stress given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
@@ -98,7 +100,9 @@ class UserDefined(ConstitutiveLaw):
         # Compute stress
         return np.interp(eps, self._x, self._y, left=0, right=0)
 
-    def get_tangent(self, eps: ArrayLike) -> t.Union[float, ArrayLike]:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Return the tangent given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
 
