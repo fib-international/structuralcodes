@@ -62,7 +62,7 @@ def eps_cd(
     return beta_ds * k_h * eps_cd_0
 
 
-def beta_ds(t: npt.ArrayLike, t_s: float, h_0: float):
+def beta_ds(t: npt.ArrayLike, t_s: float, h_0: float) -> npt.ArrayLike:
     """Calculate the coefficient taking into account the time of drying.
 
     EN 1992-1-1:2004, Eq. (3.10).
