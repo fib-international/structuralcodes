@@ -308,54 +308,189 @@
           <section id="creep-and-shrinkage">
 <h1>Creep and shrinkage<a class="headerlink" href="#creep-and-shrinkage" title="Link to this heading">¶</a></h1>
 <p>The following functions are related to calculation of creep and shrinkage.</p>
+<section id="general">
+<h2>General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.t_T">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">t_T</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L464-L505"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.t_T" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the maturity of the concrete.</p>
+<p>EN 1992-1-1:2004, Eq. (B.10).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>npt.ArrayLike</em>) – The curing temperature history in degrees Celcius.</p></li>
+<li><p><strong>dt</strong> (<em>npt.ArrayLike</em>) – The number of days with temperature T.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maturity of the concrete.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The two arrays T and dt should have the same length. Each item in dt
+represents a time interval, and the corresponding item in T represents
+the average temperature in that time interval.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.h_0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">h_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L345-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.h_0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the effective thickness of the cross section.</p>
+<p>EN 1992-1-1:2004, Eq. (B.6).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ac</strong> (<em>float</em>) – The cross section area.</p></li>
+<li><p><strong>u</strong> (<em>float</em>) – The part of the circumference of the cross section subject
+to drying.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The effective thickness.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The unit of the return will be consistent with the input. E.g. if Ac is
+mm ** 2 and u is mm, the return is mm.</p>
+</div>
+</dd></dl>
+
+</section>
 <section id="creep">
 <h2>Creep<a class="headerlink" href="#creep" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.phi">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cement_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'S'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'R'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">18263</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L18-L65"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.phi" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the creep number.</p>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayLike</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L254-L269"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.phi" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the creep number.</p>
 <p>EN 1992-1-1:2004, Eq. (B.1).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>h_0</strong> (<em>float</em>) – The product of 2 times the cross-sectional area divided by
-the exposed circumference according to (B.6).</p></li>
-<li><p><strong>f_cm</strong> (<em>float</em>) – The mean concrete strength,</p></li>
-<li><p><strong>RH</strong> (<em>int</em>) – The relative humidity in percent, defaults to 50%.</p></li>
+<li><p><strong>phi_0</strong> (<em>float</em>) – The standardized creep number defined in Eq. B.2.</p></li>
+<li><p><strong>beta_c</strong> (<em>npt.ArrayLike</em>) – A factor taking into account the creep
+development as a function of time after loading defined in Eq.
+(B.7).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>cement_class</strong> (<em>str</em>) – The cement class, defaults to ‘R’. Possible values:
-‘R’, ‘N’, ‘S’,</p></li>
-<li><p><strong>t0</strong> – The age of the concrete at the time (in days) of loading.</p></li>
-<li><p><strong>t</strong> – The age of the concrete at the time (in days) of evaluation (50
-years default).</p></li>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The creep number.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.phi_0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">phi_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi_RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L272-L286"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.phi_0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the standardized creep number.</p>
+<p>EN 1992-1-1:2004, Eq. (B.2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi_RH</strong> (<em>float</em>) – The effect of relative humidity defined in Eq. B.3.</p></li>
+<li><p><strong>beta_fcm</strong> (<em>float</em>) – The effect of the concrete strength defined in Eq.
+B.4.</p></li>
+<li><p><strong>beta_t0</strong> (<em>float</em>) – The effect of the age at loading defined in Eq. B.5.</p></li>
 </ul>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The creep value for the load, phi(t, t0).</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The standardized creep number.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – checks if the cement class equals R, N or S.</p>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.phi_RH">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">phi_RH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L289-L312"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.phi_RH" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the effect of relative humidity on the standardized creep
+number.</p>
+<p>EN 1992-1-1:2004, Eq. (B.3).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h_0</strong> (<em>float</em>) – The effective cross sectional thickness in mm, Equation
+(B.6).</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean concrete strength in MPa.</p></li>
+<li><p><strong>RH</strong> (<em>float</em>) – The relative humidity in percent.</p></li>
+<li><p><strong>alpha_1</strong> (<em>float</em>) – A factor describing the effect of concrete strength
+defined in Eq. (B.8c).</p></li>
+<li><p><strong>alpha_2</strong> (<em>float</em>) – A factor describing the effect of concrete strength
+defined in Eq. (B.8c).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculation parameter (B.3).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_fcm">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_fcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L315-L327"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_fcm" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the effect of the concrete strength on the standardized creep
+number.</p>
+<p>EN 1992-1-1:2004, Eq. (B.4).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean concrete strength in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The effect of concrete strength.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_t0">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_t0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L330-L342"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_t0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the effect of age at loading on the notional creep
+coefficient.</p>
+<p>EN 1992-1-1:2004, Eq. (B.5).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t0</strong> (<em>float</em>) – The age at loading in days.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The effect of age at loading.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_c">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_H</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L68-L81"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_c" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the factor beta_c.</p>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_H</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L365-L385"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_c" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the factor that describes the creep development as a function
+of time after loading.</p>
 <p>EN 1992-1-1:2004, Eq. (B.7).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>t0</strong> (<em>float</em>) – The concrete age in days a the time of loading.</p></li>
-<li><p><strong>t</strong> (<em>float</em>) – The concrete age at the evaluated time.</p></li>
-<li><p><strong>beta_H</strong> – Parameter defined in (B.8).</p></li>
+<li><p><strong>t</strong> (<em>ArrayLike</em>) – The concrete age in days at the evaluated time.</p></li>
+<li><p><strong>beta_H</strong> (<em>float</em>) – Parameter defined in (B.8).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -369,19 +504,24 @@ years default).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_H">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L137-L160"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_H" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates beta_H.</p>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L388-L413"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_H" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the effect of relative humidity and the effective thickness
+of the structural element.</p>
 <p>EN 1992-1-1:2004, Eq. (B.8a and b).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>h_0</strong> (<em>float</em>) – The effective cross sectional thickness, Equation (B.6).</p></li>
-<li><p><strong>f_cm</strong> (<em>float</em>) – The mean concrete strength.</p></li>
-<li><p><strong>RH</strong> (<em>int</em>) – The relative humidity in percent.</p></li>
+<li><p><strong>h_0</strong> (<em>float</em>) – The effective cross sectional thickness in mm, Equation
+(B.6).</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean concrete strength in MPa.</p></li>
+<li><p><strong>RH</strong> (<em>float</em>) – The relative humidity in percent.</p></li>
+<li><p><strong>alpha_3</strong> (<em>float</em>) – A factor describing the effect of concrete strength
+defined in Eq. B.8c.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The calculation parameter defined in (B.8).</p>
+<dd class="field-even"><p>The effect of humidity and the effective thickness of the
+element.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
@@ -390,9 +530,45 @@ years default).</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L416-L424"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_1" title="Link to this definition">¶</a></dt>
+<dd><p>Return a factor taking into account the effect of concrete strength.</p>
+<p>EN 1992-1-1:2004, Eq. (B.8c).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean concrete strength in MPa.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L427-L435"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_2" title="Link to this definition">¶</a></dt>
+<dd><p>Return a factor taking into account the effect of concrete strength.</p>
+<p>EN 1992-1-1:2004, Eq. (B.8c).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean concrete strength in MPa.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_3">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L438-L446"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_3" title="Link to this definition">¶</a></dt>
+<dd><p>Return a factor taking into account the effect of concrete strength.</p>
+<p>EN 1992-1-1:2004, Eq. (B.8c).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fcm</strong> (<em>float</em>) – The mean concrete strength in MPa.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.t0_adj">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">t0_adj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_cement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L84-L96"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.t0_adj" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the adjusted age of the concrete.</p>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">t0_adj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_cement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L449-L461"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.t0_adj" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the adjusted age of the concrete.</p>
 <p>EN 1992-1-1:2004, Eq. (B.9).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -411,41 +587,21 @@ years default).</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_fcm">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_fcm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L99-L110"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_fcm" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates beta_f_cm.</p>
-<p>EN 1992-1-1:2004, Eq. (B.4).</p>
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_cement">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_cement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cement_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'S'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'R'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L508-L529"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_cement" title="Link to this definition">¶</a></dt>
+<dd><p>Return an exponent that depends on the cement type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>f_cm</strong> (<em>float</em>) – The mean concrete strength.</p>
+<dd class="field-odd"><p><strong>cement_class</strong> (<em>str</em>) – The cement class, either ‘S’, ‘N’ or ‘R’.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The factor defined in Equation (B.4).</p>
+<dd class="field-even"><p>The exponent that depends on the cement type.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.phi_RH">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">phi_RH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L113-L134"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.phi_RH" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates phi_RH.</p>
-<p>EN 1992-1-1:2004, Eq. (B.3).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>h_0</strong> (<em>float</em>) – The effective cross sectional thickness, Equation (B.6).</p></li>
-<li><p><strong>f_cm</strong> (<em>float</em>) – The mean concrete strength.</p></li>
-<li><p><strong>RH</strong> (<em>int</em>) – The relative humidity in percent.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The calculation parameter (B.3).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an invalid cement class is provided.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -455,81 +611,251 @@ years default).</p></li>
 <h2>Shrinkage<a class="headerlink" href="#shrinkage" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_cs">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_cs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cement_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'R'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'S'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'R'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_S</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">28</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">18263</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L163-L208"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_cs" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the shrinkage strain.</p>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_cs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps_cd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_ca</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayLike</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L20-L37"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_cs" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the total shrinkage strain.</p>
 <p>EN 1992-1-1:2004, Eq. (3.8).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>h_0</strong> (<em>float</em>) – The effective cross sectional thickness, Equation (B.6).</p></li>
-<li><p><strong>f_cm</strong> (<em>float</em>) – The mean concrete strength.</p></li>
-<li><p><strong>cement_class</strong> (<em>str</em>) – The cement class, defaults to ‘R’. Possible values:
-‘R’, ‘N’, ‘S’.</p></li>
+<li><p><strong>eps_cd</strong> (<em>npt.ArrayLike</em>) – The drying shrinkage defined in Eq. (3.9).</p></li>
+<li><p><strong>eps_ca</strong> (<em>npt.ArrayLike</em>) – The autogenous shrinkage defined in Eq. (3.11).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>RH</strong> (<em>int</em>) – The relative humidity in percent, defaults to 50.</p></li>
-<li><p><strong>t_S</strong> (<em>int</em>) – the number of days when shrinkage begins, default: 28 days.</p></li>
-<li><p><strong>t</strong> (<em>int</em>) – the concrete age at the time (in days) of evaluation, default:
-50 years.</p></li>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The total shrinkage strain.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>npt.ArrayLike</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In EC2 (2004), the shrinkage strain is calculated as a positive number.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_cd">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_cd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_ds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_cd_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayLike</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L40-L62"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_cd" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the drying shrinkage.</p>
+<p>EN 1992-1-1:2004, Eq. (3.9).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta_ds</strong> (<em>npt.ArrayLike</em>) – A coefficient taking into account the time of
+drying defined in Eq. (3.10).</p></li>
+<li><p><strong>k_h</strong> (<em>float</em>) – A coefficient depending on the effective thickness of the
+section defined in Tab. 3.3.</p></li>
+<li><p><strong>eps_cd_0</strong> (<em>float</em>) – The nominal value of drying shrinkage defined in Eq.
+(B.11).</p></li>
 </ul>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The shrinkage. Given as absolute, not in percent or ppm.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The drying shrinkage.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>npt.ArrayLike</p>
 </dd>
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – Checks if the cement class equals R, N or S.</p>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In EC2 (2004), the shrinkage strain is calculated as a positive number.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_ds">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L65-L85"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_ds" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the coefficient taking into account the time of drying.</p>
+<p>EN 1992-1-1:2004, Eq. (3.10).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>npt.ArrayLike</em>) – The age of the concrete in days.</p></li>
+<li><p><strong>t_s</strong> (<em>float</em>) – The age of the concrete in days at the start of drying
+(normally this is the point in time when curing measures end).</p></li>
+<li><p><strong>h_0</strong> (<em>float</em>) – The effective cross section thichkness in mm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The coefficient taking into account the time of drying.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>npt.ArrayLike</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_RH">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_RH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L211-L225"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_RH" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates beta_RH.</p>
-<p>EN 1992-1-1:2004, Eq. (B.12).</p>
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k_h">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L88-L99"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k_h" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the coefficient depending on the notional size.</p>
+<p>EN 1992-1-1:2004, Tab. 3.3.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>RH</strong> (<em>int</em>) – The relative humidity in percent.</p>
+<dd class="field-odd"><p><strong>h_0</strong> (<em>float</em>) – The notional size of the cross-section in mm.</p>
 </dd>
-<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>RH_0</strong> (<em>int</em>) – The reference relative humidity, default: 100%.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The coefficient depending on the notional size.</p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Calculation parameter from Equation (B.12).</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_cd_0">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_cd_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cement_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\annex_b_shrink_and_creep.py#L228-L257"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_cd_0" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates eps_cd_0.</p>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_cd_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha_ds1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_ds2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L102-L133"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_cd_0" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the nominal value of drying shrinkage.</p>
 <p>EN 1992-1-1:2004, Eq. (B.11).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cement_class</strong> (<em>str</em>) – The cement class, defaults to ‘R’. Possible values:
-‘R’, ‘N’, ‘S’.</p></li>
-<li><p><strong>f_cm</strong> (<em>float</em>) – The mean concrete strength.</p></li>
-<li><p><strong>RH</strong> (<em>int</em>) – The relative humidity in percent.</p></li>
+<li><p><strong>alpha_ds1</strong> (<em>float</em>) – A coefficient depending on the cement type, defined
+in EC2 (2004), Sec. B.2.</p></li>
+<li><p><strong>alpha_ds2</strong> (<em>float</em>) – A coefficient depending on the cement type, defined
+in EC2 (2004), Sec. B.2.</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – The mean compressive strength in MPa.</p></li>
+<li><p><strong>beta_RH</strong> (<em>float</em>) – A factor describing the effect of relative humidity,
+defined in Eq. (B.12).</p></li>
 </ul>
 </dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fcm_0</strong> (<em>float</em>) – A reference strength in MPa, default 10 MPa.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The nominal value of drying shrinkage.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_ds1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_ds1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cement_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'S'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'R'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L136-L151"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_ds1" title="Link to this definition">¶</a></dt>
+<dd><p>Return a coefficient depending on the cement class.</p>
+<p>EN 1992-1-1:2004, Sec. B.2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cement_class</strong> (<em>str</em>) – The cement class, either ‘S’, ‘N’ or ‘R’.</p>
+</dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The nominal value for shrinkage.</p>
+<dd class="field-even"><p>The exponent that depends on the cement type.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – Checks if the cement class equals R, N or S.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If an invalid cement class is provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.alpha_ds2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">alpha_ds2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cement_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'S'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'N'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'R'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L154-L169"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.alpha_ds2" title="Link to this definition">¶</a></dt>
+<dd><p>Return a coefficient depending on the cement class.</p>
+<p>EN 1992-1-1:2004, Sec. B.2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cement_class</strong> (<em>str</em>) – The cement class, either ‘S’, ‘N’ or ‘R’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The exponent that depends on the cement type.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an invalid cement class is provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_RH">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_RH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RH_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L186-L200"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_RH" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the factor describing the effect of relative humidity.</p>
+<p>EN 1992-1-1:2004, Eq. (B.12).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RH</strong> (<em>float</em>) – The relative humidity in percent.</p>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RH_0</strong> (<em>float</em>) – The reference relative humidity, default: 100%.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The factor taking into account the relative humidity.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_ca">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_ca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_as</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_ca_inf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayLike</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L203-L220"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_ca" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the autogenous shrinkage.</p>
+<p>EN 1992-1-1:2004, Eq. (3.11).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta_as</strong> (<em>npt.ArrayLike</em>) – A factor describing the autogenous shrinkage
+development.</p></li>
+<li><p><strong>eps_ca_inf</strong> (<em>float</em>) – The final autogenous shrinkage.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The autogenous shrinkage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>npt.ArrayLike</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In EC2 (2004), the shrinkage strain is calculated as a positive number.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_ca_inf">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_ca_inf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L223-L234"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_ca_inf" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the final autogenous shrinkage.</p>
+<p>EN 1992-1-1:2004, Eq. 3.12.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength in MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The final autogenous shrinkage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.beta_as">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">beta_as</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayLike</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_creep_and_shrinkage.py#L237-L251"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.beta_as" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the factor describing the development of autogenous
+shrinkage.</p>
+<p>EN 1992-1-1:2004, Eq. (3.13).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>npt.ArrayLike</em>) – The age of the concrete in days.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The factor describing the development of autogenous
+shrinkage.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>npt.ArrayLike</p>
 </dd>
 </dl>
 </dd></dl>
@@ -600,19 +926,38 @@ years default).</p></li>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Creep and shrinkage</a><ul>
+<li><a class="reference internal" href="#general">General</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.t_T"><code class="docutils literal notranslate"><span class="pre">t_T()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.h_0"><code class="docutils literal notranslate"><span class="pre">h_0()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#creep">Creep</a><ul>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.phi"><code class="docutils literal notranslate"><span class="pre">phi()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.phi_0"><code class="docutils literal notranslate"><span class="pre">phi_0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.phi_RH"><code class="docutils literal notranslate"><span class="pre">phi_RH()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_fcm"><code class="docutils literal notranslate"><span class="pre">beta_fcm()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_t0"><code class="docutils literal notranslate"><span class="pre">beta_t0()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_c"><code class="docutils literal notranslate"><span class="pre">beta_c()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_H"><code class="docutils literal notranslate"><span class="pre">beta_H()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_1"><code class="docutils literal notranslate"><span class="pre">alpha_1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_2"><code class="docutils literal notranslate"><span class="pre">alpha_2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_3"><code class="docutils literal notranslate"><span class="pre">alpha_3()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.t0_adj"><code class="docutils literal notranslate"><span class="pre">t0_adj()</span></code></a></li>
-<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_fcm"><code class="docutils literal notranslate"><span class="pre">beta_fcm()</span></code></a></li>
-<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.phi_RH"><code class="docutils literal notranslate"><span class="pre">phi_RH()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_cement"><code class="docutils literal notranslate"><span class="pre">alpha_cement()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#shrinkage">Shrinkage</a><ul>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_cs"><code class="docutils literal notranslate"><span class="pre">eps_cs()</span></code></a></li>
-<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_RH"><code class="docutils literal notranslate"><span class="pre">beta_RH()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_cd"><code class="docutils literal notranslate"><span class="pre">eps_cd()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_ds"><code class="docutils literal notranslate"><span class="pre">beta_ds()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k_h"><code class="docutils literal notranslate"><span class="pre">k_h()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_cd_0"><code class="docutils literal notranslate"><span class="pre">eps_cd_0()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_ds1"><code class="docutils literal notranslate"><span class="pre">alpha_ds1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.alpha_ds2"><code class="docutils literal notranslate"><span class="pre">alpha_ds2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_RH"><code class="docutils literal notranslate"><span class="pre">beta_RH()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_ca"><code class="docutils literal notranslate"><span class="pre">eps_ca()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_ca_inf"><code class="docutils literal notranslate"><span class="pre">eps_ca_inf()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.beta_as"><code class="docutils literal notranslate"><span class="pre">beta_as()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -635,6 +980,6 @@ years default).</p></li>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
     <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../../../_static/tippy\api\codes\ec2_2004\creep_shrinkage.4018fa6d-6b7c-44ec-b293-b4df901efed9.js"></script>
+    <script defer="defer" src="../../../_static/tippy\api\codes\ec2_2004\creep_shrinkage.68376ab9-4c23-4029-8725-5f3bbf08c3de.js"></script>
     </body>
 </html>
