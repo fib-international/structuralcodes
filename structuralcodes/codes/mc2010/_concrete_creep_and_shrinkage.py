@@ -180,43 +180,52 @@ def _check_env_temp(T: float) -> None:
 
 
 def t_T(
-    t0: float,
     T_cur: t.Union[npt.ArrayLike, float],
-    dt: t.Union[npt.ArrayLike, float, None] = None,
+    dt: t.Union[npt.ArrayLike, float],
 ) -> float:
-    """Calculate the temperature corrected concrete age in days at t0.
+    """Calculate the temperature corrected concrete age in days.
 
-    Defined in fib Model Code 2010 (2013). Eq. 5.1-85 (only for a single time
-    value input, as required in Eq. 5.1-73).
+    Defined in fib Model Code 2010 (2013). Eq. 5.1-85.
 
     Args:
-        t0 (float): The age of the concrete in days at which the loading is
-            applied.
         T_cur (Union(ArrayLike, float)): The temperature of the environment
             during curing in degrees Celcius.
-
-    Keyword Args:
-        dt (Union(ArrayLike, float, None)): Number of days at which T_cur
-            prevails. Required when providing a list for T_cur.
+        dt (Union(ArrayLike, float)): Number of days at which T_cur
+            prevails.
 
     Returns:
         float: The temperature corrected age of the concrete in days at
         loading.
     """
-    _check_age_at_loading(t0)
-    if dt is None:
-        dt = t0
-    else:
-        T_cur = np.asarray(T_cur)
-        dt = np.asarray(dt)
-        if T_cur.size != dt.size:
-            raise ValueError('Dimensions of T_cur and dt do not match.')
-        if np.sum(dt) != t0:
-            raise ValueError(
-                f'Curing time {np.sum(dt)} and time of loading {t0} do not'
-                ' match.'
+    # Prepare the input
+    T_cur = T_cur if np.isscalar(T_cur) else np.atleast_1d(T_cur)
+    dt = dt if np.isscalar(dt) else np.atleast_1d(dt)
+
+    # Check that both are scalar or both are arrays
+    if any(np.isscalar(this_check) for this_check in (T_cur, dt)) and any(
+        not np.isscalar(this_check) for this_check in (T_cur, dt)
+    ):
+        raise ValueError(
+            (
+                f'T ({type(T_cur)}) and dt ({type(dt)}) should either both be '
+                'ArrayLike or scalars.'
             )
-    return np.sum(dt * np.exp(13.65 - (4000 / (273 + T_cur))))
+        )
+
+    # Check the shape of the input arrays
+    if (
+        not all((np.isscalar(T_cur), np.isscalar(dt)))
+        and T_cur.shape != dt.shape
+    ):
+        raise ValueError(
+            f'T_cur {T_cur.shape} and dt {dt.shape} should have the same '
+            'shape.'
+        )
+
+    # Return the sum of the temperature adjusted time increments
+    if not all((np.isscalar(T_cur), np.isscalar(dt))):
+        return float(np.sum(np.exp(13.65 - 4000 / (273 + T_cur)) * dt))
+    return np.exp(13.65 - 4000 / (273 + T_cur)) * dt
 
 
 def t0_adj(
