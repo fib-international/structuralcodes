@@ -28,7 +28,7 @@ _UNITS = {
 
 @dataclass
 class UnitSet:
-    """A set of units that can be used in the UnitManager."""
+    """A set of units that can be used in the UnitConverter."""
 
     length: _LENGTH_LITERAL = 'mm'
     force: _FORCE_LITERAL = 'N'
@@ -45,8 +45,28 @@ class UnitSet:
     def stress_unit(self):
         return self.force_unit / self.length_unit**2
 
+    def __post_init__(self):
+        """Validate the provided units."""
+        for attr in ('length', 'force'):
+            try:
+                # Try to find the provided unit among the available
+                _UNITS[attr][getattr(self, attr)]
+            except KeyError:
+                # The provided unit was not found
+                # Try to see if there was perhaps a mix of upper and lower case
+                # letters
+                for key in _UNITS[attr]:
+                    if key.lower() == getattr(self, attr).lower().strip():
+                        setattr(self, attr, key)
+                        break
+                else:
+                    raise ValueError(
+                        f'{getattr(self, attr)} is not a valid {attr} unit. '
+                        f'Use one of {", ".join(_UNITS[attr].keys())}.'
+                    )
 
-class UnitManager:
+
+class UnitConverter:
     """A class responsible for converting between different sets of units."""
 
     _default_units: UnitSet
