@@ -69,87 +69,86 @@ class UnitSet:
 class UnitConverter:
     """A class responsible for converting between different sets of units."""
 
-    _default_units: UnitSet
-    _alternative_units: UnitSet
+    _from_units: UnitSet
+    _to_units: UnitSet
 
     def __init__(
         self,
-        default_units: UnitSet,
-        alternative_units: t.Optional[UnitSet] = None,
+        from_units: UnitSet,
+        to_units: t.Optional[UnitSet] = None,
     ) -> None:
-        self._default_units = default_units
-        self._alternative_units = alternative_units
+        """Initialize a UnitConverter.
 
-    def convert_stress_to_default(
+        Args:
+            from_units (UnitSet): The set of units to convert forwards from or
+                backwards to.
+            to_units (Optional(UnitSet)): The set of units to convert forwards
+                to or backwards from. If None, it is treated as equal to
+                from_units, and no conversion happens.
+        """
+        self._from_units = from_units
+        self._to_units = to_units
+
+    def convert_stress_backwards(
         self, stress: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Convert stresses from alternative units to default units."""
-        return (
-            stress
-            * self.alternative_units.stress_unit
-            / self.default_units.stress_unit
-        )
+        """Convert stress backwards."""
+        if self.from_units == self.to_units:
+            return stress
+        return stress * self.to_units.stress_unit / self.from_units.stress_unit
 
-    def convert_stress_from_default(
+    def convert_stress_forwards(
         self, stress: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Convert stresses from default units to alternative units."""
-        return (
-            stress
-            * self.default_units.stress_unit
-            / self.alternative_units.stress_unit
-        )
+        """Convert stress forwards."""
+        if self.from_units == self.to_units:
+            return stress
+        return stress * self.from_units.stress_unit / self.to_units.stress_unit
 
-    def convert_length_to_default(
+    def convert_length_backwards(
         self, length: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Convert lengths from alternative units to default units."""
-        return (
-            length
-            * self.alternative_units.length_unit
-            / self.default_units.length_unit
-        )
+        """Convert length backwards."""
+        if self.from_units == self.to_units:
+            return length
+        return length * self.to_units.length_unit / self.from_units.length_unit
 
-    def convert_length_from_default(
+    def convert_length_forwards(
         self, length: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Convert lengths from default units to alternative units."""
-        return (
-            length
-            * self.default_units.length_unit
-            / self.alternative_units.length_unit
-        )
+        """Convert length forwards."""
+        if self.from_units == self.to_units:
+            return length
+        return length * self.from_units.length_unit / self.to_units.length_unit
 
-    def convert_force_to_default(
+    def convert_force_backwards(
         self, force: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Convert forces from alternative units to default units."""
-        return (
-            force
-            * self.alternative_units.force_unit
-            / self.default_units.force_unit
-        )
+        """Convert force backwards."""
+        if self.from_units == self.to_units:
+            return force
+        return force * self.to_units.force_unit / self.from_units.force_unit
 
-    def convert_force_from_default(
+    def convert_force_forwards(
         self, force: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Convert forces from default units to alternative units."""
-        return (
-            force
-            * self.default_units.force_unit
-            / self.alternative_units.force_unit
-        )
+        """Convert length forwards."""
+        if self.from_units == self.to_units:
+            return force
+        return force * self.from_units.force_unit / self.to_units.force_unit
 
     @property
-    def default_units(self) -> UnitSet:
-        """The default set of units."""
-        return self._default_units
+    def from_units(self) -> UnitSet:
+        """The set of units to convert from, i.e. we convert forwards from this
+        set of units.
+        """
+        return self._from_units
 
     @property
-    def alternative_units(self) -> UnitSet:
-        """The alternative set of units."""
+    def to_units(self) -> UnitSet:
+        """The set of units to convert to, i.e. we convert forwards to this set
+        of units.
+        """
         return (
-            self._alternative_units
-            if self._alternative_units is not None
-            else self._default_units
+            self._to_units if self._to_units is not None else self._from_units
         )
