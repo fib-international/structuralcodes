@@ -1,4 +1,4 @@
-"""The unit manager."""
+"""Classes related to unit handling."""
 
 import typing as t
 from dataclasses import dataclass
@@ -6,22 +6,24 @@ from dataclasses import dataclass
 from numpy.typing import ArrayLike
 
 # Type annotations for units
-_LENGTH_LITERAL = t.Literal['mm', 'm']
+_LENGTH_LITERAL = t.Literal['mm', 'm', 'inch', 'foot']
 _FORCE_LITERAL = t.Literal['N', 'kN', 'MN']
 
 # Unit conversion
-_METER = 1.0
-_NEWTON = 1.0
+_MILLIMETER = 1.0  # Only used as a reference and has no physical meaning
+_NEWTON = 1e-3  # Only used as a reference and has no physical meaning
 
 _UNITS = {
     'length': {
-        'm': _METER,
-        'mm': _METER * 1e-3,
+        'm': _MILLIMETER * 1e3,  # 1000 mm in one m
+        'mm': _MILLIMETER,
+        'inch': _MILLIMETER * 25.4,  # 25.4 mm in one inch
+        'foot': _MILLIMETER * 304.8,  # 304.8 mm in one foot
     },
     'force': {
         'N': _NEWTON,
-        'kN': _NEWTON * 1e3,
-        'MN': _NEWTON * 1e6,
+        'kN': _NEWTON * 1e3,  # 1000 N in one kN
+        'MN': _NEWTON * 1e6,  # 1000000 N in one MN
     },
 }
 
