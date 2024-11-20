@@ -4,12 +4,16 @@ import typing as t
 import warnings
 
 from structuralcodes.codes import ec2_2023
+from structuralcodes.core._units import UnitSet
 
 from ._concrete import Concrete
 
 
 class ConcreteEC2_2023(Concrete):  # noqa: N801
     """Concrete implementation for EC2 2023 Concrete."""
+
+    # Units
+    _default_units = UnitSet(length='mm', force='N')
 
     # Inherent concrete properties
     _kE: t.Optional[float] = None  # noqa: N815
@@ -39,13 +43,13 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         ] = 'CN',
         gamma_c: t.Optional[float] = None,
         existing: bool = False,
+        units: t.Optional[UnitSet] = None,
         **kwargs,
     ):
         """Initializes a new instance of Concrete for EC2 2023.
 
         Arguments:
-            fck (float): Characteristic strength in MPa if concrete is not
-                existing.
+            fck (float): Characteristic strength.
 
         Keyword Arguments:
             name (str): A descriptive name for concrete.
@@ -57,6 +61,12 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 1.5).
             existing (bool, optional): The material is of an existing structure
                 (default: False).
+            units (Optional[UnitSet]): The selected set of units to work in.
+                The default is length=m and force=N.
+
+        Note:
+            The arguments should be provided compatible with the selected set
+            of units.
         """
         del kwargs
         if name is None:
@@ -83,6 +93,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             density=density,
             existing=existing,
             gamma_c=gamma_c,
+            units=units,
         )
         self._kE = kE
         self._strength_dev_class = strength_dev_class
@@ -107,9 +118,13 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """Returns the mean strength of concrete.
 
         Returns:
-            float: The mean compressive strength in MPa.
+            float: The mean compressive strength.
         """
-        self._fcm = self._fcm or ec2_2023.fcm(self.fck)
+        self._fcm = self._fcm or self.unit_converter.convert_stress_forwards(
+            ec2_2023.fcm(
+                self.unit_converter.convert_stress_backwards(self.fck)
+            )
+        )
         return self._fcm
 
     @fcm.setter
@@ -117,7 +132,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """Sets a user defined value for the mean strength of concrete.
 
         Arguments:
-            value (float): the value of the mean strength of concrete in MPa.
+            value (float): the value of the mean strength of concrete.
 
         Raises:
             ValueError: If value is less or equal than the value of fck.
@@ -141,7 +156,11 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         Returns:
             float: The mean concrete tensile strength.
         """
-        self._fctm = self._fctm or ec2_2023.fctm(self.fck)
+        self._fctm = self._fctm or self.unit_converter.convert_stress_forwards(
+            ec2_2023.fctm(
+                self.unit_converter.convert_stress_backwards(self.fck)
+            )
+        )
         return self._fctm
 
     @fctm.setter
@@ -150,7 +169,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         for the concrete.
 
         Arguments:
-            value (float): The new value for fctm in MPa.
+            value (float): The new value for fctm.
         """
         self._fctm = value
 
@@ -159,9 +178,16 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """Returns the 5% mean concrete tensile strength fractile.
 
         Returns:
-            float: The 5% mean concrete tensile strength fractile in MPa.
+            float: The 5% mean concrete tensile strength fractile.
         """
-        self._fctk_5 = self._fctk_5 or ec2_2023.fctk_5(self.fctm)
+        self._fctk_5 = (
+            self._fctk_5
+            or self.unit_converter.convert_stress_forwards(
+                ec2_2023.fctk_5(
+                    self.unit_converter.convert_stress_backwards(self.fctm)
+                )
+            )
+        )
         return self._fctk_5
 
     @property
@@ -169,9 +195,16 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """Returns the 95% mean concrete tensile strength fractile.
 
         Returns:
-            float: The 5% mean concrete tensile strength fractile in MPa.
+            float: The 5% mean concrete tensile strength fractile.
         """
-        self._fctk_95 = self._fctk_95 or ec2_2023.fctk_95(self.fctm)
+        self._fctk_95 = (
+            self._fctk_95
+            or self.unit_converter.convert_stress_forwards(
+                ec2_2023.fctk_95(
+                    self.unit_converter.convert_stress_backwards(self.fctm)
+                )
+            )
+        )
         return self._fctk_95
 
     @property
@@ -179,9 +212,14 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """Returns the secant modulus.
 
         Returns:
-            float: The secant concrete modulus in MPa.
+            float: The secant concrete modulus.
         """
-        self._Ecm = self._Ecm or ec2_2023.Ecm(self.fcm, self._kE)
+        self._Ecm = self._Ecm or self.unit_converter.convert_stress_forwards(
+            ec2_2023.Ecm(
+                self.unit_converter.convert_stress_backwards(self.fcm),
+                self._kE,
+            )
+        )
         return self._Ecm
 
     @Ecm.setter
@@ -189,7 +227,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         """Sets the secant modulus.
 
         Arguments:
-            float: The secand modulus value in MPa.
+            float: The secant modulus value.
         """
         self._Ecm = value
 
@@ -206,16 +244,26 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 MPa (default is 40 MPa).
 
         Returns:
-            float: The design compressive strength of concrete in MPa.
+            float: The design compressive strength of concrete.
 
         Raises:
             ValueError: If fck_ref is less or equal to 0.
             ValueError: If t_ref is less than 0.
             ValueError: If t0 is less than 0.
         """
-        eta_cc = ec2_2023.eta_cc(self.fck, fck_ref=fck_ref)
+        eta_cc = ec2_2023.eta_cc(
+            self.unit_converter.convert_stress_backwards(self.fck),
+            fck_ref=fck_ref,
+        )
         k_tc = ec2_2023.k_tc(t_ref, t0, self._strength_dev_class)
-        return ec2_2023.fcd(self.fck, eta_cc, k_tc, self.gamma_c)
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2023.fcd(
+                self.unit_converter.convert_stress_backwards(self.fck),
+                eta_cc,
+                k_tc,
+                self.gamma_c,
+            )
+        )
 
     def fctd(self, t_ref: float = 28) -> float:
         """Computes the value of the design tensile strength of concrete.
@@ -225,7 +273,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 days).
 
         Returns:
-            float: The design tensile strength of concrete in MPa.
+            float: The design tensile strength of concrete.
 
         Raises:
             ValueError: If t_ref is less than 0.
@@ -233,7 +281,13 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         k_tt = ec2_2023.k_tt(
             t_ref=t_ref, strength_dev_class=self._strength_dev_class
         )
-        return ec2_2023.fctd(self.fctk_5, k_tt, self.gamma_c)
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2023.fctd(
+                self.unit_converter.convert_stress_backwards(self.fctk_5),
+                k_tt,
+                self.gamma_c,
+            )
+        )
 
     @property
     def eps_c1(self) -> float:
@@ -243,7 +297,9 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c1 = self._eps_c1 or ec2_2023.eps_c1(self.fcm)
+        self._eps_c1 = self._eps_c1 or ec2_2023.eps_c1(
+            self.unit_converter.convert_stress_backwards(self.fcm)
+        )
         return self._eps_c1
 
     @eps_c1.setter
@@ -268,7 +324,9 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         Returns:
             float: The maximum strength at failure of concrete.
         """
-        self._eps_cu1 = self._eps_cu1 or ec2_2023.eps_cu1(self.fcm)
+        self._eps_cu1 = self._eps_cu1 or ec2_2023.eps_cu1(
+            self.unit_converter.convert_stress_backwards(self.fcm)
+        )
         return self._eps_cu1
 
     @eps_cu1.setter
@@ -293,8 +351,8 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             float: k coefficient for Sargin constitutive law.
         """
         self._k_sargin = self._k_sargin or ec2_2023.k_sargin(
-            Ecm=self.Ecm,
-            fcm=self.fcm,
+            Ecm=self.unit_converter.convert_stress_backwards(self.Ecm),
+            fcm=self.unit_converter.convert_stress_backwards(self.fcm),
             eps_c1=self.eps_c1,
         )
         return self._k_sargin

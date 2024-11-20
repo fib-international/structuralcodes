@@ -4,6 +4,7 @@ import typing as t
 import warnings
 
 from structuralcodes.codes import ec2_2004
+from structuralcodes.core._units import UnitSet
 
 from ._concrete import Concrete
 
@@ -26,6 +27,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
     _n_parabolic_rectangular: t.Optional[float] = None
     _eps_c3: t.Optional[float] = None
     _eps_cu3: t.Optional[float] = None
+    _default_units = UnitSet(length='mm', force='N')
 
     def __init__(
         self,
@@ -34,13 +36,13 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         density: float = 2400,
         gamma_c: t.Optional[float] = None,
         alpha_cc: t.Optional[float] = None,
+        units: t.Optional[UnitSet] = None,
         **kwargs,
     ) -> None:
         """Initializes a new instance of Concrete for EC2 2004.
 
         Arguments:
-            fck (float): Characteristic strength in MPa if concrete is not
-                existing.
+            fck (float): Characteristic strength.
 
         Keyword Arguments:
             name (str): A descriptive name for concrete.
@@ -50,6 +52,8 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             alpha_cc (float, optional): A factor for considering long-term
                 effects on the strength, and effects that arise from the way
                 the load is applied.
+            units (Optional[UnitSet]): The selected set of units to work in.
+                The default is length=m and force=N.
         """
         del kwargs
         if name is None:
@@ -60,6 +64,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             density=density,
             existing=False,
             gamma_c=gamma_c,
+            units=units,
         )
         self._alpha_cc = alpha_cc
 
@@ -80,13 +85,17 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
 
     @property
     def fcm(self) -> float:
-        """Returns fcm in MPa.
+        """Returns fcm.
 
         Returns:
-            float: The mean compressive strength in MPa.
+            float: The mean compressive strength.
         """
         if self._fcm is None:
-            self._fcm = ec2_2004.fcm(self._fck)
+            self._fcm = self.unit_converter.convert_stress_forwards(
+                ec2_2004.fcm(
+                    self.unit_converter.convert_stress_backwards(self._fck)
+                )
+            )
         return self._fcm
 
     @fcm.setter
@@ -94,7 +103,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         """Sets a user defined value for fcm.
 
         Arguments:
-            value (float): The value of fcm in MPa.
+            value (float): The value of fcm.
 
         Raises:
             ValueError: If value is lower than fck.
@@ -113,13 +122,17 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
 
     @property
     def fctm(self) -> float:
-        """Returns fctm in MPa.
+        """Returns fctm.
 
         Returns:
-            float: The mean tensile strength in MPa.
+            float: The mean tensile strength.
         """
         if self._fctm is None:
-            self._fctm = ec2_2004.fctm(self._fck)
+            self._fctm = self.unit_converter.convert_stress_forwards(
+                ec2_2004.fctm(
+                    self.unit_converter.convert_stress_backwards(self._fck)
+                )
+            )
         return self._fctm
 
     @fctm.setter
@@ -127,7 +140,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         """Sets a user defined value for fctm.
 
         Arguments:
-            value (float): The value of fctm in MPa.
+            value (float): The value of fctm.
         """
         if value > 0.5 * self._fck:
             warnings.warn(
@@ -137,76 +150,92 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
 
     @property
     def fctk_5(self) -> float:
-        """Returns fctk_5 in MPa.
+        """Returns fctk_5.
 
         Returns:
-            float: The lower bound tensile strength in MPa.
+            float: The lower bound tensile strength.
         """
         if self._fctk_5 is not None:
             return self._fctk_5
-        return ec2_2004.fctk_5(self.fctm)
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2004.fctk_5(
+                self.unit_converter.convert_stress_backwards(self.fctm)
+            )
+        )
 
     @fctk_5.setter
     def fctk_5(self, value: float):
         """Sets a user defined value for fctk_5.
 
         Arguments:
-            value (float): The value of fctk_5 in MPa.
+            value (float): The value of fctk_5.
         """
         self._fctk_5 = abs(value)
 
     @property
     def fctk_95(self) -> float:
-        """Returns fctk_95 in MPa.
+        """Returns fctk_95.
 
         Returns:
-            float: The upper bound tensile strength in MPa.
+            float: The upper bound tensile strength.
         """
         if self._fctk_95 is not None:
             return self._fctk_95
 
-        return ec2_2004.fctk_95(self.fctm)
+        return self._unit_converter.convert_stress_forwards(
+            ec2_2004.fctk_95(
+                self._unit_converter.convert_stress_backwards(self.fctm)
+            )
+        )
 
     @fctk_95.setter
     def fctk_95(self, value: float):
         """Sets a user defined value for fctk_95.
 
         Arguments:
-            value (float): The value of fctk_95 in MPa.
+            value (float): The value of fctk_95.
         """
         self._fctk_95 = abs(value)
 
     @property
     def Ecm(self) -> float:
-        """Returns Ecm in MPa.
+        """Returns Ecm.
 
         Returns:
-            float: The upper bound tensile strength in MPa.
+            float: The upper bound tensile strength.
         """
         if self._Ecm is not None:
             return self._Ecm
 
-        return ec2_2004.Ecm(self.fcm)
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2004.Ecm(
+                self.unit_converter.convert_stress_backwards(self.fcm)
+            )
+        )
 
     @Ecm.setter
     def Ecm(self, value: float):
         """Sets a user defined value for Ecm.
 
         Arguments:
-            value (float): The value of Ecm in MPa.
+            value (float): The value of Ecm.
         """
         self._Ecm = abs(value)
 
     def fcd(self) -> float:
-        """Return the design compressive strength in MPa.
+        """Return the design compressive strength.
 
         Returns:
-            float: The design compressive strength of concrete in MPa.
+            float: The design compressive strength of concrete.
         """
         # This method should perhaps become a property, but is left as a method
         # for now, to be consistent with other concretes.
-        return ec2_2004.fcd(
-            self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2004.fcd(
+                self.unit_converter.convert_stress_backwards(self.fck),
+                alpha_cc=self.alpha_cc,
+                gamma_c=self.gamma_c,
+            )
         )
 
     @property
@@ -231,7 +260,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c1 = self._eps_c1 or ec2_2004.eps_c1(self.fcm)
+        self._eps_c1 = self._eps_c1 or ec2_2004.eps_c1(
+            self.unit_converter.convert_stress_backwards(self.fcm)
+        )
         return self._eps_c1
 
     @eps_c1.setter
@@ -256,7 +287,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Returns:
             float: The maximum strength at failure of concrete.
         """
-        self._eps_cu1 = self._eps_cu1 or ec2_2004.eps_cu1(self.fcm)
+        self._eps_cu1 = self._eps_cu1 or ec2_2004.eps_cu1(
+            self.unit_converter.convert_stress_backwards(self.fcm)
+        )
         return self._eps_cu1
 
     @eps_cu1.setter
@@ -281,8 +314,8 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             float: The plastic coefficient for Sargin law.
         """
         self._k_sargin = self._k_sargin or ec2_2004.k_sargin(
-            Ecm=self.Ecm,
-            fcm=self.fcm,
+            Ecm=self.unit_converter.convert_stress_backwards(self.Ecm),
+            fcm=self.unit_converter.convert_stress_backwards(self.fcm),
             eps_c1=self.eps_c1,
         )
         return self._k_sargin
@@ -309,7 +342,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c2 = self._eps_c2 or ec2_2004.eps_c2(self.fck)
+        self._eps_c2 = self._eps_c2 or ec2_2004.eps_c2(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_c2
 
     @eps_c2.setter
@@ -335,7 +370,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Returns:
             float: The maximum strain at failure of concrete.
         """
-        self._eps_cu2 = self._eps_cu2 or ec2_2004.eps_cu2(self.fck)
+        self._eps_cu2 = self._eps_cu2 or ec2_2004.eps_cu2(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_cu2
 
     @eps_cu2.setter
@@ -362,7 +399,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         """
         self._n_parabolic_rectangular = (
             self._n_parabolic_rectangular
-            or ec2_2004.n_parabolic_rectangular(self.fck)
+            or ec2_2004.n_parabolic_rectangular(
+                self.unit_converter.convert_stress_backwards(self.fck)
+            )
         )
         return self._n_parabolic_rectangular
 
@@ -393,7 +432,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c3 = self._eps_c3 or ec2_2004.eps_c3(self.fck)
+        self._eps_c3 = self._eps_c3 or ec2_2004.eps_c3(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_c3
 
     @eps_c3.setter
@@ -419,7 +460,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         Returns:
             float: The maximum strain at failure of concrete.
         """
-        self._eps_cu3 = self._eps_cu3 or ec2_2004.eps_cu3(self.fck)
+        self._eps_cu3 = self._eps_cu3 or ec2_2004.eps_cu3(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_cu3
 
     @eps_cu3.setter

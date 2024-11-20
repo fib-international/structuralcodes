@@ -4,12 +4,16 @@ import typing as t
 import warnings
 
 from structuralcodes.codes import mc2010
+from structuralcodes.core._units import UnitSet
 
 from ._concrete import Concrete
 
 
 class ConcreteMC2010(Concrete):
     """Concrete implementation for MC 2010."""
+
+    # Units
+    _default_units = UnitSet(length='mm', force='N')
 
     # computed values
     _fcm: t.Optional[float] = None
@@ -37,13 +41,13 @@ class ConcreteMC2010(Concrete):
         gamma_c: t.Optional[float] = None,
         existing: bool = False,
         alpha_cc: t.Optional[float] = None,
+        units: t.Optional[UnitSet] = None,
         **kwargs,
     ):
         """Initializes a new instance of Concrete for MC 2010.
 
         Arguments:
-            fck (float): Characteristic strength in MPa if concrete is not
-                existing.
+            fck (float): Characteristic strength.
 
         Keyword Arguments:
             name (Optional(str)): A descriptive name for concrete.
@@ -54,6 +58,12 @@ class ConcreteMC2010(Concrete):
             alpha_cc (float, optional): A factor for considering long-term
                 effects on the strength, and effects that arise from the way
                 the load is applied.
+            units (Optional[UnitSet]): The selected set of units to work in.
+                The default is length=m and force=N.
+
+        Note:
+            The arguments should be provided compatible with the selected set
+            of units.
         """
         del kwargs
         if name is None:
@@ -64,6 +74,7 @@ class ConcreteMC2010(Concrete):
             density=density,
             existing=existing,
             gamma_c=gamma_c,
+            units=units,
         )
         self._alpha_cc = alpha_cc
 
@@ -85,12 +96,14 @@ class ConcreteMC2010(Concrete):
 
     @property
     def fcm(self) -> float:
-        """Returns fcm in MPa.
+        """Returns fcm.
 
         Returns:
-            float: The mean compressive strength in MPa.
+            float: The mean compressive strength.
         """
-        self._fcm = self._fcm or mc2010.fcm(self._fck)
+        self._fcm = self._fcm or self.unit_converter.convert_stress_forwards(
+            mc2010.fcm(self.unit_converter.convert_stress_backwards(self._fck))
+        )
         return self._fcm
 
     @fcm.setter
@@ -98,7 +111,7 @@ class ConcreteMC2010(Concrete):
         """Sets a user defined value for fcm.
 
         Arguments:
-            value (float): The value of fcm in MPa.
+            value (float): The value of fcm.
 
         Raises:
             ValueError: If value is lower than fck.
@@ -117,12 +130,13 @@ class ConcreteMC2010(Concrete):
 
     @property
     def Eci(self) -> float:
-        """Returns the modulus of elasticity in MPa at the concrete age of 28
-        days.
+        """Returns the modulus of elasticity at the concrete age of 28 days.
 
         It is assumed a normal concrete with quartzite aggregates (alfa_e = 1)
         """
-        self._Eci = self._Eci or mc2010.Eci(self.fcm)
+        self._Eci = self._Eci or self.unit_converter.convert_stress_forwards(
+            mc2010.Eci(self.unit_converter.convert_stress_backwards(self.fcm))
+        )
         return self._Eci
 
     @Eci.setter
@@ -131,23 +145,22 @@ class ConcreteMC2010(Concrete):
         age of 28 days, Eci.
 
         Arguments:
-            value (float): The value of Eci in MPa.
+            value (float): The value of Eci.
         """
-        if value < 1e4 or value > 1e5:
-            warnings.warn(
-                'A suspect value of Eci has been input.\n'
-                'Please check Eci that should be in MPa ({value} given).'
-            )
         self._Eci = abs(value)
 
     @property
     def fctm(self) -> float:
-        """Returns fctm in MPa.
+        """Returns fctm.
 
         Returns:
-            float: The mean tensile strength in MPa.
+            float: The mean tensile strength.
         """
-        self._fctm = self._fctm or mc2010.fctm(self._fck)
+        self._fctm = self._fctm or self.unit_converter.convert_stress_forwards(
+            mc2010.fctm(
+                self.unit_converter.convert_stress_backwards(self._fck)
+            )
+        )
         return self._fctm
 
     @fctm.setter
@@ -155,7 +168,7 @@ class ConcreteMC2010(Concrete):
         """Sets a user defined value for fctm.
 
         Arguments:
-            value (float): The value of fctm in MPa.
+            value (float): The value of fctm.
         """
         if value > 0.5 * self._fck:
             warnings.warn(
@@ -165,12 +178,19 @@ class ConcreteMC2010(Concrete):
 
     @property
     def fctkmin(self) -> float:
-        """Returns fctkmin in MPa.
+        """Returns fctkmin.
 
         Returns:
-            float: The lower bound tensile strength in MPa.
+            float: The lower bound tensile strength.
         """
-        self._fctkmin = self._fctkmin or mc2010.fctkmin(self.fctm)
+        self._fctkmin = (
+            self._fctkmin
+            or self.unit_converter.convert_stress_forwards(
+                mc2010.fctkmin(
+                    self.unit_converter.convert_stress_backwards(self.fctm)
+                )
+            )
+        )
         return self._fctkmin
 
     @fctkmin.setter
@@ -178,18 +198,25 @@ class ConcreteMC2010(Concrete):
         """Sets a user defined value for fctkmin.
 
         Arguments:
-            value (float): The value of fctkmin in MPa.
+            value (float): The value of fctkmin.
         """
         self._fctkmin = abs(value)
 
     @property
     def fctkmax(self) -> float:
-        """Returns fctkmax in MPa.
+        """Returns fctkmax.
 
         Returns:
-            float: The upper bound tensile strength in MPa.
+            float: The upper bound tensile strength.
         """
-        self._fctkmax = self._fctkmax or mc2010.fctkmax(self.fctm)
+        self._fctkmax = (
+            self._fctkmax
+            or self.unit_converter.convert_stress_forwards(
+                mc2010.fctkmax(
+                    self.unit_converter.convert_stress_backwards(self.fctm)
+                )
+            )
+        )
         return self._fctkmax
 
     @fctkmax.setter
@@ -197,7 +224,7 @@ class ConcreteMC2010(Concrete):
         """Sets a user defined value for fctkmax.
 
         Arguments:
-            value (float): The value of fctkmax in MPa.
+            value (float): The value of fctkmax.
         """
         self._fctkmax = abs(value)
 
@@ -216,7 +243,7 @@ class ConcreteMC2010(Concrete):
         """Sets a user defined value for fracture energy Gf.
 
         Arguments:
-            value (float): The value of Gf in N/m.
+            value (float): The value of Gf.
         """
         self._Gf = abs(value)
 
@@ -226,15 +253,19 @@ class ConcreteMC2010(Concrete):
         return self._gamma_c or 1.5
 
     def fcd(self) -> float:
-        """Return the design compressive strength in MPa.
+        """Return the design compressive strength.
 
         Returns:
-            float: The design compressive strength of concrete in MPa.
+            float: The design compressive strength of concrete.
         """
         # This method should perhaps become a property, but is left as a method
         # for now, to be consistent with other concretes.
-        return mc2010.fcd(
-            self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
+        return self.unit_converter.convert_stress_forwards(
+            mc2010.fcd(
+                self.unit_converter.convert_stress_backwards(self.fck),
+                alpha_cc=self.alpha_cc,
+                gamma_c=self.gamma_c,
+            )
         )
 
     @property
@@ -252,7 +283,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c1 = self._eps_c1 or mc2010.eps_c1(self._fck)
+        self._eps_c1 = self._eps_c1 or mc2010.eps_c1(
+            self.unit_converter.convert_stress_backwards(self._fck)
+        )
         return self._eps_c1
 
     @eps_c1.setter
@@ -277,7 +310,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The maximum strength at failure of concrete.
         """
-        self._eps_cu1 = self._eps_cu1 or mc2010.eps_cu1(self._fck)
+        self._eps_cu1 = self._eps_cu1 or mc2010.eps_cu1(
+            self.unit_converter.convert_stress_backwards(self._fck)
+        )
         return self._eps_cu1
 
     @eps_cu1.setter
@@ -301,7 +336,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The plastic coefficient for Sargin law.
         """
-        self._k_sargin = self._k_sargin or mc2010.k_sargin(self._fck)
+        self._k_sargin = self._k_sargin or mc2010.k_sargin(
+            self.unit_converter.convert_stress_backwards(self._fck)
+        )
         return self._k_sargin
 
     @k_sargin.setter
@@ -326,7 +363,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c2 = self._eps_c2 or mc2010.eps_c2(self.fck)
+        self._eps_c2 = self._eps_c2 or mc2010.eps_c2(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_c2
 
     @eps_c2.setter
@@ -352,7 +391,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The maximum strain at failure of concrete.
         """
-        self._eps_cu2 = self._eps_cu2 or mc2010.eps_cu2(self.fck)
+        self._eps_cu2 = self._eps_cu2 or mc2010.eps_cu2(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_cu2
 
     @eps_cu2.setter
@@ -379,7 +420,9 @@ class ConcreteMC2010(Concrete):
         """
         self._n_parabolic_rectangular = (
             self._n_parabolic_rectangular
-            or mc2010.n_parabolic_rectangular(self.fck)
+            or mc2010.n_parabolic_rectangular(
+                self.unit_converter.convert_stress_backwards(self.fck)
+            )
         )
         return self._n_parabolic_rectangular
 
@@ -410,7 +453,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The strain at maximum compressive strength of concrete.
         """
-        self._eps_c3 = self._eps_c3 or mc2010.eps_c3(self.fck)
+        self._eps_c3 = self._eps_c3 or mc2010.eps_c3(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_c3
 
     @eps_c3.setter
@@ -436,7 +481,9 @@ class ConcreteMC2010(Concrete):
         Returns:
             float: The maximum strain at failure of concrete.
         """
-        self._eps_cu3 = self._eps_cu3 or mc2010.eps_cu3(self.fck)
+        self._eps_cu3 = self._eps_cu3 or mc2010.eps_cu3(
+            self.unit_converter.convert_stress_backwards(self.fck)
+        )
         return self._eps_cu3
 
     @eps_cu3.setter
