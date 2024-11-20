@@ -4,7 +4,8 @@ import math
 
 import pytest
 
-from structuralcodes.core._units import _UNITS, UnitConverter, UnitSet
+from structuralcodes.core import UnitConverter, UnitSet
+from structuralcodes.core._units import _UNITS
 
 
 @pytest.mark.parametrize(
