@@ -664,13 +664,15 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is not None:
             # Rotate back also triangulated data!
             self._rotate_triangulated_data(theta)
+        # Rotate also curvature!
+        strain_rotated = T @ np.array([[strain[1]], [strain[2]]])
 
         # Create result object
         res = s_res.UltimateBendingMomentResults()
         res.theta = theta
         res.n = N
-        res.chi_y = strain[1]
-        res.chi_z = strain[2]
+        res.chi_y = strain_rotated[0, 0]
+        res.chi_z = strain_rotated[1, 0]
         res.eps_a = strain[0]
         res.m_y = M[0, 0]
         res.m_z = M[1, 0]
