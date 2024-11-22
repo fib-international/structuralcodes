@@ -1,17 +1,9 @@
-"""Classes for circular sections.
+"""Classes for circular geometries.
 
-The class `Circular` represents a circular section with homogenous material.
-The class `CircularRC` represents a reinforced concrete circular section
-with `Concrete` material for the `SurfaceGeometry` and `Reinforcement` material
-for the `PointGeometries`.
-
-These classes are simply wrappers of `GenericSection` class and permits an easy
-input by the user, but all calculations are performed in the under-the-hood
-`GenericSection` class.
-
-In the future this class will contain utility methods for automatically define
-confined concrete according to some confinement models. For now a not
-implemented error is raised if this feature is used.
+The class `CircularGeometry` represents a circular SurfaceGeometry with
+homogenous material.
+This class is simply a wrapper of `SurfaceGeometry` class and permits an easy
+input by the user.
 """
 
 import typing as t
