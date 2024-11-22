@@ -1,5 +1,6 @@
 """Main entry point for geometry."""
 
+from ._circular import CircularGeometry
 from ._geometry import (
     CompoundGeometry,
     Geometry,
@@ -25,4 +26,5 @@ __all__ = [
     'UPN',
     'add_reinforcement',
     'add_reinforcement_line',
+    'CircularGeometry',
 ]
