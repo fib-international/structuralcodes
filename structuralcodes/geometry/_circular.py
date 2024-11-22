@@ -7,6 +7,7 @@ input by the user.
 """
 
 import typing as t
+from itertools import chain
 
 import numpy as np
 from shapely import Polygon
@@ -14,6 +15,7 @@ from shapely import Polygon
 from structuralcodes.core.base import ConstitutiveLaw, Material
 
 from ._geometry import CompoundGeometry, SurfaceGeometry
+from ._reinforcement import add_reinforcement_circle
 
 
 def _create_circle(radius, npoints=20):
@@ -100,10 +102,10 @@ class CircularRCGeometry(CompoundGeometry):
         diameter: float,
         number: int,
         reinforcement_material: t.Union[Material, ConstitutiveLaw],
+        cover: float,
         is_radius: bool = False,
         n_points: int = 20,
         surface_density: t.Optional[float] = None,
-        reinforcement_density: t.Optional[float] = None,
         concrete: bool = False,
     ) -> None:
         """Initialize a CircularRCGeometry.
@@ -118,6 +120,8 @@ class CircularRCGeometry(CompoundGeometry):
             number (int): The number of bars to distribute.
             reinforcement_material (Union(Material, ConstitutiveLaw)): A
                 Material or ConsitutiveLaw class applied to the point geometry.
+            cover (float): The cover of concrete intended as the distance
+                between outer line and barycenter of longitudinal bars.
             is_radius (bool): Indicates if size is interpreted as radius
                     (default = False).
             n_points (int): The number of points used to discretize the
@@ -126,10 +130,6 @@ class CircularRCGeometry(CompoundGeometry):
                 as surface_material, the density can be provided by this
                 argument. When surface_material is a Material object the
                 density is taken from the material.
-            reinforcement_density (Optional(float)): When a ConstitutiveLaw is
-                passed as reinforcement_material, the density can be provided
-                by this argument. When reinforcement_material is a Material
-                object the density is taken from the material.
             concrete (bool): Flag to indicate if the surface geometry is
                 concrete.
 
@@ -151,9 +151,15 @@ class CircularRCGeometry(CompoundGeometry):
             surface_density,
             concrete,
         )
-        # Pass everything to the base class
+        # Add the reinforcement
+        r = geometry.radius - cover
+        rc_geometry = add_reinforcement_circle(
+            geometry, (0, 0), r, diameter, reinforcement_material, number
+        )
+
+        # Pass everything to the base class CompoundGeometry
         super().__init__(
-            poly=polygon, material=material, density=density, concrete=concrete
+            list(chain(rc_geometry.geometries, rc_geometry.point_geometries))
         )
 
     @property
