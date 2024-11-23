@@ -486,3 +486,37 @@ def test_refined_mn_domain():
     assert len(res_default.strains) == 35
     assert len(res_refined.strains) >= 0.9 * 100
     assert len(res_detailed.strains) == 107
+
+
+@pytest.mark.parametrize(
+    'theta',
+    [
+        0,
+        np.pi / 2,
+        np.pi / 4,
+    ],
+)
+def test_rectangular_section_biaxial_moment(theta):
+    """Test for rectangular section under biaxial moment."""
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
+
+    # The section
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
+    geo = geo.translate(-100, -200)
+
+    # Create the section
+    sec = GenericSection(geo, integrator='fiber')
+
+    # Calculate default moment-curvature relation
+    res = sec.section_calculator.calculate_bending_strength(theta=theta)
+
+    theta_inverse = math.atan2(res.chi_z, res.chi_y) + np.pi
+
+    theta_inverse = theta_inverse % (2 * np.pi)
+
+    assert math.isclose(theta, theta_inverse, rel_tol=1e-3)
