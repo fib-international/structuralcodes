@@ -103,9 +103,7 @@ class FiberIntegrator(SectionIntegrator):
                 # define the maximum area of the triangles
                 max_area = g.area * mesh_size
                 # triangulate the geometry getting back the mesh
-                mesh = triangle.triangulate(
-                    tri, f'pq{30:.1f}Aa{max_area:.1f}o1'
-                )
+                mesh = triangle.triangulate(tri, f'pq{30:.1f}Aa{max_area}o1')
                 mat = g.material
                 # Get x and y coordinates (centroid) and area for each fiber
                 x = []

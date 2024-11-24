@@ -143,7 +143,7 @@ class MarinIntegrator(SectionIntegrator):
             strain = strain_rotated[0] + strain_rotated[1] * yp
             x.append(xp)
             y.append(yp)
-            F.append(pg.material.get_stress(strain)[0] * A)
+            F.append(pg.material.get_stress(strain) * A)
         prepared_input.append((1, np.array(x), np.array(y), np.array(F)))
 
         return angle, prepared_input

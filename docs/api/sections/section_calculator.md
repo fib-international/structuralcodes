@@ -10,6 +10,7 @@
     .. autoproperty:: n_max
 
 
+    .. automethod:: __init__
     .. automethod:: calculate_limit_axial_load
     .. automethod:: check_axial_load
     .. automethod:: integrate_strain_profile

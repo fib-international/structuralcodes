@@ -272,7 +272,7 @@ class PointGeometry(Geometry):
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0)[0])
+            new_material = Elastic(E=geo.material.get_tangent(eps=0))
 
         return PointGeometry(
             point=geo._point,
@@ -557,6 +557,7 @@ class SurfaceGeometry:
             poly=affinity.translate(self.polygon, dx, dy),
             material=self.material,
             density=self._density,
+            concrete=self.concrete
         )
 
     def rotate(
@@ -584,6 +585,7 @@ class SurfaceGeometry:
             ),
             material=self.material,
             density=self._density,
+            concrete=self.concrete,
         )
 
     @staticmethod
@@ -622,7 +624,7 @@ class SurfaceGeometry:
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0)[0])
+            new_material = Elastic(E=geo.material.get_tangent(eps=0))
 
         return SurfaceGeometry(
             poly=geo.polygon, material=new_material, density=geo._density

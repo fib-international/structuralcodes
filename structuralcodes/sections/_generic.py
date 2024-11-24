@@ -2,9 +2,9 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import math
 import typing as t
 import warnings
-from math import cos, sin
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -55,6 +55,16 @@ class GenericSection(Section):
                 of the section.
             name (str): The name of the section.
             integrator (str): The name of the SectionIntegrator to use.
+            kwargs (dict): A collection of keyword arguments to pass on to the
+                section calculator.
+
+        Note:
+            The GenericSection uses a GenericSectionCalculator for all
+            calculations. The GenericSectionCalculator uses a SectionIntegrator
+            for integrating over the section. Any additional keyword arguments
+            used when creating the GenericSection are passed on to the
+            SectionCalculator to customize the behaviour. See
+            GenericSectionCalculator for available keyword arguments.
         """
         if name is None:
             name = 'GenericSection'
@@ -98,7 +108,7 @@ class GenericSectionCalculator(SectionCalculator):
                 (default = 'marin').
 
         Note:
-            When using 'fiber' integrator the kwarg 'mesh_size' can be used to
+            When using `fiber` integrator the kwarg `mesh_size` can be used to
             specify a dimensionless number (between 0 and 1) specifying the
             size of the resulting mesh.
         """
@@ -142,13 +152,13 @@ class GenericSectionCalculator(SectionCalculator):
         # Computation of surface area, reinforcement area, EA (axial rigidity)
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
 
         for geo in self.section.geometry.point_geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
             gp.area_reinforcement += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
@@ -208,7 +218,13 @@ class GenericSectionCalculator(SectionCalculator):
             )
             # Change sign due to moment sign convention
             izz *= -1
-            if abs(abs(izy) - abs(iyz)) > 10:
+
+            # Compute reasonable value for absolute tolerance for checking iyz
+            rel_tol = 1e-9
+            abs_tol = 0.5 * (iyy + izz) * rel_tol
+
+            # Check calculated cross moment
+            if not math.isclose(iyz, izy, rel_tol=rel_tol, abs_tol=abs_tol):
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
@@ -574,7 +590,12 @@ class GenericSectionCalculator(SectionCalculator):
         """Rotate triangulated data of angle theta."""
         rotated_triangulated_data = []
         for tr in self.triangulated_data:
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             coords = np.vstack((tr[0], tr[1]))
             coords_r = T @ coords
             rotated_triangulated_data.append(
@@ -636,7 +657,9 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         # Rotate back to section CRS TODO Check
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         M = T @ np.array([[My], [Mz]])
         if self.triangulated_data is not None:
             # Rotate back also triangulated data!
@@ -771,7 +794,12 @@ class GenericSectionCalculator(SectionCalculator):
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             M = T @ np.array([[My], [Mz]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
@@ -1106,7 +1134,9 @@ class GenericSectionCalculator(SectionCalculator):
         eps_a = eps_n - kappa_y * y_n
 
         # rotate back components to work in section CRS
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         components = np.vstack((kappa_y, np.zeros_like(kappa_y)))
         rotated_components = T @ components
         return np.column_stack((eps_a, rotated_components.T)), field_num
