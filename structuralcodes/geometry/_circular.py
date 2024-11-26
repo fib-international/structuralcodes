@@ -23,7 +23,7 @@ def _create_circle(radius, npoints=20):
     phi = np.linspace(0, 2 * np.pi, npoints + 1)
     x = radius * np.cos(phi)
     y = radius * np.sin(phi)
-    points = [(this_x, this_y) for this_x, this_y in zip(x, y)]
+    points = np.transpose(np.array([x, y]))
     return Polygon(points)
 
 
