@@ -36,9 +36,8 @@ class CircularGeometry(SurfaceGeometry):
 
     def __init__(
         self,
-        size: float,
+        diameter: float,
         material: t.Union[Material, ConstitutiveLaw],
-        is_radius: bool = False,
         n_points: int = 20,
         density: t.Optional[float] = None,
         concrete: bool = False,
@@ -46,13 +45,9 @@ class CircularGeometry(SurfaceGeometry):
         """Initialize a CircularGeometry.
 
         Arguments:
-            size (float): The size of the geometry. By default this number
-                is assumed as the diameter of the section. To interpret this
-                as the radius `is_radius` should be set as `True`.
+            diameter (float): The diameter of the geometry.
             material (Union(Material, ConstitutiveLaw)): A Material or
                 ConsitutiveLaw class applied to the geometry.
-            is_radius (bool): Indicates if size is interpreted as radius
-                (default = False).
             n_points (int): The number of points used to discretize the
                 circle as a shapely `Polygon` (default = 20).
             density (Optional(float)): When a ConstitutiveLaw is passed as
@@ -66,10 +61,10 @@ class CircularGeometry(SurfaceGeometry):
             object.
         """
         # Check that size is strictly positive
-        if size <= 0:
-            raise ValueError('Size must be a positive number.')
+        if diameter <= 0:
+            raise ValueError('Diameter must be a positive number.')
         # Manage size as radius or diameter (default)
-        self._radius = size if is_radius else size / 2.0
+        self._radius = diameter / 2.0
         # Create the shapely polygon
         polygon = _create_circle(radius=self._radius, npoints=n_points)
         # Pass everything to the base class
