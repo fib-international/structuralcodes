@@ -40,7 +40,7 @@ class ReinforcementMC2010(Reinforcement):
             name (str): A descriptive name for the reinforcement.
             density (float): Density of material in kg/m3 (default: 7850).
             units (Optional[UnitSet]): The selected set of units to work in.
-                The default is length=m and force=N.
+                The default is length=mm and force=N.
 
         Note:
             The arguments should be provided compatible with the selected set

@@ -62,7 +62,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             existing (bool, optional): The material is of an existing structure
                 (default: False).
             units (Optional[UnitSet]): The selected set of units to work in.
-                The default is length=m and force=N.
+                The default is length=mm and force=N.
 
         Note:
             The arguments should be provided compatible with the selected set

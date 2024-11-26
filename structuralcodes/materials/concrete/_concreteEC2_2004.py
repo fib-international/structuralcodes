@@ -53,7 +53,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
                 effects on the strength, and effects that arise from the way
                 the load is applied.
             units (Optional[UnitSet]): The selected set of units to work in.
-                The default is length=m and force=N.
+                The default is length=mm and force=N.
         """
         del kwargs
         if name is None:
