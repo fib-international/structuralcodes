@@ -1,5 +1,6 @@
 """Functions related to reinforcement definition."""
 
+import math
 import typing as t
 
 import numpy as np
@@ -176,8 +177,6 @@ def add_reinforcement_circle(
         CompoundGeometry: A compound geometry with the original geometry and
         the reinforcement.
     """
-    from math import floor
-
     # Check that difference between stop and start angle is
     # positive and less than 2pi
     if stop_angle - start_angle <= 0 or stop_angle - start_angle > 2 * np.pi:
@@ -189,16 +188,15 @@ def add_reinforcement_circle(
     length = radius * (stop_angle - start_angle)
 
     # If the whole circle, than deal with the case that would add an extra bar
-    whole = False
-    add_n = 0
-    if abs(length - 2 * np.pi * radius) < 1e-4:
-        whole = True
-        add_n = 1
+    whole = math.isclose(length - 2 * np.pi * radius, 0, abs_tol=1e-4)
+    add_n = 0 if not whole else 1
 
+    # delta_angle is used if we need to center the set of bars
+    # in the curve.
     delta_angle = 0
     if n > 0 and s > 0:
         # Provided both the number of bars and spacing
-        # 1. Check the is enough space for fitting the bars
+        # Check there is enough space for fitting the bars
         n += add_n
         needed_length = (n - 1) * s
         if needed_length > length:
@@ -206,18 +204,23 @@ def add_reinforcement_circle(
                 f'There is not room to fit {n} bars with a spacing of {s} \
                 in {length}'
             )
+        # Compute delta_angle to make bars centered in the curvilinear segment
         delta_angle = (length - needed_length) / 2.0 / radius
     elif n > 0:
         # Provided the number of bars
         s = length / (n - 1)
+        # If we are distributing bars i the whole circle add a fictitious extra
+        # bar (than later will be removed).
         n += add_n
     elif s > 0:
         # Provided the spacing
         # 1. Compute the number of bars
-        n = floor(length / s) + 1
-        # 2. Distribute the bars centered in the segment
+        n = math.floor(length / s) + 1
+        # 2. Distribute the bars centered in the curvilinear segment
         needed_length = (n - 1) * s
         delta_angle = (length - needed_length) / 2.0 / radius
+        # set whole to False bacause in this case we don't need to deal with
+        # the special case
         whole = False
     else:
         raise ValueError('At least n or s should be provided')
