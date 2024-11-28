@@ -26,8 +26,8 @@ def _create_circle(radius, npoints=20):
 
 
 class CircularGeometry(SurfaceGeometry):
-    """This is a wrapper class for defining a SurfaceGeometry of circular shape
-    with a homogeneous material.
+    """This is a wrapper class for defining a `SurfaceGeometry` of circular
+    shape with a homogeneous material.
     """
 
     _radius: float

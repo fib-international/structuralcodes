@@ -139,7 +139,10 @@ def add_reinforcement_circle(
     stop_angle: float = 2 * np.pi,
     group_label: t.Optional[str] = None,
 ) -> CompoundGeometry:
-    """Adds a set of bars distributed in a line.
+    """Adds a set of bars distributed in a circular arch line.
+    By default the whole circle is considered. If one wants to specify a
+    circular arch, the `start_angle` and `stop_angle` attributes need to be
+    specified.
 
     Arguments:
         geo (Union(SurfaceGeometry, CompoundGeometry)): The geometry used as
