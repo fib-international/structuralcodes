@@ -6,7 +6,7 @@ import typing as t
 
 import numpy as np
 import triangle
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import Polygon
 
 from structuralcodes.core.base import ConstitutiveLaw
@@ -255,8 +255,109 @@ class FiberIntegrator(SectionIntegrator):
 
         # Return the calculated response
         return *self.integrate_stress(prepared_input), triangulated_data
+
+    def prepare_input_tangent(
+        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
+    ) -> t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        """Prepare general input to the integration of stresses in the section.
+
+        Calculate the forces based on strains in a set of points.
+
+        Arguments:
+            geo (CompoundGeometry): The geometry of the section.
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+
+        Keyword Arguments:
+            mesh_size (float): Percentage of area (number from 0 to 1) max for
+                triangle elements.
+
+        Returns:
+            Tuple(List): The prepared input representing a list with
+            x-coordinates, y-coordinates and force for each fiber and a
+            list containing the triangulation data that can be stored and
+            used later to avoid repetition of triangulation.
+        """
+        # This method should:
+        #  - discretize the section in a number of fibers (mesh_size)
+        #  - prepare input as y coordiates z coordinates forces
+
+        prepared_input = []
+
+        triangulated_data = kwargs.get('tri', None)
+        if triangulated_data is None:
+            # No triangulation is provided, triangulate the section
+            # Fiber integrator for generic section uses delaunay triangulation
+            # for discretizing in fibers
+
+            mesh_size = kwargs.get('mesh_size', 0.01)
+            triangulated_data = self.triangulate(geo, mesh_size)
+
+        x = []
+        y = []
+        TA = []
+        for tr in triangulated_data:
+            # All have the same material
+            strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+            # compute tangent in all materials
+            tangent = tr[3].get_tangent(strains)
+            x.append(tr[0])
+            y.append(tr[1])
+            TA.append(tangent * tr[2])
+        prepared_input = [(np.hstack(x), np.hstack(y), np.hstack(TA))]
+
+        return prepared_input, triangulated_data
+
+    def integrate_tangent(
+        self,
+        prepared_input: t.List[
+            t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
+        ],
+    ) -> NDArray:
+        """Integrate tangent over the geometry.
+
+        Arguments:
+            prepared_input (List): The prepared input from .prepare_input().
+
+        Returns:
+            NDArray[float]: The tangent stiffness matrix with shap (3,3).
+        """
+        # Integration over all fibers
+        x, y, TA = prepared_input[0]
+
+        tangent = np.zeros((3, 3))
+        tangent[0, 0] = np.sum(TA)
+        tangent[0, 1] = tangent[1, 0] = np.sum(TA * y)
+        tangent[0, 2] = tangent[2, 0] = np.sum(-TA * x)
+        tangent[1, 1] = np.sum(y * y * TA)
+        tangent[1, 2] = tangent[2, 1] = np.sum(-x * y * TA)
+        tangent[2, 2] = np.sum(x * x * TA)
+
+        return tangent
+
+    def integrate_strain_response_on_geometry_tangent(
+        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
+    ):
+        """Integrate tangent for obtaining stiffness matrix for the given
+        strain with the fiber algorithm.
+
+        Arguments:
+            geo (CompoundGeometry): The geometry of the section.
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+            mesh_size: Percentage of area (number from 0 to 1) max for triangle
+                elements.
+
+        Returns:
+            Tuple(NDArray, List): The section tangent stiffness,
+            and the triangulation data.
+        """
+        # Prepare the general input based on the geometry and the input strains
+        prepared_input, triangulated_data = self.prepare_input_tangent(
             geo, strain, **kwargs
         )
 
         # Return the calculated response
-        return *self.integrate(prepared_input), triangulated_data
+        return self.integrate_tangent(prepared_input), triangulated_data

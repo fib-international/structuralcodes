@@ -6,7 +6,7 @@ import typing as t
 from math import atan2, cos, sin
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
 
@@ -221,5 +221,57 @@ class MarinIntegrator(SectionIntegrator):
         # Return the calculated response
         return *self.integrate_stress(angle, prepared_input), None
 
-        # Return the calculated response
-        return *self.integrate(angle, prepared_input), None
+    def prepare_input_tangent(
+        self, geo: CompoundGeometry, strain: ArrayLike
+    ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        """Prepare general input to the tangent modulus integration.
+
+        Keyword Arguments:
+            geo (CompoundGeometry): The geometry of the section.
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+            mesh_size: Percentage of area (number from 0 to 1) max for triangle
+                elements.
+
+        Returns:
+            Tuple(float, Tuple(ndarray, ndarray, ndarray)): The prepared input
+            represented as the angle of rotation computed (needed for rotating
+            back the resultants) and as a tuple with 3 ndarrys collecting
+            respectively y, z and stress coefficients for each sub-part.
+        """
+        raise NotImplementedError
+
+    def integrate_tangent(
+        self,
+        angle: float,
+        prepared_input: t.List[
+            t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
+        ],
+    ) -> NDArray:
+        """Integrate tangent modulus over the geometry.
+
+        Arguments:
+            prepared_input (List): The prepared input from .prepare_input().
+
+        Returns:
+            NDArray: The tangent modulus resultant as section stiffness.
+        """
+        raise NotImplementedError
+
+    def integrate_strain_response_on_geometry_tangent(
+        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
+    ):
+        """Integrate the tangent from strain response with the Marin algorithm.
+
+        Arguments:
+            geo (CompoundGeometry): The geometry of the section.
+            strain (ArrayLike): The strains and curvatures of the section,
+                given in the format (ea, ky, kz) which are i) strain at 0,0,
+                ii) curvature y axis, iii) curvature z axis.
+
+        Returns:
+            NDArray: The section tangent stiffness.
+        """
+        del kwargs
+        raise NotImplementedError
