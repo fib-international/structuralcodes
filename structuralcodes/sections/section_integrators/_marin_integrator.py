@@ -240,6 +240,7 @@ class MarinIntegrator(SectionIntegrator):
             back the resultants) and as a tuple with 3 ndarrys collecting
             respectively y, z and stress coefficients for each sub-part.
         """
+        del geo, strain
         raise NotImplementedError
 
     def integrate_tangent(
@@ -257,6 +258,7 @@ class MarinIntegrator(SectionIntegrator):
         Returns:
             NDArray: The tangent modulus resultant as section stiffness.
         """
+        del angle, prepared_input
         raise NotImplementedError
 
     def integrate_strain_response_on_geometry_tangent(
@@ -273,5 +275,5 @@ class MarinIntegrator(SectionIntegrator):
         Returns:
             NDArray: The section tangent stiffness.
         """
-        del kwargs
+        del geo, strain, kwargs
         raise NotImplementedError
