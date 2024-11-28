@@ -1,5 +1,6 @@
 """Main entry point for geometry."""
 
+from ._circular import CircularGeometry
 from ._geometry import (
     CompoundGeometry,
     Geometry,
@@ -7,7 +8,11 @@ from ._geometry import (
     SurfaceGeometry,
     create_line_point_angle,
 )
-from ._reinforcement import add_reinforcement, add_reinforcement_line
+from ._reinforcement import (
+    add_reinforcement,
+    add_reinforcement_circle,
+    add_reinforcement_line,
+)
 from ._steel_sections import HE, IPE, IPN, UB, UBP, UC, UPN
 
 __all__ = [
@@ -25,4 +30,6 @@ __all__ = [
     'UPN',
     'add_reinforcement',
     'add_reinforcement_line',
+    'CircularGeometry',
+    'add_reinforcement_circle',
 ]
