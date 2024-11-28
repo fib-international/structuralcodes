@@ -155,12 +155,12 @@ class FiberIntegrator(SectionIntegrator):
 
         return triangulated_data
 
-    def prepare_input(
+    def prepare_input_stress(
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ) -> t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        """Prepare general input to the integration.
+        """Prepare general input to the integration of stresses in the section.
 
-        Calculate the stresses based on strains in a set of points.
+        Calculate the forces based on strains in a set of points.
 
         Arguments:
             geo (CompoundGeometry): The geometry of the section.
@@ -208,7 +208,7 @@ class FiberIntegrator(SectionIntegrator):
 
         return prepared_input, triangulated_data
 
-    def integrate(
+    def integrate_stress(
         self,
         prepared_input: t.List[
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
@@ -231,10 +231,10 @@ class FiberIntegrator(SectionIntegrator):
 
         return N, Mx, My
 
-    def integrate_strain_response_on_geometry(
+    def integrate_strain_response_on_geometry_stress(
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
-        """Integrate the strain response with the fiber algorithm.
+        """Integrate stresses the strain response with the fiber algorithm.
 
         Arguments:
             geo (CompoundGeometry): The geometry of the section.
@@ -249,7 +249,12 @@ class FiberIntegrator(SectionIntegrator):
             Mx and My and the triangulation data.
         """
         # Prepare the general input based on the geometry and the input strains
-        prepared_input, triangulated_data = self.prepare_input(
+        prepared_input, triangulated_data = self.prepare_input_stress(
+            geo, strain, **kwargs
+        )
+
+        # Return the calculated response
+        return *self.integrate_stress(prepared_input), triangulated_data
             geo, strain, **kwargs
         )
 

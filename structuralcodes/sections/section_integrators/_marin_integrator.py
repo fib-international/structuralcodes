@@ -19,10 +19,10 @@ from ._section_integrator import SectionIntegrator
 class MarinIntegrator(SectionIntegrator):
     """Section integrator based on the Marin algorithm."""
 
-    def prepare_input(
+    def prepare_input_stress(
         self, geo: CompoundGeometry, strain: ArrayLike
     ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        """Prepare general input to the integration.
+        """Prepare general input to the stress integration.
 
         Calculate the stresses based on strains in a set of points.
 
@@ -148,7 +148,7 @@ class MarinIntegrator(SectionIntegrator):
 
         return angle, prepared_input
 
-    def integrate(
+    def integrate_stress(
         self,
         angle: float,
         prepared_input: t.List[
@@ -199,10 +199,10 @@ class MarinIntegrator(SectionIntegrator):
 
         return N, M[0, 0], M[1, 0]
 
-    def integrate_strain_response_on_geometry(
+    def integrate_strain_response_on_geometry_stress(
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
-        """Integrate the strain response with the Marin algorithm.
+        """Integrate the strees from strain response with the Marin algorithm.
 
         Arguments:
             geo (CompoundGeometry): The geometry of the section.
@@ -216,7 +216,10 @@ class MarinIntegrator(SectionIntegrator):
         """
         del kwargs
         # Prepare the general input based on the geometry and the input strains
-        angle, prepared_input = self.prepare_input(geo, strain)
+        angle, prepared_input = self.prepare_input_stress(geo, strain)
+
+        # Return the calculated response
+        return *self.integrate_stress(angle, prepared_input), None
 
         # Return the calculated response
         return *self.integrate(angle, prepared_input), None
