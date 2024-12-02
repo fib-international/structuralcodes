@@ -69,3 +69,34 @@
 .. autofunction:: structuralcodes.geometry.create_line_point_angle
 
 ```
+
+## Common geometries
+
+In this section the classes and methods for creating special and common geometries are described. Generally these are simply wrappers of base geometries.
+
+```{eval-rst}
+.. autoclass:: structuralcodes.geometry.CircularGeometry
+
+    .. automethod:: __init__
+
+    .. autoproperty:: radius
+    .. autoproperty:: diameter
+
+```
+
+## Functions for adding reinforcement
+
+```{eval-rst}
+.. autofunction:: structuralcodes.geometry.add_reinforcement
+
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.geometry.add_reinforcement_line
+
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.geometry.add_reinforcement_circle
+
+```

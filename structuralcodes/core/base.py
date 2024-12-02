@@ -87,13 +87,17 @@ class ConstitutiveLaw(abc.ABC):
         cls.constitutive_law_counter += 1
 
     @abc.abstractmethod
-    def get_stress(self, eps: ArrayLike) -> ArrayLike:
+    def get_stress(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Each constitutive law should provide a method to return the
         stress given the strain level.
         """
 
     @abc.abstractmethod
-    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+    def get_tangent(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level.
         """
@@ -101,16 +105,24 @@ class ConstitutiveLaw(abc.ABC):
     @abc.abstractmethod
     def get_ultimate_strain(self) -> t.Tuple[float, float]:
         """Each constitutive law should provide a method to return the
-        ultimate strain (positive and negative).
+        ultimate strain (negative and positive).
         """
 
-    def preprocess_strains_with_limits(self, eps: ArrayLike) -> ArrayLike:
+    def preprocess_strains_with_limits(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
         """Preprocess strain arrays setting those strains sufficiently
         near to ultimate strain limits to exactly ultimate strain limit.
         """
-        eps = np.atleast_1d(np.asarray(eps))
-        eps_max, eps_min = self.get_ultimate_strain()
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+        eps_min, eps_max = self.get_ultimate_strain()
 
+        if np.isscalar(eps):
+            if np.isclose(eps, eps_max, atol=1e-6):
+                return eps_max
+            if np.isclose(eps, eps_min, atol=1e-6):
+                return eps_min
+            return eps
         idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
         eps[idxs] = eps_max
         idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
@@ -138,7 +150,7 @@ class ConstitutiveLaw(abc.ABC):
             # All values are zero for x > 0
             return None
 
-        eps_max, eps_min = self.get_ultimate_strain()
+        eps_min, eps_max = self.get_ultimate_strain()
         eps_max = min(eps_max, 1)
         # Analise positive branch
         eps = np.linspace(0, eps_max, 10000)

@@ -28,10 +28,10 @@ from structuralcodes.materials.constitutive_laws import (
 )
 def test_elastic_floats(E, strain, expected):
     """Test the elastic material."""
-    assert math.isclose(Elastic(E).get_stress(strain)[0], expected)
-    assert math.isclose(Elastic(E).get_tangent(strain)[0], E)
-    assert math.isclose(Elastic(E).get_ultimate_strain()[0], 100)
-    assert math.isclose(Elastic(E).get_ultimate_strain()[1], -100)
+    assert math.isclose(Elastic(E).get_stress(strain), expected)
+    assert math.isclose(Elastic(E).get_tangent(strain), E)
+    assert math.isclose(Elastic(E).get_ultimate_strain()[0], -100)
+    assert math.isclose(Elastic(E).get_ultimate_strain()[1], 100)
 
 
 @pytest.mark.parametrize(
@@ -46,8 +46,8 @@ def test_elastic_set_ultimate_strain_float(E, eps_su):
     """Test elastic material set ultimate strain with a float."""
     material = Elastic(E)
     material.set_ultimate_strain(eps_su)
-    assert math.isclose(material.get_ultimate_strain()[0], eps_su)
-    assert math.isclose(material.get_ultimate_strain()[1], -eps_su)
+    assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
+    assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
 
 @pytest.mark.parametrize(
@@ -62,8 +62,8 @@ def test_elastic_set_ultimate_strain_tuple(E, eps_su):
     """Test elastic material set ultimate strain with a tuple."""
     material = Elastic(E)
     material.set_ultimate_strain(eps_su=eps_su)
-    assert math.isclose(material.get_ultimate_strain()[0], max(eps_su))
-    assert math.isclose(material.get_ultimate_strain()[1], min(eps_su))
+    assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
+    assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
 
 @pytest.mark.parametrize(
@@ -105,7 +105,7 @@ def test_elastic_numpy():
 )
 def test_elasticplastic_get_stress(E, fy, strain, expected):
     """Test the elasticPlastic material."""
-    assert math.isclose(ElasticPlastic(E, fy).get_stress(strain)[0], expected)
+    assert math.isclose(ElasticPlastic(E, fy).get_stress(strain), expected)
 
 
 def test_elasticplastic_input_correct():
@@ -128,7 +128,7 @@ def test_elasticplastic_input_correct():
 )
 def test_elasticplastic_get_tangent(E, fy, strain, expected):
     """Test the elasticPlastic material."""
-    assert math.isclose(ElasticPlastic(E, fy).get_tangent(strain)[0], expected)
+    assert math.isclose(ElasticPlastic(E, fy).get_tangent(strain), expected)
 
 
 @pytest.mark.parametrize(
@@ -150,8 +150,8 @@ def test_elasticplastic_get_tangent(E, fy, strain, expected):
 def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
     """Test the parabola-rectangle material."""
     mat = ParabolaRectangle(fc, eps_0, eps_u)
-    assert math.isclose(mat.get_stress(strain)[0], stress)
-    assert math.isclose(mat.get_tangent(strain)[0], tangent)
+    assert math.isclose(mat.get_stress(strain), stress)
+    assert math.isclose(mat.get_tangent(strain), tangent)
 
 
 @pytest.mark.parametrize(
@@ -272,12 +272,12 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
 def test_user_defined_floats(x, y, flag, strain, expected):
     """Test the parabola-rectangle material."""
     assert math.isclose(
-        UserDefined(x, y, flag=flag).get_stress(strain)[0], expected
+        UserDefined(x, y, flag=flag).get_stress(strain), expected
     )
     xmin = x[0] if x[0] < 0 else -x[-1]
     xmax = x[-1]
-    assert math.isclose(UserDefined(x, y).get_ultimate_strain()[0], xmax)
-    assert math.isclose(UserDefined(x, y).get_ultimate_strain()[1], xmin)
+    assert math.isclose(UserDefined(x, y).get_ultimate_strain()[0], xmin)
+    assert math.isclose(UserDefined(x, y).get_ultimate_strain()[1], xmax)
 
     with pytest.raises(ValueError) as excinfo:
         UserDefined(x[:-1], y)
@@ -301,8 +301,8 @@ def test_userdefined_set_ultimate_strain_float(E, fy, eps_su):
     y = [-fy, 0, fy]
     material = UserDefined(x=x, y=y)
     material.set_ultimate_strain(eps_su)
-    assert math.isclose(material.get_ultimate_strain()[0], eps_su)
-    assert math.isclose(material.get_ultimate_strain()[1], -eps_su)
+    assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
+    assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
 
 @pytest.mark.parametrize(
@@ -319,8 +319,8 @@ def test_userdefined_set_ultimate_strain_tuple(E, fy, eps_su):
     y = [-fy, 0, fy]
     material = UserDefined(x=x, y=y)
     material.set_ultimate_strain(eps_su=eps_su)
-    assert math.isclose(material.get_ultimate_strain()[0], max(eps_su))
-    assert math.isclose(material.get_ultimate_strain()[1], min(eps_su))
+    assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
+    assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
 
 @pytest.mark.parametrize(
@@ -397,11 +397,11 @@ def test_sargin(fc, eps_c1, eps_cu1, k):
     assert_allclose(tan_computed, tan_expected)
 
     # Test getting ultimate strain
-    eps_max, eps_min = law.get_ultimate_strain()
+    eps_min, eps_max = law.get_ultimate_strain()
     assert math.isclose(eps_min, eps_cu1)
     assert math.isclose(eps_max, 100)
 
-    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, eps_c1)
     assert math.isclose(eps_max, 100)
 
@@ -457,11 +457,11 @@ def test_popovics(fc, eps_c, eps_cu):
     assert_allclose(tan_computed, tan_expected)
 
     # Test getting ultimate strain
-    eps_max, eps_min = law.get_ultimate_strain()
+    eps_min, eps_max = law.get_ultimate_strain()
     assert math.isclose(eps_min, -eps_cu)
     assert math.isclose(eps_max, 100)
 
-    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
 
@@ -508,10 +508,10 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     assert_allclose(tan_computed, tan_expected)
 
     # Test getting ultimate strain
-    eps_max, eps_min = law.get_ultimate_strain()
+    eps_min, eps_max = law.get_ultimate_strain()
     assert math.isclose(eps_min, -eps_cu)
     assert math.isclose(eps_max, 100)
 
-    eps_max, eps_min = law.get_ultimate_strain(yielding=True)
+    eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
