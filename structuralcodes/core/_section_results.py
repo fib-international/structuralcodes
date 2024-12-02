@@ -106,9 +106,20 @@ class GrossProperties:
         """Defines the format for returning the string representation.
 
         Arguments:
-            spec (str): The string specifying the format.
+            spec (str): The string specifying the format. Special case
+            "cracked" instead of gross may be defined.
         """
-        output_string = 'Gross Concrete Section Properties:\n'
+        # output_string = 'Gross Concrete Section Properties:\n'
+        if 'cracked' in spec.lower():
+            type = 'Cracked'
+            spec = spec.replace(
+                'cracked', ''
+            ).strip()  # remove "cracked" from spec
+        else:
+            type = 'Gross'
+
+        output_string = f'{type} Concrete Section Properties:\n'
+
         for f in fields(self):
             value = getattr(self, f.name)
             description = f.metadata.get(
@@ -124,20 +135,6 @@ class GrossProperties:
         section properties.
         """
         return f'{self}'
-
-
-@dataclass
-class CrackedProperties:
-    """Simple dataclass for storing cracked section properties."""
-
-    # second moments of area
-    i_yy: float = 0
-    i_zz: float = 0
-    i_yz: float = 0
-
-    # section cracked flexural rigidity
-    ei_yy: float = 0
-    ei_zz: float = 0
 
 
 @dataclass
