@@ -58,10 +58,9 @@ def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
     cut_geom = CompoundGeometry(None, None)
     for i, part in enumerate(rotated_geometry.geometries):
         min_x, max_x, min_y, max_y = part.calculate_extents()
-        above_div, below_div = part.split(((min_x, z_na), 0))
-        subpart_poly = above_div
+        upper_div, lower_div = part.split(((min_x, z_na), 0))
         # Convert to SurfaceGeometry
-        subpart_sg = create_surface_geometries(subpart_poly, part.material)
+        subpart_sg = create_surface_geometries(upper_div, part.material)
         if i == 0:
             cut_geom = CompoundGeometry(subpart_sg)
         else:
