@@ -1,15 +1,4 @@
-import os
-import sys
-
 import pytest
-
-# parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), r'..'))
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), r'..\..'))
-sys.path.append(parent_dir)
-
-"""Quickstart example."""
-
-
 from shapely import Polygon
 
 from structuralcodes import set_design_code
@@ -23,6 +12,7 @@ from structuralcodes.sections._rc_utils import (
 
 
 def test_calculate_elastic_cracked_properties_comparison():
+    """Test calculating cracked properties."""
     # region create section1
     set_design_code('ec2_2004')
     concrete = create_concrete(fck=45)
