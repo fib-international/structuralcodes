@@ -5,7 +5,10 @@ from structuralcodes.sections import GenericSection
 
 def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
     """Calculates the cracked section properties of a reinforced concrete
-    section (GenericSection).
+    section.  (GenericSection). Materials in surface geometries and point
+    geometries are elastic-linear  in order to make the cracking properties
+    independent of the stress state.  Tension in all surface geometries is
+    neglected.
 
     Args:
         section: GenericSection
@@ -23,7 +26,7 @@ def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
         # Create an empty list to store SurfaceGeometry objects
         surface_geometries = []
 
-        # Iterate over the list of polygons and create a SurfaceGeometry for each one
+        # Iterate over the list of polygons and create SurfaceGeometry for each
         for polygon in polygons_list:
             # Create a new SurfaceGeometry for the current polygon
             surface_geometry = SurfaceGeometry(polygon, material)
