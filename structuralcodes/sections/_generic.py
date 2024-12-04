@@ -417,7 +417,7 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
         # save the triangulation data
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         # Return the strain distribution
         return [eps_0, chi_c, 0]
@@ -498,7 +498,7 @@ class GenericSectionCalculator(SectionCalculator):
         ) = self.integrator.integrate_strain_response_on_geometry_stress(
             geom, [eps_0, curv, 0], tri=self.triangulated_data
         )
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         dn_a = n_int - n
         # It may occur that dn_a is already almost zero (in eqiulibrium)
@@ -561,7 +561,7 @@ class GenericSectionCalculator(SectionCalculator):
             )
         )
 
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         return n_min, n_max
 
@@ -979,7 +979,7 @@ class GenericSectionCalculator(SectionCalculator):
                     mesh_size=self.mesh_size,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
@@ -1249,7 +1249,7 @@ class GenericSectionCalculator(SectionCalculator):
                     tri=self.triangulated_data,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
