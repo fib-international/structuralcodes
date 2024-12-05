@@ -159,9 +159,29 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
     assert math.isclose(sec.gross_properties.area, b * h)
 
     # compute stiffness matrix
-    stiffness, tri = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry_tangent(
-            sec.geometry, [0, 0, 0], mesh_size=sec.section_calculator.mesh_size
+    stiffness, _ = (
+        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
+            sec.geometry,
+            [0, 0, 0],
+            integrate='tangent',
+            mesh_size=sec.section_calculator.mesh_size,
+        )
+    )
+    assert stiffness.shape == (3, 3)
+    stiffness /= E
+
+    # Create the section with marin integrator
+    sec = GenericSection(geo)
+    assert sec.name == 'GenericSection'
+
+    assert math.isclose(sec.gross_properties.area, b * h)
+
+    # compute stiffness matrix
+    stiffness, _ = (
+        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
+            sec.geometry,
+            [0, 0, 0],
+            integrate='tangent',
         )
     )
     assert stiffness.shape == (3, 3)
@@ -211,9 +231,29 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E):
     assert math.isclose(sec.gross_properties.area, b * h)
 
     # compute stiffness matrix
-    stiffness, tri = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry_tangent(
-            sec.geometry, [0, 0, 0], mesh_size=sec.section_calculator.mesh_size
+    stiffness, _ = (
+        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
+            sec.geometry,
+            [0, 0, 0],
+            integrate='tangent',
+            mesh_size=sec.section_calculator.mesh_size,
+        )
+    )
+    assert stiffness.shape == (3, 3)
+    stiffness /= E
+
+    # Create the section with marin integrator
+    sec = GenericSection(geo)
+    assert sec.name == 'GenericSection'
+
+    assert math.isclose(sec.gross_properties.area, b * h)
+
+    # compute stiffness matrix
+    stiffness, _ = (
+        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
+            sec.geometry,
+            [0, 0, 0],
+            integrate='tangent',
         )
     )
     assert stiffness.shape == (3, 3)

@@ -13,7 +13,7 @@ class SectionIntegrator(abc.ABC):
     """Abstract base class for section integrators."""
 
     @abc.abstractmethod
-    def prepare_input_stress(self, geo: CompoundGeometry, strain: ArrayLike):
+    def prepare_input(self, geo: CompoundGeometry, strain: ArrayLike):
         """Prepare general input to the stress integration method.
 
         Args:
@@ -40,26 +40,6 @@ class SectionIntegrator(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def integrate_strain_response_on_geometry_stress(
-        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
-    ):
-        """Integrate stresses over the geometry to obtain the response due to
-        strains.
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def prepare_input_tangent(self, geo: CompoundGeometry, strain: ArrayLike):
-        """Prepare general input to the tangent integration method.
-
-        Args:
-            geo (CompoundGeometry): The geometry to integrate over.
-            strain (ArrayLike): The scalar strain components necessary for
-                describing the assumed strain distribution over the geometry.
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def integrate_tangent(self, *prepared_input, **kwargs):
         """Integrate tangent modulus over the geometry.
 
@@ -76,10 +56,10 @@ class SectionIntegrator(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def integrate_strain_response_on_geometry_tangent(
+    def integrate_strain_response_on_geometry(
         self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ):
-        """Integrate tangent modulus over the geometry to obtain the tangent
-        stiffness matrix due to strains.
+        """Integrate stresses over the geometry to obtain the response due to
+        strains.
         """
         raise NotImplementedError

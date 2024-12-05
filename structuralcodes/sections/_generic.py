@@ -20,7 +20,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.constitutive_laws import Elastic
 
-from .section_integrators import integrator_factory
+from .section_integrators import SectionIntegrator, integrator_factory
 
 
 class GenericSection(Section):
@@ -93,6 +93,8 @@ class GenericSection(Section):
 
 class GenericSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
+
+    integrator: SectionIntegrator
 
     def __init__(
         self,
@@ -196,7 +198,7 @@ class GenericSectionCalculator(SectionCalculator):
                 iyy,
                 iyz,
                 tri,
-            ) = self.integrator.integrate_strain_response_on_geometry_stress(
+            ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 1, 0],
                 mesh_size=self.mesh_size,
@@ -210,7 +212,7 @@ class GenericSectionCalculator(SectionCalculator):
                 izy,
                 izz,
                 _,
-            ) = self.integrator.integrate_strain_response_on_geometry_stress(
+            ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 0, -1],
                 tri=tri,
@@ -366,7 +368,7 @@ class GenericSectionCalculator(SectionCalculator):
             _,
             _,
             tri,
-        ) = self.integrator.integrate_strain_response_on_geometry_stress(
+        ) = self.integrator.integrate_strain_response_on_geometry(
             geom, strain, tri=self.triangulated_data, mesh_size=self.mesh_size
         )
         # Check if there is equilibrium with this strain distribution
@@ -386,10 +388,8 @@ class GenericSectionCalculator(SectionCalculator):
             pivot = y_n
             strain_pivot = eps_n
         eps_0 = strain_pivot - chi_b * pivot
-        n_int, _, _, _ = (
-            self.integrator.integrate_strain_response_on_geometry_stress(
-                geom, [eps_0, chi_b, 0], tri=self.triangulated_data
-            )
+        n_int, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
+            geom, [eps_0, chi_b, 0], tri=self.triangulated_data
         )
         dn_b = n_int - n
         it = 0
@@ -401,7 +401,7 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
                 _,
                 _,
-            ) = self.integrator.integrate_strain_response_on_geometry_stress(
+            ) = self.integrator.integrate_strain_response_on_geometry(
                 geom, [eps_0, chi_c, 0], tri=self.triangulated_data
             )
             dn_c = n_int - n
@@ -448,7 +448,7 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
                 _,
                 _,
-            ) = self.integrator.integrate_strain_response_on_geometry_stress(
+            ) = self.integrator.integrate_strain_response_on_geometry(
                 geom, [eps_0_b, curv, 0], tri=self.triangulated_data
             )
             dn_b = n_int - n
@@ -495,7 +495,7 @@ class GenericSectionCalculator(SectionCalculator):
             _,
             _,
             tri,
-        ) = self.integrator.integrate_strain_response_on_geometry_stress(
+        ) = self.integrator.integrate_strain_response_on_geometry(
             geom, [eps_0, curv, 0], tri=self.triangulated_data
         )
         if self.triangulated_data is None and tri is not None:
@@ -517,7 +517,7 @@ class GenericSectionCalculator(SectionCalculator):
                 _,
                 _,
                 _,
-            ) = self.integrator.integrate_strain_response_on_geometry_stress(
+            ) = self.integrator.integrate_strain_response_on_geometry(
                 geom, [eps_0_c, curv, 0], tri=self.triangulated_data
             )
             dn_c = n_int - n
@@ -548,17 +548,15 @@ class GenericSectionCalculator(SectionCalculator):
         eps_n = strain[0] + strain[1] * y_n
 
         n_min, _, _, tri = (
-            self.integrator.integrate_strain_response_on_geometry_stress(
+            self.integrator.integrate_strain_response_on_geometry(
                 self.section.geometry,
                 [eps_n, 0, 0],
                 tri=self.triangulated_data,
                 mesh_size=self.mesh_size,
             )
         )
-        n_max, _, _, _ = (
-            self.integrator.integrate_strain_response_on_geometry_stress(
-                self.section.geometry, [eps_p, 0, 0], tri=tri
-            )
+        n_max, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
+            self.section.geometry, [eps_p, 0, 0], tri=tri
         )
 
         if self.triangulated_data is None and tri is not None:
@@ -620,13 +618,11 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             Tuple(float, float, float): N, My and Mz.
         """
-        N, My, Mz, _ = (
-            self.integrator.integrate_strain_response_on_geometry_stress(
-                geo=self.section.geometry,
-                strain=strain,
-                tri=self.triangulated_data,
-                mesh_size=self.mesh_size,
-            )
+        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+            geo=self.section.geometry,
+            strain=strain,
+            tri=self.triangulated_data,
+            mesh_size=self.mesh_size,
         )
         return N, My, Mz
 
@@ -658,10 +654,8 @@ class GenericSectionCalculator(SectionCalculator):
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
         # Compute the internal forces with this strain distribution
-        N, My, Mz, _ = (
-            self.integrator.integrate_strain_response_on_geometry_stress(
-                geo=rotated_geom, strain=strain, tri=self.triangulated_data
-            )
+        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+            geo=rotated_geom, strain=strain, tri=self.triangulated_data
         )
 
         # Rotate back to section CRS TODO Check
@@ -800,7 +794,7 @@ class GenericSectionCalculator(SectionCalculator):
                 My,
                 Mz,
                 _,
-            ) = self.integrator.integrate_strain_response_on_geometry_stress(
+            ) = self.integrator.integrate_strain_response_on_geometry(
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
@@ -972,7 +966,7 @@ class GenericSectionCalculator(SectionCalculator):
         forces = np.zeros_like(strains)
         for i, strain in enumerate(strains):
             N, My, Mz, tri = (
-                self.integrator.integrate_strain_response_on_geometry_stress(
+                self.integrator.integrate_strain_response_on_geometry(
                     geo=self.section.geometry,
                     strain=strain,
                     tri=self.triangulated_data,
@@ -1243,7 +1237,7 @@ class GenericSectionCalculator(SectionCalculator):
         forces = np.zeros_like(strains)
         for i, strain in enumerate(strains):
             N, My, Mz, tri = (
-                self.integrator.integrate_strain_response_on_geometry_stress(
+                self.integrator.integrate_strain_response_on_geometry(
                     geo=self.section.geometry,
                     strain=strain,
                     tri=self.triangulated_data,
