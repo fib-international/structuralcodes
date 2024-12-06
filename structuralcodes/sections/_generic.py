@@ -7,7 +7,7 @@ import typing as t
 import warnings
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -606,25 +606,49 @@ class GenericSectionCalculator(SectionCalculator):
         self.triangulated_data = rotated_triangulated_data
 
     def integrate_strain_profile(
-        self, strain: ArrayLike
-    ) -> t.Tuple[float, float, float]:
+        self,
+        strain: ArrayLike,
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
+    ) -> t.Union[t.Tuple[float, float, float], NDArray]:
         """Integrate a strain profile returning internal forces.
 
         Arguments:
             strain (ArrayLike): Represents the deformation plane. The strain
                 should have three entries representing respectively: axial
                 strain (At 0,0 coordinates), curv_y, curv_z.
+            integrate (str): a string indicating the quantity to integrate over
+                the section. It can be 'stress' or 'modulus'. When 'stress'
+                is selected, the return value will be the stress resultants N,
+                My, Mz, while if 'modulus' is selected, the return will be the
+                tangent section stiffness matrix (default is 'stress').
 
         Returns:
-            Tuple(float, float, float): N, My and Mz.
+            Union(Tuple(float, float, float),NDArray): N, My and Mz when
+            `integrate='stress'`, or a numpy array representing the stiffness
+            matrix then `integrate='modulus'`.
+
+        Examples:
+            result = self.integrate_strain_profile(strain,integrate='tangent')
+            # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
+
+            result = self.integrate_strain_profile(strain)
+            # `result` will be a tuple containing section forces (N, My, Mz)
+
+        Raises:
+            ValueError: If a unkown value is passed to the `integrate`
+            parameter.
         """
-        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+        result = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
             strain=strain,
+            integrate=integrate,
             tri=self.triangulated_data,
             mesh_size=self.mesh_size,
         )
-        return N, My, Mz
+
+        if len(result) == 2:
+            return result[0]
+        return result[:-1]
 
     def calculate_bending_strength(
         self, theta=0, n=0

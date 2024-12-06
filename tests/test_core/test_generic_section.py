@@ -159,13 +159,8 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
     assert math.isclose(sec.gross_properties.area, b * h)
 
     # compute stiffness matrix
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [0, 0, 0],
-            integrate='modulus',
-            mesh_size=sec.section_calculator.mesh_size,
-        )
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
     )
     assert stiffness.shape == (3, 3)
     stiffness /= E
@@ -177,12 +172,8 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
     assert math.isclose(sec.gross_properties.area, b * h)
 
     # compute stiffness matrix
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [0, 0, 0],
-            integrate='modulus',
-        )
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
     )
     assert stiffness.shape == (3, 3)
     stiffness /= E
@@ -262,13 +253,8 @@ def test_rectangular_rc_section_initial_tangent_stiffness(
     sec = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
 
     # compute initial stiffness matrix (gross)
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [0, 0, 0],
-            integrate='modulus',
-            mesh_size=sec.section_calculator.mesh_size,
-        )
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
     )
     assert stiffness.shape == (3, 3)
 
@@ -280,12 +266,8 @@ def test_rectangular_rc_section_initial_tangent_stiffness(
     sec = GenericSection(geo)
 
     # compute initial stiffness matrix (gross)
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [0, 0, 0],
-            integrate='modulus',
-        )
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
     )
     assert stiffness.shape == (3, 3)
 
@@ -377,14 +359,11 @@ def test_rectangular_rc_section_tangent_stiffness(
     # for the given position of n.a. and a very small curvature
     chi_y = -1e-9
     eps_a = -chi_y * (h / 2 - x)
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [eps_a, chi_y, 0],
-            integrate='modulus',
-            mesh_size=sec.section_calculator.mesh_size,
-        )
+
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [eps_a, chi_y, 0], 'modulus'
     )
+
     assert stiffness.shape == (3, 3)
 
     assert math.isclose(EA, stiffness[0, 0], rel_tol=1e-3)
@@ -395,13 +374,10 @@ def test_rectangular_rc_section_tangent_stiffness(
     sec = GenericSection(geo)
 
     # compute initial stiffness matrix (gross)
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [eps_a, chi_y, 0],
-            integrate='modulus',
-        )
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [eps_a, chi_y, 0], 'modulus'
     )
+
     assert stiffness.shape == (3, 3)
 
     assert math.isclose(EA, stiffness[0, 0], rel_tol=1e-3)
@@ -443,12 +419,8 @@ def test_rectangular_rc_section_tangent_stiffness(
     # create this effective elastic section
     sec = GenericSection(geo)
 
-    stiffness2, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [0, 0, 0],
-            integrate='modulus',
-        )
+    stiffness2 = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
     )
 
     assert np.allclose(
