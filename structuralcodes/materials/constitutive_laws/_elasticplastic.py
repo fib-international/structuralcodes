@@ -160,6 +160,61 @@ class ElasticPlastic(ConstitutiveLaw):
             coeff.append((a0, a1))
         return strains, coeff
 
+    def __marin_tangent__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration of
+        tangent in a simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        eps_sy_n, eps_sy_p = self.get_ultimate_strain(yielding=True)
+        eps_su_n, eps_su_p = self.get_ultimate_strain()
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # Understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
+            if strain[0] > eps_sy_p and strain[0] <= eps_su_p:
+                # We are in the Hardening part positive
+                strains = None
+                a0 = self._Eh
+                coeff.append((a0,))
+            elif strain[0] < eps_sy_n and strain[0] >= eps_su_n:
+                # We are in the Hardening part negative
+                strains = None
+                a0 = self._Eh
+                coeff.append((a0,))
+            elif abs(strain[0]) <= self._eps_sy:
+                # We are in the elastic part
+                strains = None
+                a0 = self._E
+                coeff.append((a0,))
+            else:
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # Hardening part negative
+            strains.append((eps_su_n, eps_sy_n))
+            a0 = self._Eh
+            coeff.append((a0,))
+            # Elastic part
+            strains.append((eps_sy_n, eps_sy_p))
+            a0 = self._E
+            coeff.append((a0,))
+            # Hardening part positive
+            strains.append((eps_sy_p, eps_su_p))
+            a0 = self._Eh
+            coeff.append((a0,))
+        return strains, coeff
+
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:

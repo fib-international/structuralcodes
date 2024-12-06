@@ -69,6 +69,25 @@ class Elastic(ConstitutiveLaw):
         coeff = [(a0, a1)]
         return strains, coeff
 
+    def __marin_tangent__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration of
+        tangent in a simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = None
+        a0 = self._E
+        coeff = [(a0,)]
+        return strains, coeff
+
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         # There is no real strain limit, so set it to very large values

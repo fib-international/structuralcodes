@@ -189,6 +189,63 @@ class ParabolaRectangle(ConstitutiveLaw):
             coeff.append((self._fc,))
         return strains, coeff
 
+    def __marin_tangent__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration of
+        tangent in a simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        if self._n != 2:
+            # The constitutive law is not writtable as a polynomial,
+            # Call the generic distretizing method
+            return super().__marin_tangent__(strain=strain)
+
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
+            if strain[0] > 0:
+                # We are in tensile branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] > self._eps_0:
+                # We are in the parabolic branch
+                strains = None
+                a0 = (
+                    2
+                    * self._fc
+                    / self._eps_0
+                    * (1 - (strain[0] / self._eps_0))
+                )
+                a1 = -2 * self._fc / self._eps_0**2 * strain[1]
+                coeff.append((a0, a1))
+            else:
+                # We are in the constant branch or
+                # We are in a branch of non-resisting concrete
+                # Too much compression
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # Parabolic part
+            strains.append((self._eps_0, 0))
+            a0 = 2 * self._fc / self._eps_0 * (1 - (strain[0] / self._eps_0))
+            a1 = -2 * self._fc / self._eps_0**2 * strain[1]
+            coeff.append((a0, a1))
+            # Constant part
+            strains.append((self._eps_u, self._eps_0))
+            coeff.append((0.0,))
+        return strains, coeff
+
     def get_ultimate_strain(
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
