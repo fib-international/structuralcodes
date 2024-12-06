@@ -159,7 +159,7 @@ class FiberIntegrator(SectionIntegrator):
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
         **kwargs,
     ) -> t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Prepare general input to the integration of stresses in the section.
@@ -172,10 +172,10 @@ class FiberIntegrator(SectionIntegrator):
                 given in the format (ea, ky, kz) which are i) strain at 0,0,
                 ii) curvature y axis, iii) curvature z axis.
             integrate (str): a string indicating the quantity to integrate over
-                the section. It can be 'stresses' or 'tangent'. When 'stresses'
+                the section. It can be 'stress' or 'modulus'. When 'stress'
                 is selected, the return value will be the stress resultants N,
-                My, Mz, while if 'tangent' is selected, the return will be the
-                section stiffness matrix (default is 'stresses').
+                My, Mz, while if 'modulus' is selected, the return will be the
+                tangent section stiffness matrix (default is 'stress').
 
         Keyword Arguments:
             mesh_size (float): Percentage of area (number from 0 to 1) max for
@@ -206,23 +206,23 @@ class FiberIntegrator(SectionIntegrator):
             mesh_size = kwargs.get('mesh_size', 0.01)
             triangulated_data = self.triangulate(geo, mesh_size)
 
-        x = []
         y = []
+        z = []
         IA = []  # integrand (stress or tangent) * area
         for tr in triangulated_data:
             # All have the same material
             strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
             # compute stresses in all materials
-            if integrate == 'stresses':
+            if integrate == 'stress':
                 integrand = tr[3].get_stress(strains)
-            elif integrate == 'tangent':
+            elif integrate == 'modulus':
                 integrand = tr[3].get_tangent(strains)
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
-            x.append(tr[0])
-            y.append(tr[1])
+            y.append(tr[0])
+            z.append(tr[1])
             IA.append(integrand * tr[2])
-        prepared_input = [(np.hstack(x), np.hstack(y), np.hstack(IA))]
+        prepared_input = [(np.hstack(y), np.hstack(z), np.hstack(IA))]
 
         return prepared_input, triangulated_data
 
@@ -241,46 +241,47 @@ class FiberIntegrator(SectionIntegrator):
             Tuple(float, float, float): The stress resultants N, Mx and My.
         """
         # Integration over all fibers
-        x, y, F = prepared_input[0]
+        y, z, F = prepared_input[0]
 
         N = np.sum(F)
-        Mx = np.sum(F * y)
-        My = np.sum(-F * x)
+        My = np.sum(F * z)
+        Mz = np.sum(-F * y)
 
-        return N, Mx, My
+        return N, My, Mz
 
-    def integrate_tangent(
+    def integrate_modulus(
         self,
         prepared_input: t.List[
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
     ) -> NDArray:
-        """Integrate tangent over the geometry.
+        """Integrate material modulus over the geometry to obtain section
+        stiffness.
 
         Arguments:
             prepared_input (List): The prepared input from .prepare_input().
 
         Returns:
-            NDArray[float]: The tangent stiffness matrix with shap (3,3).
+            NDArray[float]: The stiffness matrix with shape (3,3).
         """
         # Integration over all fibers
-        x, y, TA = prepared_input[0]
+        y, z, MA = prepared_input[0]
 
-        tangent = np.zeros((3, 3))
-        tangent[0, 0] = np.sum(TA)
-        tangent[0, 1] = tangent[1, 0] = np.sum(TA * y)
-        tangent[0, 2] = tangent[2, 0] = np.sum(-TA * x)
-        tangent[1, 1] = np.sum(y * y * TA)
-        tangent[1, 2] = tangent[2, 1] = np.sum(-x * y * TA)
-        tangent[2, 2] = np.sum(x * x * TA)
+        stiffness = np.zeros((3, 3))
+        stiffness[0, 0] = np.sum(MA)
+        stiffness[0, 1] = stiffness[1, 0] = np.sum(MA * z)
+        stiffness[0, 2] = stiffness[2, 0] = np.sum(-MA * y)
+        stiffness[1, 1] = np.sum(z * z * MA)
+        stiffness[1, 2] = stiffness[2, 1] = np.sum(-y * z * MA)
+        stiffness[2, 2] = np.sum(y * y * MA)
 
-        return tangent
+        return stiffness
 
     def integrate_strain_response_on_geometry(
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
         **kwargs,
     ) -> t.Tuple[t.Union[t.Tuple[float, float, float], np.ndarray], t.List]:
         """Integrate stresses the strain response with the fiber algorithm.
@@ -291,25 +292,25 @@ class FiberIntegrator(SectionIntegrator):
                 given in the format (ea, ky, kz) which are i) strain at 0,0,
                 ii) curvature y axis, iii) curvature z axis.
             integrate (str): a string indicating the quantity to integrate over
-                the section. It can be 'stresses' or 'tangent'. When 'stresses'
+                the section. It can be 'stress' or 'modulus'. When 'stress'
                 is selected, the return value will be the stress resultants N,
-                My, Mz, while if 'tangent' is selected, the return will be the
-                section stiffness matrix (default is 'stresses').
+                My, Mz, while if 'modulus' is selected, the return will be the
+                section stiffness matrix (default is 'stress').
             mesh_size: Percentage of area (number from 0 to 1) max for triangle
                 elements.
 
         Returns:
             Tuple(Union(Tuple(float, float, float), np.ndarray), List): The
             first element is either a tuple of floats (for the stress
-            resultants (N, My, Mz) when `integrate='stresses'`, or a numpy
-            array representing the stiffness matrix then `integrate='tangent'`.
+            resultants (N, My, Mz) when `integrate='stress'`, or a numpy
+            array representing the stiffness matrix then `integrate='modulus'`.
             The second element is a list with data from triangulation.
 
         Example:
             result, tri = integrate_strain_response_on_geometry(geo, strain,
             integrate='tanent')
             # `result` will be the stiffness matrix (a 3x3 numpy array) if
-            # `integrate='tangent'`
+            # `integrate='modulus'`
             # `tri` will contain the triangulation data
 
         Raises:
@@ -322,8 +323,8 @@ class FiberIntegrator(SectionIntegrator):
         )
 
         # Return the calculated response
-        if integrate == 'stresses':
+        if integrate == 'stress':
             return *self.integrate_stress(prepared_input), triangulated_data
-        if integrate == 'tangent':
-            return self.integrate_tangent(prepared_input), triangulated_data
+        if integrate == 'modulus':
+            return self.integrate_modulus(prepared_input), triangulated_data
         raise ValueError(f'Unknown integrate type: {integrate}')

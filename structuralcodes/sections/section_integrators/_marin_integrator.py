@@ -67,7 +67,7 @@ class MarinIntegrator(SectionIntegrator):
         self,
         geo: SurfaceGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
         """Get Marin coefficients."""
         if integrate == 'stresses':
@@ -82,7 +82,7 @@ class MarinIntegrator(SectionIntegrator):
                     'Fibre'
                     ''
                 )
-        elif integrate == 'tangent':
+        elif integrate == 'modulus':
             if hasattr(geo.material, '__marin_tangent__'):
                 strains, coeffs = geo.material.__marin_tangent__(strain=strain)
             else:
@@ -105,7 +105,7 @@ class MarinIntegrator(SectionIntegrator):
         geo: CompoundGeometry,
         strain: ArrayLike,
         input: t.List,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
     ):
         """Process Surface geometries filling the input data for each one."""
         # For each SurfaceGeometry on the CompoundGeometry:
@@ -143,7 +143,7 @@ class MarinIntegrator(SectionIntegrator):
         geo: CompoundGeometry,
         strain: ArrayLike,
         input: t.List,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
     ):
         """Process Point geometries filling the input data."""
         # Tentative proposal for managing reinforcement (PointGeometry)
@@ -160,7 +160,7 @@ class MarinIntegrator(SectionIntegrator):
             y.append(yp)
             if integrate == 'stresses':
                 IA.append(pg.material.get_stress(strain_) * A)
-            elif integrate == 'tangent':
+            elif integrate == 'modulus':
                 IA.append(pg.material.get_tangent(strain_) * A)
         input.append((1, np.array(x), np.array(y), np.array(IA)))
 
@@ -168,7 +168,7 @@ class MarinIntegrator(SectionIntegrator):
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
     ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Prepare general input to the stress integration.
 
@@ -180,9 +180,9 @@ class MarinIntegrator(SectionIntegrator):
                 given in the format (ea, ky, kz) which are i) strain at 0,0,
                 ii) curvature y axis, iii) curvature z axis.
             integrate (str): a string indicating the quantity to integrate over
-                the section. It can be 'stresses' or 'tangent'. When 'stresses'
+                the section. It can be 'stresses' or 'modulus'. When 'stresses'
                 is selected, the return value will be the stress resultants N,
-                My, Mz, while if 'tangent' is selected, the return will be the
+                My, Mz, while if 'modulus' is selected, the return will be the
                 section stiffness matrix (default is 'stresses').
 
         Returns:
@@ -230,10 +230,10 @@ class MarinIntegrator(SectionIntegrator):
             prepared_input (List): The prepared input from .prepare_input().
 
         Returns:
-            Tuple(float, float, float): The stress resultants N, Mx and My.
+            Tuple(float, float, float): The stress resultants N, My and Mz.
         """
         # Set the stress resultants to zero
-        N, Mx, My = 0.0, 0.0, 0.0
+        N, My, Mz = 0.0, 0.0, 0.0
 
         # Loop through all parts of the section and add contributions
         for i, y, z, stress_coeff in prepared_input:
@@ -245,37 +245,37 @@ class MarinIntegrator(SectionIntegrator):
                 area_moments_N = np.array(
                     [marin_integration(y, z, 0, k) for k in range(n)]
                 )
-                area_moments_Mx = np.array(
+                area_moments_My = np.array(
                     [marin_integration(y, z, 0, k + 1) for k in range(n)]
                 )
-                area_moments_My = np.array(
+                area_moments_Mz = np.array(
                     [marin_integration(y, z, 1, k) for k in range(n)]
                 )
 
                 # Calculate contributions to stress resultants
                 N += sum(stress_coeff * area_moments_N)
-                Mx += sum(stress_coeff * area_moments_Mx)
-                My -= sum(stress_coeff * area_moments_My)
+                My += sum(stress_coeff * area_moments_My)
+                Mz -= sum(stress_coeff * area_moments_Mz)
             elif i == 1:
                 # Reinforcement
                 N += sum(stress_coeff)
-                Mx += sum(stress_coeff * z)
-                My -= sum(stress_coeff * y)
+                My += sum(stress_coeff * z)
+                Mz -= sum(stress_coeff * y)
 
         # Rotate back to section CRS
         T = np.array([[cos(-angle), -sin(-angle)], [sin(-angle), cos(-angle)]])
-        M = T @ np.array([[Mx], [My]])
+        M = T @ np.array([[My], [Mz]])
 
         return N, M[0, 0], M[1, 0]
 
-    def integrate_tangent(
+    def integrate_modulus(
         self,
         angle: float,
         prepared_input: t.List[
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
     ) -> NDArray[np.float64]:
-        """Integrate tangent modulus over the geometry.
+        """Integrate material modulus over the geometry.
 
         Arguments:
             prepared_input (List): The prepared input from .prepare_input().
@@ -298,10 +298,10 @@ class MarinIntegrator(SectionIntegrator):
         ]
 
         # Loop through all parts of the section and add contributions
-        for id, y, z, tangent_coeff in prepared_input:
+        for id, y, z, modulus_coeff in prepared_input:
             if id == 0:
                 # Find integration order from shape of stress coeff array
-                n = tangent_coeff.shape[0]
+                n = modulus_coeff.shape[0]
 
                 # Calculate needed area moments
                 for (i, j), m, offset, sign in indices:
@@ -311,15 +311,15 @@ class MarinIntegrator(SectionIntegrator):
                             for k in range(n)
                         ]
                     )
-                    stiffness[i, j] += sign * sum(tangent_coeff * area_moments)
+                    stiffness[i, j] += sign * sum(modulus_coeff * area_moments)
             elif id == 1:
                 # Reinforcement
-                stiffness[0, 0] += sum(tangent_coeff)
-                stiffness[0, 1] += sum(tangent_coeff * z)
-                stiffness[0, 2] -= sum(tangent_coeff * y)
-                stiffness[1, 1] += sum(tangent_coeff * z * z)
-                stiffness[1, 2] -= sum(tangent_coeff * y * z)
-                stiffness[2, 2] += sum(tangent_coeff * y * y)
+                stiffness[0, 0] += sum(modulus_coeff)
+                stiffness[0, 1] += sum(modulus_coeff * z)
+                stiffness[0, 2] -= sum(modulus_coeff * y)
+                stiffness[1, 1] += sum(modulus_coeff * z * z)
+                stiffness[1, 2] -= sum(modulus_coeff * y * z)
+                stiffness[2, 2] += sum(modulus_coeff * y * y)
 
         # Apply for simmetry
         stiffness[1, 0] = stiffness[0, 1]
@@ -344,7 +344,7 @@ class MarinIntegrator(SectionIntegrator):
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'tangent'] = 'stresses',
+        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
         **kwargs,
     ):
         """Integrate the strees from strain response with the Marin algorithm.
@@ -355,21 +355,21 @@ class MarinIntegrator(SectionIntegrator):
                 given in the format (ea, ky, kz) which are i) strain at 0,0,
                 ii) curvature y axis, iii) curvature z axis.
             integrate (str): a string indicating the quantity to integrate over
-                the section. It can be 'stresses' or 'tangent'. When 'stresses'
+                the section. It can be 'stresses' or 'modulus'. When 'stresses'
                 is selected, the return value will be the stress resultants N,
-                My, Mz, while if 'tangent' is selected, the return will be the
+                My, Mz, while if 'modulus' is selected, the return will be the
 
         Returns:
             Tuple(Union(Tuple(float, float, float), np.ndarray), None): The
             first element is either a tuple of floats (for the stress
             resultants (N, My, Mz) when `integrate='stresses'`, or a numpy
-            array representing the stiffness matrix then `integrate='tangent'`.
+            array representing the stiffness matrix then `integrate='modulus'`.
 
         Example:
             result, _ = integrate_strain_response_on_geometry(geo, strain,
             integrate='tanent')
             # `result` will be the stiffness matrix (a 3x3 numpy array) if
-            # `integrate='tangent'`
+            # `integrate='modulus'`
 
         Raises:
             ValueError: If a unkown value is passed to the `integrate`
@@ -382,6 +382,6 @@ class MarinIntegrator(SectionIntegrator):
         # Return the calculated response
         if integrate == 'stresses':
             return *self.integrate_stress(angle, prepared_input), None
-        if integrate == 'tangent':
-            return self.integrate_tangent(angle, prepared_input), None
+        if integrate == 'modulus':
+            return self.integrate_modulus(angle, prepared_input), None
         raise ValueError(f'Unknown integrate type: {integrate}')

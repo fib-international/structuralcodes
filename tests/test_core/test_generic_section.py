@@ -163,7 +163,7 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
         sec.section_calculator.integrator.integrate_strain_response_on_geometry(
             sec.geometry,
             [0, 0, 0],
-            integrate='tangent',
+            integrate='modulus',
             mesh_size=sec.section_calculator.mesh_size,
         )
     )
@@ -181,7 +181,7 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
         sec.section_calculator.integrator.integrate_strain_response_on_geometry(
             sec.geometry,
             [0, 0, 0],
-            integrate='tangent',
+            integrate='modulus',
         )
     )
     assert stiffness.shape == (3, 3)
@@ -235,7 +235,7 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E):
         sec.section_calculator.integrator.integrate_strain_response_on_geometry(
             sec.geometry,
             [0, 0, 0],
-            integrate='tangent',
+            integrate='modulus',
             mesh_size=sec.section_calculator.mesh_size,
         )
     )
@@ -253,7 +253,7 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E):
         sec.section_calculator.integrator.integrate_strain_response_on_geometry(
             sec.geometry,
             [0, 0, 0],
-            integrate='tangent',
+            integrate='modulus',
         )
     )
     assert stiffness.shape == (3, 3)
