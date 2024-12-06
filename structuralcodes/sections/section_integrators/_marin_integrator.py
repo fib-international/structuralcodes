@@ -67,10 +67,10 @@ class MarinIntegrator(SectionIntegrator):
         self,
         geo: SurfaceGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
         """Get Marin coefficients."""
-        if integrate == 'stresses':
+        if integrate == 'stress':
             if hasattr(geo.material, '__marin__'):
                 strains, coeffs = geo.material.__marin__(strain=strain)
             else:
@@ -105,7 +105,7 @@ class MarinIntegrator(SectionIntegrator):
         geo: CompoundGeometry,
         strain: ArrayLike,
         input: t.List,
-        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
     ):
         """Process Surface geometries filling the input data for each one."""
         # For each SurfaceGeometry on the CompoundGeometry:
@@ -143,7 +143,7 @@ class MarinIntegrator(SectionIntegrator):
         geo: CompoundGeometry,
         strain: ArrayLike,
         input: t.List,
-        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
     ):
         """Process Point geometries filling the input data."""
         # Tentative proposal for managing reinforcement (PointGeometry)
@@ -158,7 +158,7 @@ class MarinIntegrator(SectionIntegrator):
             strain_ = strain[0] + strain[1] * yp
             x.append(xp)
             y.append(yp)
-            if integrate == 'stresses':
+            if integrate == 'stress':
                 IA.append(pg.material.get_stress(strain_) * A)
             elif integrate == 'modulus':
                 IA.append(pg.material.get_tangent(strain_) * A)
@@ -168,7 +168,7 @@ class MarinIntegrator(SectionIntegrator):
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
     ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Prepare general input to the stress integration.
 
@@ -180,10 +180,10 @@ class MarinIntegrator(SectionIntegrator):
                 given in the format (ea, ky, kz) which are i) strain at 0,0,
                 ii) curvature y axis, iii) curvature z axis.
             integrate (str): a string indicating the quantity to integrate over
-                the section. It can be 'stresses' or 'modulus'. When 'stresses'
+                the section. It can be 'stress' or 'modulus'. When 'stress'
                 is selected, the return value will be the stress resultants N,
                 My, Mz, while if 'modulus' is selected, the return will be the
-                section stiffness matrix (default is 'stresses').
+                section stiffness matrix (default is 'stress').
 
         Returns:
             Tuple(float, Tuple(ndarray, ndarray, ndarray)): The prepared input
@@ -344,7 +344,7 @@ class MarinIntegrator(SectionIntegrator):
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
-        integrate: t.Literal['stresses', 'modulus'] = 'stresses',
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
         **kwargs,
     ):
         """Integrate the strees from strain response with the Marin algorithm.
@@ -355,14 +355,14 @@ class MarinIntegrator(SectionIntegrator):
                 given in the format (ea, ky, kz) which are i) strain at 0,0,
                 ii) curvature y axis, iii) curvature z axis.
             integrate (str): a string indicating the quantity to integrate over
-                the section. It can be 'stresses' or 'modulus'. When 'stresses'
+                the section. It can be 'stress' or 'modulus'. When 'stress'
                 is selected, the return value will be the stress resultants N,
                 My, Mz, while if 'modulus' is selected, the return will be the
 
         Returns:
             Tuple(Union(Tuple(float, float, float), np.ndarray), None): The
             first element is either a tuple of floats (for the stress
-            resultants (N, My, Mz) when `integrate='stresses'`, or a numpy
+            resultants (N, My, Mz) when `integrate='stress'`, or a numpy
             array representing the stiffness matrix then `integrate='modulus'`.
 
         Example:
@@ -380,7 +380,7 @@ class MarinIntegrator(SectionIntegrator):
         angle, prepared_input = self.prepare_input(geo, strain, integrate)
 
         # Return the calculated response
-        if integrate == 'stresses':
+        if integrate == 'stress':
             return *self.integrate_stress(angle, prepared_input), None
         if integrate == 'modulus':
             return self.integrate_modulus(angle, prepared_input), None

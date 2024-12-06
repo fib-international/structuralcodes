@@ -308,10 +308,9 @@ class FiberIntegrator(SectionIntegrator):
 
         Example:
             result, tri = integrate_strain_response_on_geometry(geo, strain,
-            integrate='tanent')
-            # `result` will be the stiffness matrix (a 3x3 numpy array) if
-            # `integrate='modulus'`
-            # `tri` will contain the triangulation data
+            integrate='tangent')
+            `result` will be the stiffness matrix (a 3x3 numpy array) if
+
 
         Raises:
             ValueError: If a unkown value is passed to the `integrate`
