@@ -3,10 +3,10 @@ Provides functions to determine parameters of the bond stress-slip relations as 
 ModelCode 2010.
 
 The BondStressSlip class includes methods to calculate:
-- Maximum bond stress (tau_bmax) in case of pull-out failure.
-- Bond stress at reinforcement yield (tau_yield).
-- Bond stress at splitting failure (tau_bu_split).
-- Slip corresponding to bond stress at splitting failure (s_tau_bu_split).
+- Maximum bond stress in case of pull-out failure (tau_bmax).
+- Maximum bond stress in case of splitting failure (tau_bu_split).
+- Slip corresponding to tau_bu_split (s_tau_bu_split).
+- Maximum bond stress due to reinforcement yield (tau_yield).
 """
 
 import warnings
@@ -54,18 +54,19 @@ class BondStressSlip:
             K_tr: float,
     ) -> float:
         """
-        Eq.(6.1-5) of MC2010.
-        Raises warnings if parameter input values are invalid for MC2010 Eq.(6.1-19), and consequently for Eq.(6.1-5).
+        Calculate maximum bond stress in case of splitting failure, Eq.(6.1-5) of MC2010.
+        Raises warnings for invalid parameter input values according to MC2010 Eq.(6.1-19), from which Eq.(6.1-5) is
+        derived.
 
         Args:
             phi: Nominal bar diameter in mm;
             c_min: Parameter according to MC2010 Figure 6.1-2;
-            c_max: Parameter according to MC2010Figure 6.1-2;
-            k_m: Parameter according to MC2010Figure 6.1-3;
+            c_max: Parameter according to MC2010 Figure 6.1-2;
+            k_m: Parameter according to MC2010 Figure 6.1-3;
             K_tr: To be calculated with MC2010 Eq.(6.1-6);
 
         Returns:
-            tau_bu,split in MPa.
+            tau_bu_split in MPa.
         """
         if self._tau_bu_split is None:  # Calculate only if not already calculated
             # Raise warnings
@@ -102,13 +103,13 @@ class BondStressSlip:
             tau_bu_split: float,
     ) -> float:
         """
-        Calculate the slip, s, corresponding to tau_bu,split according to MC2010 Eq.(6.1-1).
+        Calculate the slip corresponding to tau_bu_split, MC2010 Eq.(6.1-1).
 
         Args:
             tau_bu_split: Concrete bond stress at splitting failure.
 
         Returns:
-            The slip corresponding to tau_bu,split.
+            The slip corresponding to tau_bu_split.
         """
         if self._s_tau_bu_split is None:  # Calculate only if not already calculated
             if self.bond == 'Good':
@@ -128,10 +129,9 @@ class BondStressSlip:
             phi: float = None,
     ) -> float:
         """
-        Bond stress at reinforcement yield.
-
-        Both l_b and phi must be provided together or both must have no input. In the latter case a uniform bond stress
-        over 5 times the bar diameter is assumed, according to MC2010 Eq.(6.1-5)
+        Calculate the maximum bond stress due to reinforcement yield, based on Eq.(6.1-19).
+        Both l_b and phi must be provided together or both must have no input. In the latter case, a uniform bond stress
+        over 5 times the bar diameter is assumed, following MC2010 Eq.(6.1-5)
 
         Args:
             f_ym: Reinforcement mean yield stress.
