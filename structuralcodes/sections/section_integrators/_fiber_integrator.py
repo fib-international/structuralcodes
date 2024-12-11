@@ -162,9 +162,11 @@ class FiberIntegrator(SectionIntegrator):
         integrate: t.Literal['stress', 'modulus'] = 'stress',
         **kwargs,
     ) -> t.Tuple[t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        """Prepare general input to the integration of stresses in the section.
+        """Prepare general input to the integration of stress or material
+        modulus in the section.
 
-        Calculate the forces based on strains in a set of points.
+        Calculate the stress resultants or tangent section stiffness based on
+        strains in a set of points.
 
         Arguments:
             geo (CompoundGeometry): The geometry of the section.
@@ -284,7 +286,8 @@ class FiberIntegrator(SectionIntegrator):
         integrate: t.Literal['stress', 'modulus'] = 'stress',
         **kwargs,
     ) -> t.Tuple[t.Union[t.Tuple[float, float, float], np.ndarray], t.List]:
-        """Integrate stresses the strain response with the fiber algorithm.
+        """Integrate stress or material modulus in the section with the fiber
+        algorithm.
 
         Arguments:
             geo (CompoundGeometry): The geometry of the section.

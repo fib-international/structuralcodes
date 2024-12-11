@@ -610,7 +610,8 @@ class GenericSectionCalculator(SectionCalculator):
         strain: ArrayLike,
         integrate: t.Literal['stress', 'modulus'] = 'stress',
     ) -> t.Union[t.Tuple[float, float, float], NDArray]:
-        """Integrate a strain profile returning internal forces.
+        """Integrate a strain profile returning stress resultants or tangent
+        section stiffness matrix.
 
         Arguments:
             strain (ArrayLike): Represents the deformation plane. The strain
@@ -646,6 +647,16 @@ class GenericSectionCalculator(SectionCalculator):
             mesh_size=self.mesh_size,
         )
 
+        # Save triangulation data for future use
+        if self.triangulated_data is None and result[-1] is not None:
+            self.triangulated_data = result[-1]
+
+        # manage the returning from integrate_strain_response_on_geometry:
+        # this function returns one of the two:
+        # a. float, float, float, tri (i.e. N, My, Mz, tri)
+        # b. (NDArray, tri) (i.e. section stiff matrix, tri)
+        # We need to return only forces or stifness
+        # (without triangultion data)
         if len(result) == 2:
             return result[0]
         return result[:-1]

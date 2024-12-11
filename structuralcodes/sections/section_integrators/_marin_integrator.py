@@ -170,9 +170,11 @@ class MarinIntegrator(SectionIntegrator):
         strain: ArrayLike,
         integrate: t.Literal['stress', 'modulus'] = 'stress',
     ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        """Prepare general input to the stress integration.
+        """Prepare general input to the integration of stress or material
+        modulus in the section.
 
-        Calculate the stresses based on strains in a set of points.
+        Calculate the stress resultants or tangent section stiffness based on
+        strains in a set of points.
 
         Keyword Arguments:
             geo (CompoundGeometry): The geometry of the section.
@@ -347,7 +349,11 @@ class MarinIntegrator(SectionIntegrator):
         integrate: t.Literal['stress', 'modulus'] = 'stress',
         **kwargs,
     ):
-        """Integrate the strees from strain response with the Marin algorithm.
+        """Integrate strees or material modulus in the section with the marin
+        algorithm.
+
+        Calculate the stress resultants or tangent section stiffness based on
+        strains in a set of points.
 
         Arguments:
             geo (CompoundGeometry): The geometry of the section.

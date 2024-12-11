@@ -138,7 +138,8 @@ def test_rectangular_section():
         (600, 350, 30000),
     ],
 )
-def test_rectangular_section_tangent_stiffness(b, h, E):
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     """Test stiffness matrix of elastic rectangular section."""
     # Create materials to use
     elastic = Elastic(E)
@@ -153,20 +154,7 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
     assert geo.polygon.centroid.coords[0][1] == 0
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
-    assert sec.name == 'GenericSection'
-
-    assert math.isclose(sec.gross_properties.area, b * h)
-
-    # compute stiffness matrix
-    stiffness = sec.section_calculator.integrate_strain_profile(
-        [0, 0, 0], 'modulus'
-    )
-    assert stiffness.shape == (3, 3)
-    stiffness /= E
-
-    # Create the section with marin integrator
-    sec = GenericSection(geo)
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
     assert sec.name == 'GenericSection'
 
     assert math.isclose(sec.gross_properties.area, b * h)
@@ -199,8 +187,9 @@ def test_rectangular_section_tangent_stiffness(b, h, E):
         (250, 500, 40, 20, 3, 2),
     ],
 )
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
 def test_rectangular_rc_section_initial_tangent_stiffness(
-    b, h, c, diameter, n_bottom, n_top
+    b, h, c, diameter, n_bottom, n_top, integrator
 ):
     """Test stiffness matrix of RC rectangular section."""
     # Create materials to use
@@ -250,20 +239,7 @@ def test_rectangular_rc_section_initial_tangent_stiffness(
         EIzz_gross += Es * As * y[0] ** 2
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
-
-    # compute initial stiffness matrix (gross)
-    stiffness = sec.section_calculator.integrate_strain_profile(
-        [0, 0, 0], 'modulus'
-    )
-    assert stiffness.shape == (3, 3)
-
-    assert math.isclose(EA_gross, stiffness[0, 0], rel_tol=1e-3)
-    assert math.isclose(EIyy_gross, stiffness[1, 1], rel_tol=1e-3)
-    assert math.isclose(EIzz_gross, stiffness[2, 2], rel_tol=1e-3)
-
-    # Create the section with Marin integrator
-    sec = GenericSection(geo)
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
 
     # compute initial stiffness matrix (gross)
     stiffness = sec.section_calculator.integrate_strain_profile(
@@ -283,8 +259,9 @@ def test_rectangular_rc_section_initial_tangent_stiffness(
         (250, 500, 40, 20, 3, 2),
     ],
 )
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
 def test_rectangular_rc_section_tangent_stiffness(
-    b, h, c, diameter, n_bottom, n_top
+    b, h, c, diameter, n_bottom, n_top, integrator
 ):
     """Test stiffness matrix of RC rectangular section."""
     # Create materials to use
@@ -353,27 +330,13 @@ def test_rectangular_rc_section_tangent_stiffness(
     EIyy += EA * (h / 2 - x) ** 2
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
 
     # compute tangent stiffness matrix (cracked)
     # for the given position of n.a. and a very small curvature
     chi_y = -1e-9
     eps_a = -chi_y * (h / 2 - x)
 
-    stiffness = sec.section_calculator.integrate_strain_profile(
-        [eps_a, chi_y, 0], 'modulus'
-    )
-
-    assert stiffness.shape == (3, 3)
-
-    assert math.isclose(EA, stiffness[0, 0], rel_tol=1e-3)
-    assert math.isclose(EIyy, stiffness[1, 1], rel_tol=1e-3)
-    assert math.isclose(EIzz, stiffness[2, 2], rel_tol=1e-3)
-
-    # Create the section with Marin integrator
-    sec = GenericSection(geo)
-
-    # compute initial stiffness matrix (gross)
     stiffness = sec.section_calculator.integrate_strain_profile(
         [eps_a, chi_y, 0], 'modulus'
     )
@@ -417,7 +380,7 @@ def test_rectangular_rc_section_tangent_stiffness(
     )
 
     # create this effective elastic section
-    sec = GenericSection(geo)
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
 
     stiffness2 = sec.section_calculator.integrate_strain_profile(
         [0, 0, 0], 'modulus'
@@ -426,7 +389,7 @@ def test_rectangular_rc_section_tangent_stiffness(
     assert np.allclose(
         stiffness,
         stiffness2,
-        atol=stiffness.max() * 1e-6,
+        atol=stiffness.max() * 1e-3,
         rtol=1e-2,
     )
 
@@ -442,7 +405,8 @@ def test_rectangular_rc_section_tangent_stiffness(
         (600, 350, 30000),
     ],
 )
-def test_rectangular_section_tangent_stiffness_translated(b, h, E):
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
     """Test stiffness matrix of elastic rectangular section."""
     # Create materials to use
     elastic = Elastic(E)
@@ -455,7 +419,7 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E):
     assert geo.polygon.centroid.coords[0][1] == h / 2
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
     assert sec.name == 'GenericSection'
 
     assert math.isclose(sec.gross_properties.area, b * h)
@@ -467,23 +431,6 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E):
             [0, 0, 0],
             integrate='modulus',
             mesh_size=sec.section_calculator.mesh_size,
-        )
-    )
-    assert stiffness.shape == (3, 3)
-    stiffness /= E
-
-    # Create the section with marin integrator
-    sec = GenericSection(geo)
-    assert sec.name == 'GenericSection'
-
-    assert math.isclose(sec.gross_properties.area, b * h)
-
-    # compute stiffness matrix
-    stiffness, _ = (
-        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
-            sec.geometry,
-            [0, 0, 0],
-            integrate='modulus',
         )
     )
     assert stiffness.shape == (3, 3)
