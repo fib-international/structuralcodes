@@ -1,4 +1,4 @@
-"""Tests for the _concrete_material_properties module."""
+"""Tests for the constitutive_laws module."""
 
 import math
 
