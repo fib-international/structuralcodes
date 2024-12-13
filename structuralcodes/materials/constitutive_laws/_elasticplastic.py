@@ -141,7 +141,7 @@ class ElasticPlastic(ConstitutiveLaw):
                 coeff.append((a0, a1))
             else:
                 strains = None
-                coeff.append((0.0, 0.0))
+                coeff.append((0.0,))
         else:
             # Hardening part negative
             strains.append((eps_su_n, eps_sy_n))
