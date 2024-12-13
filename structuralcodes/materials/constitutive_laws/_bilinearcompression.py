@@ -103,7 +103,7 @@ class BilinearCompression(ConstitutiveLaw):
                 # We are in tensile branch
                 strains = None
                 coeff.append((0.0,))
-            elif strain[0] > self._eps_0:
+            elif strain[0] > self._eps_c:
                 # We are in the linear branch
                 strains = None
                 a0 = self._E * strain[0]
@@ -153,7 +153,7 @@ class BilinearCompression(ConstitutiveLaw):
                 # We are in tensile branch
                 strains = None
                 coeff.append((0.0,))
-            elif strain[0] > self._eps_0:
+            elif strain[0] > self._eps_c:
                 # We are in the linear branch
                 strains = None
                 a0 = self._E
