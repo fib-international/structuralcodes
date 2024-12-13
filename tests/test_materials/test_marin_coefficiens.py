@@ -8,6 +8,7 @@ import pytest
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
+    ElasticPlastic,
 )
 
 eps0 = (
@@ -221,6 +222,134 @@ def test_marin_bilinearcompression_axial_bending_strain(
         [
             (fc / eps_c,),
             (0.0,),
+        ],
+    )
+
+    strain, coeffs = law.__marin_tangent__([eps_0, kappa_y])
+
+    assert len(strain) == len(expected[0])
+    assert len(expected[1]) == len(coeffs)
+
+    for coeff, expect in zip(coeffs, expected[1]):
+        assert len(coeff) == len(expect)
+        for i in range(len(coeff)):
+            assert math.isclose(coeff[i], expect[i])
+
+
+@pytest.mark.parametrize('eps_0', eps0)
+@pytest.mark.parametrize(
+    'E, fy, Eh, eps_su',
+    [
+        (200000, 450, 0.0, None),
+        (200000, 500, 2000.0, None),
+        (200000, 500, 0.0, 0.0675),
+        (200000000, 500000, 0.0, 0.0675),
+        (200000000, 500000, 0.0, None),
+    ],
+)
+def test_marin_elasticplastic_uniform_strain(eps_0, E, fy, Eh, eps_su):
+    """Test the marin coefficients for a strain plane of pure tension or
+    compression for ElasticPlastic constitutive law.
+    """
+    law = ElasticPlastic(E, fy, Eh, eps_su)
+
+    eps_y = law._eps_sy
+    _, eps_su_p = law.get_ultimate_strain()
+
+    delta_sigma = fy * (1 - Eh / E)
+
+    # Check marin coefficients for stress integration
+    sign = 1 if eps_0 >= 0 else -1
+    if abs(eps_0) <= eps_y:
+        expected = (None, (E * eps_0, 0.0))
+    elif abs(eps_0) <= eps_su_p:
+        expected = (None, (Eh * eps_0 + sign * delta_sigma, 0.0))
+    else:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+    # Check marin coefficients for modulus integration
+    if abs(eps_0) <= eps_y:
+        expected = (None, (E,))
+    elif abs(eps_0) <= eps_su_p:
+        expected = (None, (Eh,))
+    else:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin_tangent__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+
+@pytest.mark.parametrize('eps_0', eps0)
+@pytest.mark.parametrize(
+    'eps_min', [(-0.01), (-0.005), (-0.004), (-0.003), (-0.002), (-0.001)]
+)
+@pytest.mark.parametrize(
+    'E, fy, Eh, eps_su, h',
+    [
+        (200000, 450, 0.0, None, 400),
+        (200000, 500, 2000.0, None, 400),
+        (200000, 500, 0.0, 0.0675, 300),
+        (200000000, 500000, 0.0, 0.0675, 0.4),
+        (200000000, 500000, 0.0, None, 0.3),
+    ],
+)
+def test_marin_elasticplastic_axial_bending_strain(
+    eps_0, eps_min, E, fy, Eh, eps_su, h
+):
+    """Test the marin coefficients for a strain plane of uniaxial bending
+    with tension / compression for ElasticPlastic constitutive law.
+    """
+    law = ElasticPlastic(E, fy, Eh, eps_su)
+
+    eps_y = law._eps_sy
+    eps_su_n, eps_su_p = law.get_ultimate_strain()
+
+    delta_sigma = fy * (1 - Eh / E)
+
+    # Check marin coefficients for stress integration
+    kappa_y = (eps_min - eps_0) * 2 / h
+
+    # We are not checking here case with uniform compression / tension, skip
+    if kappa_y == 0:
+        return
+
+    expected = (
+        [(eps_su_n, -eps_y), (-eps_y, eps_y), (eps_y, eps_su_p)],
+        [
+            (Eh * eps_0 - delta_sigma, Eh * kappa_y),
+            (E * eps_0, E * kappa_y),
+            (Eh * eps_0 + delta_sigma, Eh * kappa_y),
+        ],
+    )
+
+    strain, coeffs = law.__marin__([eps_0, kappa_y])
+
+    assert len(strain) == len(expected[0])
+    assert len(expected[1]) == len(coeffs)
+
+    for coeff, expect in zip(coeffs, expected[1]):
+        assert len(coeff) == len(expect)
+        for i in range(len(coeff)):
+            assert math.isclose(coeff[i], expect[i])
+
+    # Check marin coefficients for modulus integration
+    expected = (
+        [(eps_su_n, -eps_y), (-eps_y, eps_y), (eps_y, eps_su_p)],
+        [
+            (Eh,),
+            (E,),
+            (Eh,),
         ],
     )
 
