@@ -7,7 +7,7 @@ import typing as t
 import warnings
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -20,7 +20,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.constitutive_laws import Elastic
 
-from .section_integrators import integrator_factory
+from .section_integrators import SectionIntegrator, integrator_factory
 
 
 class GenericSection(Section):
@@ -93,6 +93,8 @@ class GenericSection(Section):
 
 class GenericSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
+
+    integrator: SectionIntegrator
 
     def __init__(
         self,
@@ -415,7 +417,7 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
         # save the triangulation data
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         # Return the strain distribution
         return [eps_0, chi_c, 0]
@@ -496,7 +498,7 @@ class GenericSectionCalculator(SectionCalculator):
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom, [eps_0, curv, 0], tri=self.triangulated_data
         )
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         dn_a = n_int - n
         # It may occur that dn_a is already almost zero (in eqiulibrium)
@@ -557,7 +559,7 @@ class GenericSectionCalculator(SectionCalculator):
             self.section.geometry, [eps_p, 0, 0], tri=tri
         )
 
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         return n_min, n_max
 
@@ -604,25 +606,60 @@ class GenericSectionCalculator(SectionCalculator):
         self.triangulated_data = rotated_triangulated_data
 
     def integrate_strain_profile(
-        self, strain: ArrayLike
-    ) -> t.Tuple[float, float, float]:
-        """Integrate a strain profile returning internal forces.
+        self,
+        strain: ArrayLike,
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
+    ) -> t.Union[t.Tuple[float, float, float], NDArray]:
+        """Integrate a strain profile returning stress resultants or tangent
+        section stiffness matrix.
 
         Arguments:
             strain (ArrayLike): Represents the deformation plane. The strain
                 should have three entries representing respectively: axial
                 strain (At 0,0 coordinates), curv_y, curv_z.
+            integrate (str): a string indicating the quantity to integrate over
+                the section. It can be 'stress' or 'modulus'. When 'stress'
+                is selected, the return value will be the stress resultants N,
+                My, Mz, while if 'modulus' is selected, the return will be the
+                tangent section stiffness matrix (default is 'stress').
 
         Returns:
-            Tuple(float, float, float): N, My and Mz.
+            Union(Tuple(float, float, float),NDArray): N, My and Mz when
+            `integrate='stress'`, or a numpy array representing the stiffness
+            matrix then `integrate='modulus'`.
+
+        Examples:
+            result = self.integrate_strain_profile(strain,integrate='tangent')
+            # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
+
+            result = self.integrate_strain_profile(strain)
+            # `result` will be a tuple containing section forces (N, My, Mz)
+
+        Raises:
+            ValueError: If a unkown value is passed to the `integrate`
+            parameter.
         """
-        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+        result = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
             strain=strain,
+            integrate=integrate,
             tri=self.triangulated_data,
             mesh_size=self.mesh_size,
         )
-        return N, My, Mz
+
+        # Save triangulation data for future use
+        if self.triangulated_data is None and result[-1] is not None:
+            self.triangulated_data = result[-1]
+
+        # manage the returning from integrate_strain_response_on_geometry:
+        # this function returns one of the two:
+        # a. float, float, float, tri (i.e. N, My, Mz, tri)
+        # b. (NDArray, tri) (i.e. section stiff matrix, tri)
+        # We need to return only forces or stifness
+        # (without triangultion data)
+        if len(result) == 2:
+            return result[0]
+        return result[:-1]
 
     def calculate_bending_strength(
         self, theta=0, n=0
@@ -971,7 +1008,7 @@ class GenericSectionCalculator(SectionCalculator):
                     mesh_size=self.mesh_size,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
@@ -1241,7 +1278,7 @@ class GenericSectionCalculator(SectionCalculator):
                     tri=self.triangulated_data,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
