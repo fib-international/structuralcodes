@@ -5,7 +5,10 @@ import math
 import numpy as np
 import pytest
 
-from structuralcodes.materials.constitutive_laws import Elastic, ElasticPlastic
+from structuralcodes.materials.constitutive_laws import (
+    BilinearCompression,
+    Elastic,
+)
 
 eps0 = (
     [(x) for x in np.linspace(0, 0.01, 5)]
@@ -117,55 +120,52 @@ def test_marin_elastic_axial_bending_strain(eps_0, eps_min, E, h):
 
 @pytest.mark.parametrize('eps_0', eps0)
 @pytest.mark.parametrize(
-    'E, fy, Eh, eps_su',
+    'fc, eps_c, eps_cu',
     [
-        (200000, 450, 0.0, None),
-        (200000, 500, 2000.0, None),
-        (200000, 500, 0.0, 0.0675),
-        (200000000, 500000, 0.0, 0.0675),
-        (200000000, 500000, 0.0, None),
+        (-30, -0.002, -0.0035),
+        (-20, -0.0015, -0.004),
+        (-35, -0.002, -0.003),
+        (-20000, -0.002, -0.0025),
+        (-30000, -0.0025, -0.0035),
     ],
 )
-def test_marin_elasticplastic_uniform_strain(eps_0, E, fy, Eh, eps_su):
+def test_marin_bilinearcompression_uniform_strain(eps_0, fc, eps_c, eps_cu):
     """Test the marin coefficients for a strain plane of pure tension or
-    compression for ElasticPlastic constitutive law.
+    compression for BilinearCompression constitutive law.
     """
-    law = ElasticPlastic(E, fy, Eh, eps_su)
-
-    eps_y = law._eps_sy
-    _, eps_su_p = law.get_ultimate_strain()
-
-    delta_sigma = fy * (1 - Eh / E)
+    law = BilinearCompression(fc, eps_c, eps_cu)
 
     # Check marin coefficients for stress integration
-    sign = 1 if eps_0 >= 0 else -1
-    if abs(eps_0) <= eps_y:
-        expected = (None, (E * eps_0, 0.0))
-    elif abs(eps_0) <= eps_su_p:
-        expected = (None, (Eh * eps_0 + sign * delta_sigma, 0.0))
+    if eps_0 > 0:
+        expected = (None, (0.0,))
+    elif eps_0 > eps_c:
+        expected = (None, (fc / eps_c * eps_0, 0.0))
+    elif eps_0 >= eps_cu:
+        expected = (None, (fc,))
     else:
-        expected = (None, (0.0, 0.0))
+        expected = (None, (0.0,))
 
     strain, coeffs = law.__marin__([eps_0, 0])
 
     assert strain == expected[0]
-    assert len(coeffs[0]) == 2
-    assert math.isclose(coeffs[0][0], expected[1][0])
-    assert math.isclose(coeffs[0][1], expected[1][1])
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
 
     # Check marin coefficients for modulus integration
-    if abs(eps_0) <= eps_y:
-        expected = (None, (E,))
-    elif abs(eps_0) <= eps_su_p:
-        expected = (None, (Eh,))
+    if eps_0 > 0:
+        expected = (None, (0.0,))
+    elif eps_0 > eps_c:
+        expected = (None, (fc / eps_c,))
     else:
         expected = (None, (0.0,))
 
     strain, coeffs = law.__marin_tangent__([eps_0, 0])
 
     assert strain == expected[0]
-    assert len(coeffs[0]) == 1
-    assert math.isclose(coeffs[0][0], expected[1][0])
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
 
 
 @pytest.mark.parametrize('eps_0', eps0)
@@ -173,27 +173,22 @@ def test_marin_elasticplastic_uniform_strain(eps_0, E, fy, Eh, eps_su):
     'eps_min', [(-0.01), (-0.005), (-0.004), (-0.003), (-0.002), (-0.001)]
 )
 @pytest.mark.parametrize(
-    'E, fy, Eh, eps_su, h',
+    'fc, eps_c, eps_cu, h',
     [
-        (200000, 450, 0.0, None, 400),
-        (200000, 500, 2000.0, None, 400),
-        (200000, 500, 0.0, 0.0675, 300),
-        (200000000, 500000, 0.0, 0.0675, 0.4),
-        (200000000, 500000, 0.0, None, 0.3),
+        (-30, -0.002, -0.0035, 400),
+        (-20, -0.0015, -0.004, 400),
+        (-35, -0.002, -0.003, 350),
+        (-20000, -0.002, -0.0025, 0.4),
+        (-30000, -0.0025, -0.0035, 0.3),
     ],
 )
-def test_marin_elasticplastic_axial_bending_strain(
-    eps_0, eps_min, E, fy, Eh, eps_su, h
+def test_marin_bilinearcompression_axial_bending_strain(
+    eps_0, eps_min, fc, eps_c, eps_cu, h
 ):
     """Test the marin coefficients for a strain plane of uniaxial bending
-    with tension / compression for ElasticPlastic constitutive law.
+    with tension / compression for BilinearCompression constitutive law.
     """
-    law = ElasticPlastic(E, fy, Eh, eps_su)
-
-    eps_y = law._eps_sy
-    eps_su_n, eps_su_p = law.get_ultimate_strain()
-
-    delta_sigma = fy * (1 - Eh / E)
+    law = BilinearCompression(fc, eps_c, eps_cu)
 
     # Check marin coefficients for stress integration
     kappa_y = (eps_min - eps_0) * 2 / h
@@ -203,11 +198,10 @@ def test_marin_elasticplastic_axial_bending_strain(
         return
 
     expected = (
-        [(eps_su_n, -eps_y), (-eps_y, eps_y), (eps_y, eps_su_p)],
+        [(eps_c, 0), (eps_cu, eps_c)],
         [
-            (Eh * eps_0 - delta_sigma, Eh * kappa_y),
-            (E * eps_0, E * kappa_y),
-            (Eh * eps_0 + delta_sigma, Eh * kappa_y),
+            (fc / eps_c * eps_0, fc / eps_c * kappa_y),
+            (fc,),
         ],
     )
 
@@ -218,16 +212,15 @@ def test_marin_elasticplastic_axial_bending_strain(
 
     for coeff, expect in zip(coeffs, expected[1]):
         assert len(coeff) == len(expect)
-        assert math.isclose(coeff[0], expect[0])
-        assert math.isclose(coeff[1], expect[1])
+        for i in range(len(coeff)):
+            assert math.isclose(coeff[i], expect[i])
 
     # Check marin coefficients for modulus integration
     expected = (
-        [(eps_su_n, -eps_y), (-eps_y, eps_y), (eps_y, eps_su_p)],
+        [(eps_c, 0.0), (eps_cu, eps_c)],
         [
-            (Eh,),
-            (E,),
-            (Eh,),
+            (fc / eps_c,),
+            (0.0,),
         ],
     )
 
@@ -238,4 +231,5 @@ def test_marin_elasticplastic_axial_bending_strain(
 
     for coeff, expect in zip(coeffs, expected[1]):
         assert len(coeff) == len(expect)
-        assert math.isclose(coeff[0], expect[0])
+        for i in range(len(coeff)):
+            assert math.isclose(coeff[i], expect[i])
