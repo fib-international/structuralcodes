@@ -10,6 +10,7 @@ from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
     ParabolaRectangle,
+    UserDefined,
 )
 
 eps0 = (
@@ -480,6 +481,134 @@ def test_marin_parabolarectangle_axial_bending_strain(
             (0.0,),
         ],
     )
+
+    strain, coeffs = law.__marin_tangent__([eps_0, kappa_y])
+
+    assert len(strain) == len(expected[0])
+    assert len(expected[1]) == len(coeffs)
+
+    for coeff, expect in zip(coeffs, expected[1]):
+        assert len(coeff) == len(expect)
+        for i in range(len(coeff)):
+            assert math.isclose(coeff[i], expect[i])
+
+
+@pytest.mark.parametrize('eps_0', eps0)
+@pytest.mark.parametrize(
+    'x, y',
+    [
+        ([0, 0.002, 0.01], [0, 400, 420]),
+        ([0, 0.002, 0.07], [0, 400000, 500000]),
+    ],
+)
+def test_marin_puserdefined_uniform_strain(eps_0, x, y):
+    """Test the marin coefficients for a strain plane of pure tension or
+    compression for UserDefined constitutive law.
+    """
+    law = UserDefined(x, y)
+
+    # Get the ordered numpy arrays
+    x = law._x
+    y = law._y
+
+    # Check marin coefficients for stress integration
+    # Find the index where x_target would fit in the ordered array
+    eps_0 = law.preprocess_strains_with_limits(eps_0)
+    found = False
+    for i in range(len(x) - 1):
+        if x[i] <= eps_0 <= x[i + 1]:
+            stiffness = (y[i + 1] - y[i]) / (x[i + 1] - x[i])
+            a0 = stiffness * (eps_0 - x[i]) + y[i]
+            expected = (None, (a0, 0.0))
+            found = True
+            break
+    if not found:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+    # Check marin coefficients for modulus integration
+    found = False
+    for i in range(len(x) - 1):
+        if x[i] <= eps_0 <= x[i + 1]:
+            stiffness = (y[i + 1] - y[i]) / (x[i + 1] - x[i])
+            expected = (None, (stiffness,))
+            found = True
+            break
+    if not found:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin_tangent__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+
+@pytest.mark.parametrize('eps_0', eps0)
+@pytest.mark.parametrize(
+    'eps_min', [(-0.01), (-0.005), (-0.004), (-0.003), (-0.002), (-0.001)]
+)
+@pytest.mark.parametrize(
+    'x, y, h',
+    [
+        ([0, 0.002, 0.01], [0, 400, 420], 400),
+        ([0, 0.002, 0.07], [0, 400000, 500000], 0.3),
+    ],
+)
+def test_marin_userdefined_axial_bending_strain(eps_0, eps_min, x, y, h):
+    """Test the marin coefficients for a strain plane of uniaxial bending
+    with tension / compression for UserDefined constitutive law.
+    """
+    law = UserDefined(x, y)
+
+    # Get the ordered numpy arrays
+    x = law._x
+    y = law._y
+
+    # Check marin coefficients for stress integration
+    kappa_y = (eps_min - eps_0) * 2 / h
+
+    # We are not checking here case with uniform compression / tension, skip
+    if kappa_y == 0:
+        return
+
+    strains = []
+    coeffs = []
+    for i in range(len(x) - 1):
+        # For each branch of the linear piecewise function
+        stiffness = (y[i + 1] - y[i]) / (x[i + 1] - x[i])
+        strains.append((x[i], x[i + 1]))
+        a0 = stiffness * (eps_0 - x[i]) + y[i]
+        a1 = stiffness * kappa_y
+        coeffs.append((a0, a1))
+    expected = (strains, coeffs)
+
+    strain, coeffs = law.__marin__([eps_0, kappa_y])
+
+    assert len(strain) == len(expected[0])
+    assert len(expected[1]) == len(coeffs)
+
+    for coeff, expect in zip(coeffs, expected[1]):
+        assert len(coeff) == len(expect)
+        for i in range(len(coeff)):
+            assert math.isclose(coeff[i], expect[i])
+
+    # Check marin coefficients for modulus integration
+    strains = []
+    coeffs = []
+    for i in range(len(x) - 1):
+        # For each branch of the linear piecewise function
+        stiffness = (y[i + 1] - y[i]) / (x[i + 1] - x[i])
+        strains.append((x[i], x[i + 1]))
+        coeffs.append((stiffness,))
+    expected = (strains, coeffs)
 
     strain, coeffs = law.__marin_tangent__([eps_0, kappa_y])
 
