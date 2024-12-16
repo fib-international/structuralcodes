@@ -90,9 +90,7 @@ def test_calculate_elastic_cracked_properties_comparison():
     # endregion
 
     # Calculate cracked properties for both sections
-    cracked_prop1, cracked_sec1 = calculate_elastic_cracked_properties(
-        section1, theta=0
-    )
+    cracked_prop1 = calculate_elastic_cracked_properties(section1, theta=0)
     cracked_prop2 = section2.gross_properties
 
     # Compare specific properties between the two objects
@@ -117,4 +115,20 @@ def test_calculate_elastic_cracked_properties_comparison():
     assert cracked_prop1.sz == pytest.approx(
         cracked_prop2.sz, rel=1e-3
     ), 'sz do not match'
-    # Add more comparisons for other properties as needed
+
+    # check if works when geometry is required
+    result = calculate_elastic_cracked_properties(
+        section1, 0, return_cracked_section=True
+    )
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+
+    # check if it works with multiples geometries
+    geometry_dummy = SurfaceGeometry(poly=polygon, material=concrete)
+    geometry += geometry_dummy
+    section1 = GenericSection(geometry)
+    result = calculate_elastic_cracked_properties(section1, 0)
+    # check if it is not reinforced concrete
+    section1.geometry._reinforced_concrete = False
+    result = calculate_elastic_cracked_properties(section1)
+    assert result is None

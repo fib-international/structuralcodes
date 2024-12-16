@@ -1,9 +1,12 @@
+import structuralcodes.core._section_results as s_res
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.constitutive_laws import Elastic, UserDefined
 from structuralcodes.sections import GenericSection
 
 
-def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
+def calculate_elastic_cracked_properties(
+    section: GenericSection, theta=0, return_cracked_section=False
+) -> s_res.GrossProperties:
     """Calculates the cracked section properties of a reinforced concrete
     section.  (GenericSection). Materials in surface geometries and point
     geometries are elastic-linear  in order to make the cracking properties
@@ -14,11 +17,14 @@ def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
         section: GenericSection
         theta: Angle of the neutral axis to the horizontal. theta=0 implies
                upper compression block.
+        return_cracked_section: if true, returns also the cracked section in
+        the shape t.Tuple[CrackedProperties, GenericSection]
 
     Returns:
         cracked_prop : GrossProperties data of cracked_sec (i.e cracked
                        section properties)
-        cracked_sec: GenericSection removing tension areas in geometries.
+        or
+        (cracked_prop,cracked_geom): includes the cracked geometry
     """
 
     def create_surface_geometries(polygons_list, material):
@@ -33,12 +39,12 @@ def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
             # Add the new SurfaceGeometry to the list
             surface_geometries.append(surface_geometry)
 
-        return surface_geometries
+        return CompoundGeometry(surface_geometries)
 
     if not section.geometry.reinforced_concrete:
         return None
 
-    rotated_geometry = section.geometry.rotate(theta)
+    rotated_geometry = section.geometry.rotate(-theta)
 
     for geo in rotated_geometry.geometries:
         Ec = geo.material.get_tangent(eps=0)
@@ -58,27 +64,28 @@ def calculate_elastic_cracked_properties(section: GenericSection, theta=0):
     z_na = -eps / curv  # distance to neutral fibre
 
     # Cutting concrete geometries and retaining the compressed block
-    cut_geom = CompoundGeometry(None, None)
-    for i, part in enumerate(rotated_geometry.geometries):
-        min_x, max_x, min_y, max_y = part.calculate_extents()
-        upper_div, lower_div = part.split(((min_x, z_na), 0))
+    cut_geom = None
+    for part in rotated_geometry.geometries:
+        upper_div, lower_div = part.split(((0, z_na), 0))
         # Convert to SurfaceGeometry
-        subpart_sg = create_surface_geometries(upper_div, part.material)
-        if i == 0:
-            cut_geom = CompoundGeometry(subpart_sg)
+        subpart = create_surface_geometries(upper_div, part.material)
+        if cut_geom is None:
+            cut_geom = subpart
         else:
-            cut_geom += subpart_sg
+            cut_geom += subpart
 
     # Add reinforcement geometries
     for reinf in rotated_geometry.point_geometries:
         cut_geom += reinf
 
     # return geoemtry to original rotation
-    cracked_geom = cut_geom.rotate(-theta)
+    cracked_geom = cut_geom.rotate(theta)
 
     # Define the cracked section
     cracked_sec = GenericSection(cracked_geom)
     cracked_prop = cracked_sec.gross_properties
 
-    print(f'{cracked_prop:cracked}')
-    return cracked_prop, cracked_sec
+    if return_cracked_section:
+        return (cracked_prop, cracked_geom)
+    else:
+        return cracked_prop
