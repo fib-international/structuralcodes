@@ -86,6 +86,8 @@ def calculate_elastic_cracked_properties(
     cracked_prop = cracked_sec.gross_properties
 
     if return_cracked_section:
-        return (cracked_prop, cracked_geom)
-    else:  # noqa: RET505
-        return cracked_prop
+        result = (cracked_prop, cracked_geom)
+    else:
+        result = cracked_prop
+
+    return result
