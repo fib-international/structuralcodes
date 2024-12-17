@@ -2,11 +2,12 @@ import structuralcodes.core._section_results as s_res
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.constitutive_laws import Elastic, UserDefined
 from structuralcodes.sections import GenericSection
+from structuralcodes.sections.section_integrators import FiberIntegrator
 
 
 def calculate_elastic_cracked_properties(
     section: GenericSection, theta=0, return_cracked_section=False
-) -> s_res.GrossProperties:
+) -> s_res.SectionProperties:
     """Calculates the cracked section properties of a reinforced concrete
     section.  (GenericSection). Materials in surface geometries and point
     geometries are elastic-linear  in order to make the cracking properties
@@ -21,7 +22,7 @@ def calculate_elastic_cracked_properties(
         the shape t.Tuple[CrackedProperties, GenericSection]
 
     Returns:
-        cracked_prop : GrossProperties data of cracked_sec (i.e cracked
+        cracked_prop : SectionProperties data of cracked_sec (i.e cracked
                        section properties)
         or
         (cracked_prop,cracked_geom): includes the cracked geometry
@@ -82,7 +83,18 @@ def calculate_elastic_cracked_properties(
     cracked_geom = cut_geom.rotate(theta)
 
     # Define the cracked section
-    cracked_sec = GenericSection(cracked_geom)
+    if isinstance(section.section_calculator.integrator, FiberIntegrator):
+        mesh_size = getattr(
+            section.section_calculator.integrator, 'mesh_size', 0.01
+        )
+        cracked_sec = GenericSection(
+            cracked_geom,
+            integrator='fiber',
+            mesh_size=mesh_size,
+        )
+    else:
+        cracked_sec = GenericSection(cracked_geom, integrator='marin')
+
     cracked_prop = cracked_sec.gross_properties
 
     if return_cracked_section:

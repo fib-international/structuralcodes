@@ -228,7 +228,7 @@ class SectionCalculator(abc.ABC):
         self.section = section
 
     @abc.abstractmethod
-    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+    def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
         """Calculates the gross section properties of the section
         This function is private and called when the section is created
         It stores the result into the result object.

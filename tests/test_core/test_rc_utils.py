@@ -126,7 +126,7 @@ def test_calculate_elastic_cracked_properties_comparison():
     # check if it works with multiples geometries
     geometry_dummy = SurfaceGeometry(poly=polygon, material=concrete)
     geometry += geometry_dummy
-    section1 = GenericSection(geometry)
+    section1 = GenericSection(geometry, integrator='fiber')
     result = calculate_elastic_cracked_properties(section1, 0)
     # check if it is not reinforced concrete
     section1.geometry._reinforced_concrete = False
