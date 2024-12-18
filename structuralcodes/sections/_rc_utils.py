@@ -19,7 +19,7 @@ def calculate_elastic_cracked_properties(
         theta: Angle of the neutral axis to the horizontal. theta=0 implies
                upper compression block.
         return_cracked_section: if true, returns also the cracked section in
-        the shape t.Tuple[CrackedProperties, GenericSection]
+        the shape t.Tuple[SectionProperties, GenericSection]
 
     Returns:
         cracked_prop : SectionProperties data of cracked_sec (i.e cracked
