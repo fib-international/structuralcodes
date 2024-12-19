@@ -3,12 +3,15 @@
 import typing as t
 
 from structuralcodes.codes import ec2_2023
+from structuralcodes.core._units import UnitSet
 
 from ._reinforcement import Reinforcement
 
 
 class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
     """Reinforcement implementation for EC2 2023."""
+
+    _default_units = UnitSet(length='mm', force='N')
 
     def __init__(
         self,
@@ -19,13 +22,14 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
         gamma_s: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
+        units: t.Optional[UnitSet] = None,
     ):
         """Initializes a new instance of Reinforcement for EC2 2023.
 
         Args:
-            fyk (float): Characteristic yield strength in MPa.
-            Es (float): The Young's modulus in MPa.
-            ftk (float): Characteristic ultimate strength in MPa.
+            fyk (float): Characteristic yield strength.
+            Es (float): The Young's modulus.
+            ftk (float): Characteristic ultimate strength.
             epsuk (float): The characteristik strain at the ultimate stress
                 level.
             gamma_s (Optional(float)): The partial factor for reinforcement.
@@ -34,6 +38,12 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
         Keyword Args:
             name (str): A descriptive name for the reinforcement.
             density (float): Density of material in kg/m3 (default: 7850).
+            units (Optional[UnitSet]): The selected set of units to work in.
+                The default is length=mm and force=N.
+
+        Note:
+            The arguments should be provided compatible with the selected set
+            of units.
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
@@ -45,15 +55,26 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            units=units,
         )
 
     def fyd(self) -> float:
         """The design yield strength."""
-        return ec2_2023.fyd(self.fyk, self.gamma_s)
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2023.fyd(
+                self.unit_converter.convert_stress_backwards(self.fyk),
+                self.gamma_s,
+            )
+        )
 
     def ftd(self) -> float:
         """The design ultimate strength."""
-        return ec2_2023.fyd(self.ftk, self.gamma_s)
+        return self.unit_converter.convert_stress_forwards(
+            ec2_2023.fyd(
+                self.unit_converter.convert_stress_backwards(self.ftk),
+                self.gamma_s,
+            )
+        )
 
     def epsud(self) -> float:
         """The design ultimate strain."""
