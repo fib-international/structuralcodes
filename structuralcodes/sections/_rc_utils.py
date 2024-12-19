@@ -1,3 +1,7 @@
+"""A collection of functions related to reinforced concrete sections."""
+
+import typing as t
+
 import structuralcodes.core._section_results as s_res
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.constitutive_laws import Elastic, UserDefined
@@ -6,26 +10,31 @@ from structuralcodes.sections.section_integrators import FiberIntegrator
 
 
 def calculate_elastic_cracked_properties(
-    section: GenericSection, theta=0, return_cracked_section=False
-) -> s_res.SectionProperties:
+    section: GenericSection,
+    theta: float = 0,
+    return_cracked_section: bool = False,
+) -> t.Union[
+    s_res.SectionProperties, t.Tuple[s_res.SectionProperties, CompoundGeometry]
+]:
     """Calculates the cracked section properties of a reinforced concrete
-    section.  (GenericSection). Materials in surface geometries and point
-    geometries are elastic-linear  in order to make the cracking properties
-    independent of the stress state.  Tension in all surface geometries is
+    section. (GenericSection). Materials in surface geometries and point
+    geometries are elastic-linear in order to make the cracking properties
+    independent of the stress state. Tension in all surface geometries is
     neglected.
 
     Args:
-        section: GenericSection
-        theta: Angle of the neutral axis to the horizontal. theta=0 implies
-               upper compression block.
-        return_cracked_section: if true, returns also the cracked section in
-        the shape t.Tuple[SectionProperties, GenericSection]
+        section (GenericSection): The section to use as basis for the
+            calculation.
+        theta (float): Angle of the neutral axis to the horizontal in radians.
+            theta=0 implies upper compression block.
+        return_cracked_section (bool): If true, returns also the cracked
+            section.
 
     Returns:
-        cracked_prop : SectionProperties data of cracked_sec (i.e cracked
-                       section properties)
-        or
-        (cracked_prop,cracked_geom): includes the cracked geometry
+        t.Union[SectionProperties, t.Tuple[SectionProperties, GenericSection]]:
+        SectionProperties data of a cracked section (i.e cracked section
+        properties) and (if return_cracked_section is True) the cracked
+        section.
     """
 
     def create_surface_geometries(polygons_list, material):
