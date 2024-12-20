@@ -13,7 +13,7 @@ from structuralcodes.geometry import (
     add_reinforcement_line,
 )
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import Sargin
+from structuralcodes.materials.constitutive_laws import Elastic, Sargin
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
@@ -126,6 +126,329 @@ def test_rectangular_section():
         sec.section_calculator.calculate_moment_curvature(
             theta=0, n=n_max_marin * 1.5
         )
+
+
+# Test rectangular section tangent stiffness
+@pytest.mark.parametrize(
+    'b, h, E',
+    [
+        (250, 500, 30000),
+        (300, 600, 10000),
+        (400, 200, 20000),
+        (600, 350, 30000),
+    ],
+)
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
+    """Test stiffness matrix of elastic rectangular section."""
+    # Create materials to use
+    elastic = Elastic(E)
+
+    # The section
+    poly = Polygon(
+        ((-b / 2, -h / 2), (b / 2, -h / 2), (b / 2, h / 2), (-b / 2, h / 2))
+    )
+    geo = SurfaceGeometry(poly, elastic)
+
+    assert geo.polygon.centroid.coords[0][0] == 0
+    assert geo.polygon.centroid.coords[0][1] == 0
+
+    # Create the section with fiber integrator
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+    assert sec.name == 'GenericSection'
+
+    assert math.isclose(sec.gross_properties.area, b * h)
+
+    # compute stiffness matrix
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
+    )
+    assert stiffness.shape == (3, 3)
+    stiffness /= E
+
+    # compute stiffness matrix analitically
+    # The first moment and product moment should be zero in this case
+    stiffness_expected = np.zeros((3, 3))
+    stiffness_expected[0, 0] = b * h
+    stiffness_expected[1, 1] = 1 / 12.0 * b * h**3
+    stiffness_expected[2, 2] = 1 / 12.0 * h * b**3
+    assert np.allclose(
+        stiffness,
+        stiffness_expected,
+        atol=stiffness.max() * 1e-6,
+        rtol=1e-2,
+    )
+
+
+# Test rectangular RC section tangent stiffness initial
+@pytest.mark.parametrize(
+    'b, h, c, diameter, n_bottom, n_top',
+    [
+        (250, 500, 40, 20, 3, 2),
+    ],
+)
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_rectangular_rc_section_initial_tangent_stiffness(
+    b, h, c, diameter, n_bottom, n_top, integrator
+):
+    """Test stiffness matrix of RC rectangular section."""
+    # Create materials to use
+    concrete = ConcreteEC2_2004(30)
+    Es = 200000
+    steel = ReinforcementEC2_2004(
+        450, Es=Es, ftk=450, epsuk=0.075, gamma_s=1.15, gamma_eps=0.9
+    )
+
+    # The section
+    poly = Polygon(
+        ((-b / 2, -h / 2), (b / 2, -h / 2), (b / 2, h / 2), (-b / 2, h / 2))
+    )
+    geo = SurfaceGeometry(poly, concrete)
+
+    assert geo.polygon.centroid.coords[0][0] == 0
+    assert geo.polygon.centroid.coords[0][1] == 0
+
+    # Add reinforcement
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, -h / 2 + c),
+        coords_j=(b / 2 - c, -h / 2 + c),
+        diameter=diameter,
+        material=steel,
+        n=n_bottom,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, h / 2 - c),
+        coords_j=(b / 2 - c, h / 2 - c),
+        diameter=diameter,
+        material=steel,
+        n=n_top,
+    )
+
+    # Manual computations
+    Ec = concrete.constitutive_law.get_tangent(0)
+    EA_gross = Ec * b * h
+    EIyy_gross = Ec * 1 / 12.0 * b * h**3
+    EIzz_gross = Ec * 1 / 12.0 * h * b**3
+    for p in geo.point_geometries:
+        y, z = p.point.coords.xy
+        As = p.area
+        EA_gross += Es * As
+        EIyy_gross += Es * As * z[0] ** 2
+        EIzz_gross += Es * As * y[0] ** 2
+
+    # Create the section with fiber integrator
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+
+    # compute initial stiffness matrix (gross)
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
+    )
+    assert stiffness.shape == (3, 3)
+
+    assert math.isclose(EA_gross, stiffness[0, 0], rel_tol=1e-3)
+    assert math.isclose(EIyy_gross, stiffness[1, 1], rel_tol=1e-3)
+    assert math.isclose(EIzz_gross, stiffness[2, 2], rel_tol=1e-3)
+
+
+# Test rectangular RC section tangent stiffness
+@pytest.mark.parametrize(
+    'b, h, c, diameter, n_bottom, n_top',
+    [
+        (250, 500, 40, 20, 3, 2),
+    ],
+)
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_rectangular_rc_section_tangent_stiffness(
+    b, h, c, diameter, n_bottom, n_top, integrator
+):
+    """Test stiffness matrix of RC rectangular section."""
+    # Create materials to use
+    concrete = ConcreteEC2_2004(30)
+    Es = 200000
+    steel = ReinforcementEC2_2004(
+        450, Es=Es, ftk=450, epsuk=0.075, gamma_s=1.15, gamma_eps=0.9
+    )
+
+    # The section
+    poly = Polygon(
+        ((-b / 2, -h / 2), (b / 2, -h / 2), (b / 2, h / 2), (-b / 2, h / 2))
+    )
+    geo = SurfaceGeometry(poly, concrete)
+
+    assert geo.polygon.centroid.coords[0][0] == 0
+    assert geo.polygon.centroid.coords[0][1] == 0
+
+    # Add reinforcement
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, -h / 2 + c),
+        coords_j=(b / 2 - c, -h / 2 + c),
+        diameter=diameter,
+        material=steel,
+        n=n_bottom,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, h / 2 - c),
+        coords_j=(b / 2 - c, h / 2 - c),
+        diameter=diameter,
+        material=steel,
+        n=n_top,
+    )
+
+    # Manual computations
+    Ec = concrete.constitutive_law.get_tangent(0)
+    As = diameter**2 / 4.0 * np.pi
+
+    # Position of neutral axis
+    n = Es / Ec
+    As_bottom = n_bottom * As
+    As_top = n_top * As
+    d = h - c
+    x = n * (As_bottom + As_top) / b
+    x *= (
+        -1
+        + (
+            1
+            + (2 * b * (As_bottom * d + As_top * c))
+            / (n * (As_bottom + As_top) ** 2)
+        )
+        ** 0.5
+    )
+
+    EA = Ec * b * x
+    EIyy = Ec * 1 / 12.0 * b * x**3 + Ec * b * x * (x / 2) ** 2
+    EIzz = Ec * 1 / 12.0 * x * b**3
+    for p in geo.point_geometries:
+        y, z = p.point.coords.xy
+        As = p.area
+        EA += Es * As
+        EIyy += Es * As * (z[0] - h / 2 + x) ** 2
+        EIzz += Es * As * y[0] ** 2
+    EIyy += EA * (h / 2 - x) ** 2
+
+    # Create the section with fiber integrator
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+
+    # compute tangent stiffness matrix (cracked)
+    # for the given position of n.a. and a very small curvature
+    chi_y = -1e-9
+    eps_a = -chi_y * (h / 2 - x)
+
+    stiffness = sec.section_calculator.integrate_strain_profile(
+        [eps_a, chi_y, 0], 'modulus'
+    )
+
+    assert stiffness.shape == (3, 3)
+
+    assert math.isclose(EA, stiffness[0, 0], rel_tol=1e-3)
+    assert math.isclose(EIyy, stiffness[1, 1], rel_tol=1e-3)
+    assert math.isclose(EIzz, stiffness[2, 2], rel_tol=1e-3)
+
+    # For comparison, let's compare this with a elastic section of only
+    # reacting concrete:
+    elastic = Elastic(Ec)
+    geo = SurfaceGeometry(
+        Polygon(
+            (
+                (-b / 2, h / 2 - x),
+                (b / 2, h / 2 - x),
+                (b / 2, h / 2),
+                (-b / 2, h / 2),
+            )
+        ),
+        elastic,
+    )
+    # Add reinforcement
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, -h / 2 + c),
+        coords_j=(b / 2 - c, -h / 2 + c),
+        diameter=diameter,
+        material=steel,
+        n=n_bottom,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, h / 2 - c),
+        coords_j=(b / 2 - c, h / 2 - c),
+        diameter=diameter,
+        material=steel,
+        n=n_top,
+    )
+
+    # create this effective elastic section
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+
+    stiffness2 = sec.section_calculator.integrate_strain_profile(
+        [0, 0, 0], 'modulus'
+    )
+
+    assert np.allclose(
+        stiffness,
+        stiffness2,
+        atol=stiffness.max() * 1e-3,
+        rtol=1e-2,
+    )
+
+
+# Test rectangular section tangent stiffness
+# respect to bottm left point
+@pytest.mark.parametrize(
+    'b, h, E',
+    [
+        (250, 500, 30000),
+        (300, 600, 10000),
+        (400, 200, 20000),
+        (600, 350, 30000),
+    ],
+)
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
+    """Test stiffness matrix of elastic rectangular section."""
+    # Create materials to use
+    elastic = Elastic(E)
+
+    # The section
+    poly = Polygon(((0, 0), (b, 0), (b, h), (0, h)))
+    geo = SurfaceGeometry(poly, elastic)
+
+    assert geo.polygon.centroid.coords[0][0] == b / 2
+    assert geo.polygon.centroid.coords[0][1] == h / 2
+
+    # Create the section with fiber integrator
+    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+    assert sec.name == 'GenericSection'
+
+    assert math.isclose(sec.gross_properties.area, b * h)
+
+    # compute stiffness matrix
+    stiffness, _ = (
+        sec.section_calculator.integrator.integrate_strain_response_on_geometry(
+            sec.geometry,
+            [0, 0, 0],
+            integrate='modulus',
+            mesh_size=sec.section_calculator.mesh_size,
+        )
+    )
+    assert stiffness.shape == (3, 3)
+    stiffness /= E
+
+    # compute stiffness matrix analitically
+    stiffness_expected = np.zeros((3, 3))
+    stiffness_expected[0, 0] = b * h
+    stiffness_expected[1, 1] = 1 / 3.0 * b * h**3
+    stiffness_expected[2, 2] = 1 / 3.0 * h * b**3
+    stiffness_expected[0, 1] = stiffness_expected[1, 0] = b * h**2 / 2.0
+    stiffness_expected[0, 2] = stiffness_expected[2, 0] = -h * b**2 / 2.0
+    stiffness_expected[1, 2] = stiffness_expected[2, 1] = -(h**2) * b**2 / 4.0
+    assert np.allclose(
+        stiffness,
+        stiffness_expected,
+        rtol=1e-2,
+    )
 
 
 @pytest.mark.parametrize('fck', [25, 35, 55, 65])
@@ -486,3 +809,37 @@ def test_refined_mn_domain():
     assert len(res_default.strains) == 35
     assert len(res_refined.strains) >= 0.9 * 100
     assert len(res_detailed.strains) == 107
+
+
+@pytest.mark.parametrize(
+    'theta',
+    [
+        0,
+        np.pi / 2,
+        np.pi / 4,
+    ],
+)
+def test_rectangular_section_biaxial_moment(theta):
+    """Test for rectangular section under biaxial moment."""
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
+
+    # The section
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 16, steel, n=4)
+    geo = add_reinforcement_line(geo, (40, 360), (160, 360), 16, steel, n=4)
+    geo = geo.translate(-100, -200)
+
+    # Create the section
+    sec = GenericSection(geo, integrator='fiber')
+
+    # Calculate default moment-curvature relation
+    res = sec.section_calculator.calculate_bending_strength(theta=theta)
+
+    theta_inverse = math.atan2(res.chi_z, res.chi_y) + np.pi
+
+    theta_inverse = theta_inverse % (2 * np.pi)
+
+    assert math.isclose(theta, theta_inverse, rel_tol=1e-3)

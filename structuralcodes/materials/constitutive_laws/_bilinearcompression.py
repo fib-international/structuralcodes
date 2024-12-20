@@ -103,7 +103,7 @@ class BilinearCompression(ConstitutiveLaw):
                 # We are in tensile branch
                 strains = None
                 coeff.append((0.0,))
-            elif strain[0] > self._eps_0:
+            elif strain[0] > self._eps_c:
                 # We are in the linear branch
                 strains = None
                 a0 = self._E * strain[0]
@@ -127,6 +127,51 @@ class BilinearCompression(ConstitutiveLaw):
             # Constant part
             strains.append((self._eps_cu, self._eps_c))
             coeff.append((self._fc,))
+        return strains, coeff
+
+    def __marin_tangent__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration of
+        tangent in a simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch we are
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
+            if strain[0] > 0:
+                # We are in tensile branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] > self._eps_c:
+                # We are in the linear branch
+                strains = None
+                a0 = self._E
+                coeff.append((a0,))
+            else:
+                # We are in the constant branch or
+                # We are in a branch of non-resisting concrete
+                # Too much compression
+                strains = None
+                coeff.append((0.0,))
+        else:
+            # linear part
+            strains.append((self._eps_c, 0))
+            a0 = self._E
+            coeff.append((a0,))
+            # Constant part
+            strains.append((self._eps_cu, self._eps_c))
+            coeff.append((0.0,))
         return strains, coeff
 
     def get_ultimate_strain(
