@@ -843,3 +843,273 @@ def test_rectangular_section_biaxial_moment(theta):
     theta_inverse = theta_inverse % (2 * np.pi)
 
     assert math.isclose(theta, theta_inverse, rel_tol=1e-3)
+
+
+n = [(x) for x in np.linspace(-100e3, 100e3, 6)]
+my = [(x) for x in np.linspace(-100e3, 100e3, 6)]
+mz = [(x) for x in np.linspace(-100e3, 100e3, 6)]
+
+
+@pytest.mark.parametrize('n', n)
+@pytest.mark.parametrize('my', my)
+@pytest.mark.parametrize('mz', mz)
+@pytest.mark.parametrize(
+    'Ec, b, h',
+    [
+        (30000, 400, 400),
+        (30000, 200, 400),
+        (20000, 200, 400),
+        (20000, 400, 400),
+        (20000, 400, 200),
+    ],
+)
+def test_strain_plane_calculation_elastic_Nmm(n, my, mz, Ec, b, h):
+    """Test deeply calculate strain profile method.
+
+    Elastic materials, test many load combinations.
+    """
+    # Create materials to use
+    concrete = Elastic(Ec)
+
+    # Create the section
+    geom = SurfaceGeometry(
+        Polygon(
+            (
+                (-b / 2, -h / 2),
+                (b / 2, -h / 2),
+                (b / 2, h / 2),
+                (-b / 2, h / 2),
+            )
+        ),
+        concrete,
+    )
+
+    # Fiber
+    section = GenericSection(geom, integrator='fiber', mesh_size=0.001)
+    strain_fiber = section.section_calculator.calculate_strain_profile(
+        n=n, my=my, mz=mz, tol=1e-7
+    )
+
+    # Marin
+    section = GenericSection(geom)
+    strain_marin = section.section_calculator.calculate_strain_profile(
+        n=n, my=my, mz=mz, tol=1e-7
+    )
+
+    # Evaluate expected response
+    # Ec = concrete.constitutive_law.get_tangent(0)
+    EA = Ec * b * h
+    EIyy = Ec * 1 / 12.0 * b * h**3
+    EIzz = Ec * 1 / 12.0 * h * b**3
+
+    eps_0 = n / EA
+    chi_y = my / EIyy
+    chi_z = mz / EIzz
+
+    expected_strain = np.array([eps_0, chi_y, chi_z])
+
+    # Compare
+    assert np.allclose(
+        np.array(strain_fiber), expected_strain, rtol=1e-2, atol=1e-8
+    )
+    assert np.allclose(
+        np.array(strain_marin), expected_strain, rtol=1e-2, atol=1e-8
+    )
+
+
+n = [(x) for x in np.linspace(-100, 100, 6)]
+my = [(x) for x in np.linspace(-100, 100, 6)]
+mz = [(x) for x in np.linspace(-100, 100, 6)]
+
+
+@pytest.mark.parametrize('n', n)
+@pytest.mark.parametrize('my', my)
+@pytest.mark.parametrize('mz', mz)
+@pytest.mark.parametrize(
+    'Ec, b, h',
+    [
+        (30000e3, 0.4, 0.4),
+        (30000e3, 0.2, 0.4),
+        (20000e3, 0.2, 0.4),
+        (20000e3, 0.4, 0.4),
+        (20000e3, 0.4, 0.2),
+    ],
+)
+def test_strain_plane_calculation_elastic_kNm(n, my, mz, Ec, b, h):
+    """Test deeply calculate strain profile method.
+
+    Elastic materials, test many load combinations.
+
+    Units in kN, m and kPa
+    """
+    # Create materials to use
+    concrete = Elastic(Ec)
+
+    # Create the section
+    geom = SurfaceGeometry(
+        Polygon(
+            (
+                (-b / 2, -h / 2),
+                (b / 2, -h / 2),
+                (b / 2, h / 2),
+                (-b / 2, h / 2),
+            )
+        ),
+        concrete,
+    )
+
+    # Fiber
+    section = GenericSection(geom, integrator='fiber', mesh_size=0.001)
+    strain_fiber = section.section_calculator.calculate_strain_profile(
+        n=n, my=my, mz=mz, tol=1e-7
+    )
+
+    # Marin
+    section = GenericSection(geom)
+    strain_marin = section.section_calculator.calculate_strain_profile(
+        n=n, my=my, mz=mz, tol=1e-7
+    )
+
+    # Evaluate expected response
+    # Ec = concrete.constitutive_law.get_tangent(0)
+    EA = Ec * b * h
+    EIyy = Ec * 1 / 12.0 * b * h**3
+    EIzz = Ec * 1 / 12.0 * h * b**3
+
+    eps_0 = n / EA
+    chi_y = my / EIyy
+    chi_z = mz / EIzz
+
+    expected_strain = np.array([eps_0, chi_y, chi_z])
+
+    # Compare
+    assert np.allclose(
+        np.array(strain_fiber), expected_strain, rtol=5e-2, atol=1e-5
+    )
+    assert np.allclose(
+        np.array(strain_marin), expected_strain, rtol=5e-2, atol=1e-5
+    )
+
+
+@pytest.mark.parametrize(
+    'n, my, mz, fck, b, h',
+    [
+        (0.0, -50e6, 0, 30, 200, 400),
+        (-100e3, -60e6, 0, 40, 250, 400),
+        (-100e3, 50e6, 0, 40, 250, 400),
+        (50e3, -30e6, 0, 30, 200, 400),
+    ],
+)
+def test_strain_plane_calculation_rectangular_rc(n, my, mz, fck, b, h):
+    """Test calculate strain profile method."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=450, Es=200000, ftk=450, epsuk=0.075)
+
+    # The section
+    poly = Polygon(
+        ((-b / 2, -h / 2), (b / 2, -h / 2), (b / 2, h / 2), (-b / 2, h / 2))
+    )
+    geo = SurfaceGeometry(poly, concrete)
+
+    # Add reinforcement
+    c = 40
+    diameter = 16
+    n_bottom = 3
+    n_top = 2
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, -h / 2 + c),
+        coords_j=(b / 2 - c, -h / 2 + c),
+        diameter=diameter,
+        material=steel,
+        n=n_bottom,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, h / 2 - c),
+        coords_j=(b / 2 - c, h / 2 - c),
+        diameter=diameter,
+        material=steel,
+        n=n_top,
+    )
+
+    # Check with given loads that both marin and fiber gives same result
+    section = GenericSection(geo)
+    strain_marin = section.section_calculator.calculate_strain_profile(
+        n, my, mz, tol=1e-7
+    )
+    strain_marin = np.array(strain_marin)
+
+    section = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
+
+    strain_fiber = section.section_calculator.calculate_strain_profile(
+        n, my, mz, tol=1e-7
+    )
+    strain_fiber = np.array(strain_fiber)
+
+    # check that initial tangent gives the same solution at the end
+    strain_fiber_initial = section.section_calculator.calculate_strain_profile(
+        n, my, mz, tol=1e-7, initial=True, max_iter=80
+    )
+    strain_fiber_initial = np.array(strain_fiber_initial)
+
+    assert np.allclose(strain_marin, strain_fiber, rtol=2e-2, atol=1e-6)
+    assert np.allclose(
+        strain_fiber, strain_fiber_initial, rtol=2e-2, atol=1e-6
+    )
+
+
+@pytest.mark.parametrize(
+    'n, my, mz, fck, b, h',
+    [
+        (-100e3, -100e6, 0, 40, 250, 400),
+    ],
+)
+def test_strain_plane_calculation_rectangular_rc_high_load(
+    n, my, mz, fck, b, h
+):
+    """Test calculate strain profile method.
+
+    check a case with high load (non convergence).
+    """
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=450, Es=200000, ftk=450, epsuk=0.075)
+
+    # The section
+    poly = Polygon(
+        ((-b / 2, -h / 2), (b / 2, -h / 2), (b / 2, h / 2), (-b / 2, h / 2))
+    )
+    geo = SurfaceGeometry(poly, concrete)
+
+    # Add reinforcement
+    c = 40
+    diameter = 16
+    n_bottom = 3
+    n_top = 2
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, -h / 2 + c),
+        coords_j=(b / 2 - c, -h / 2 + c),
+        diameter=diameter,
+        material=steel,
+        n=n_bottom,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + c, h / 2 - c),
+        coords_j=(b / 2 - c, h / 2 - c),
+        diameter=diameter,
+        material=steel,
+        n=n_top,
+    )
+
+    # Check that with given loads we don't reach convergence
+    section = GenericSection(geo)
+    with pytest.raises(
+        StopIteration, match='Maximum number of iterations reached'
+    ):
+        section.section_calculator.calculate_strain_profile(
+            n, my, mz, tol=1e-7
+        )
