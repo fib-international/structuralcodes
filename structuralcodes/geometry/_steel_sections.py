@@ -228,8 +228,8 @@ class BaseProfile:
         xmax = max(abs(bounds[0]), bounds[2])
         ymax = max(abs(bounds[1]), bounds[3])
         # Then compute section modulus
-        self._Wely = self._Iy / ymax
-        self._Welz = self._Iz / xmax
+        self._Wely = self.Iy / ymax
+        self._Welz = self.Iz / xmax
 
     @property
     def Wely(self) -> float:

@@ -2,12 +2,12 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import math
 import typing as t
 import warnings
-from math import cos, sin
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -20,7 +20,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.constitutive_laws import Elastic
 
-from .section_integrators import integrator_factory
+from .section_integrators import SectionIntegrator, integrator_factory
 
 
 class GenericSection(Section):
@@ -55,6 +55,16 @@ class GenericSection(Section):
                 of the section.
             name (str): The name of the section.
             integrator (str): The name of the SectionIntegrator to use.
+            kwargs (dict): A collection of keyword arguments to pass on to the
+                section calculator.
+
+        Note:
+            The GenericSection uses a GenericSectionCalculator for all
+            calculations. The GenericSectionCalculator uses a SectionIntegrator
+            for integrating over the section. Any additional keyword arguments
+            used when creating the GenericSection are passed on to the
+            SectionCalculator to customize the behaviour. See
+            GenericSectionCalculator for available keyword arguments.
         """
         if name is None:
             name = 'GenericSection'
@@ -72,7 +82,7 @@ class GenericSection(Section):
         self._gross_properties = None
 
     @property
-    def gross_properties(self) -> s_res.GrossProperties:
+    def gross_properties(self) -> s_res.SectionProperties:
         """Return the gross properties of the section."""
         if self._gross_properties is None:
             self._gross_properties = (
@@ -83,6 +93,8 @@ class GenericSection(Section):
 
 class GenericSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
+
+    integrator: SectionIntegrator
 
     def __init__(
         self,
@@ -98,7 +110,7 @@ class GenericSectionCalculator(SectionCalculator):
                 (default = 'marin').
 
         Note:
-            When using 'fiber' integrator the kwarg 'mesh_size' can be used to
+            When using `fiber` integrator the kwarg `mesh_size` can be used to
             specify a dimensionless number (between 0 and 1) specifying the
             size of the resulting mesh.
         """
@@ -113,17 +125,17 @@ class GenericSectionCalculator(SectionCalculator):
         self._n_max = None
         self._n_min = None
 
-    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+    def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
         """Calculates the gross section properties of the GenericSection.
 
         This function is private and called when the section is created.
         It stores the result into the result object.
 
         Returns:
-            GrossProperties: The gross properties of the section.
+            SectionProperties: The gross properties of the section.
         """
         # It will use the algorithms for generic sections
-        gp = s_res.GrossProperties()
+        gp = s_res.SectionProperties()
 
         # Computation of perimeter using shapely
         polygon = unary_union(
@@ -142,13 +154,13 @@ class GenericSectionCalculator(SectionCalculator):
         # Computation of surface area, reinforcement area, EA (axial rigidity)
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
 
         for geo in self.section.geometry.point_geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
             gp.area_reinforcement += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
@@ -208,7 +220,13 @@ class GenericSectionCalculator(SectionCalculator):
             )
             # Change sign due to moment sign convention
             izz *= -1
-            if abs(abs(izy) - abs(iyz)) > 10:
+
+            # Compute reasonable value for absolute tolerance for checking iyz
+            rel_tol = 1e-9
+            abs_tol = 0.5 * (iyy + izz) * rel_tol
+
+            # Check calculated cross moment
+            if not math.isclose(iyz, izy, rel_tol=rel_tol, abs_tol=abs_tol):
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
@@ -291,14 +309,14 @@ class GenericSectionCalculator(SectionCalculator):
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
                 # if g != other_g:
-                eps_p = g.material.get_ultimate_strain(yielding=yielding)[0]
+                eps_p = g.material.get_ultimate_strain(yielding=yielding)[1]
                 if isinstance(g, SurfaceGeometry):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
                     y_p = g._point.coords[0][1]
                 eps_n = other_g.material.get_ultimate_strain(
                     yielding=yielding
-                )[1]
+                )[0]
                 if isinstance(other_g, SurfaceGeometry):
                     y_n = other_g.polygon.bounds[3]
                 elif isinstance(other_g, PointGeometry):
@@ -399,7 +417,7 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
         # save the triangulation data
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         # Return the strain distribution
         return [eps_0, chi_c, 0]
@@ -480,7 +498,7 @@ class GenericSectionCalculator(SectionCalculator):
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom, [eps_0, curv, 0], tri=self.triangulated_data
         )
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         dn_a = n_int - n
         # It may occur that dn_a is already almost zero (in eqiulibrium)
@@ -541,7 +559,7 @@ class GenericSectionCalculator(SectionCalculator):
             self.section.geometry, [eps_p, 0, 0], tri=tri
         )
 
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         return n_min, n_max
 
@@ -574,7 +592,12 @@ class GenericSectionCalculator(SectionCalculator):
         """Rotate triangulated data of angle theta."""
         rotated_triangulated_data = []
         for tr in self.triangulated_data:
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             coords = np.vstack((tr[0], tr[1]))
             coords_r = T @ coords
             rotated_triangulated_data.append(
@@ -583,25 +606,60 @@ class GenericSectionCalculator(SectionCalculator):
         self.triangulated_data = rotated_triangulated_data
 
     def integrate_strain_profile(
-        self, strain: ArrayLike
-    ) -> t.Tuple[float, float, float]:
-        """Integrate a strain profile returning internal forces.
+        self,
+        strain: ArrayLike,
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
+    ) -> t.Union[t.Tuple[float, float, float], NDArray]:
+        """Integrate a strain profile returning stress resultants or tangent
+        section stiffness matrix.
 
         Arguments:
             strain (ArrayLike): Represents the deformation plane. The strain
                 should have three entries representing respectively: axial
                 strain (At 0,0 coordinates), curv_y, curv_z.
+            integrate (str): a string indicating the quantity to integrate over
+                the section. It can be 'stress' or 'modulus'. When 'stress'
+                is selected, the return value will be the stress resultants N,
+                My, Mz, while if 'modulus' is selected, the return will be the
+                tangent section stiffness matrix (default is 'stress').
 
         Returns:
-            Tuple(float, float, float): N, My and Mz.
+            Union(Tuple(float, float, float),NDArray): N, My and Mz when
+            `integrate='stress'`, or a numpy array representing the stiffness
+            matrix then `integrate='modulus'`.
+
+        Examples:
+            result = self.integrate_strain_profile(strain,integrate='tangent')
+            # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
+
+            result = self.integrate_strain_profile(strain)
+            # `result` will be a tuple containing section forces (N, My, Mz)
+
+        Raises:
+            ValueError: If a unkown value is passed to the `integrate`
+            parameter.
         """
-        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+        result = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
             strain=strain,
+            integrate=integrate,
             tri=self.triangulated_data,
             mesh_size=self.mesh_size,
         )
-        return N, My, Mz
+
+        # Save triangulation data for future use
+        if self.triangulated_data is None and result[-1] is not None:
+            self.triangulated_data = result[-1]
+
+        # manage the returning from integrate_strain_response_on_geometry:
+        # this function returns one of the two:
+        # a. float, float, float, tri (i.e. N, My, Mz, tri)
+        # b. (NDArray, tri) (i.e. section stiff matrix, tri)
+        # We need to return only forces or stifness
+        # (without triangultion data)
+        if len(result) == 2:
+            return result[0]
+        return result[:-1]
 
     def calculate_bending_strength(
         self, theta=0, n=0
@@ -610,8 +668,8 @@ class GenericSectionCalculator(SectionCalculator):
         axial load.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to section y axis,
-                default = 0.
+            theta (float): Inclination of n.a. respect to section y axis in
+                radians, default = 0.
             n (float): Axial load applied to the section (+: tension, -:
                 compression), default = 0.
 
@@ -636,18 +694,22 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         # Rotate back to section CRS TODO Check
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         M = T @ np.array([[My], [Mz]])
         if self.triangulated_data is not None:
             # Rotate back also triangulated data!
             self._rotate_triangulated_data(theta)
+        # Rotate also curvature!
+        strain_rotated = T @ np.array([[strain[1]], [strain[2]]])
 
         # Create result object
         res = s_res.UltimateBendingMomentResults()
         res.theta = theta
         res.n = N
-        res.chi_y = strain[1]
-        res.chi_z = strain[2]
+        res.chi_y = strain_rotated[0, 0]
+        res.chi_z = strain_rotated[1, 0]
         res.eps_a = strain[0]
         res.m_y = M[0, 0]
         res.m_z = M[1, 0]
@@ -667,7 +729,8 @@ class GenericSectionCalculator(SectionCalculator):
         n.a. and axial load.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to y axis, default = 0.
+            theta (float): Inclination of n.a. respect to y axis in radians,
+                default = 0.
             n (float): Axial load applied to the section (+: tension, -:
                 compression), default = 0.
             chi_first (float): The first value of the curvature, default =
@@ -770,7 +833,12 @@ class GenericSectionCalculator(SectionCalculator):
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             M = T @ np.array([[My], [Mz]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
@@ -866,7 +934,7 @@ class GenericSectionCalculator(SectionCalculator):
         """Calculate the NM interaction domain.
 
         Arguments:
-            theta (float): Inclination of n.a. respect to y axis
+            theta (float): Inclination of n.a. respect to y axis in radians
                 (Optional, default = 0).
             num_1 (int): Number of strain profiles in field 1
                 (Optional, default = 1).
@@ -913,7 +981,7 @@ class GenericSectionCalculator(SectionCalculator):
             )
 
         # Get ultimate strain profiles for theta angle
-        strains = self._compute_ultimate_strain_profiles(
+        strains, field_num = self._compute_ultimate_strain_profiles(
             theta=theta,
             num_1=num_1,
             num_2=num_2,
@@ -940,7 +1008,7 @@ class GenericSectionCalculator(SectionCalculator):
                     mesh_size=self.mesh_size,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
@@ -948,9 +1016,8 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Save to results
         res.strains = strains
-        res.m_z = forces[:, 2]
-        res.m_y = forces[:, 1]
-        res.n = forces[:, 0]
+        res.forces = forces
+        res.field_num = field_num
 
         return res
 
@@ -1047,6 +1114,9 @@ class GenericSectionCalculator(SectionCalculator):
             raise ValueError(f'Type of spacing not known: {type}')
 
         # For generation of fields 1 and 2 pivot on positive strain
+        field_num = np.repeat(
+            [1, 2, 3, 4, 5, 6], [num_1, num_2, num_3, num_4, num_5, num_6]
+        )
         # Field 1: pivot on positive strain
         eps_n = _np_space(eps_p_b, 0, num_1, type_1, endpoint=False)
         eps_p = np.zeros_like(eps_n) + eps_p_b
@@ -1098,16 +1168,17 @@ class GenericSectionCalculator(SectionCalculator):
         eps_n = np.append(eps_n, eps_n_6)
         eps_p = np.append(eps_p, eps_p_6)
 
-        # rotate them
+        # compute strain components
         kappa_y = (eps_n - eps_p) / (y_n - y_p)
         eps_a = eps_n - kappa_y * y_n
-        kappa_z = np.zeros_like(kappa_y)
 
         # rotate back components to work in section CRS
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
-        components = np.vstack((kappa_y, kappa_z))
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
+        components = np.vstack((kappa_y, np.zeros_like(kappa_y)))
         rotated_components = T @ components
-        return np.column_stack((eps_a, rotated_components.T))
+        return np.column_stack((eps_a, rotated_components.T)), field_num
 
     def calculate_nmm_interaction_domain(
         self,
@@ -1180,7 +1251,7 @@ class GenericSectionCalculator(SectionCalculator):
         strains = np.empty((0, 3))
         for theta in thetas:
             # Get ultimate strain profiles for theta angle
-            strain = self._compute_ultimate_strain_profiles(
+            strain, field_num = self._compute_ultimate_strain_profiles(
                 theta=theta,
                 num_1=num_1,
                 num_2=num_2,
@@ -1207,7 +1278,7 @@ class GenericSectionCalculator(SectionCalculator):
                     tri=self.triangulated_data,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
@@ -1216,6 +1287,7 @@ class GenericSectionCalculator(SectionCalculator):
         # Save to results
         res.strains = strains
         res.forces = forces
+        res.field_num = field_num
 
         return res
 
@@ -1234,17 +1306,22 @@ class GenericSectionCalculator(SectionCalculator):
         # Prepare the results
         res = s_res.MMInteractionDomain()
         res.num_theta = num_theta
-        res.n = n
         # Create array of thetas
         res.theta = np.linspace(0, np.pi * 2, num_theta)
         # Initialize the result's arrays
-        res.m_y = np.zeros_like(res.theta)
-        res.m_z = np.zeros_like(res.theta)
+        res.forces = np.zeros((num_theta, 3))
+        res.strains = np.zeros((num_theta, 3))
         # Compute strength for given angle of NA
         for i, th in enumerate(res.theta):
             res_bend_strength = self.calculate_bending_strength(theta=th, n=n)
-            res.m_y[i] = res_bend_strength.m_y
-            res.m_z[i] = res_bend_strength.m_z
+            # Save forces
+            res.forces[i, 0] = n
+            res.forces[i, 1] = res_bend_strength.m_y
+            res.forces[i, 2] = res_bend_strength.m_z
+            # Save strains
+            res.strains[i, 0] = res_bend_strength.eps_a
+            res.strains[i, 1] = res_bend_strength.chi_y
+            res.strains[i, 2] = res_bend_strength.chi_z
 
         return res
 

@@ -3,10 +3,10 @@
 from shapely import Polygon
 
 from structuralcodes import set_design_code
-from structuralcodes.geometry import SurfaceGeometry
+from structuralcodes.geometry import SurfaceGeometry, add_reinforcement
 from structuralcodes.materials.concrete import create_concrete
 from structuralcodes.materials.reinforcement import create_reinforcement
-from structuralcodes.sections import GenericSection, add_reinforcement
+from structuralcodes.sections import GenericSection
 
 # Set the active design code
 set_design_code('ec2_2004')
@@ -35,7 +35,7 @@ polygon = Polygon(
     ]
 )  # We leverage shapely to create geometries
 geometry = SurfaceGeometry(
-    polygon, concrete
+    poly=polygon, material=concrete
 )  # A SurfaceGeometry is a shapely Polygon with an assigned material
 
 # Add reinforcement

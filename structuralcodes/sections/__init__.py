@@ -1,7 +1,7 @@
 """Main entry point for sections."""
 
 from ._generic import GenericSection, GenericSectionCalculator
-from ._reinforcement import add_reinforcement, add_reinforcement_line
+from ._rc_utils import calculate_elastic_cracked_properties
 from .section_integrators import (
     FiberIntegrator,
     MarinIntegrator,
@@ -13,11 +13,10 @@ from .section_integrators import (
 __all__ = [
     'GenericSection',
     'GenericSectionCalculator',
-    'add_reinforcement',
-    'add_reinforcement_line',
     'SectionIntegrator',
     'FiberIntegrator',
     'MarinIntegrator',
     'integrator_factory',
     'marin_integration',
+    'calculate_elastic_cracked_properties',
 ]
