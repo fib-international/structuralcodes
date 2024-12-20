@@ -30,11 +30,7 @@
 ## Section results
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.core._section_results.GrossProperties
-```
-
-```{eval-rst}
-.. autoclass:: structuralcodes.core._section_results.CrackedProperties
+.. autoclass:: structuralcodes.core._section_results.SectionProperties
 ```
 
 ```{eval-rst}

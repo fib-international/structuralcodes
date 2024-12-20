@@ -82,7 +82,7 @@ class GenericSection(Section):
         self._gross_properties = None
 
     @property
-    def gross_properties(self) -> s_res.GrossProperties:
+    def gross_properties(self) -> s_res.SectionProperties:
         """Return the gross properties of the section."""
         if self._gross_properties is None:
             self._gross_properties = (
@@ -125,17 +125,17 @@ class GenericSectionCalculator(SectionCalculator):
         self._n_max = None
         self._n_min = None
 
-    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+    def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
         """Calculates the gross section properties of the GenericSection.
 
         This function is private and called when the section is created.
         It stores the result into the result object.
 
         Returns:
-            GrossProperties: The gross properties of the section.
+            SectionProperties: The gross properties of the section.
         """
         # It will use the algorithms for generic sections
-        gp = s_res.GrossProperties()
+        gp = s_res.SectionProperties()
 
         # Computation of perimeter using shapely
         polygon = unary_union(
