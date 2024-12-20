@@ -108,7 +108,7 @@ class SectionProperties:
         Arguments:
             spec (str): The string specifying the format.
         """
-        output_string = 'Concrete Section Properties:\n'
+        output_string = 'Section Properties:\n'
         for f in fields(self):
             value = getattr(self, f.name)
             description = f.metadata.get(
@@ -120,8 +120,8 @@ class SectionProperties:
         return output_string
 
     def __str__(self) -> str:
-        """Returns the informal string representation of the concrete
-        section properties.
+        """Returns the informal string representation of the section
+        properties.
         """
         return f'{self}'
 
