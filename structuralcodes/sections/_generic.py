@@ -2,7 +2,6 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
-import math
 import typing as t
 import warnings
 from math import cos, sin
@@ -71,7 +70,6 @@ class GenericSection(Section):
             sec=self, integrator=integrator, **kwargs
         )
         self._gross_properties = None
-        self._cracked_properties = None
 
     @property
     def gross_properties(self) -> s_res.GrossProperties:
@@ -420,7 +418,7 @@ class GenericSectionCalculator(SectionCalculator):
         existence of at least one zero in the function dn vs. curv in order to
         apply the bisection algorithm.
         """
-        ITMAX = 50
+        ITMAX = 20
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
@@ -1250,322 +1248,18 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
-    def calculate_strain_profile(
-        self, n_ed, my_ed, mz_ed, num_chis=5, numpts_nmm=16
-    ):
+    def calculate_strain_profile(self, n, my, mz):
         """Get the strain plane for a given axial force and biaxial bending.
 
         Args:
-            n_ed (float): Axial load
-            my_ed (float): Bending moment around y-axis
-            mz_ed (float): Bending moment around z-axis
-            num_chis (int) [optional]: number of points in M-curvature in
-            each iteration of the neutral axe angle.
+            n (float): Axial load
+            my (float): Bending moment around y-axis
+            mz (float): Bending moment around z-axis
 
         Returns:
             eps_a (float): Strain at (0,0)
             chiy (float): Curvature of the section around y-axis
             chiz (float): Curvature of the section around z-axis
         """
-
-        def interpolate(x1, x2, y1, y2, x):
-            if x2 - x1 == 0:
-                return y1
-            y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
-            return y
-
-        def first_monotonic_series(arr):
-            """Get the first monotonic slice of the array."""
-            if len(arr) < 2:
-                return (
-                    arr,
-                    len(arr),
-                )  # 2 elements, it's already monotonic
-
-            # Determine if it's increasing or decreasing
-            if arr[1] >= arr[0]:
-                # It's increasing or constant
-                for i in range(1, len(arr)):
-                    if arr[i] < arr[i - 1]:
-                        return np.array(arr[:i]), i
-            else:
-                # It's decreasing
-                for i in range(1, len(arr)):
-                    if arr[i] > arr[i - 1]:
-                        return np.array(arr[:i]), i
-
-            return arr, len(arr)  # If the entire array is monotonic, return it
-
-        def angle(x, y):
-            """Obtain the angle of the vector with respect to (1,0) in
-            counterclockwise direction.
-            """
-            angle = math.atan2(y, x)
-
-            # check angle between [0, 2π]
-            if angle < 0:
-                angle += 2 * math.pi
-            return angle
-
-        def check_points_in_2D_diagram(
-            boundary_x, boundary_y, forces, debug=False
-        ):  # TODO Should this method be moved to the section_results classes?
-            """Checks whether given points are inside a boundary defined by
-            capacity_pts, and calculates efficiency for rays from the origin
-            to each point.
-
-            Parameters:
-            boundary_x,boundary_y : array-like, shape (n_points, 1)
-                The points defining the capacity boundary.
-            forces : array-like, shape (n_forces, 2)
-                The points to test.
-
-            Returns:
-            results : list of dict
-                A list containing dictionaries with the following keys:
-                - 'point': The point tested.
-                - 'is_inside': True if the point is inside the boundary
-                - 'efficiency': The efficiency for the ray from the origin to
-                the intersection point.
-                - 'intersection_point': The intersection point on the boundary
-            """
-            from shapely import LineString, Point, Polygon
-
-            # Create boundary points in shape (n_points, 2)
-            capacity_pts = np.column_stack((boundary_x, boundary_y))
-
-            # Create the polygon from capacity points
-            capacity_polygon = Polygon(capacity_pts)
-
-            # Prepare the results list
-            results = []
-
-            # Convert forces to a NumPy array
-            forces = np.array(forces)
-
-            # Define the origin
-            origin = np.array([0.0, 0.0])
-
-            # Iterate over each point in forces
-            for point in forces:
-                # Create a line from the origin to the point
-                factored_point = np.array([point[0] * 1e10, point[1] * 1e10])
-                ray_line = LineString([origin, factored_point])
-
-                # Check if the point is inside the polygon
-                is_inside = capacity_polygon.contains(Point(point))
-
-                # Find the intersection of the ray with the polygon boundary
-                intersection = ray_line.intersection(capacity_polygon.boundary)
-
-                if intersection.is_empty:
-                    # No intersection found
-                    efficiency = None
-                    intersection_point = None
-                else:
-                    # There is an intersection
-                    # Intersection could be a Point or MultiPoint
-                    if isinstance(intersection, Point):
-                        intersection_point = np.array(
-                            [intersection.x, intersection.y]
-                        )
-                    elif isinstance(intersection, LineString):
-                        # The ray lies along an edge; take the point closest
-                        # to the origin
-                        coords = np.array(intersection.coords)
-                        distances = np.linalg.norm(coords - origin, axis=1)
-                        min_index = np.argmin(distances)
-                        intersection_point = coords[min_index]
-                    elif intersection.geom_type == 'MultiPoint':
-                        # Choose the closest intersection point to the origin
-                        points = np.array(
-                            [[pt.x, pt.y] for pt in intersection.geoms]
-                        )
-                        distances = np.linalg.norm(points - origin, axis=1)
-                        min_index = np.argmin(distances)
-                        intersection_point = points[min_index]
-                    else:
-                        # Unexpected geometry type
-                        efficiency = None
-                        intersection_point = None
-
-                    if intersection_point is not None:
-                        # Calculate distances
-                        distance_origin_to_intersection = np.linalg.norm(
-                            intersection_point - origin
-                        )
-                        distance_origin_to_point = np.linalg.norm(
-                            point - origin
-                        )
-
-                        # Calculate efficiency
-                        if distance_origin_to_intersection != 0:
-                            efficiency = (
-                                distance_origin_to_point
-                                / distance_origin_to_intersection
-                            )
-                        else:
-                            efficiency = np.inf  # Avoid division by zero
-
-                        # Determine if the point is inside based on efficiency
-                        is_inside = efficiency <= 1
-
-                # Append the result for this point
-                results.append(
-                    {
-                        'point': point,
-                        'is_inside': is_inside,
-                        'efficiency': efficiency,
-                        'intersection_point': intersection_point,
-                    }
-                )
-
-            if debug:
-                # Print the results
-                for res in results:
-                    point = res['point']
-                    is_inside = res['is_inside']
-                    efficiency = res['efficiency']
-                    print(
-                        f"Point {point} is "
-                        f"{'inside' if is_inside else 'outside'} the boundary."
-                    )
-                    if efficiency is not None:
-                        print(f'Efficiency: {efficiency:.4f}')
-                    if res['intersection_point'] is not None:
-                        print(
-                            f"Intersection Point: {res['intersection_point']}"
-                        )
-                    print('---')
-
-            return results
-
-        # Step 1: Check if the section can carry the forces
-        mm_domain = self.calculate_mm_interaction_domain(
-            n=n_ed, num_theta=numpts_nmm
-        )
-        res = check_points_in_2D_diagram(
-            mm_domain.m_y, mm_domain.m_z, [[my_ed, mz_ed]]
-        )
-        if not res[0]['is_inside']:
-            raise ValueError(
-                f"Forces cannot be taken by section -> "
-                f"efficiency = {res[0]['efficiency']:.3f} > 1"
-            )
-
-        # Step 2: Obtain the boundaries of theta (angle of moments)
-        # corresponding to the quadrants of the alpha  for ultamate capacity.
-        # !! lower values of M=sqrt(My^2+Mz^2) could get different boundaries
-        # but this is an aproxximation that is then corrected with delta
-        res = self.calculate_bending_strength(math.pi, n_ed)
-        theta_0 = angle(res.m_y, res.m_z)
-
-        res = self.calculate_bending_strength(3 * math.pi / 2, n_ed)
-        theta_1 = angle(res.m_y, res.m_z)
-
-        res = self.calculate_bending_strength(0, n_ed)
-        theta_2 = angle(res.m_y, res.m_z)
-
-        res = self.calculate_bending_strength(math.pi / 2, n_ed)
-        theta_3 = angle(res.m_y, res.m_z)
-
-        # Angle of moments: theta
-        theta = angle(my_ed, mz_ed)
-
-        # get first attemp of alfa for iterations and quadrant of aplication
-        delta = math.pi / 10
-        # delta is used because the angle of theta is
-        # obtained for ultimate capacity and may be change in lower forces
-        if (theta_0 <= theta < theta_1) or (0 <= theta < theta_1):
-            alfa_1 = 0 - delta
-            alfa_2 = math.pi / 2 + delta
-            # alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
-            if theta_0 <= theta_1:  # theta_0>0
-                alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
-            else:  # theta_0<0
-                alfa = interpolate(
-                    theta_0 - 2 * math.pi, theta_1, alfa_1, alfa_2, theta
-                )
-        elif theta_1 <= theta < theta_2:
-            alfa_1 = math.pi / 2 - delta
-            alfa_2 = math.pi + delta
-            alfa = interpolate(theta_1, theta_2, alfa_1, alfa_2, theta)
-        elif theta_2 <= theta < theta_3:
-            alfa_1 = math.pi - delta
-            alfa_2 = 3 * math.pi / 2 + delta
-            alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
-        else:
-            alfa_1 = 3 * math.pi / 2 - delta
-            alfa_2 = 2 * math.pi + delta
-            alfa = interpolate(theta_0, theta_1, alfa_1, alfa_2, theta)
-
-        # Step 3: Iterative process to refine alfa
-        ITMAX = 50
-        iter = 0
-        m_ed = (my_ed**2 + mz_ed**2) ** 0.5
-        _chi_pre, _chi_post = None, None
-        _theta = -9e9
-        while ((abs(_theta - theta)) > 1e-4) and iter < ITMAX:
-            if (alfa_2 - alfa_1) > math.pi / 18:  # more than 10° -> simplifies
-                mc_r = self.calculate_moment_curvature(
-                    alfa + math.pi,
-                    n_ed,
-                    num_pre_yield=num_chis,
-                    num_post_yield=num_chis,
-                )
-            else:  # close to solutuion
-                mc_r = self.calculate_moment_curvature(
-                    alfa + math.pi,
-                    n_ed,
-                    chi=np.linspace(-_chi_pre, -_chi_post, num_chis),
-                )
-
-            _M = np.array((mc_r.m_y**2 + mc_r.m_z**2) ** 0.5)
-
-            # for non monotinic M-chi get the firs monotonic slice
-            _M, index = first_monotonic_series(_M)
-            _chi = np.array((mc_r.chi_y**2 + mc_r.chi_z**2) ** 0.5)
-            mc_r.chi_y = np.array(mc_r.chi_y[:index])
-            mc_r.chi_z = np.array(mc_r.chi_z[:index])
-            mc_r.m_y = np.array(mc_r.m_y[:index])
-            mc_r.m_z = np.array(mc_r.m_z[:index])
-            mc_r.eps_axial = np.array(mc_r.eps_axial[:index])
-
-            # Interpolation of curvatures and strain
-            _chi_current = np.interp(m_ed, _M, _chi)
-            chiy = _chi_current * math.cos(alfa)
-            chiz = _chi_current * math.sin(alfa)
-            My = np.interp(abs(chiy), abs(mc_r.chi_y), mc_r.m_y)
-            Mz = np.interp(abs(chiz), abs(mc_r.chi_z), mc_r.m_z)
-            eps_a = np.interp(abs(chiy), abs(mc_r.chi_y), mc_r.eps_axial)
-
-            # region faster algorithm for (alfa_2 - alfa_1)<10º
-            delta_chi = abs(_chi[-1] - _chi[0]) * 0.20
-            _chi_pre = _chi_current - delta_chi
-            _chi_post = _chi_current + delta_chi
-            # endregion
-            """print(
-                f'My {round(My/1e6)} - '
-                f'Mz {round(Mz/1e6)} - '
-                f'alfa1 {round(math.degrees(alfa_1),1)} - '
-                f'alfa {round(math.degrees(alfa),1)} - '
-                f'alfa2 {round(math.degrees(alfa_2),1)} - '
-                f'_theta {round(math.degrees(_theta),1)} - '
-                f'theta {round(math.degrees(theta),1)} - '
-            )"""
-
-            _theta = angle(My, Mz)
-            if _theta > theta:
-                alfa_2 = alfa
-            else:
-                alfa_1 = alfa
-
-            alfa = 0.5 * (alfa_1 + alfa_2)
-
-            iter += 1
-        if iter == ITMAX:
-            s = f'Last iteration reached: \
-                My = {My} Mz = {Mz})'
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
-        else:
-            return eps_a, chiy, chiz
+        del n, my, mz
+        raise NotImplementedError('Not implemented yet')

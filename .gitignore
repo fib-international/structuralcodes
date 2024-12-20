@@ -162,8 +162,3 @@ cython_debug/
 
 #Pyenv files
 *.python-version
-
-#test files
-borrar.py
-
-/branch_examples
