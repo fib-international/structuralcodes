@@ -1351,7 +1351,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         Returns:
             List(float): 3 floats: Axial strain at (0,0), and curvatures of the
-                section around y and z axes.
+            section around y and z axes.
         """
         # Get the gometry
         geom = self.section.geometry
