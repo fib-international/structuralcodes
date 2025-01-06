@@ -8,6 +8,7 @@ import warnings
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from scipy.linalg import lu_factor, lu_solve
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -337,7 +338,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def find_equilibrium_fixed_pivot(
         self, geom: CompoundGeometry, n: float, yielding: bool = False
-    ) -> t.Tuple[float, float, float]:
+    ) -> t.List[float]:
         """Find the equilibrium changing curvature fixed a pivot.
         The algorithm uses bisection algorithm between curvature
         of balanced failure and 0. Selected the pivot point as
@@ -351,8 +352,8 @@ class GenericSectionCalculator(SectionCalculator):
             yielding (bool): ...
 
         Returns:
-            Tuple(float, float, float): 3 floats: Axial strain at (0,0), and
-            curvatures of y* and z* axes. Note that being uniaxial bending,
+            List(float): 3 floats: Axial strain at (0,0), and curvatures of y*
+            and z* axes. Note that being uniaxial bending,
             curvature along z* is 0.0.
         """
         # Number of maximum iteration for the bisection algorithm
@@ -371,6 +372,10 @@ class GenericSectionCalculator(SectionCalculator):
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom, strain, tri=self.triangulated_data, mesh_size=self.mesh_size
         )
+        # save the triangulation data
+        if self.triangulated_data is None and tri is not None:
+            self.triangulated_data = tri
+
         # Check if there is equilibrium with this strain distribution
         chi_a = strain[1]
         dn_a = n_int - n
@@ -416,9 +421,6 @@ class GenericSectionCalculator(SectionCalculator):
             s = f'Last iteration reached a unbalance of {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
-        # save the triangulation data
-        if self.triangulated_data is None and tri is not None:
-            self.triangulated_data = tri
         # Return the strain distribution
         return [eps_0, chi_c, 0]
 
@@ -1324,3 +1326,99 @@ class GenericSectionCalculator(SectionCalculator):
             res.strains[i, 2] = res_bend_strength.chi_z
 
         return res
+
+    def calculate_strain_profile(
+        self,
+        n,
+        my,
+        mz,
+        initial: bool = False,
+        max_iter: int = 10,
+        tol: float = 1e-6,
+    ) -> t.List[float]:
+        """Get the strain plane for a given axial force and biaxial bending.
+
+        Args:
+            n (float): Axial load.
+            my (float): Bending moment around y-axis.
+            mz (float): Bending moment around z-axis.
+            initial (bool): If True the modified newton with initial tanget is
+                used (default = False).
+            max_iter (int): the maximum number of iterations in the iterative
+                process (default = 10).
+            tol (float): the tolerance for convergence test in terms of strain
+                increment.
+
+        Returns:
+            List(float): 3 floats: Axial strain at (0,0), and curvatures of the
+            section around y and z axes.
+        """
+        # Get the gometry
+        geom = self.section.geometry
+
+        # Collect loads in a numpy array
+        loads = np.array([n, my, mz])
+
+        # Compute initial tangent stiffness matrix
+        stiffness_tangent, tri = (
+            self.integrator.integrate_strain_response_on_geometry(
+                geom,
+                [0, 0, 0],
+                integrate='modulus',
+                tri=self.triangulated_data,
+            )
+        )
+        # eventually save the triangulation data
+        if self.triangulated_data is None and tri is not None:
+            self.triangulated_data = tri
+
+        # Calculate strain plane with Newton Rhapson Iterative method
+        num_iter = 0
+        strain = np.zeros(3)
+
+        # Factorize once the stiffness matrix if using initial
+        if initial:
+            # LU factorization
+            # (maybe also Choelesky could work if matrix always SPD?)
+            lu, piv = lu_factor(stiffness_tangent)
+
+        # Do Newton loops
+        while True:
+            # Check if number of iterations exceeds the maximum
+            if num_iter > max_iter:
+                break
+
+            # Calculate response and residuals
+            response = np.array(self.integrate_strain_profile(strain=strain))
+            residual = loads - response
+
+            if initial:
+                # Solve using the decomposed matrix
+                delta_strain = lu_solve((lu, piv), residual)
+            else:
+                # Calculate the current tangent stiffness
+                stiffness_tangent, _ = (
+                    self.integrator.integrate_strain_response_on_geometry(
+                        geom,
+                        strain,
+                        integrate='modulus',
+                        tri=self.triangulated_data,
+                    )
+                )
+
+                # Solve using the current tangent stiffness
+                delta_strain = np.linalg.solve(stiffness_tangent, residual)
+
+            # Update the strain
+            strain += delta_strain
+
+            num_iter += 1
+
+            # Check for convergence:
+            if np.linalg.norm(delta_strain) < tol:
+                break
+
+        if num_iter >= max_iter:
+            raise StopIteration('Maximum number of iterations reached.')
+
+        return strain.tolist()
