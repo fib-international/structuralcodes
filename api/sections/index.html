@@ -7,7 +7,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Sections - StructuralCodes documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -254,6 +254,7 @@
 <li class="toctree-l3"><a class="reference internal" href="section_creation.html">Section creation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="section_integrator.html">Section integrator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="section_calculator.html">Section calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="misc_functions.html">Miscellaneous functions</a></li>
 </ul>
 </li>
 </ul>
@@ -327,7 +328,8 @@
 <li class="toctree-l2"><a class="reference internal" href="section_integrator.html#base-class-for-section-integrators">Base class for section integrators</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.SectionIntegrator"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.SectionIntegrator.prepare_input"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.prepare_input()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.SectionIntegrator.integrate"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.SectionIntegrator.integrate_stress"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate_stress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.SectionIntegrator.integrate_modulus"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate_modulus()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.SectionIntegrator.integrate_strain_response_on_geometry"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate_strain_response_on_geometry()</span></code></a></li>
 </ul>
 </li>
@@ -340,7 +342,8 @@
 <li class="toctree-l2"><a class="reference internal" href="section_integrator.html#the-marin-integrator">The Marin integrator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.MarinIntegrator"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.MarinIntegrator.prepare_input"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.prepare_input()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.MarinIntegrator.integrate"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.MarinIntegrator.integrate_stress"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate_stress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.MarinIntegrator.integrate_modulus"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate_modulus()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.MarinIntegrator.integrate_strain_response_on_geometry"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate_strain_response_on_geometry()</span></code></a></li>
 </ul>
 </li>
@@ -350,7 +353,8 @@
 <li class="toctree-l2"><a class="reference internal" href="section_integrator.html#the-fiber-integrator">The fiber integrator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator.prepare_input"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.prepare_input()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator.integrate"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator.integrate_stress"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate_stress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator.integrate_modulus"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate_modulus()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator.integrate_strain_response_on_geometry"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate_strain_response_on_geometry()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_integrator.html#structuralcodes.sections.FiberIntegrator.prepare_triangulation"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.prepare_triangulation()</span></code></a></li>
 </ul>
@@ -373,6 +377,7 @@
 <li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_nm_interaction_domain"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.calculate_nm_interaction_domain()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_nmm_interaction_domain"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.calculate_nmm_interaction_domain()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_mm_interaction_domain"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.calculate_mm_interaction_domain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.calculate_strain_profile"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.calculate_strain_profile()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.get_balanced_failure_strain"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.get_balanced_failure_strain()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.find_equilibrium_fixed_pivot"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.find_equilibrium_fixed_pivot()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="section_calculator.html#structuralcodes.sections.GenericSectionCalculator.find_equilibrium_fixed_curvature"><code class="docutils literal notranslate"><span class="pre">GenericSectionCalculator.find_equilibrium_fixed_curvature()</span></code></a></li>
@@ -381,8 +386,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="section_calculator.html#section-results">Section results</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.GrossProperties"><code class="docutils literal notranslate"><span class="pre">GrossProperties</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.CrackedProperties"><code class="docutils literal notranslate"><span class="pre">CrackedProperties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.SectionProperties"><code class="docutils literal notranslate"><span class="pre">SectionProperties</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.MomentCurvatureResults"><code class="docutils literal notranslate"><span class="pre">MomentCurvatureResults</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.UltimateBendingMomentResults"><code class="docutils literal notranslate"><span class="pre">UltimateBendingMomentResults</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.NMInteractionDomain"><code class="docutils literal notranslate"><span class="pre">NMInteractionDomain</span></code></a><ul>
@@ -412,6 +416,10 @@
 </li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="misc_functions.html">Miscellaneous functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="misc_functions.html#structuralcodes.sections.calculate_elastic_cracked_properties"><code class="docutils literal notranslate"><span class="pre">calculate_elastic_cracked_properties()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -447,7 +455,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2024, fib International
+                Copyright &#169; 2025, fib International
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -481,8 +489,5 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
-    <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../../_static/tippy\api\sections\index.36048a45-421d-46f1-9878-58c674a840ef.js"></script>
     </body>
 </html>

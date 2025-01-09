@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Geometry creation" href="geometry_creation.html" /><link rel="prev" title="Base material classes" href="../materials/base_materials.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Theory reference" href="../../theory/index.html" /><link rel="prev" title="Section calculator" href="section_calculator.html" />
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
-        <title>Geometry - StructuralCodes documentation</title>
+        <title>Miscellaneous functions - StructuralCodes documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -180,7 +180,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -245,16 +245,16 @@
 <li class="toctree-l3"><a class="reference internal" href="../materials/base_materials.html">Base material classes</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">Geometry</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="geometry_creation.html">Geometry creation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="steel_sections.html">Steel sections</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../geometry/steel_sections.html">Steel sections</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../sections/section_creation.html">Section creation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sections/section_integrator.html">Section integrator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sections/section_calculator.html">Section calculator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sections/misc_functions.html">Miscellaneous functions</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">Sections</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="section_calculator.html">Section calculator</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Miscellaneous functions</a></li>
 </ul>
 </li>
 </ul>
@@ -282,12 +282,12 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/api/geometry/index.md?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/api/sections/misc_functions.md?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
 </div><div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/api/geometry/index.md" title="Edit this page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/api/sections/misc_functions.md" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -300,38 +300,44 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="geometry">
-<span id="api-geometry"></span><h1>Geometry<a class="headerlink" href="#geometry" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="geometry_creation.html">Geometry creation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#structuralcodes.geometry.Geometry"><code class="docutils literal notranslate"><span class="pre">Geometry</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#structuralcodes.geometry.PointGeometry"><code class="docutils literal notranslate"><span class="pre">PointGeometry</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#structuralcodes.geometry.SurfaceGeometry"><code class="docutils literal notranslate"><span class="pre">SurfaceGeometry</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#structuralcodes.geometry.CompoundGeometry"><code class="docutils literal notranslate"><span class="pre">CompoundGeometry</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#structuralcodes.geometry.create_line_point_angle"><code class="docutils literal notranslate"><span class="pre">create_line_point_angle()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#common-geometries">Common geometries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="geometry_creation.html#functions-for-adding-reinforcement">Functions for adding reinforcement</a></li>
+          <section id="miscellaneous-functions">
+<span id="api-section-misc"></span><h1>Miscellaneous functions<a class="headerlink" href="#miscellaneous-functions" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.sections.calculate_elastic_cracked_properties">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">calculate_elastic_cracked_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="section_creation.html#structuralcodes.sections.GenericSection" title="structuralcodes.sections._generic.GenericSection"><span class="pre">GenericSection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_cracked_section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.SectionProperties" title="structuralcodes.core._section_results.SectionProperties"><span class="pre">SectionProperties</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.SectionProperties" title="structuralcodes.core._section_results.SectionProperties"><span class="pre">SectionProperties</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\_rc_utils.py#L12-L114"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.calculate_elastic_cracked_properties" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the cracked section properties of a reinforced concrete
+section. (GenericSection). Materials in surface geometries and point
+geometries are elastic-linear in order to make the cracking properties
+independent of the stress state. Tension in all surface geometries is
+neglected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>section</strong> (<a class="reference internal" href="section_creation.html#structuralcodes.sections.GenericSection" title="structuralcodes.sections.GenericSection"><em>GenericSection</em></a>) – The section to use as basis for the
+calculation.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Angle of the neutral axis to the horizontal in radians.
+theta=0 implies upper compression block.</p></li>
+<li><p><strong>return_cracked_section</strong> (<em>bool</em>) – If true, returns also the cracked
+section.</p></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="steel_sections.html">Steel sections</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.IPE"><code class="docutils literal notranslate"><span class="pre">IPE</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.HE"><code class="docutils literal notranslate"><span class="pre">HE</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.UB"><code class="docutils literal notranslate"><span class="pre">UB</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.UC"><code class="docutils literal notranslate"><span class="pre">UC</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.UBP"><code class="docutils literal notranslate"><span class="pre">UBP</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.IPN"><code class="docutils literal notranslate"><span class="pre">IPN</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="steel_sections.html#structuralcodes.geometry.UPN"><code class="docutils literal notranslate"><span class="pre">UPN</span></code></a></li>
-</ul>
-</li>
-</ul>
-</div>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SectionProperties data of a cracked section (i.e cracked section
+properties) and (if return_cracked_section is True) the cracked
+section.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>t.Union[<a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.SectionProperties" title="structuralcodes.core._section_results.SectionProperties">SectionProperties</a>, t.Tuple[<a class="reference internal" href="section_calculator.html#structuralcodes.core._section_results.SectionProperties" title="structuralcodes.core._section_results.SectionProperties">SectionProperties</a>, <a class="reference internal" href="section_creation.html#structuralcodes.sections.GenericSection" title="structuralcodes.sections.GenericSection">GenericSection</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -339,23 +345,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="geometry_creation.html">
+          <a class="next-page" href="../../theory/index.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Geometry creation</div>
+                <div class="title">Theory reference</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../materials/base_materials.html">
+          <a class="prev-page" href="section_calculator.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Base material classes</div>
+                <div class="title">Section calculator</div>
                 
               </div>
             </a>
@@ -384,8 +390,27 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Miscellaneous functions</a><ul>
+<li><a class="reference internal" href="#structuralcodes.sections.calculate_elastic_cracked_properties"><code class="docutils literal notranslate"><span class="pre">calculate_elastic_cracked_properties()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

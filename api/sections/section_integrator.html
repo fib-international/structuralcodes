@@ -7,7 +7,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Section integrator - StructuralCodes documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -254,6 +254,7 @@
 <li class="toctree-l3"><a class="reference internal" href="section_creation.html">Section creation</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Section integrator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="section_calculator.html">Section calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="misc_functions.html">Miscellaneous functions</a></li>
 </ul>
 </li>
 </ul>
@@ -311,26 +312,28 @@
 <h2>Base class for section integrators<a class="headerlink" href="#base-class-for-section-integrators" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="structuralcodes.sections.SectionIntegrator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">SectionIntegrator</span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L12-L49"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">SectionIntegrator</span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L12-L73"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator" title="Link to this definition">¶</a></dt>
 <dd><p>Abstract base class for section integrators.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.SectionIntegrator.prepare_input">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L15-L24"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.prepare_input" title="Link to this definition">¶</a></dt>
-<dd><p>Prepare general input to the integration method.</p>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L15-L28"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.prepare_input" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare general input to the stress integration method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>geo</strong> (<a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry.CompoundGeometry"><em>CompoundGeometry</em></a>) – The geometry to integrate over.</p></li>
 <li><p><strong>strain</strong> (<em>ArrayLike</em>) – The scalar strain components necessary for
 describing the assumed strain distribution over the geometry.</p></li>
+<li><p><strong>integrate</strong> (<em>str</em>) – The integrand, i.e., the quantity to be integrated
+over the section.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="structuralcodes.sections.SectionIntegrator.integrate">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">prepared_input</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L26-L40"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.integrate" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="structuralcodes.sections.SectionIntegrator.integrate_stress">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integrate_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">prepared_input</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L30-L44"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.integrate_stress" title="Link to this definition">¶</a></dt>
 <dd><p>Integrate stresses over the geometry.</p>
 <p>The input to this method is generated by the prepare_input method. It
 also takes kwargs depending on the concrete implementation.</p>
@@ -346,8 +349,25 @@ implementation.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="structuralcodes.sections.SectionIntegrator.integrate_modulus">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integrate_modulus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">prepared_input</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L46-L60"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.integrate_modulus" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate material modulus over the geometry.</p>
+<p>The input to this method is generated by the prepare_input method. It
+also takes kwargs depending on the concrete implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*prepared_input</strong> – The input prepared by the prepare_input method.</p>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>**kwargs</strong> – Keyword arguments depending on the concrete
+implementation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.SectionIntegrator.integrate_strain_response_on_geometry">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integrate_strain_response_on_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L42-L49"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.integrate_strain_response_on_geometry" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integrate_strain_response_on_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_section_integrator.py#L62-L73"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.SectionIntegrator.integrate_strain_response_on_geometry" title="Link to this definition">¶</a></dt>
 <dd><p>Integrate stresses over the geometry to obtain the response due to
 strains.</p>
 </dd></dl>
@@ -368,13 +388,15 @@ strains.</p>
 <h2>The Marin integrator<a class="headerlink" href="#the-marin-integrator" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="structuralcodes.sections.MarinIntegrator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">MarinIntegrator</span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L19-L222"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">MarinIntegrator</span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L23-L393"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator" title="Link to this definition">¶</a></dt>
 <dd><p>Section integrator based on the Marin algorithm.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.MarinIntegrator.prepare_input">
-<span class="sig-name descname"><span class="pre">prepare_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L22-L149"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.prepare_input" title="Link to this definition">¶</a></dt>
-<dd><p>Prepare general input to the integration.</p>
-<p>Calculate the stresses based on strains in a set of points.</p>
+<span class="sig-name descname"><span class="pre">prepare_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'stress'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'modulus'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stress'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L167-L220"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.prepare_input" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare general input to the integration of stress or material
+modulus in the section.</p>
+<p>Calculate the stress resultants or tangent section stiffness based on
+strains in a set of points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -382,8 +404,11 @@ strains.</p>
 <li><p><strong>strain</strong> (<em>ArrayLike</em>) – The strains and curvatures of the section,
 given in the format (ea, ky, kz) which are i) strain at 0,0,
 ii) curvature y axis, iii) curvature z axis.</p></li>
-<li><p><strong>mesh_size</strong> – Percentage of area (number from 0 to 1) max for triangle
-elements.</p></li>
+<li><p><strong>integrate</strong> (<em>str</em>) – a string indicating the quantity to integrate over
+the section. It can be ‘stress’ or ‘modulus’. When ‘stress’
+is selected, the return value will be the stress resultants N,
+My, Mz, while if ‘modulus’ is selected, the return will be the
+section stiffness matrix (default is ‘stress’).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -395,19 +420,25 @@ respectively y, z and stress coefficients for each sub-part.</p>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Tuple(float, Tuple(ndarray, ndarray, ndarray))</p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If a unkown value is passed to the <cite>integrate</cite></p></li>
+<li><p><strong>parameter.</strong> – </p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="structuralcodes.sections.MarinIntegrator.integrate">
-<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepared_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L151-L200"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.integrate" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="structuralcodes.sections.MarinIntegrator.integrate_stress">
+<span class="sig-name descname"><span class="pre">integrate_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepared_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L222-L271"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.integrate_stress" title="Link to this definition">¶</a></dt>
 <dd><p>Integrate stresses over the geometry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>prepared_input</strong> (<em>List</em>) – The prepared input from .prepare_input().</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The stress resultants N, Mx and My.</p>
+<dd class="field-even"><p>The stress resultants N, My and Mz.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Tuple(float, float, float)</p>
@@ -416,9 +447,29 @@ respectively y, z and stress coefficients for each sub-part.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="structuralcodes.sections.MarinIntegrator.integrate_modulus">
+<span class="sig-name descname"><span class="pre">integrate_modulus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepared_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L273-L343"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.integrate_modulus" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate material modulus over the geometry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prepared_input</strong> (<em>List</em>) – The prepared input from .prepare_input().</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The section stiffness matrix as a (3, 3) ndarray.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.MarinIntegrator.integrate_strain_response_on_geometry">
-<span class="sig-name descname"><span class="pre">integrate_strain_response_on_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L202-L222"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.integrate_strain_response_on_geometry" title="Link to this definition">¶</a></dt>
-<dd><p>Integrate the strain response with the Marin algorithm.</p>
+<span class="sig-name descname"><span class="pre">integrate_strain_response_on_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'stress'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'modulus'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stress'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_marin_integrator.py#L345-L393"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.MarinIntegrator.integrate_strain_response_on_geometry" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate strees or material modulus in the section with the marin
+algorithm.</p>
+<p>Calculate the stress resultants or tangent section stiffness based on
+strains in a set of points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -426,14 +477,33 @@ respectively y, z and stress coefficients for each sub-part.</p>
 <li><p><strong>strain</strong> (<em>ArrayLike</em>) – The strains and curvatures of the section,
 given in the format (ea, ky, kz) which are i) strain at 0,0,
 ii) curvature y axis, iii) curvature z axis.</p></li>
+<li><p><strong>integrate</strong> (<em>str</em>) – a string indicating the quantity to integrate over
+the section. It can be ‘stress’ or ‘modulus’. When ‘stress’
+is selected, the return value will be the stress resultants N,
+My, Mz, while if ‘modulus’ is selected, the return will be the</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The stress resultants N,
-Mx and My and the triangulation data.</p>
+<dd class="field-even"><p>The
+first element is either a tuple of floats (for the stress
+resultants (N, My, Mz) when <cite>integrate=’stress’</cite>, or a numpy
+array representing the stiffness matrix then <cite>integrate=’modulus’</cite>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple(Tuple(float, float, float), Dict)</p>
+<dd class="field-odd"><p>Tuple(Union(Tuple(float, float, float), np.ndarray), None)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>result, _ = integrate_strain_response_on_geometry(geo, strain,
+integrate=’tanent’)
+# <cite>result</cite> will be the stiffness matrix (a 3x3 numpy array) if
+# <cite>integrate=’modulus’</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If a unkown value is passed to the <cite>integrate</cite></p></li>
+<li><p><strong>parameter.</strong> – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -470,39 +540,54 @@ negative.</p>
 <h2>The fiber integrator<a class="headerlink" href="#the-fiber-integrator" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">FiberIntegrator</span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L17-L236"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">structuralcodes.sections.</span></span><span class="sig-name descname"><span class="pre">FiberIntegrator</span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L18-L332"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator" title="Link to this definition">¶</a></dt>
 <dd><p>Section integrator based on the Marin algorithm.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator.prepare_input">
-<span class="sig-name descname"><span class="pre">prepare_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L63-L188"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.prepare_input" title="Link to this definition">¶</a></dt>
-<dd><p>Prepare general input to the integration.</p>
-<p>Calculate the stresses based on strains in a set of points.</p>
+<span class="sig-name descname"><span class="pre">prepare_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'stress'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'modulus'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stress'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L158-L229"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.prepare_input" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare general input to the integration of stress or material
+modulus in the section.</p>
+<p>Calculate the stress resultants or tangent section stiffness based on
+strains in a set of points.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>geo</strong> (<a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry.CompoundGeometry"><em>CompoundGeometry</em></a>) – The geometry of the section.</p></li>
 <li><p><strong>strain</strong> (<em>ArrayLike</em>) – The strains and curvatures of the section,
 given in the format (ea, ky, kz) which are i) strain at 0,0,
 ii) curvature y axis, iii) curvature z axis.</p></li>
-<li><p><strong>mesh_size</strong> – Percentage of area (number from 0 to 1) max for triangle
-elements.</p></li>
+<li><p><strong>integrate</strong> (<em>str</em>) – a string indicating the quantity to integrate over
+the section. It can be ‘stress’ or ‘modulus’. When ‘stress’
+is selected, the return value will be the stress resultants N,
+My, Mz, while if ‘modulus’ is selected, the return will be the
+tangent section stiffness matrix (default is ‘stress’).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The prepared input representing a list with
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>mesh_size</strong> (<em>float</em>) – Percentage of area (number from 0 to 1) max for
+triangle elements.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The prepared input representing a list with
 x-coordinates, y-coordinates and force for each fiber and a
-dictionary containing the triangulation data that can be stored and
+list containing the triangulation data that can be stored and
 used later to avoid repetition of triangulation.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple(List, Dict)</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple(List)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If a unkown value is passed to the <cite>integrate</cite></p></li>
+<li><p><strong>parameter.</strong> – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator.integrate">
-<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prepared_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L190-L211"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.integrate" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator.integrate_stress">
+<span class="sig-name descname"><span class="pre">integrate_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prepared_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L231-L252"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.integrate_stress" title="Link to this definition">¶</a></dt>
 <dd><p>Integrate stresses over the geometry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -518,9 +603,28 @@ used later to avoid repetition of triangulation.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator.integrate_modulus">
+<span class="sig-name descname"><span class="pre">integrate_modulus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prepared_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L254-L280"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.integrate_modulus" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate material modulus over the geometry to obtain section
+stiffness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prepared_input</strong> (<em>List</em>) – The prepared input from .prepare_input().</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The stiffness matrix with shape (3,3).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NDArray[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator.integrate_strain_response_on_geometry">
-<span class="sig-name descname"><span class="pre">integrate_strain_response_on_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L213-L236"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.integrate_strain_response_on_geometry" title="Link to this definition">¶</a></dt>
-<dd><p>Integrate the strain response with the fiber algorithm.</p>
+<span class="sig-name descname"><span class="pre">integrate_strain_response_on_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.CompoundGeometry" title="structuralcodes.geometry._geometry.CompoundGeometry"><span class="pre">CompoundGeometry</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArrayLike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'stress'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'modulus'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stress'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L282-L332"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.integrate_strain_response_on_geometry" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate stress or material modulus in the section with the fiber
+algorithm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -528,24 +632,44 @@ used later to avoid repetition of triangulation.</p>
 <li><p><strong>strain</strong> (<em>ArrayLike</em>) – The strains and curvatures of the section,
 given in the format (ea, ky, kz) which are i) strain at 0,0,
 ii) curvature y axis, iii) curvature z axis.</p></li>
+<li><p><strong>integrate</strong> (<em>str</em>) – a string indicating the quantity to integrate over
+the section. It can be ‘stress’ or ‘modulus’. When ‘stress’
+is selected, the return value will be the stress resultants N,
+My, Mz, while if ‘modulus’ is selected, the return will be the
+section stiffness matrix (default is ‘stress’).</p></li>
 <li><p><strong>mesh_size</strong> – Percentage of area (number from 0 to 1) max for triangle
 elements.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The stress resultants N,
-Mx and My and the triangulation data.</p>
+<dd class="field-even"><p>The
+first element is either a tuple of floats (for the stress
+resultants (N, My, Mz) when <cite>integrate=’stress’</cite>, or a numpy
+array representing the stiffness matrix then <cite>integrate=’modulus’</cite>.
+The second element is a list with data from triangulation.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple(Tuple(float, float, float), Dict)</p>
+<dd class="field-odd"><p>Tuple(Union(Tuple(float, float, float), np.ndarray), List)</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>result, tri = integrate_strain_response_on_geometry(geo, strain,
+integrate=’tangent’)
+<cite>result</cite> will be the stiffness matrix (a 3x3 numpy array) if</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If a unkown value is passed to the <cite>integrate</cite></p></li>
+<li><p><strong>parameter.</strong> – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="structuralcodes.sections.FiberIntegrator.prepare_triangulation">
-<span class="sig-name descname"><span class="pre">prepare_triangulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry" title="structuralcodes.geometry._geometry.SurfaceGeometry"><span class="pre">SurfaceGeometry</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L20-L61"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.prepare_triangulation" title="Link to this definition">¶</a></dt>
-<dd><p>Triangulate a SurfaceGeometry object.</p>
+<span class="sig-name descname"><span class="pre">prepare_triangulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry" title="structuralcodes.geometry._geometry.SurfaceGeometry"><span class="pre">SurfaceGeometry</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\sections\section_integrators\_fiber_integrator.py#L21-L62"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.sections.FiberIntegrator.prepare_triangulation" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare data for triangulating it with triangle.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>geo</strong> (<a class="reference internal" href="../geometry/geometry_creation.html#structuralcodes.geometry.SurfaceGeometry" title="structuralcodes.geometry.SurfaceGeometry"><em>SurfaceGeometry</em></a>) – The geometry to triangulate.</p>
@@ -593,7 +717,7 @@ Mx and My and the triangulation data.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2024, fib International
+                Copyright &#169; 2025, fib International
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -630,7 +754,8 @@ Mx and My and the triangulation data.</p>
 <li><a class="reference internal" href="#base-class-for-section-integrators">Base class for section integrators</a><ul>
 <li><a class="reference internal" href="#structuralcodes.sections.SectionIntegrator"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator</span></code></a><ul>
 <li><a class="reference internal" href="#structuralcodes.sections.SectionIntegrator.prepare_input"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.prepare_input()</span></code></a></li>
-<li><a class="reference internal" href="#structuralcodes.sections.SectionIntegrator.integrate"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.sections.SectionIntegrator.integrate_stress"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate_stress()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.sections.SectionIntegrator.integrate_modulus"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate_modulus()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.sections.SectionIntegrator.integrate_strain_response_on_geometry"><code class="docutils literal notranslate"><span class="pre">SectionIntegrator.integrate_strain_response_on_geometry()</span></code></a></li>
 </ul>
 </li>
@@ -643,7 +768,8 @@ Mx and My and the triangulation data.</p>
 <li><a class="reference internal" href="#the-marin-integrator">The Marin integrator</a><ul>
 <li><a class="reference internal" href="#structuralcodes.sections.MarinIntegrator"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator</span></code></a><ul>
 <li><a class="reference internal" href="#structuralcodes.sections.MarinIntegrator.prepare_input"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.prepare_input()</span></code></a></li>
-<li><a class="reference internal" href="#structuralcodes.sections.MarinIntegrator.integrate"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.sections.MarinIntegrator.integrate_stress"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate_stress()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.sections.MarinIntegrator.integrate_modulus"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate_modulus()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.sections.MarinIntegrator.integrate_strain_response_on_geometry"><code class="docutils literal notranslate"><span class="pre">MarinIntegrator.integrate_strain_response_on_geometry()</span></code></a></li>
 </ul>
 </li>
@@ -653,7 +779,8 @@ Mx and My and the triangulation data.</p>
 <li><a class="reference internal" href="#the-fiber-integrator">The fiber integrator</a><ul>
 <li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator</span></code></a><ul>
 <li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator.prepare_input"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.prepare_input()</span></code></a></li>
-<li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator.integrate"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator.integrate_stress"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate_stress()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator.integrate_modulus"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate_modulus()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator.integrate_strain_response_on_geometry"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.integrate_strain_response_on_geometry()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.sections.FiberIntegrator.prepare_triangulation"><code class="docutils literal notranslate"><span class="pre">FiberIntegrator.prepare_triangulation()</span></code></a></li>
 </ul>
@@ -678,8 +805,5 @@ Mx and My and the triangulation data.</p>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script defer="defer" src="https://unpkg.com/@popperjs/core@2"></script>
-    <script defer="defer" src="https://unpkg.com/tippy.js@6"></script>
-    <script defer="defer" src="../../_static/tippy\api\sections\section_integrator.f557714c-5bb8-4159-a814-4b1787463257.js"></script>
     </body>
 </html>

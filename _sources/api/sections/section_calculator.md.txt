@@ -19,6 +19,7 @@
     .. automethod:: calculate_nm_interaction_domain
     .. automethod:: calculate_nmm_interaction_domain
     .. automethod:: calculate_mm_interaction_domain
+    .. automethod:: calculate_strain_profile
 
     .. automethod:: get_balanced_failure_strain
     .. automethod:: find_equilibrium_fixed_pivot
@@ -30,11 +31,7 @@
 ## Section results
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.core._section_results.GrossProperties
-```
-
-```{eval-rst}
-.. autoclass:: structuralcodes.core._section_results.CrackedProperties
+.. autoclass:: structuralcodes.core._section_results.SectionProperties
 ```
 
 ```{eval-rst}
