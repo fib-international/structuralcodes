@@ -2,6 +2,7 @@
 
 import math
 
+import numpy as np
 import pytest
 
 from structuralcodes.geometry import (
@@ -49,6 +50,42 @@ def test_create_rectangular_geometry_exception(wrong_width, wrong_height):
     mat = Elastic(30000)
     with pytest.raises(ValueError):
         RectangularGeometry(wrong_width, wrong_height, mat)
+
+
+# Test providing origin
+@pytest.mark.parametrize(
+    'origin',
+    [(0, 0), (30, 600), (1.0,)],
+)
+def test_rectangle_with_origin(origin):
+    """Test creating a rectangle with an origin."""
+    # Arrange
+    mat = Elastic(30000)
+    height = 600
+    width = 200
+
+    # Act and assert
+    if origin is not None and len(origin) == 2:
+        geom = RectangularGeometry(
+            width=width, height=height, material=mat, origin=origin
+        )
+        assert np.allclose(
+            (geom.polygon.centroid.xy[0][0], geom.polygon.centroid.xy[1][0]),
+            origin,
+        )
+    elif origin is None:
+        geom = RectangularGeometry(
+            width=width, height=height, material=mat, origin=origin
+        )
+        assert np.allclose(
+            (geom.polygon.centroid.xy[0][0], geom.polygon.centroid.xy[1][0]),
+            (0, 0),
+        )
+    else:
+        with pytest.raises(ValueError):
+            geom = RectangularGeometry(
+                width=width, height=height, material=mat, origin=origin
+            )
 
 
 # Test adding reinforcement in circular pattern
