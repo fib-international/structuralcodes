@@ -40,6 +40,37 @@ def test_create_circular_geometry_exception(wrong_diameter):
         CircularGeometry(wrong_diameter, mat)
 
 
+# Test providing origin
+@pytest.mark.parametrize(
+    'origin',
+    [(0, 0), (30, 600), (1.0,), None],
+)
+def test_circle_with_origin(origin):
+    """Test creating a circle with an origin."""
+    # Arrange
+    mat = Elastic(300000)
+    diameter = 100
+
+    # Act and assert
+    if origin is not None and len(origin) == 2:
+        geom = CircularGeometry(diameter=diameter, material=mat, origin=origin)
+        assert np.allclose(
+            (geom.polygon.centroid.xy[0][0], geom.polygon.centroid.xy[1][0]),
+            origin,
+        )
+    elif origin is None:
+        geom = CircularGeometry(diameter=diameter, material=mat, origin=origin)
+        assert np.allclose(
+            (geom.polygon.centroid.xy[0][0], geom.polygon.centroid.xy[1][0]),
+            (0, 0),
+        )
+    else:
+        with pytest.raises(ValueError):
+            geom = CircularGeometry(
+                diameter=diameter, material=mat, origin=origin
+            )
+
+
 # Test adding reinforcement in circular pattern
 # Whole circle
 @pytest.mark.parametrize('diameter, cover, n', [(200, 40, 8), (600, 50, 16)])

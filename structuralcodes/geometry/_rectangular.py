@@ -8,6 +8,7 @@ input by the user.
 
 import typing as t
 
+from numpy.typing import ArrayLike
 from shapely import Polygon
 
 from structuralcodes.core.base import ConstitutiveLaw, Material
@@ -30,6 +31,7 @@ class RectangularGeometry(SurfaceGeometry):
         material: t.Union[Material, ConstitutiveLaw],
         density: t.Optional[float] = None,
         concrete: bool = False,
+        origin: t.Optional[ArrayLike] = None,
     ) -> None:
         """Initialize a RectangularGeometry.
 
@@ -44,6 +46,8 @@ class RectangularGeometry(SurfaceGeometry):
                 material.
             concrete (bool): Flag to indicate if the geometry is concrete. When
                 passing a Material as material, this is automatically inferred.
+            origin (Optional(ArrayLike)): The center point of the rectangle.
+                (0.0, 0.0) is used as default.
 
         Note:
             The RectangularGeometry is simply a wrapper for a SurfaceGeometry
@@ -58,13 +62,18 @@ class RectangularGeometry(SurfaceGeometry):
         self._width = width
         self._height = height
 
+        # Parse origin
+        if origin is not None and len(origin) != 2:
+            raise ValueError('origin must be an ArrayLike with len == 2')
+        origin = origin if origin is not None else (0.0, 0.0)
+
         # Create the shapely polygon
         polygon = Polygon(
             (
-                (-width / 2, -height / 2),
-                (width / 2, -height / 2),
-                (width / 2, height / 2),
-                (-width / 2, height / 2),
+                (-width / 2 + origin[0], -height / 2 + origin[1]),
+                (width / 2 + origin[0], -height / 2 + origin[1]),
+                (width / 2 + origin[0], height / 2 + origin[1]),
+                (-width / 2 + origin[0], height / 2 + origin[1]),
             )
         )
         # Pass everything to the base class
