@@ -55,7 +55,7 @@ def test_create_rectangular_geometry_exception(wrong_width, wrong_height):
 # Test providing origin
 @pytest.mark.parametrize(
     'origin',
-    [(0, 0), (30, 600), (1.0,)],
+    [(0, 0), (30, 600), (1.0,), None],
 )
 def test_rectangle_with_origin(origin):
     """Test creating a rectangle with an origin."""

@@ -43,7 +43,7 @@ def test_create_circular_geometry_exception(wrong_diameter):
 # Test providing origin
 @pytest.mark.parametrize(
     'origin',
-    [(0, 0), (30, 600), (1.0,)],
+    [(0, 0), (30, 600), (1.0,), None],
 )
 def test_circle_with_origin(origin):
     """Test creating a circle with an origin."""
