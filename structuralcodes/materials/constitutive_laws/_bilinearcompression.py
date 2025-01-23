@@ -51,9 +51,13 @@ class BilinearCompression(ConstitutiveLaw):
         # Compute stress
         # If it is a scalar
         if np.isscalar(eps):
-            sig = 0
-            if self._fc / self._E <= eps <= 0:
-                sig = self._E * eps
+            sig = self._E * eps
+            if eps > 0:
+                return 0
+            if eps < self._eps_cu:
+                return 0
+            if sig < self._fc:
+                return self._fc
             return sig
         # If it is an array
         sig = self._E * eps

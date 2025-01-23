@@ -500,11 +500,13 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     sig_expected *= -1
 
     # compute from BilinearCompression
-    sig_computed = law.get_stress(-eps)
+    sig_computed_array = law.get_stress(-eps)
+    sig_computed_scalar = np.array([law.get_stress(-eps_scalar) for eps_scalar in eps])
     tan_computed = law.get_tangent(-eps)
 
     # Compare the two
-    assert_allclose(sig_computed, sig_expected)
+    assert_allclose(sig_computed_array, sig_expected)
+    assert_allclose(sig_computed_scalar, sig_expected)
     assert_allclose(tan_computed, tan_expected)
 
     # Test getting ultimate strain
