@@ -121,3 +121,26 @@ def test_reinforced_rectangular_geometry(w, h, c, n):
         n=n,
     )
     assert len(rc.point_geometries) == 2 * n
+
+
+def test_rectangular_geometry_name_group_label():
+    """Test the name and group label attribute of a RectangularGeometry."""
+    # Arrange
+    width = 200
+    height = 500
+    concrete = ConcreteMC2010(fck=35)
+    name = 'concrete_geometry'
+    group_label = 'concrete'
+
+    # Act
+    geometry = RectangularGeometry(
+        width=width,
+        height=height,
+        material=concrete,
+        name=name,
+        group_label=group_label,
+    )
+
+    # Assert
+    assert geometry.name == name
+    assert geometry.group_label == group_label

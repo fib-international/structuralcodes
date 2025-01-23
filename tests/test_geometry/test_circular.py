@@ -267,3 +267,24 @@ def test_reinforcement_circular_spacing_number_error():
             start_angle=0,
             stop_angle=np.pi,
         )
+
+
+def test_circular_geometry_name_group_label():
+    """Test the name and group label attribute of a CircularGeometry."""
+    # Arrange
+    diameter = 500
+    concrete = ConcreteMC2010(fck=35)
+    name = 'concrete_geometry'
+    group_label = 'concrete'
+
+    # Act
+    geometry = CircularGeometry(
+        diameter=diameter,
+        material=concrete,
+        name=name,
+        group_label=group_label,
+    )
+
+    # Assert
+    assert geometry.name == name
+    assert geometry.group_label == group_label
