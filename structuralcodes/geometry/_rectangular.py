@@ -32,6 +32,8 @@ class RectangularGeometry(SurfaceGeometry):
         density: t.Optional[float] = None,
         concrete: bool = False,
         origin: t.Optional[ArrayLike] = None,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
     ) -> None:
         """Initialize a RectangularGeometry.
 
@@ -48,6 +50,8 @@ class RectangularGeometry(SurfaceGeometry):
                 passing a Material as material, this is automatically inferred.
             origin (Optional(ArrayLike)): The center point of the rectangle.
                 (0.0, 0.0) is used as default.
+            name (Optional(str)): The name to be given to the object.
+            group_label (Optional(str)): A label for grouping several objects.
 
         Note:
             The RectangularGeometry is simply a wrapper for a SurfaceGeometry
@@ -78,7 +82,12 @@ class RectangularGeometry(SurfaceGeometry):
         )
         # Pass everything to the base class
         super().__init__(
-            poly=polygon, material=material, density=density, concrete=concrete
+            poly=polygon,
+            material=material,
+            density=density,
+            concrete=concrete,
+            name=name,
+            group_label=group_label,
         )
 
     @property

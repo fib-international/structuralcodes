@@ -42,6 +42,8 @@ class CircularGeometry(SurfaceGeometry):
         density: t.Optional[float] = None,
         concrete: bool = False,
         origin: t.Optional[ArrayLike] = None,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
     ) -> None:
         """Initialize a CircularGeometry.
 
@@ -58,6 +60,8 @@ class CircularGeometry(SurfaceGeometry):
             concrete (bool): Flag to indicate if the geometry is concrete.
             origin (Optional(ArrayLike)): The center point of the circle.
                 (0.0, 0.0) is used as default.
+            name (Optional(str)): The name to be given to the object.
+            group_label (Optional(str)): A label for grouping several objects.
 
         Note:
             The CircularGeometry is simply a wrapper for a SurfaceGeometry
@@ -78,7 +82,12 @@ class CircularGeometry(SurfaceGeometry):
         )
         # Pass everything to the base class
         super().__init__(
-            poly=polygon, material=material, density=density, concrete=concrete
+            poly=polygon,
+            material=material,
+            density=density,
+            concrete=concrete,
+            name=name,
+            group_label=group_label,
         )
 
     @property
