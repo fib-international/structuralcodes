@@ -272,7 +272,7 @@ class PointGeometry(Geometry):
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0)[0])
+            new_material = Elastic(E=geo.material.get_tangent(eps=0))
 
         return PointGeometry(
             point=geo._point,
@@ -323,7 +323,7 @@ def create_line_point_angle(
     return LineString([(x1, y1), (x2, y2)])
 
 
-class SurfaceGeometry:
+class SurfaceGeometry(Geometry):
     """Class for a surface geometry with material.
 
     Basically it is a wrapper for shapely polygon including the material (and
@@ -339,6 +339,8 @@ class SurfaceGeometry:
         material: t.Union[Material, ConstitutiveLaw],
         density: t.Optional[float] = None,
         concrete: bool = False,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
     ) -> None:
         """Initializes a SurfaceGeometry object.
 
@@ -350,7 +352,10 @@ class SurfaceGeometry:
                 the density can be provided by this argument. When mat is a
                 Material object the density is taken from the material.
             concrete (bool): Flag to indicate if the geometry is concrete.
+            name (Optional(str)): The name to be given to the object.
+            group_label (Optional(str)): A label for grouping several objects.
         """
+        super().__init__(name=name, group_label=group_label)
         # Check if inputs are of the correct type, otherwise return error
         if not isinstance(poly, Polygon):
             raise TypeError(
@@ -557,6 +562,7 @@ class SurfaceGeometry:
             poly=affinity.translate(self.polygon, dx, dy),
             material=self.material,
             density=self._density,
+            concrete=self.concrete,
         )
 
     def rotate(
@@ -584,6 +590,7 @@ class SurfaceGeometry:
             ),
             material=self.material,
             density=self._density,
+            concrete=self.concrete,
         )
 
     @staticmethod
@@ -622,7 +629,7 @@ class SurfaceGeometry:
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0)[0])
+            new_material = Elastic(E=geo.material.get_tangent(eps=0))
 
         return SurfaceGeometry(
             poly=geo.polygon, material=new_material, density=geo._density
