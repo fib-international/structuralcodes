@@ -489,23 +489,31 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     """Test BilinearCompression material."""
     law = BilinearCompression(fc=fc, eps_c=eps_c, eps_cu=eps_cu)
 
-    eps = np.linspace(0, eps_cu, 20)
+    eps = np.linspace(-2*eps_cu, eps_c, 20)
 
     # compute expected
     E = fc / eps_c
     sig_expected = E * eps
-    sig_expected[sig_expected > fc] = fc
-    tan_expected = np.zeros_like(sig_expected)
-    tan_expected[sig_expected < fc] = E
-    sig_expected *= -1
+    sig_expected[sig_expected < -fc] = -fc
+    sig_expected[eps > 0] = 0
+    sig_expected[eps < -eps_cu] = 0
+    tan_expected = np.ones_like(eps) * E
+    tan_expected[eps >= 0] = 0
+    tan_expected[eps < -eps_c] = 0
 
     # compute from BilinearCompression
-    sig_computed = law.get_stress(-eps)
-    tan_computed = law.get_tangent(-eps)
+    sig_computed_array = law.get_stress(eps)
+    sig_computed_scalar = np.array([law.get_stress(eps_scalar) for eps_scalar in eps])
+    tan_computed_array = law.get_tangent(eps)
+    tan_computed_scalar = np.array([law.get_tangent(eps_scalar) for eps_scalar in eps])
+
 
     # Compare the two
-    assert_allclose(sig_computed, sig_expected)
-    assert_allclose(tan_computed, tan_expected)
+    assert_allclose(sig_computed_array, sig_expected)
+    assert_allclose(sig_computed_scalar, sig_expected)
+    assert_allclose(tan_computed_array, tan_expected)
+    assert_allclose(tan_computed_scalar, tan_expected)
+
 
     # Test getting ultimate strain
     eps_min, eps_max = law.get_ultimate_strain()
