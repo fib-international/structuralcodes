@@ -3,6 +3,7 @@
 import abc
 import typing as t
 
+from structuralcodes.core._units import UnitSet
 from structuralcodes.core.base import ConstitutiveLaw, Material
 from structuralcodes.materials.constitutive_laws import create_constitutive_law
 
@@ -22,10 +23,11 @@ class Concrete(Material):
         density: float = 2400,
         gamma_c: t.Optional[float] = None,
         existing: t.Optional[bool] = False,
+        units: t.Optional[UnitSet] = None,
     ) -> None:
         """Initializes an abstract concrete material."""
         name = name if name is not None else 'Concrete'
-        super().__init__(density=density, name=name)
+        super().__init__(density=density, name=name, units=units)
 
         self._fck = abs(fck)
         if existing:
@@ -38,12 +40,12 @@ class Concrete(Material):
 
     @property
     def fck(self) -> float:
-        """Returns fck in MPa."""
+        """Returns fck."""
         return self._fck
 
     @fck.setter
     def fck(self, fck: float) -> None:
-        """Setter for fck (in MPa)."""
+        """Setter for fck."""
         self._fck = abs(fck)
         self._reset_attributes()
 
