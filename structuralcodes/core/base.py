@@ -130,14 +130,8 @@ class ConstitutiveLaw(abc.ABC):
 
         return eps
 
-    def __marin__(self, **kwargs):
-        """Function for getting the strain limits and coefficients
-        for marin integration.
-
-        By default the law is discretized as a piecewise linear
-        function. Then marin coefficients are computed based on this
-        discretization.
-        """
+    def _discretize_law(self) -> ConstitutiveLaw:
+        """Discretize the law as a piecewise linear function."""
 
         # Discretize the constitutive law in a "smart way"
         def find_x_lim(x, y):
@@ -179,8 +173,29 @@ class ConstitutiveLaw(abc.ABC):
         sig = self.get_stress(eps)
         from structuralcodes.materials.constitutive_laws import UserDefined
 
-        # Return Marin coefficients for linearized version
-        return UserDefined(eps, sig).__marin__(**kwargs)
+        return UserDefined(eps, sig)
+
+    def __marin__(self, **kwargs):
+        """Function for getting the strain limits and coefficients
+        for marin integration.
+
+        By default the law is discretized as a piecewise linear
+        function. Then marin coefficients are computed based on this
+        discretization.
+        """
+        piecewise_law = self._discretize_law()
+        return piecewise_law.__marin__(**kwargs)
+
+    def __marin_tangent__(self, **kwargs):
+        """Function for getting the strain limits and coefficients
+        for marin integration of tangent modulus.
+
+        By default the law is discretized as a piecewise linear
+        function. Then marin coefficients are computed based on this
+        discretization.
+        """
+        piecewise_law = self._discretize_law()
+        return piecewise_law.__marin_tangent__(**kwargs)
 
     def get_secant(self, eps: float) -> float:
         """Method to return the
@@ -228,7 +243,7 @@ class SectionCalculator(abc.ABC):
         self.section = section
 
     @abc.abstractmethod
-    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+    def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
         """Calculates the gross section properties of the section
         This function is private and called when the section is created
         It stores the result into the result object.
