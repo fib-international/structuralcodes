@@ -52,9 +52,9 @@ class BilinearCompression(ConstitutiveLaw):
         # If it is a scalar
         if np.isscalar(eps):
             if eps > 0 or eps < self._eps_cu:
-               return 0
+                return 0
             return max(self._E * eps, self._fc)
-        
+
         # If it is an array
         sig = self._E * eps
         sig[sig < self._fc] = self._fc
