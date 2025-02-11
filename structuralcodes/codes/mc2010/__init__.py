@@ -53,15 +53,8 @@ from ._concrete_material_properties import (
     k_sargin,
     n_parabolic_rectangular,
 )
-from ._concrete_punching import (
-    b_0,
-    m_ed,
-    psi_punching,
-    v_rd_max_punching,
-    v_rd_punching,
-    v_rdc_punching,
-    v_rds_punching,
-)
+from ._concrete_punching import ConcretePunching
+
 from ._concrete_shear import (
     create_load_dict,
     epsilon_x,
@@ -149,13 +142,7 @@ __all__ = [
     'v_rdc_approx2',
     'v_rdc_approx3',
     'v_rds',
-    'b_0',
-    'm_ed',
-    'psi_punching',
-    'v_rd_max_punching',
-    'v_rd_punching',
-    'v_rdc_punching',
-    'v_rds_punching',
+    'ConcretePunching',
     'v_ed_ti',
     't_rd_max',
     't_rd',
@@ -166,4 +153,4 @@ __all__ = [
 
 __title__: str = 'fib Model Code 2010'
 __year__: str = '2013'
-__materials__: t.Tuple[str] = ('concrete', 'reinforcement')
+__materials__: t.Tuple[str, str] = ('concrete', 'reinforcement')
