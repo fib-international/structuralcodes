@@ -2,6 +2,7 @@
 
 import math
 
+import numpy as np
 import pytest
 
 from structuralcodes.geometry import (
@@ -51,6 +52,42 @@ def test_create_rectangular_geometry_exception(wrong_width, wrong_height):
         RectangularGeometry(wrong_width, wrong_height, mat)
 
 
+# Test providing origin
+@pytest.mark.parametrize(
+    'origin',
+    [(0, 0), (30, 600), (1.0,), None],
+)
+def test_rectangle_with_origin(origin):
+    """Test creating a rectangle with an origin."""
+    # Arrange
+    mat = Elastic(30000)
+    height = 600
+    width = 200
+
+    # Act and assert
+    if origin is not None and len(origin) == 2:
+        geom = RectangularGeometry(
+            width=width, height=height, material=mat, origin=origin
+        )
+        assert np.allclose(
+            (geom.polygon.centroid.xy[0][0], geom.polygon.centroid.xy[1][0]),
+            origin,
+        )
+    elif origin is None:
+        geom = RectangularGeometry(
+            width=width, height=height, material=mat, origin=origin
+        )
+        assert np.allclose(
+            (geom.polygon.centroid.xy[0][0], geom.polygon.centroid.xy[1][0]),
+            (0, 0),
+        )
+    else:
+        with pytest.raises(ValueError):
+            geom = RectangularGeometry(
+                width=width, height=height, material=mat, origin=origin
+            )
+
+
 # Test adding reinforcement in circular pattern
 # Whole circle
 @pytest.mark.parametrize('w, h, c, n', [(200, 400, 40, 2), (400, 400, 50, 4)])
@@ -84,3 +121,26 @@ def test_reinforced_rectangular_geometry(w, h, c, n):
         n=n,
     )
     assert len(rc.point_geometries) == 2 * n
+
+
+def test_rectangular_geometry_name_group_label():
+    """Test the name and group label attribute of a RectangularGeometry."""
+    # Arrange
+    width = 200
+    height = 500
+    concrete = ConcreteMC2010(fck=35)
+    name = 'concrete_geometry'
+    group_label = 'concrete'
+
+    # Act
+    geometry = RectangularGeometry(
+        width=width,
+        height=height,
+        material=concrete,
+        name=name,
+        group_label=group_label,
+    )
+
+    # Assert
+    assert geometry.name == name
+    assert geometry.group_label == group_label
