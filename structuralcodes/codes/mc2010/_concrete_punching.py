@@ -182,6 +182,7 @@ def v_rds_punching(
         phi_w (float): The diameter of the shear reinforcement.
         a_sw (float): The area of the shear reinforcement in mm^2.
         v_ed (float): The acting shear force from the columns.
+
     Returns:
         float: Punching resistance that comes from reinforcement.
     """
@@ -196,8 +197,8 @@ def v_rds_punching(
 
     if (a_sw * k_e * f_ywd) < 0.5 * v_ed:
         warnings.warn(
-            "Consider increasing punching shear reinforcement for sufficient "
-            "deformation capacity"
+            'Consider increasing punching shear reinforcement for sufficient '
+            'deformation capacity'
         )
     return a_sw * k_e * sigma_swd * sin(alpha * pi / 180)
 

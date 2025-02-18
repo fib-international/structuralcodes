@@ -135,7 +135,7 @@ def test_v_rds_punching():
     assert result > 0
 
     # Test warning for insufficient reinforcement
-    warn_msg = "Consider increasing punching shear reinforcement"
+    warn_msg = 'Consider increasing punching shear reinforcement'
     with pytest.warns(UserWarning, match=warn_msg):
         _concrete_punching.v_rds_punching(
             f_ywk=500,
