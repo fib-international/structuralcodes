@@ -71,7 +71,6 @@ def m_ed(
         float: The bending moment acting in the support strip regardless of the
         position of the column.
     """
-
     if inner:
         return v_ed * ((1 / 8) + abs(e_u) / (2 * b_s))
     if edge_par:
@@ -177,7 +176,7 @@ def psi_punching(
     """
     if approx_lvl_p == 1:
         return psi_punching_level_one
-    elif approx_lvl_p == 2:
+    if approx_lvl_p == 2:
         return psi_punching_level_two
     raise ValueError('Approximation level is not defined')
 
