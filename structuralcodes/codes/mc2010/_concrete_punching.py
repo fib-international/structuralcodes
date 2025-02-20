@@ -20,11 +20,31 @@ def b_0(v_ed: float, v_prep_d_max: float) -> float:
     return v_ed / v_prep_d_max
 
 
+def b_s(
+    l_x: float,
+    l_y: float,
+) -> float:
+    """The width of the support strip for calculating m_ed.
+
+    fib Model Code 2010, eq. (7.3-76)
+
+    Args:
+        l_x (float): The width in x direction that the collumn carries.
+        l_y (float): The width in y direction that the collumn carries.
+
+    Returns:
+        float: The width of the support strip for calculating m_ed.
+    """
+    r_sx = 0.22 * l_x  # see  MC2010 7.3.5.3
+    r_sy = 0.22 * l_y  # see  MC2010 7.3.5.3
+    l_min = min(l_x, l_y)
+    return min(1.5 * (r_sx * r_sy) ** 0.5, l_min)
+
+
 def m_ed(
     v_ed: float,
     e_u: float,
-    l_x: float,
-    l_y: float,
+    b_s: float,
     inner: bool,
     edge_par: bool,
     edge_per: bool,
@@ -32,15 +52,14 @@ def m_ed(
 ) -> float:
     """The average bending moment acting in the support strip.
 
-    fib Model Code 2010, eq. (7.3-76), (7.3-71), (7.3-72), (7.3-73)
+    fib Model Code 2010, eq. (7.3-71), (7.3-72), (7.3-73)
     and (7.3-74).
 
     Args:
         v_ed (float): The acting shear force from the columns.
         e_u (float): Refers to the eccentricity of the resultant of shear
             forces with respect to the centroid.
-        l_x (float): The width in x direction that the collumn carries.
-        l_y (float): The width in y direction that the collumn carries.
+        b_s (float): The width of the support strip for calculating m_ed.
         inner (bool): Is true only if the column is a inner column.
         edge_par (bool): Is true only if the column is a edge column with
             tension reinforcement parallel to the edge.
@@ -52,10 +71,7 @@ def m_ed(
         float: The bending moment acting in the support strip regardless of the
         position of the column.
     """
-    r_sx = 0.22 * l_x
-    r_sy = 0.22 * l_y
-    l_min = min(l_x, l_y)
-    b_s = min(1.5 * (r_sx * r_sy) ** 0.5, l_min)
+
     if inner:
         return v_ed * ((1 / 8) + abs(e_u) / (2 * b_s))
     if edge_par:
@@ -67,60 +83,138 @@ def m_ed(
     raise ValueError('Placement is not defined, only one needs to be True')
 
 
-def psi_punching(
+def r_s(
+    l_x: float,
+    l_y: float,
+    x_direction: bool,
+) -> float:
+    """The position where the radial bending moment is zero with
+    respect to the support axis.
+
+    fib Model Code 2010, 7.3.5.3
+
+    Args:
+        l_x (float): The width in x direction that the collumn carries.
+        l_y (float): The width in y direction that the collumn carries.
+
+    Returns:
+        float: The position where the radial bending moment is zero with
+        respect to the support axis.
+    """
+    return 0.22 * l_x if x_direction is True else 0.22 * l_y
+
+
+def psi_punching_level_one(
     l_x: float,
     l_y: float,
     f_yd: float,
     d_eff: float,
     e_s: float,
-    approx_lvl_p: float,
-    m_rd: float,
-    m_ed: float,
-    x_direction: bool,
 ) -> float:
-    """The rotation of the slab around the supported area.
+    """The psi value for the punching level one.
 
-    fib Model Code 2010, eq. (7.3-70), (7.3-75) and (7.3-77).
+    fib Model Code 2010, eq. (7.3-70)
 
     Args:
-        l_x (float): The distance between two columns in x direction.
-        l_y (float): The distance between two columns in y direction.
+        r_s (float): The position where the radial bending moment is zero with
+            respect to the support axis.
         f_yd (float): Design strength of reinforment steel in MPa.
         d_eff (float): The mean value of the effective depth in mm.
         e_s (float): The E_modulus for steel in MPa.
-        approx_lvl_p (float): The approx level for punching.
-        m_rd (float): The design average strength per unit length in MPa.
+
+    Returns:
+        float: The psi value for the punching level one.
+    """
+    r_s = max(0.22 * l_x, 0.22 * l_y)  # MC2010 7.3.5.3 - Unique for (7.3-70)
+    return 1.5 * r_s * f_yd / (d_eff * e_s)
+
+
+def psi_punching_level_two(
+    r_s: float,
+    f_yd: float,
+    d_eff: float,
+    e_s: float,
+    m_ed: float,
+    m_rd: float,
+) -> float:
+    """The psi value for the punching level two.
+
+    fib Model Code 2010, eq. (7.3-75)
+
+    Args:
+        r_s (float): The position where the radial bending moment is zero with
+            respect to the support axis.
+        f_yd (float): Design strength of reinforment steel in MPa.
+        d_eff (float): The mean value of the effective depth in mm.
+        e_s (float): The E_modulus for steel in MPa.
         m_ed (float): The average bending moment acting in the support strip.
-        x_direction (bool): True if calculating for x direction. False for y.
+        m_rd (float): The design average strength per unit length in MPa.
+
+    Returns:
+        float: The psi value for the punching level two.
+    """
+    return (1.5 * r_s * f_yd / (d_eff * e_s)) * (m_ed / m_rd) ** 1.5
+
+
+def psi_punching(
+    psi_punching_level_one: float,
+    psi_punching_level_two: float,
+    approx_lvl_p: float,
+) -> float:
+    """The rotation of the slab around the supported area.
+
+    fib Model Code 2010, eq. (7.3-70) or (7.3-75).
+    TODO: (7.3-77) wasnt used
+    TODO: level 3 or 4 checks were not implemented
+
+    Args:
+        psi_punching_level_one (float): The psi value for the punching level 1.
+        psi_punching_level_two (float): The psi value for the punching level 2.
+        approx_lvl_p (float): The approx level for punching.
 
     Returns:
         float: psi for the chosen approx level in punching.
     """
-    r_s = max(0.22 * l_x, 0.22 * l_y)
     if approx_lvl_p == 1:
-        psi = 1.5 * r_s * f_yd / (d_eff * e_s)
+        return psi_punching_level_one
     elif approx_lvl_p == 2:
-        r_s = 0.22 * l_x if x_direction is True else 0.22 * l_y
-        psi = (1.5 * r_s * f_yd / (d_eff * e_s)) * (m_ed / m_rd) ** 1.5
-    return psi
+        return psi_punching_level_two
+    raise ValueError('Approximation level is not defined')
+
+
+def k_dg(
+    d_g: float,
+) -> float:
+    """Calculate k_dg factor for punching resistance.
+
+    fib Model Code 2010, eq. (7.3-62).
+
+    Args:
+        d_g (float): Maximum size of aggregate.
+
+    Returns:
+        float: k_dg factor
+    """
+    return max(32 / (16 + d_g), 0.75)
 
 
 def k_psi(
-    psi_punching: float,
+    k_dg: float,
     d_eff: float,
-    d_g: float,
+    psi_punching: float,
 ) -> float:
     """Calculate k_psi factor for punching resistance.
 
+    fib Model Code 2010, eq. (7.3-63).
+
     Args:
-        psi_punching (float): psi value from psi_punching.
+        k_dg (float): k_dg factor.
         d_eff (float): The mean value of the effective depth in mm.
-        d_g (float): Maximum size of aggregate.
+        psi_punching (float): psi value from psi_punching.
 
     Returns:
         float: k_psi factor
     """
-    k_dg = max(32 / (16 + d_g), 0.75)
     return min(1 / (1.5 + 0.9 * k_dg * d_eff * psi_punching), 0.6)
 
 
@@ -133,7 +227,7 @@ def v_rdc_punching(
 ) -> float:
     """Punching resistance from the concrete.
 
-    fib Model Code 2010, eq. (7.3-61), (7.3-62) and (7.3-63).
+    fib Model Code 2010, eq. (7.3-61).
 
     Args:
         k_psi_val (float): k_psi value from k_psi.
@@ -148,23 +242,54 @@ def v_rdc_punching(
     return k_psi_val * b_0 * d_v * (f_ck**0.5) / gamma_c
 
 
+def sigma_swd(
+    e_s: float,
+    psi_punching: float,
+    alpha: float,
+    f_bd: float,
+    d_eff: float,
+    f_ywd: float,
+    phi_w: float,
+) -> float:
+    """Calculate sigma_swd for punching resistance.
+
+    fib Model Code 2010, eq. (7.3-65).
+
+    Args:
+        e_s (float): The E_modulus for steel in MPa.
+        psi_punching (float): psi value from psi_punching.
+        alpha (float): Inclination of the stirrups in degrees.
+        f_bd (float): The design bond strength in MPa.
+        d_eff (float): The mean value of the effective depth in mm.
+        f_ywd (float): Design yield strength of the shear reinforcement in MPa.
+        phi_w (float): The diameter of the shear reinforcement.
+
+    Returns:
+        float: sigma_swd
+    """
+    return min(
+        (e_s * psi_punching / 6)
+        * (sin(alpha * pi / 180) + cos(alpha * pi / 180))
+        * (sin(alpha * pi / 180) + f_bd * d_eff / (f_ywd * phi_w)),
+        f_ywd
+    )
+
+
 def v_rds_punching(
     f_ywk: float,
     gamma_s: float,
     e_u: float,
     b_u: float,
     e_s: float,
-    psi_punching: float,
     alpha: float,
+    sigma_swd: float,
     f_bd: float,
-    d_eff: float,
-    phi_w: float,
     a_sw: float,
     v_ed: float,
 ) -> float:
     """The punching resistance from shear reinforcement.
 
-    fib Model Code 2010, eq. (7.3-64) and (7.3-65).
+    fib Model Code 2010, eq. (7.3-64).
 
     Args:
         f_ywk (float): Characteristic yield strength of the shear reinforcement
@@ -175,11 +300,9 @@ def v_rds_punching(
         b_u (float): The diamter of a circle with same surface as the region
             inside the basic control perimeter (Figure 7.3-27b).
         e_s (float): The E_modulus for steel in MPa.
-        psi_punching (float): psi value from psi_punching.
         alpha (float): Inclination of the stirrups in degrees.
+        sigma_swd (float): sigma_swd from sigma_swd.
         f_bd (float): The design bond strength in MPa.
-        d_eff (float): The mean value of the effective depth in mm.
-        phi_w (float): The diameter of the shear reinforcement.
         a_sw (float): The area of the shear reinforcement in mm^2.
         v_ed (float): The acting shear force from the columns.
 
@@ -188,13 +311,6 @@ def v_rds_punching(
     """
     f_ywd = f_ywk / gamma_s
     k_e = 1 / (1 + e_u / b_u)
-    sigma_swd = min(
-        (e_s * psi_punching / 6)
-        * (sin(alpha * pi / 180) + cos(alpha * pi / 180))
-        * (sin(alpha * pi / 180) + f_bd * d_eff / (f_ywd * phi_w)),
-        f_ywd
-    )
-
     if (a_sw * k_e * f_ywd) < 0.5 * v_ed:
         warnings.warn(
             'Consider increasing punching shear reinforcement for sufficient '
@@ -214,7 +330,7 @@ def v_rd_max_punching(
 ) -> float:
     """Finds the maximum value you can have for v_rd_punching.
 
-    fib Model Code 2010, eq. (7.3-68) and (7.3-69).
+    fib Model Code 2010, eq. (7.3-69).
 
     Args:
         d_v (float): The effective depth considering support in mm.
@@ -236,7 +352,7 @@ def v_rd_max_punching(
     else:
         k_sys = 2
 
-    base_resistance = b0_val * d_v * f_ck**0.5 / gamma_c
+    base_resistance = b0_val * d_v * (f_ck**0.5 / gamma_c)
 
     return min(k_sys * k_psi_val * base_resistance, base_resistance)
 
