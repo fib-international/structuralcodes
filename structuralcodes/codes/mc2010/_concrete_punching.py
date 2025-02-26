@@ -109,7 +109,8 @@ def r_s(
     """The position where the radial bending moment is zero with
     respect to the support axis.
 
-    fib Model Code 2010, 7.3.5.3 and Eq. (7.3-78) for Level III of Approximation
+    fib Model Code 2010, 7.3.5.3 and Eq. (7.3-78) for Level III of
+        Approximation
 
     Args:
         l_x (float): The width in x direction that the collumn carries.
@@ -129,7 +130,9 @@ def r_s(
 
     if column_edge_or_corner and is_level_three_approximation:
         if b_sr == -1:
-            raise ValueError('b_sr is not defined for Level 3 of Approximation')
+            raise ValueError(
+                'b_sr is not defined for Level 3 of Approximation'
+            )
         return max(r_s, 0.67 * b_sr)
     return r_s
 
@@ -181,13 +184,15 @@ def psi_punching_level_two(
         m_ed (float): The average bending moment acting in the support strip.
         m_rd (float): The design average strength per unit length in MPa.
         m_Pd (float): Optional to cover Eq. (7.3-77) for prestressed slabs.
-            The average decompression moment over the width of the support strip
-            (b_s) due to prestressing.
+            The average decompression moment over the width of the support
+            strip (b_s) due to prestressing.
 
     Returns:
         float: The psi value for the punching level two.
     """
-    return (1.5 * r_s * f_yd / (d_eff * e_s)) * ((m_ed - m_Pd) / (m_rd - m_Pd)) ** 1.5
+    return (1.5 * r_s * f_yd / (d_eff * e_s)) * (
+        (m_ed - m_Pd) / (m_rd - m_Pd)
+    ) ** 1.5
 
 
 
@@ -203,17 +208,16 @@ def psi_punching_level_three(
 
     Args:
         psi_punching_level_two (float): The psi value for the punching level 2.
-        is_uncracked_model (bool): True if r_s is calculated using a linear 
+        is_uncracked_model (bool): True if r_s is calculated using a linear
             elastic (uncracked) model.
-        is_moment_from_uncracked_model (bool): True if m_sd is calculated from a 
-            linear elastic (uncracked) model as the average value of the moment 
-            for design of the flexural reinforcement over the width of the 
-            support strip (b_s).
+        is_moment_from_uncracked_model (bool): True if m_sd is calculated from
+            a linear elastic (uncracked) model as the average value of the
+            moment for design of the flexural reinforcement over the width of
+            the support strip (b_s).
 
     Returns:
         float: The psi value for the punching level three.
     """
-
     if is_uncracked_model and is_moment_from_uncracked_model:
         return 1.2/1.5 * psi_punching_level_two
     return psi_punching_level_two
@@ -232,7 +236,8 @@ def psi_punching(
     Args:
         psi_punching_level_one (float): The psi value for the punching level 1.
         psi_punching_level_two (float): The psi value for the punching level 2.
-        psi_punching_level_three (float): The psi value for the punching level 3.
+        psi_punching_level_three (float): The psi value for
+            the punching level 3.
         approx_lvl_p (float): The approx level for punching.
 
     Returns:
@@ -313,9 +318,9 @@ def f_ywd(
 ) -> float:
     """Calculate f_ywd for punching resistance.
 
-    fib Model Code 2010, eq. (7.3-64).  
+    fib Model Code 2010, eq. (7.3-64).
 
-    Args:   
+    Args:
         f_ywk (float): Characteristic yield strength of the shear reinforcement
             in MPa.
         gamma_s (float): Safety factor for reinforcement.
@@ -363,10 +368,8 @@ def v_rds_punching(
     f_ywd: float,
     e_u: float,
     b_u: float,
-    e_s: float,
     alpha: float,
     sigma_swd: float,
-    f_bd: float,
     a_sw: float,
     v_ed: float,
 ) -> float:
@@ -380,10 +383,8 @@ def v_rds_punching(
             with respect to the centroid (Figure 7.3-27b).
         b_u (float): The diamter of a circle with same surface as the region
             inside the basic control perimeter (Figure 7.3-27b).
-        e_s (float): The E_modulus for steel in MPa.
         alpha (float): Inclination of the stirrups in degrees.
         sigma_swd (float): sigma_swd from sigma_swd.
-        f_bd (float): The design bond strength in MPa.
         a_sw (float): The area of the shear reinforcement in mm^2.
         v_ed (float): The acting shear force from the columns.
 
