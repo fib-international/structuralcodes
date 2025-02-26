@@ -307,6 +307,25 @@ def v_rdc_punching(
     return k_psi_val * b_0 * d_v * (f_ck**0.5) / gamma_c
 
 
+def f_ywd(
+    f_ywk: float,
+    gamma_s: float,
+) -> float:
+    """Calculate f_ywd for punching resistance.
+
+    fib Model Code 2010, eq. (7.3-64).  
+
+    Args:   
+        f_ywk (float): Characteristic yield strength of the shear reinforcement
+            in MPa.
+        gamma_s (float): Safety factor for reinforcement.
+
+    Returns:
+        float: f_ywd for punching resistance.
+    """
+    return f_ywk / gamma_s
+
+
 def sigma_swd(
     e_s: float,
     psi_punching: float,
@@ -341,8 +360,7 @@ def sigma_swd(
 
 
 def v_rds_punching(
-    f_ywk: float,
-    gamma_s: float,
+    f_ywd: float,
     e_u: float,
     b_u: float,
     e_s: float,
@@ -357,9 +375,7 @@ def v_rds_punching(
     fib Model Code 2010, eq. (7.3-64).
 
     Args:
-        f_ywk (float): Characteristic yield strength of the shear reinforcement
-            in MPa.
-        gamma_s (float): Safety factor for reinforcement.
+        f_ywd (float): Design yield strength of the shear reinforcement in MPa.
         e_u (float): The ecentrisity of the result of shear forces
             with respect to the centroid (Figure 7.3-27b).
         b_u (float): The diamter of a circle with same surface as the region
@@ -374,7 +390,6 @@ def v_rds_punching(
     Returns:
         float: Punching resistance that comes from reinforcement.
     """
-    f_ywd = f_ywk / gamma_s
     k_e = 1 / (1 + e_u / b_u)
     if (a_sw * k_e * f_ywd) < 0.5 * v_ed:
         warnings.warn(
