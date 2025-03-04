@@ -32,7 +32,7 @@ Pay **particular attention to point 4**: when the section is subjected to axial 
 
 ## Geometry definition
 
-Structuralcodes adopts Shapely for creating and managing the geometry. Shapely works in screen **XY** coordinates, which are mapped to **yz** in the **GRS** system. Geometries are essential for defining structural sections and are categorized into the following classes:
+In Structuralcodes, a geometry object is a polygon or a point with a material assigend to it. Structuralcodes uses Shapely for creating polygons. Shapely works in screen **XY** coordinates, which are mapped to **yz** in the **GRS** system. Geometries are essential for defining structural sections and are categorized into the following classes:
 
 ### PointGeometry
 Defines individual points in the plane. These typically represents reinforcing bars. A point geometry is represented by its coordinates combined with a material.
@@ -50,9 +50,11 @@ For a description of the API for geometry creation and the different classes inv
 **Figure Placeholder**: Example of geometries (SurfaceGeometry, PointGeometry, and CompoundGeometry) and their translations to the GRS coordinate system.
 
 ## Section calculators
-Section calculators evaluate the structural response based on section properties and applied loads. They integrate results from the geometry and material models to provide insights into section performance by using a specific *section integrator*.
+
 
 ### General concept
+Section calculators evaluate the structural response based on section properties and applied loads. They integrate results from the geometry and material models to provide insights into section performance by using a specific *section integrator*.
+
 The section calculator contains the methods that permits to handle a structual analysis for a cross section. For instance it is possible to compute the bending strength given the axial force, or to compute the moment curvatura, or to compute the strength domain. The outputs of those methods are represented as *ad-hoc* defined results objects which contains the data and the methods to further process them.
 
 :::{Important}
@@ -65,7 +67,9 @@ With this algorithm, *structuralcodes* computes the bending strength of the sect
 
 ![Bending Strength Rotated](FigureBendingRotated.png)
 
-In the rotated reference system **y\*z\***, the bending strength in terms of positive $M_y^*$ is computed.
+In the rotated reference system **y\*z\***, the bending strength in terms of positive {math}`M_{\textrm{y}^*}` is computed.
+
+{math}`M_{\textrm{y}^*}`
 
 :::{Note}
 According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be inpu equal to *pi*.
@@ -91,9 +95,7 @@ The algorithm developed can be summarized as follows:
 
     ![Bisection demo](bisection_demo.gif)
 
-4. **Final Computation of Bending Strength**: once the equilibrium strain profile is found, the bending strength is calculated. The bending moment is computed using the rotated section's stress-strain relationship, incorporating the material properties and geometry of the section. This results in the final bending strength in the rotated coordinate system, which is then transformed back to the original coordinate system.
-
-
+4. **Final Computation of Bending Strength**: once the equilibrium strain profile is found, the bending strength is calculated by integrating the obtained strain profile. This results in the final bending strength in the rotated coordinate system, which is then transformed back to the original coordinate system.
 
 
 ## Section integrators

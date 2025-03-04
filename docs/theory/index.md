@@ -5,7 +5,7 @@ We are working on a description of the theoretical basis for the implementations
 
 :::{toctree}
 
-Section <section>
 Material <material>
+Section <section>
 
 :::
