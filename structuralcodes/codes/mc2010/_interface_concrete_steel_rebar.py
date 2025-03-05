@@ -9,7 +9,46 @@ ModelCode 2010.
 - Eq. 6.1-19.
 """
 
+import typing as t
 import warnings
+
+
+def _validate_bond_value(bond: t.Optional[str] = None) -> str:
+    """Validate the value provided for 'bond'."""
+    valid_bond_values = ('good', 'other')
+    if (
+        bond is not None
+        and isinstance(bond, str)
+        and bond.lower() in valid_bond_values
+    ):
+        return bond.lower()
+    raise ValueError("Invalid bond condition. Must be 'good' or 'other'.")
+
+
+def _validate_confinement_value(confinement: t.Optional[str] = None) -> str:
+    """Validate the value provided for 'confinement'."""
+    valid_confinement_values = ('unconfined', 'stirrups')
+    if (
+        confinement is not None
+        and isinstance(confinement, str)
+        and confinement.lower() in valid_confinement_values
+    ):
+        return confinement.lower()
+    raise ValueError(
+        "Invalid confinement value. Must be 'unconfined' or 'stirrups'."
+    )
+
+
+def _validate_failmod_value(failmod: t.Optional[str] = None) -> str:
+    """Validate the value provided for 'failmod'."""
+    valid_failmod_values = ['po', 'sp']
+    if (
+        failmod is not None
+        and isinstance(failmod, str)
+        and failmod.lower() in valid_failmod_values
+    ):
+        return failmod.lower()
+    raise ValueError("Invalid failmod value. Must be 'PO' or 'SP'.")
 
 
 def eta_2(bond: t.Literal['good', 'other']) -> float:
@@ -27,12 +66,9 @@ def eta_2(bond: t.Literal['good', 'other']) -> float:
     Raises:
         ValueError: If a proper value for 'bond' is not input.
     """
-    eta_2 = {'Good': 1.0, 'Other': 0.7}
+    eta_2 = {'good': 1.0, 'other': 0.7}
 
-    try:
-        return eta_2[bond]
-    except KeyError:
-        raise ValueError("Invalid bond condition. Must be 'Good' or 'Other'.")
+    return eta_2[_validate_bond_value(bond=bond)]
 
 
 def tau_bu_split(
@@ -113,12 +149,9 @@ def tau_bmax(bond: t.Literal['good', 'other'], f_cm: float) -> float:
     Raises:
         ValueError: If a proper value for 'bond' is not input.
     """
-    tau_bmax = {'Good': 2.5 * f_cm**0.5, 'Other': 1.25 * f_cm**0.5}
+    tau_bmax = {'good': 2.5 * f_cm**0.5, 'other': 1.25 * f_cm**0.5}
 
-    try:
-        return tau_bmax[bond]
-    except KeyError:
-        raise ValueError("Invalid input bond. Must be 'Good' or 'Other'.")
+    return tau_bmax[_validate_bond_value(bond)]
 
 
 def s_1(bond: t.Literal['good', 'other']) -> float:
@@ -136,12 +169,9 @@ def s_1(bond: t.Literal['good', 'other']) -> float:
     Raises:
         ValueError: If a proper value for 'bond' is not input.
     """
-    s_1_values = {'Good': 1.0, 'Other': 1.8}
+    s_1_values = {'good': 1.0, 'other': 1.8}
 
-    try:
-        return s_1_values[bond]
-    except KeyError:
-        raise ValueError("Invalid input bond. Must be 'Good' or 'Other'.")
+    return s_1_values[_validate_bond_value(bond)]
 
 
 def s_2(bond: t.Literal['good', 'other']) -> float:
@@ -157,12 +187,9 @@ def s_2(bond: t.Literal['good', 'other']) -> float:
     Raises:
         ValueError: If a proper value for 'bond' is not input.
     """
-    s_2_values = {'Good': 2.0, 'Other': 3.6}
+    s_2_values = {'good': 2.0, 'other': 3.6}
 
-    try:
-        return s_2_values[bond]
-    except KeyError:
-        raise ValueError("Invalid input bond. Must be 'Good' or 'Other'.")
+    return s_2_values[_validate_bond_value(bond)]
 
 
 def s_3(
@@ -194,21 +221,26 @@ def s_3(
         ValueError: If a proper value for 'confinement' is not input.
     """
     s_3_values = {
-        'PO': {
-            'Good': c_clear,
-            'Other': c_clear,
+        'po': {
+            'good': c_clear,
+            'other': c_clear,
         },
-        'SP': {
-            'Good': {'Unconfined': 1.2 * s_1, 'Stirrups': 0.5 * c_clear},
-            'Other': {'Unconfined': 1.2 * s_1, 'Stirrups': 0.5 * c_clear},
+        'sp': {
+            'good': {'unconfined': 1.2 * s_1, 'stirrups': 0.5 * c_clear},
+            'other': {'unconfined': 1.2 * s_1, 'stirrups': 0.5 * c_clear},
         },
     }
 
-    if failmod == 'PO':
-        return s_3_values[failmod][bond]
-    if failmod == 'SP':
-        return s_3_values[failmod][bond][confin]
+    if _validate_failmod_value(failmod) == 'po':
+        return s_3_values[_validate_failmod_value(failmod)][
+            _validate_bond_value(bond)
+        ]
+    if _validate_failmod_value(failmod) == 'sp':
+        return s_3_values[_validate_failmod_value(failmod)][
+            _validate_bond_value(bond)
+        ][_validate_confinement_value(confinement)]
     return 0.0
+
 
 def s_tau_bu_split(
     tau_bmax: float,
