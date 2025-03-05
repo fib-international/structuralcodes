@@ -107,35 +107,23 @@ def test_warning_env_temp():
 
 
 @pytest.mark.parametrize(
-    't0, T_cur, dt, expected',
+    'T_cur, dt, expected',
     [
-        (1, 20, None, 0.99812),
-        (7, 20, None, 6.98687),
-        (14, [20, 25], [7, 7], 15.7723),
-        (28, 20, [7, 7, 7, 7], None),  # raises ValueError.
-        (28, [20, 25], [7, 7], None),  # raises ValueError.
-        (28, [20, 25], [28, 28], None),  # raises ValueError.
+        ([20, 25], [7, 7], 15.7723),
+        (20, [7, 7, 7, 7], None),  # raises ValueError
     ],
 )
-def test_t_T(t0, T_cur, dt, expected):
+def test_t_T(T_cur, dt, expected):
     """Test t_T function."""
-    try:
+    if expected is not None:
         assert np.isclose(
-            _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt),
+            _concrete_creep_and_shrinkage.t_T(T_cur, dt),
             expected,
             rtol=1e-5,
         )
-    except ValueError:
-        with pytest.raises(ValueError) as exc_info:
-            assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value).startswith('Dimensions of T_cur') or str(
-            exc_info.value
-        ).startswith('Curing time')
-
-    except TypeError:
-        with pytest.raises(TypeError) as exc_info:
-            assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value) == 'T_cur has to be provided as list.'
+    else:
+        with pytest.raises(ValueError):
+            _concrete_creep_and_shrinkage.t_T(T_cur, dt)
 
 
 @pytest.mark.parametrize(  # Complete test cases
@@ -275,10 +263,10 @@ def test_eps_cds(_eps_cds0, _beta_ds, _beta_rh, expected):
         (28, '52.5 R', -3.426412e-5),
     ],
 )
-def test_eps_cas0(fcm, cem_class, expected):
-    """Test eps_cas0 function."""
+def test_eps_cbs0(fcm, cem_class, expected):
+    """Test eps_cbs0 function."""
     assert np.isclose(
-        _concrete_creep_and_shrinkage.eps_cas0(fcm, cem_class),
+        _concrete_creep_and_shrinkage.eps_cbs0(fcm, cem_class),
         expected,
         rtol=1e-5,
         atol=1e-10,
@@ -298,25 +286,25 @@ def test_eps_cas0(fcm, cem_class, expected):
         ),
     ],
 )
-def test_beta_as(time, expected):
-    """Test beta_as function."""
+def test_beta_bs(time, expected):
+    """Test beta_bs function."""
     assert np.isclose(
-        _concrete_creep_and_shrinkage.beta_as(time), expected, rtol=1e-5
+        _concrete_creep_and_shrinkage.beta_bs(time), expected, rtol=1e-5
     ).all()  # all() is to test numpy array.
 
 
 @pytest.mark.parametrize(
-    '_eps_cas0, _beta_as, expected',
+    '_eps_cbs0, _beta_bs, expected',
     [
         (-3.997481e-5, 0.181269, -7.246194e-6),
         (-4.568550e-5, 0.468714, -2.141343e-5),
         (-3.426412e-5, 0.998208, -3.420272e-5),
     ],
 )
-def test_eps_cas(_eps_cas0, _beta_as, expected):
-    """Test eps_cas function."""
+def test_eps_cbs(_eps_cbs0, _beta_bs, expected):
+    """Test eps_cbs function."""
     assert np.isclose(
-        _concrete_creep_and_shrinkage.eps_cas(_eps_cas0, _beta_as),
+        _concrete_creep_and_shrinkage.eps_cbs(_eps_cbs0, _beta_bs),
         expected,
         rtol=1e-5,
         atol=1e-10,

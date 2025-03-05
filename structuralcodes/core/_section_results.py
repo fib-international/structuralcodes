@@ -1,0 +1,247 @@
+"""Results."""
+
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
+from dataclasses import dataclass, field, fields
+
+from numpy.typing import ArrayLike
+
+
+@dataclass
+class SectionProperties:
+    """Simple dataclass for storing section properties."""
+
+    # section areas
+    area: float = field(default=0, metadata={'description': 'Total area'})
+    area_reinforcement: float = field(
+        default=0, metadata={'description': 'Reinforcement area'}
+    )
+
+    # axial rigidity
+    ea: float = field(
+        default=0, metadata={'description': 'Axial rigidity (E * A)'}
+    )
+    # ea = {'value': 0, 'description': 'Axial rigidity (E_A)'}
+
+    # section mass
+    mass: float = field(
+        default=0, metadata={'description': 'Mass per unit length'}
+    )
+
+    # section perimeter
+    perimeter: float = field(default=0, metadata={'description': 'Perimeter'})
+
+    # first moments of area
+    # global axes of section
+    sy: float = field(
+        default=0, metadata={'description': 'First moment of area (Sy)'}
+    )
+    sz: float = field(
+        default=0, metadata={'description': 'Second moment of area (Sz)'}
+    )
+
+    # first moments of area * E
+    # global axes of section
+    e_sy: float = field(default=0, metadata={'description': 'E * Sy'})
+    e_sz: float = field(default=0, metadata={'description': 'E * Sz'})
+
+    # centroids
+    cy: float = field(
+        default=0, metadata={'description': 'Centroid y Coordinate'}
+    )
+    cz: float = field(
+        default=0, metadata={'description': 'Centroid z Coordinate'}
+    )
+
+    # second moments of area
+    # global axes of section
+    iyy: float = field(
+        default=0, metadata={'description': 'Second moment (Iyy)'}
+    )
+    izz: float = field(
+        default=0, metadata={'description': 'Second moment (Izz)'}
+    )
+    iyz: float = field(
+        default=0, metadata={'description': 'Product moment (Iyz)'}
+    )
+    # centroidal axes of section
+    iyy_c: float = field(
+        default=0, metadata={'description': 'Centroidal Second moment (Iyy_c)'}
+    )
+    izz_c: float = field(
+        default=0, metadata={'description': 'Centroidal Second moment (Izz_c)'}
+    )
+    iyz_c: float = field(
+        default=0,
+        metadata={'description': 'Centroidal Product moment (Iyz_c)'},
+    )
+    # principal axes of section
+    i11: float = field(
+        default=0, metadata={'description': 'Principal Second Moment (I11)'}
+    )
+    i22: float = field(
+        default=0, metadata={'description': 'Principal Second Moment (I22)'}
+    )
+    theta: float = field(
+        default=0, metadata={'description': 'Principal axis angle (theta)'}
+    )
+
+    # section flexural rigidity
+    # global axes of section
+    e_iyy: float = field(default=0, metadata={'description': 'E * Iyy'})
+    e_izz: float = field(default=0, metadata={'description': 'E * Izz'})
+    e_iyz: float = field(default=0, metadata={'description': 'E * Iyz'})
+    # centroidal axes of section
+    e_iyy_c: float = field(default=0, metadata={'description': 'E * Iyy_c'})
+    e_izz_c: float = field(default=0, metadata={'description': 'E * Izz_c'})
+    e_iyz_c: float = field(default=0, metadata={'description': 'E * Iyz_c'})
+    # principal axes of section
+    e_i11: float = field(default=0, metadata={'description': 'E * I11'})
+    e_i22: float = field(default=0, metadata={'description': 'E * I22'})
+    e_theta: float = field(
+        default=0, metadata={'description': 'Principal axis angle (theta)'}
+    )
+
+    def __format__(self, spec: str) -> str:
+        """Defines the format for returning the string representation.
+
+        Arguments:
+            spec (str): The string specifying the format.
+        """
+        output_string = 'Section Properties:\n'
+        for f in fields(self):
+            value = getattr(self, f.name)
+            description = f.metadata.get(
+                'description', 'No description available'
+            )
+            output_string += f'{description}: {value:{spec}}\n'
+
+        # etc. all other characteristics
+        return output_string
+
+    def __str__(self) -> str:
+        """Returns the informal string representation of the section
+        properties.
+        """
+        return f'{self}'
+
+
+@dataclass
+class MomentCurvatureResults:
+    """Class for storing moment curvature results.
+
+    The analysis will be done in general for a given inclination of n.a.
+    """
+
+    theta: float = 0  # the inclination of n.a.
+    n: float = 0  # axial load - mantained constant during analysis
+    chi_y: ArrayLike = None  # the curvatures
+    chi_z: ArrayLike = None  # the curvatures
+    eps_axial: ArrayLike = 0  # the axial strain (at section 0,0)
+    m_y: ArrayLike = None  # the moment
+    m_z: ArrayLike = None  # the moment
+
+    # The strains can be reconstructed at each step from chi and eps_axial
+    # The stresses can be recomputed if needed on the fly? Or storing them?
+
+
+@dataclass
+class UltimateBendingMomentResults:
+    """Class for storing the ultimate bending moment computation for a given
+    inclination of n.a. and axial load.
+    """
+
+    theta: float = 0  # the inclination of n.a.
+    n: float = 0  # axial load - mantained constant during analysis
+    m_y: float = 0  # the ultimate moment for given theta and n
+    m_z: float = 0  # the ultimate moment for given theta and n
+    chi_y: float = 0  # the curvature corresponding to the ultimate moment
+    chi_z: float = 0  # the curvature corresponding to the ultimate moment
+    eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
+
+
+@dataclass
+class InteractionDomain:
+    """Class for storing common data on all interaction domain results.
+
+    Attributes:
+        strains (numpy.Array): A numpy array with shape (n, 3) containing ea,
+            ky and kz.
+        forces (numpy.Array): A numpy array with shape (n, 3) containing n, my
+            and mz.
+        field_num (numpy.Array): a numpy array with shape (n,) containing a
+            number between 1 and 6 indicating the failure field.
+    """
+
+    # array with shape (n,3) containing ea, ky, kz:
+    strains: ArrayLike = None
+    # array with shape(n,3) containing N, My, Mz
+    forces: ArrayLike = None
+    # array with shape(n,) containing the field number from 1 to 6
+    field_num: ArrayLike = None
+
+    @property
+    def n(self):
+        """Return axial force."""
+        if self.forces is None:
+            return None
+        return self.forces[:, 0]
+
+    @property
+    def m_y(self):
+        """Return my."""
+        if self.forces is None:
+            return None
+        return self.forces[:, 1]
+
+    @property
+    def m_z(self):
+        """Return mz."""
+        if self.forces is None:
+            return None
+        return self.forces[:, 2]
+
+    @property
+    def e_a(self):
+        """Return ea."""
+        if self.strains is None:
+            return None
+        return self.strains[:, 0]
+
+    @property
+    def k_y(self):
+        """Return ky."""
+        if self.strains is None:
+            return None
+        return self.strains[:, 1]
+
+    @property
+    def k_z(self):
+        """Return kz."""
+        if self.strains is None:
+            return None
+        return self.strains[:, 2]
+
+
+@dataclass
+class NMMInteractionDomain(InteractionDomain):
+    """Class for storing the NMM interaction domain results."""
+
+    num_theta: int = 0  # number of discretizations along the angle
+    num_axial: int = 0  # number of discretizations along axial load axis
+
+
+@dataclass
+class NMInteractionDomain(InteractionDomain):
+    """Class for storing the NM interaction domain results."""
+
+    theta: float = 0  # the inclination of n.a.
+    num_axial: float = 0  # number of discretizations along axial load axis
+
+
+@dataclass
+class MMInteractionDomain(InteractionDomain):
+    """Class for storing the MM interaction domain results."""
+
+    num_theta: float = 0  # number of discretizations along the angle
+    theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA

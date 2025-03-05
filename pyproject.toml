@@ -16,6 +16,10 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.6.0",
+    "shapely>=2.0.2",
+    "triangle>=20230923",
 ]
 dynamic = ["version", "description"]
 

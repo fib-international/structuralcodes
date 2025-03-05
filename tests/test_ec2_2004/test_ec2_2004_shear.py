@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from structuralcodes.codes.ec2_2004 import shear
+from structuralcodes.codes.ec2_2004 import fcd, shear
 from structuralcodes.codes.ec2_2004.shear import (
     _alpha_l,
     _k,
@@ -102,7 +102,17 @@ def test_vmin(fck, d, expected):
 def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
     """Test the VRdc function."""
     assert math.isclose(
-        shear.VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c),
+        shear.VRdc(
+            fck,
+            d,
+            Asl,
+            bw,
+            Ned,
+            Ac,
+            fcd(fck=fck, alpha_cc=1.0, gamma_c=gamma_c),
+            k1,
+            gamma_c,
+        ),
         expected,
         rel_tol=0.01,
     )
@@ -122,7 +132,7 @@ def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
 def test_Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected):
     """Test Vrdc_prin_stress function."""
     assert math.isclose(
-        shear.Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2),
+        shear.VRdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2),
         expected,
         rel_tol=1e-2,
     )
@@ -139,7 +149,11 @@ def test_Vrdc_prin_stress(Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected):
 def test_VEdmax_unreinf(bw, d, fck, expected):
     """Test VEedmax_unreinf function."""
     assert math.isclose(
-        shear.VEdmax_unreinf(bw, d, fck), expected, rel_tol=0.01
+        shear.VEdmax_unreinf(
+            bw, d, fck, fcd=fcd(fck=fck, alpha_cc=1.0, gamma_c=1.5)
+        ),
+        expected,
+        rel_tol=0.01,
     )
 
 
@@ -208,18 +222,45 @@ def test_VRds(Asw, s, z, theta, fyk, alpha, gamma_s, expected):
 
 
 @pytest.mark.parametrize(
-    'bw, z, fck, theta, Ned, Ac, gamma_c, alpha, expected',
+    (
+        'bw, z, fck, theta, Ned, Ac, gamma_c, alpha, alpha_cc, limit_fyd, '
+        'expected'
+    ),
     [
-        (100, 300, 20, 45, 100e3, 100 * 400, 1.5, 90, 131152),
-        (100, 300, 20, 21.8, 100e3, 100 * 400, 1.5, 90, 90445),
-        (100, 300, 20, 45, 100e3, 100 * 400, 1.5, 45, 262304),
-        (100, 300, 20, 21.8, 100e3, 100 * 400, 1.5, 45, 126620),
+        (100, 300, 20, 45, 100e3, 100 * 400, 1.5, 90, 1.0, False, 131100),
+        (100, 300, 20, 21.8, 100e3, 100 * 400, 1.5, 90, 1.0, False, 90409.12),
+        (100, 300, 20, 45, 100e3, 100 * 400, 1.5, 45, 1.0, False, 262200),
+        (100, 300, 20, 21.8, 100e3, 100 * 400, 1.5, 45, 1.0, False, 126570.19),
+        (100, 300, 70, 45, 100e3, 100 * 400, 1.5, 90, 1.0, False, 318600),
+        (100, 300, 70, 21.8, 100e3, 100 * 400, 1.5, 90, 1.0, False, 219712.79),
+        (100, 300, 70, 45, 100e3, 100 * 400, 1.5, 45, 1.0, False, 637200),
+        (100, 300, 70, 21.8, 100e3, 100 * 400, 1.5, 45, 1.0, False, 307591.63),
+        (100, 300, 20, 45, 100e3, 100 * 400, 1.5, 90, 1.0, True, 142500),
+        (100, 300, 20, 21.8, 100e3, 100 * 400, 1.5, 90, 1.0, True, 98270.78),
+        (100, 300, 20, 45, 100e3, 100 * 400, 1.5, 45, 1.0, True, 285000),
+        (100, 300, 20, 21.8, 100e3, 100 * 400, 1.5, 45, 1.0, True, 137576.29),
+        (100, 300, 70, 45, 100e3, 100 * 400, 1.5, 90, 1.0, True, 405625),
+        (100, 300, 70, 21.8, 100e3, 100 * 400, 1.5, 90, 1.0, True, 279726.93),
+        (100, 300, 70, 45, 100e3, 100 * 400, 1.5, 45, 1.0, True, 811250),
+        (100, 300, 70, 21.8, 100e3, 100 * 400, 1.5, 45, 1.0, True, 391609.72),
     ],
 )
-def test_VRdmax(bw, z, fck, theta, Ned, Ac, gamma_c, alpha, expected):
+def test_VRdmax(
+    bw, z, fck, theta, Ned, Ac, gamma_c, alpha, alpha_cc, limit_fyd, expected
+):
     """Test the VRdmax function."""
     assert math.isclose(
-        shear.VRdmax(bw, z, fck, theta, Ned, Ac, gamma_c, alpha),
+        shear.VRdmax(
+            bw,
+            z,
+            fck,
+            theta,
+            Ned,
+            Ac,
+            fcd(fck=fck, alpha_cc=alpha_cc, gamma_c=gamma_c),
+            alpha,
+            limit_fyd,
+        ),
         expected,
         rel_tol=0.01,
     )

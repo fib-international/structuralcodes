@@ -161,8 +161,12 @@ def test_A_phi_correction_exp_raises_errors(hn, atm_conditions):
     't0, atm_conditions, _hn, concrete_class, expected',
     [
         (10, 'dry', 500, 'CS', 2.5),
+        (10, 'dry', 500, 'slow', 2.5),
+        (10, 'dry', 500, 'SLOW', 2.5),
         (28, 'humid', 200, 'CN', 1.6),
+        (28, 'humid', 200, 'normal', 1.6),
         (91, 'dry', 750, 'CR', 1.45),
+        (91, 'dry', 750, 'rapid', 1.45),
         (60, 'humid', 600, 'CS', 1.41016),
     ],
 )
@@ -181,11 +185,14 @@ def test_phi_50y_t0(t0, atm_conditions, _hn, concrete_class, expected):
     't0, atm_conditions, _hn, concrete_class',
     [
         (-1, 'dry', 500, 'CS'),
+        (-1, 'dry', 500, 'slow'),
         (50, 'ASDF', 500, 'CS'),
+        (50, 'ASDF', 500, 'slow'),
         (50, 'dry', 50, 'CS'),
         (50, 'dry', 1500, 'CS'),
         (50, 'dry', 500, 'ASD'),
         (1, 'dry', 100, 'CS'),
+        (1, 'dry', 100, 'asdfasd'),
     ],
 )
 def test_phi_50y_t0_raises_errors(t0, atm_conditions, _hn, concrete_class):
@@ -198,8 +205,13 @@ def test_phi_50y_t0_raises_errors(t0, atm_conditions, _hn, concrete_class):
     'fck_28, atm_conditions, _hn, concrete_class, expected',
     [
         (35, 'dry', 500, 'CS', 0.45),
+        (35, 'dry', 500, 'slow', 0.45),
+        (35, 'dry', 500, 'SLOW', 0.45),
         (50, 'humid', 1000, 'CN', 0.23),
+        (50, 'humid', 1000, 'normal', 0.23),
+        (50, 'humid', 1000, 'NORMAL', 0.23),
         (80, 'dry', 200, 'CR', 0.54),
+        (80, 'dry', 200, 'rapid', 0.54),
         (40, 'humid', 300, 'CS', 0.29),
         (25, 'dry', 800, 'CN', 0.46333),
     ],
@@ -259,9 +271,12 @@ def test_eta_cc_raises_errors(fck, fck_ref):
     't_ref, t0, concrete_class, expected',
     [
         (20, 40, 'CR', 0.85),
+        (20, 40, 'cr', 0.85),
+        (20, 40, 'rapid', 0.85),
         (27, 180, 'CR', 1),
         (57, 180, 'CS', 0.85),
         (55, 180, 'CS', 1),
+        (55, 180, 'slow', 1),
     ],
 )
 def test_k_tc(t_ref, t0, concrete_class, expected):
@@ -275,7 +290,13 @@ def test_k_tc(t_ref, t0, concrete_class, expected):
 
 @pytest.mark.parametrize(
     't_ref, t0, concrete_class',
-    [(-3, 20, 'CS'), (10, -5, 'CS'), (10, 10, 'aadsf')],
+    [
+        (-3, 20, 'CS'),
+        (-3, 20, 'slow'),
+        (10, -5, 'CS'),
+        (10, -5, 'SLOW'),
+        (10, 10, 'aadsf'),
+    ],
 )
 def test_k_tc_raises_errors(t_ref, t0, concrete_class):
     """Test k_tc taises errors."""
@@ -284,24 +305,24 @@ def test_k_tc_raises_errors(t_ref, t0, concrete_class):
 
 
 @pytest.mark.parametrize(
-    'fck, eta_cc, k_tc, gamma_C, expected',
+    'fck, eta_cc, k_tc, gamma_c, expected',
     [
         (40, 0.9, 0.85, 1.35, 22.6666666666667),
         (35, 1, 1, 1.5, 23.3333333333333),
         (50, 0.85, 0.85, 1.4, 25.8035714285714),
     ],
 )
-def test_fcd(fck, eta_cc, k_tc, gamma_C, expected):
+def test_fcd(fck, eta_cc, k_tc, gamma_c, expected):
     """Test fcd function."""
     assert math.isclose(
-        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_C),
+        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_c),
         expected,
         rel_tol=10e-5,
     )
 
 
 @pytest.mark.parametrize(
-    'fck, eta_cc, k_tc, gamma_C',
+    'fck, eta_cc, k_tc, gamma_c',
     [
         (-10, 0.5, 0.85, 1.5),
         (40, -1, 0.85, 1.5),
@@ -309,15 +330,22 @@ def test_fcd(fck, eta_cc, k_tc, gamma_C, expected):
         (40, 0.9, 1.0, -2),
     ],
 )
-def test_fcd_raises_errors(fck, eta_cc, k_tc, gamma_C):
+def test_fcd_raises_errors(fck, eta_cc, k_tc, gamma_c):
     """Test fcd function raises errors."""
     with pytest.raises(ValueError):
-        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_C)
+        _section5_materials.fcd(fck, eta_cc, k_tc, gamma_c)
 
 
 @pytest.mark.parametrize(
     't_ref, concrete_class, expected',
-    [(25, 'CR', 0.8), (30, 'CR', 0.7), (48, 'cs', 0.8), (70, 'CS', 0.7)],
+    [
+        (25, 'CR', 0.8),
+        (25, 'RAPID', 0.8),
+        (30, 'CR', 0.7),
+        (48, 'cs', 0.8),
+        (48, 'slow', 0.8),
+        (70, 'CS', 0.7),
+    ],
 )
 def test_k_tt(t_ref, concrete_class, expected):
     """Test k_tt function."""
@@ -328,7 +356,14 @@ def test_k_tt(t_ref, concrete_class, expected):
     )
 
 
-@pytest.mark.parametrize('t_ref, concrete_class', [(-10, 'CR'), (20, 'ADSF')])
+@pytest.mark.parametrize(
+    't_ref, concrete_class',
+    [
+        (-10, 'CR'),
+        (-10, 'rapid'),
+        (20, 'ADSF'),
+    ],
+)
 def test_k_tt_raises_errors(t_ref, concrete_class):
     """Test k_tt raises errors."""
     with pytest.raises(ValueError):
@@ -336,26 +371,26 @@ def test_k_tt_raises_errors(t_ref, concrete_class):
 
 
 @pytest.mark.parametrize(
-    'fctk_5, k_tt, gamma_C', [(-20, 0.8, 1.5), (40, 0.7, -1)]
+    'fctk_5, k_tt, gamma_c', [(-20, 0.8, 1.5), (40, 0.7, -1)]
 )
-def test_fctd_raises_errors(fctk_5, k_tt, gamma_C):
+def test_fctd_raises_errors(fctk_5, k_tt, gamma_c):
     """Test fctd raises errors."""
     with pytest.raises(ValueError):
-        _section5_materials.fctd(fctk_5, k_tt, gamma_C)
+        _section5_materials.fctd(fctk_5, k_tt, gamma_c)
 
 
 @pytest.mark.parametrize(
-    'fctk_5, k_tt, gamma_C, expected',
+    'fctk_5, k_tt, gamma_c, expected',
     [
         (2, 0.7, 1.5, 0.933333333333333),
         (3, 0.8, 1.25, 1.92),
         (1.8, 0.7, 1.3, 0.969230769230769),
     ],
 )
-def test_fctd(fctk_5, k_tt, gamma_C, expected):
+def test_fctd(fctk_5, k_tt, gamma_c, expected):
     """Test fctd."""
     assert math.isclose(
-        _section5_materials.fctd(fctk_5, k_tt, gamma_C),
+        _section5_materials.fctd(fctk_5, k_tt, gamma_c),
         expected,
         rel_tol=10e-5,
     )
@@ -401,40 +436,6 @@ def test_eps_cu1_raises_errors(fcm):
         _section5_materials.eps_cu1(fcm)
 
 
-@pytest.mark.parametrize(
-    'Ecm, fcm, eps_c, eps_c1, eps_cu1, expected',
-    [
-        (37562, 50, 0.0025, 0.00257882204904827, 0.0035, 49.9547867728839),
-        (25000, 80, 0.002, 0.0028, 0.00286325067128806, 51.3165266106443),
-    ],
-)
-def test_sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1, expected):
-    """Test sigma_c function."""
-    assert math.isclose(
-        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1),
-        expected,
-        rel_tol=10e-5,
-    )
-
-
-@pytest.mark.parametrize(
-    'Ecm, fcm, eps_c, eps_c1, eps_cu1',
-    [
-        (-37562, 50, 0.0025, 0.00257882204904827, 0.0035),
-        (37562, -50, 0.0025, 0.00257882204904827, 0.0035),
-        (37562, 50, -0.0025, 0.00257882204904827, 0.0035),
-        (37562, 50, 0.0025, 0, 0.0035),
-        (37562, 50, 0.0025, -0.00257882204904827, 0.0035),
-        (37562, 50, 0.0025, 0.00257882204904827, -0.0035),
-        (37562, 50, 0.02, 0.00257882204904827, 0.0035),
-    ],
-)
-def test_sigma_c_raises_errors(Ecm, fcm, eps_c, eps_c1, eps_cu1):
-    """Test sigma_c_raises_errors."""
-    with pytest.raises(ValueError):
-        _section5_materials.sigma_c(Ecm, fcm, eps_c, eps_c1, eps_cu1)
-
-
 @pytest.mark.parametrize('concrete_type, expected', [('nc', 25), ('npc', 24)])
 def test_concrete_mean_unit_weight(concrete_type, expected):
     """Test concrete_mean_weight function."""
@@ -462,25 +463,6 @@ def test_alpha_c_th():
     assert math.isclose(
         _section5_materials.alpha_c_th(), 10 * 10e-6, rel_tol=10e-5
     )
-
-
-@pytest.mark.parametrize(
-    'ductility_class, expected_k, expected_eps_uk',
-    [('A', 1.05, 0.025), ('B', 1.08, 0.05), ('C', 1.25, 0.075)],
-)
-def test_r_steel_stress_strain_params(
-    ductility_class, expected_k, expected_eps_uk
-):
-    """Test r_steel_stress_strain retuns proper values."""
-    params = _section5_materials.r_steel_stress_strain_params(ductility_class)
-    assert math.isclose(params[0], expected_k, rel_tol=10e-5)
-    assert math.isclose(params[1], expected_eps_uk, rel_tol=10e-5)
-
-
-def test_r_steel_stress_strain_params_raises_errors():
-    """Test r_steel_stress_strain_params raises errors."""
-    with pytest.raises(ValueError):
-        _section5_materials.r_steel_stress_strain_params('asdf')
 
 
 def test_Es():
@@ -632,3 +614,98 @@ def test_steel_p_raises_errors(eps, fpy, fpu, eps_u, Ep):
     """Test steel_p raises errors."""
     with pytest.raises(ValueError):
         _section5_materials.sigma_p(eps, fpy, fpu, eps_u, Ep)
+
+
+def test_duct_class_not_existing():
+    """Test getting ductility properties for a ductility class that is not
+    available.
+    """
+    # Arrange
+    fyk = 500
+    ductility_class = 'not a class'
+    # Assert
+    with pytest.raises(ValueError):
+        _section5_materials.reinforcement_duct_props(
+            fyk=fyk, ductility_class=ductility_class
+        )
+
+
+@pytest.mark.parametrize(
+    'ductility_class, exp_ratio, exp_strain',
+    [
+        ('a', 1.05, 2.5e-2),
+        ('b', 1.08, 5e-2),
+        ('c', 1.15, 7.5e-2),
+    ],
+)
+def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
+    """Test getting ductility class properties."""
+    # Arrange
+    fyk = 500
+
+    # Act
+    props = _section5_materials.reinforcement_duct_props(
+        fyk=fyk, ductility_class=ductility_class
+    )
+
+    # Assert
+    assert math.isclose(props['ftk'] / fyk, exp_ratio)
+    assert math.isclose(props['epsuk'], exp_strain)
+
+
+def test_eps_c2():
+    """Test eps_c2."""
+    assert math.isclose(
+        _section5_materials.eps_c2(),
+        2e-3,
+        rel_tol=1e-4,
+    )
+
+
+def test_eps_cu2():
+    """Test eps_cu2."""
+    assert math.isclose(
+        _section5_materials.eps_cu2(),
+        3.5e-3,
+        rel_tol=1e-4,
+    )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, epsc1, expected',
+    [
+        (25787, 20, 0.0019, 2.57),
+        (27403, 24, 0.00202, 2.42),
+        (28848, 28, 0.00213, 2.3),
+        (30472, 33, 0.00225, 2.18),
+        (31939, 38, 0.00235, 2.08),
+        (33282, 43, 0.00245, 1.99),
+        (34525, 48, 0.00254, 1.92),
+        (35685, 53, 0.00263, 1.86),
+        (36773, 58, 0.00271, 1.8),
+        (37801, 63, 0.00279, 1.75),
+        (38776, 68, 0.0028, 1.68),
+        (40590, 78, 0.0028, 1.53),
+        (42256, 88, 0.0028, 1.41),
+        (43799, 98, 0.0028, 1.31),
+    ],
+)
+def test_k_sargin(Ecm, fcm, epsc1, expected):
+    """Test k_sargin function."""
+    assert math.isclose(
+        _section5_materials.k_sargin(Ecm, fcm, epsc1), expected, rel_tol=5e-3
+    )
+
+
+@pytest.mark.parametrize(
+    'Ecm, fcm, epsc1',
+    [
+        (-25787, 20, 0.0019),
+        (25787, 12, 0.0019),
+        (25787, 20, -0.0019),
+    ],
+)
+def test_k_sargin_raises_errors(Ecm, fcm, epsc1):
+    """Test k_sargin raises errors."""
+    with pytest.raises(ValueError):
+        _section5_materials.k_sargin(Ecm=Ecm, fcm=fcm, eps_c1=epsc1)
