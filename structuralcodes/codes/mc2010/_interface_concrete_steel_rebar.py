@@ -12,15 +12,20 @@ ModelCode 2010.
 import warnings
 
 
-def eta_2(bond: str) -> float:
-    """eta_2 according to Eq. 6.1-5.
+def eta_2(bond: t.Literal['good', 'other']) -> float:
+    """Bond coefficient eta_2.
+
+    fib Model Code 2010, Eq. (6.1-5).
 
     Args:
-        bond: Bond condition according to Subsection 6.1.3.2. Input must be
-        'Good' or 'Other'.
+        bond (str): Bond condition according to Subsection 6.1.3.2. Input must
+            be 'good' or 'other'.
 
     Returns:
         float: eta_2 value.
+
+    Raises:
+        ValueError: If a proper value for 'bond' is not input.
     """
     eta_2 = {'Good': 1.0, 'Other': 0.7}
 
@@ -39,18 +44,19 @@ def tau_bu_split(
     k_m: float,
     K_tr: float,
 ) -> float:
-    """Maximum bond stress in case of splitting failure
-    according to Eq.(6.1-5).
+    """Maximum bond stress in case of splitting failure.
+
+    fib Model Code 2010, Eq. (6.1-5).
 
     Args:
-        eta_2: Parameter based on bond condition. 1.0 for 'Good' bond
-        condition and 0.7 for 'Other' conditions.
-        f_cm: Mean cylinder concrete compressive strength in MPa.
-        phi: Nominal bar diameter in mm.
-        c_min: Parameter according to MC2010 Figure 6.1-2.
-        c_max: Parameter according to MC2010 Figure 6.1-2.
-        k_m: Parameter according to MC2010 Figure 6.1-3.
-        K_tr: To be calculated with MC2010 Eq.(6.1-6).
+        eta_2 (float): Parameter based on bond condition. 1.0 for 'good' bond
+            condition and 0.7 for 'other' conditions.
+        f_cm (float): Mean cylinder concrete compressive strength in MPa.
+        phi (float): Nominal bar diameter in mm.
+        c_min (float): Parameter according to MC2010 Figure 6.1-2.
+        c_max (float): Parameter according to MC2010 Figure 6.1-2.
+        k_m (float): Parameter according to MC2010 Figure 6.1-3.
+        K_tr (float): To be calculated with MC2010 Eq.(6.1-6).
 
     Returns:
         float: tau_bu_split in MPa.
@@ -71,16 +77,19 @@ def K_tr(
     phi: float,
     s_t: float,
 ) -> float:
-    """K_tr according to Eq. 6.1-6.
+    """Coefficient accounting for transverse stresses, K_tr.
+
+    fib Model Code 2010, Eq. (6.1-6).
 
     Args:
-        n_t: Number of legs of confining reinforcement crossing a potential
-        splitting failure surface at a section.
-        A_st: Cross-sectional area of one leg of a confining bar in mm^2.
-        n_b: Number of anchored bars or pairs of lapped bars in potential
-        splitting surface.
-        phi: Nominal bar diameter in mm.
-        s_t: Longitudnal spacing of confining reinforcement in mm.
+        n_t (float): Number of legs of confining reinforcement crossing a
+            potential splitting failure surface at a section.
+        A_st (float): Cross-sectional area of one leg of a confining bar in
+            mm^2.
+        n_b (float): Number of anchored bars or pairs of lapped bars in
+            potential splitting surface.
+        phi (float): Nominal bar diameter in mm.
+        s_t (float): Longitudnal spacing of confining reinforcement in mm.
 
     Returns:
         float: K_tr as value.
@@ -88,16 +97,21 @@ def K_tr(
     return min((n_t * A_st / (n_b * phi * s_t)), 0.05)
 
 
-def tau_bmax(bond: str, f_cm: float) -> float:
-    """tau_bmax according to Table 6.1-1.
+def tau_bmax(bond: t.Literal['good', 'other'], f_cm: float) -> float:
+    """Maximum bond stress tau_bmax.
+
+    fib Model Code 2010, Table 6.1-1.
 
     Args:
-        bond: Bond condition according to Subsection 6.1.3.2. Must be
-        'Good' or 'Other'.
-        f_cm: Mean cylinder concrete compressive strength in MPa.
+        bond (str): Bond condition according to Subsection 6.1.3.2. Must be
+            'good' or 'other'.
+        f_cm (float): Mean cylinder concrete compressive strength in MPa.
 
     Returns:
         float: tau_bmax in MPa.
+
+    Raises:
+        ValueError: If a proper value for 'bond' is not input.
     """
     tau_bmax = {'Good': 2.5 * f_cm**0.5, 'Other': 1.25 * f_cm**0.5}
 
@@ -107,15 +121,20 @@ def tau_bmax(bond: str, f_cm: float) -> float:
         raise ValueError("Invalid input bond. Must be 'Good' or 'Other'.")
 
 
-def s_1(bond: str) -> float:
-    """s_1 according to Table 6.1-1.
+def s_1(bond: t.Literal['good', 'other']) -> float:
+    """Slip at maximum bond stress, s_1.
+
+    fib Model Code 2010, Table 6.1-1.
 
     Args:
-        bond: Bond condition according to Subsection 6.1.3.2. Must be
-        'Good' or 'Other'.
+        bond (str): Bond condition according to Subsection 6.1.3.2. Must be
+            'good' or 'other'.
 
     Returns:
         float: s_1 in mm.
+
+    Raises:
+        ValueError: If a proper value for 'bond' is not input.
     """
     s_1_values = {'Good': 1.0, 'Other': 1.8}
 
@@ -125,15 +144,18 @@ def s_1(bond: str) -> float:
         raise ValueError("Invalid input bond. Must be 'Good' or 'Other'.")
 
 
-def s_2(bond: str) -> float:
+def s_2(bond: t.Literal['good', 'other']) -> float:
     """s_2 according to Table 6.1-1.
 
     Args:
-        bond: Bond condition according to Subsection 6.1.3.2. Must be
-        'Good' or 'Other'.
+        bond (str): Bond condition according to Subsection 6.1.3.2. Must be
+            'good' or 'other'.
 
     Returns:
         float: s_2 in mm.
+
+    Raises:
+        ValueError: If a proper value for 'bond' is not input.
     """
     s_2_values = {'Good': 2.0, 'Other': 3.6}
 
@@ -144,38 +166,33 @@ def s_2(bond: str) -> float:
 
 
 def s_3(
-    failmod: str,
-    bond: str,
-    confin: str,
+    failmod: t.Literal['PO', 'SP'],
+    bond: t.Literal['good', 'other'],
+    confinement: t.Literal['unconfined', 'stirrups'],
     c_clear: float,
     s_1: float,
 ) -> float:
     """s_3 according to Table 6.1-1.
 
     Args:
-        failmod: Failure mode. Must be "PO" for Pull-out of "SP" for Splitting.
-        bond: Bond condition according to Subsection 6.1.3.2. Must be
-        'Good' or 'Other'.
-        confin: Confinement conditions. Must be "Unconfined" or "Stirrups"
-        c_clear: clear distance between ribs in mm.
-        s_1: s_1 according to Table 6.1-1 columns 1 and 2 for Pull-out failure.
+        failmod (str): Failure mode. Must be "PO" for Pull-out of "SP" for
+            Splitting.
+        bond (str): Bond condition according to Subsection 6.1.3.2. Must be
+            'Good' or 'Other'.
+        confinement (str): Confinement conditions. Must be "Unconfined" or
+            "Stirrups"
+        c_clear (float): Clear distance between ribs in mm.
+        s_1 (float): s_1 according to Table 6.1-1 columns 1 and 2 for Pull-out
+            failure.
 
     Returns:
         float: s_3 in mm.
+
+    Raises:
+        ValueError: If a proper value for 'failmod' is not input.
+        ValueError: If a proper value for 'bond' is not input.
+        ValueError: If a proper value for 'confinement' is not input.
     """
-    valid_failmods = ['PO', 'SP']
-    valid_bonds = ['Good', 'Other']
-    valid_confins = ['Unconfined', 'Stirrups']
-
-    if failmod not in valid_failmods:
-        raise ValueError("Invalid failmod value. Must be 'PO' or 'SP'.")
-    if bond not in valid_bonds:
-        raise ValueError("Invalid bond value. Must be 'Good' or 'Other'.")
-    if confin not in valid_confins:
-        raise ValueError(
-            "Invalid confin value. Must be 'Unconfined' or 'Stirrups'."
-        )
-
     s_3_values = {
         'PO': {
             'Good': c_clear,
@@ -199,17 +216,17 @@ def s_tau_bu_split(
     alpha: float,
     s_1: float,
 ) -> float:
-    """Calculates the slip at tau_bu_split by rewriting Eq. 6.1-1 to
-    solve for s and substituting tau_bu_split for tau_b.
+    """Calculates the slip at tau_bu_split by rewriting Eq. 6.1-1 to solve for
+    s and substituting tau_bu_split for tau_b.
 
     Args:
-        tau_bmax: Maximum bond stress according to Table 6.1-1.
-        tau_bu_split: Concrete bond stress at splitting failure.
-        alpha: Parameter in Eq. 6.1-1. Alpha is 0.4 in Table 6.1-1.
-        s_1: s_1 according to Table 6.1-1.
+        tau_bmax (float): Maximum bond stress according to Table 6.1-1.
+        tau_bu_split (float): Concrete bond stress at splitting failure.
+        alpha (float): Parameter in Eq. 6.1-1. Alpha is 0.4 in Table 6.1-1.
+        s_1 (float): s_1 according to Table 6.1-1.
 
     Returns:
-        float: slip at tau_bu_split in mm.
+        float: Slip at tau_bu_split in mm.
     """
     return (tau_bu_split / tau_bmax) ** (1 / alpha) * s_1
 
@@ -223,20 +240,27 @@ def f_stm(
     k_m: float,
     K_tr: float,
 ) -> float:
-    """f_stm according to Eq. 6.1-19.
+    """Reinforcement stress, f_stm.
+
+    fib Model Code 2010, Eq. (6.1-19).
 
     Args:
-        f_cm: Mean cylinder concrete compressive strength in MPa.
-        phi: Nominal bar diameter in mm.
-        l_b: Bond length in mm.
-        c_min: Parameter shown in Figure 6.1-2.
-        c_max: Parameter shown in Figure 6.1-2.
-        k_m: Parameter shown in Figure 6.1-3.
-        K_tr: Parameter calculated with Eq.(6.1-6).
+        f_cm (float): Mean cylinder concrete compressive strength in MPa.
+        phi (float): Nominal bar diameter in mm.
+        l_b (float): Bond length in mm.
+        c_min (float): Parameter shown in Figure 6.1-2.
+        c_max (float): Parameter shown in Figure 6.1-2.
+        k_m (float): Parameter shown in Figure 6.1-3.
+        K_tr (float): Parameter calculated with Eq.(6.1-6).
 
     Returns:
-        f_stm in MPa.
+        float: f_stm in MPa.
 
+    Raises:
+        UserWarning: If not 15 MPa < f_cm < 110 MPa.
+        UserWarning: If not 0.5 < c_min / phi < 3.5.
+        UserWarning: If not 1.0 < c_max / c_min < 5.0.
+        UserWarning: If not K_tr <= 0.05.
     """
     if not 15 < f_cm < 110:
         warnings.warn(
@@ -281,12 +305,12 @@ def tau_yield(
     - tau_bu_split, explicitly stated for Eq. 6.1-19.
 
     Args:
-        f_y: Reinforcement bar yield stress in MPa.
-        l_b: Bond length with uniform bond stress assumed in mm.
-        phi: Nominal bar diameter in mm.
+        f_y (float): Reinforcement bar yield stress in MPa.
+        l_b (float): Bond length with uniform bond stress assumed in mm.
+        phi (float): Nominal bar diameter in mm.
 
     Returns:
-        Bond stress at yield of rebar in MPa.
+        float: Bond stress at yield of rebar in MPa.
 
     """
     return f_y / (4 * l_b / phi)
