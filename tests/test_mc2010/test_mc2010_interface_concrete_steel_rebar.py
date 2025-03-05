@@ -1,6 +1,7 @@
 """Test for the functions of _interface_concrete_steel_rebar."""
 
 import math
+import warnings
 
 import pytest
 
@@ -24,7 +25,7 @@ def test_eta_2_invalid_input(invalid_bond):
     """Test eta_2 warnings."""
     with pytest.raises(
         ValueError,
-        match="Invalid bond condition. Must be 'Good' or 'Other'.",
+        match="Invalid bond condition. Must be 'good' or 'other'.",
     ):
         bss.eta_2(invalid_bond)
 
@@ -106,7 +107,7 @@ def test_tau_bmax_invalid_input(invalid_bond, f_cm):
     """Test tau_bmax warnings."""
     with pytest.raises(
         ValueError,
-        match="Invalid input bond. Must be 'Good' or 'Other'.",
+        match="Invalid bond condition. Must be 'good' or 'other'.",
     ):
         bss.tau_bmax(invalid_bond, f_cm)
 
@@ -126,13 +127,13 @@ def test_s_1_valid(bond, expected):
 @pytest.mark.parametrize(
     'bond',
     [
-        ('Excellent',),
+        'Excellent',
     ],
 )
 def test_s_1_invalid(bond):
     """Test s_1 warnings."""
     with pytest.raises(
-        ValueError, match="Invalid input bond. Must be 'Good' or 'Other'."
+        ValueError, match="Invalid bond condition. Must be 'good' or 'other'."
     ):
         bss.s_1(bond)
 
@@ -152,13 +153,13 @@ def test_s_2_valid(bond, expected):
 @pytest.mark.parametrize(
     'bond',
     [
-        ('Excellent',),
+        'Excellent',
     ],
 )
 def test_s_2_invalid(bond):
     """Test s_2 warnings."""
     with pytest.raises(
-        ValueError, match="Invalid input bond. Must be 'Good' or 'Other'."
+        ValueError, match="Invalid bond condition. Must be 'good' or 'other'."
     ):
         bss.s_2(bond)
 
@@ -198,15 +199,15 @@ def test_s_3_valid(failmod, bond, confin, c_clear, s_1, expected):
             'Unconfined',
             10,
             1.0,
-            "Invalid bond value. Must be 'Good' or 'Other'.",
+            "Invalid bond condition. Must be 'good' or 'other'.",
         ),
         (
-            'PO',
+            'SP',
             'Good',
             'confin',
             10,
             1.0,
-            "Invalid confin value. Must be 'Unconfined' or 'Stirrups'.",
+            "Invalid confinement value. Must be 'unconfined' or 'stirrups'.",
         ),
     ],
 )
@@ -249,57 +250,53 @@ def test_f_stm(f_cm, phi, l_b, c_min, c_max, k_m, K_tr, expected):
     )
 
 
-# @pytest.mark.parametrize(
-#     'f_cm, phi, l_b, c_min, c_max, k_m, K_tr, warning_message',
-#     [
-#         (
-#             12,
-#             16,
-#             60,
-#             20,
-#             30,
-#             0,
-#             0.03,
-#             'Warning: Eq.(6.1-19) is valid for 15 MPa < f_cm < 110 MPa.',
-#         ),
-#         (
-#             30,
-#             20,
-#             200,
-#             5,
-#             40,
-#             0,
-#             0,
-#             'Warning: Eq.(6.1-19) is valid for 0.5 < c_min / phi < 3.5.',
-#         ),
-#         (
-#             30,
-#             20,
-#             200,
-#             20,
-#             100,
-#             0,
-#             0,
-#             'Warning: Eq.(6.1-19) is valid for 1.0 < c_max / c_min < 5.0',
-#         ),
-#         (
-#             30,
-#             20,
-#             200,
-#             20,
-#             40,
-#             1,
-#             0,
-#             'Warning: Eq.(6.1-19) is valid for K_tr <= 0.05.',
-#         ),
-#     ],
-# )
-# def test_f_stm_warnings(
-#     f_cm, phi, l_b, c_min, c_max, k_m, K_tr, warning_message
-# ):
-#     """Test f_stm warnings."""
-#     with pytest.warns(UserWarning, match=warning_message):
-#         bss.f_stm(f_cm, phi, l_b, c_min, c_max, k_m, K_tr)
+@pytest.mark.parametrize(
+    'f_cm, phi, l_b, c_min, c_max, k_m, K_tr',
+    [
+        (
+            12,
+            16,
+            60,
+            20,
+            30,
+            0,
+            0.03,
+        ),
+        (
+            30,
+            20,
+            200,
+            5,
+            40,
+            0,
+            0,
+        ),
+        (
+            30,
+            20,
+            200,
+            20,
+            100,
+            0,
+            0,
+        ),
+        (
+            30,
+            20,
+            200,
+            20,
+            40,
+            1,
+            0.1,
+        ),
+    ],
+)
+def test_f_stm_warnings(f_cm, phi, l_b, c_min, c_max, k_m, K_tr):
+    """Test f_stm warnings."""
+    raises = pytest.raises(UserWarning)
+    with raises:
+        warnings.filterwarnings(action='error', category=UserWarning)
+        bss.f_stm(f_cm, phi, l_b, c_min, c_max, k_m, K_tr)
 
 
 @pytest.mark.parametrize(
