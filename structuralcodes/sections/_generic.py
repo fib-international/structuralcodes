@@ -443,8 +443,12 @@ class GenericSectionCalculator(SectionCalculator):
         found = False
         it = 0
         delta = 1e-3
+        # Use a growth factor for an exponential finding
+        r = 2.0
+        diverging = False
+        diverging_steps = 0
         while not found and it < ITMAX:
-            eps_0_b = eps_0_a + sign * delta * (it + 1)
+            eps_0_b = eps_0_a + sign * delta * r ** (it)
             (
                 n_int,
                 _,
@@ -457,10 +461,19 @@ class GenericSectionCalculator(SectionCalculator):
             if dn_a * dn_b < 0:
                 found = True
             elif abs(dn_b) > abs(dn_a):
-                # we are driving aay from the solution, probably due
+                # we are driving away from the solution, probably due
                 # to failure of a material
-                delta /= 2
-                it -= 1
+                diverging = True
+                if diverging:
+                    # Count for how many steps we are diverging
+                    diverging_steps += 1
+                # If we are consistently diverging for more than 10 steps,
+                # Restart the process with a small delta
+                if diverging_steps > 10:
+                    delta /= 2
+                    it = 0
+                    diverging = False
+                    diverging_steps = 0
             it += 1
         if it >= ITMAX and not found:
             s = f'Last iteration reached a unbalance of: \
