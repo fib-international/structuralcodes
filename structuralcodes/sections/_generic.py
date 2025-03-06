@@ -439,15 +439,17 @@ class GenericSectionCalculator(SectionCalculator):
         apply the bisection algorithm.
         """
         ITMAX = 20
+        MAXRESTATTEMPTS = 20
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
+        restarts = 0
         delta = 1e-3
         # Use a growth factor for an exponential finding
         r = 2.0
         diverging = False
         diverging_steps = 0
-        while not found and it < ITMAX:
+        while not found and it < ITMAX and restarts < MAXRESTATTEMPTS:
             eps_0_b = eps_0_a + sign * delta * r ** (it)
             (
                 n_int,
@@ -472,6 +474,7 @@ class GenericSectionCalculator(SectionCalculator):
                 if diverging_steps > 10:
                     delta /= 2
                     it = 0
+                    restarts += 1
                     diverging = False
                     diverging_steps = 0
             it += 1
