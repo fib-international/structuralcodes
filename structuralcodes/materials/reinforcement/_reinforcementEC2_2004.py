@@ -4,6 +4,7 @@ import typing as t
 
 from structuralcodes.codes import ec2_2004
 
+from ..constitutive_laws import ConstitutiveLaw, create_constitutive_law
 from ._reinforcement import Reinforcement
 
 
@@ -20,6 +21,16 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         gamma_eps: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
+        constitutive_law: t.Optional[
+            t.Union[
+                t.Literal[
+                    'elastic',
+                    'elasticperfectlyplastic',
+                    'elasticplastic',
+                ],
+                ConstitutiveLaw,
+            ]
+        ] = 'elasticplastic',
     ):
         """Initializes a new instance of Reinforcement for EC2 2004.
 
@@ -33,13 +44,19 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
                 Default value is 1.15.
 
         Keyword Arguments:
+            gamma_eps (float): The partial factor for ultimate strain. Default
+                value is 0.9.
             name (str): A descriptive name for the reinforcement.
             density (float): Density of material in kg/m3 (default: 7850).
+            constitutive_law (ConstitutiveLaw | str): A valid ConstitutiveLaw
+                object for reinforcement or a string defining a valid
+                constitutive law type for reinforcement. (valid options for
+                string: 'elastic', 'elasticplastic', or
+                'elasticperfectlyplastic').
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
 
-        self._gamma_eps = gamma_eps
         super().__init__(
             fyk=fyk,
             Es=Es,
@@ -48,6 +65,14 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+        )
+        self._gamma_eps = gamma_eps
+        self._constitutive_law = (
+            constitutive_law
+            if isinstance(constitutive_law, ConstitutiveLaw)
+            else create_constitutive_law(
+                constitutive_law_name=constitutive_law, material=self
+            )
         )
 
     def fyd(self) -> float:
