@@ -3,6 +3,7 @@
 import abc
 import typing as t
 
+from structuralcodes.core._units import UnitSet
 from structuralcodes.core.base import ConstitutiveLaw, Material
 from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
@@ -28,10 +29,11 @@ class Reinforcement(Material):
         epsuk: float,
         gamma_s: t.Optional[float] = None,
         name: t.Optional[str] = None,
+        units: t.Optional[UnitSet] = None,
     ) -> None:
         """Initializes an abstract reinforcement material."""
         name = name if name is not None else 'Reinforcement'
-        super().__init__(density, name)
+        super().__init__(density, name, units=units)
 
         self._fyk = abs(fyk)
         self._Es = abs(Es)
@@ -50,32 +52,32 @@ class Reinforcement(Material):
 
     @property
     def fyk(self) -> float:
-        """Returns fyk in MPa."""
+        """Returns fyk."""
         return self._fyk
 
     @fyk.setter
     def fyk(self, fyk: float) -> None:
-        """Setter for fyk (in MPa)."""
+        """Setter for fyk."""
         self._fyk = abs(fyk)
 
     @property
     def Es(self) -> float:
-        """Returns Es in MPa."""
+        """Returns Es."""
         return self._Es
 
     @Es.setter
     def Es(self, Es: float) -> None:
-        """Setter for Es (in MPa)."""
+        """Setter for Es."""
         self._Es = abs(Es)
 
     @property
     def ftk(self) -> float:
-        """Returns ftk in MPa."""
+        """Returns ftk."""
         return self._ftk
 
     @ftk.setter
     def ftk(self, ftk: float) -> None:
-        """Setter for ftk (in MPa)."""
+        """Setter for ftk."""
         self._ftk = abs(ftk)
 
     @property

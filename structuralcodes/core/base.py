@@ -10,24 +10,38 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 import structuralcodes.core._section_results as s_res
+from structuralcodes.core._units import UnitConverter, UnitSet
 
 
 class Material(abc.ABC):
     """Abstract base class for materials."""
 
     _constitutive_law = None
+    _unit_converter: UnitConverter
+    _default_units: UnitSet
+    _units: UnitSet
 
-    def __init__(self, density: float, name: t.Optional[str] = None) -> None:
+    def __init__(
+        self,
+        density: float,
+        name: t.Optional[str] = None,
+        units: t.Optional[UnitSet] = None,
+    ) -> None:
         """Initializes an instance of a new material.
 
         Args:
-            density (float): density of the material in kg/m3
+            density (float): Density of the material in kg/m3.
 
         Keyword Args:
-            name (Optional[str]): descriptive name of the material
+            name (Optional[str]): Descriptive name of the material.
+            units (Optional[UnitSet]): The selected set of units to work in. If
+                not set, the default set of units for the specific class is
+                used.
         """
         self._density = abs(density)
         self._name = name if name is not None else 'Material'
+        self._units = units
+        self._unit_converter = UnitConverter(self._default_units, units)
 
     def update_attributes(self, updated_attributes: t.Dict) -> None:
         """Function for updating the attributes specified in the input
@@ -63,6 +77,11 @@ class Material(abc.ABC):
     def density(self):
         """Returns the density of the material in kg/m3."""
         return self._density
+
+    @property
+    def unit_converter(self) -> UnitConverter:
+        """Returns the unit converter of the material."""
+        return self._unit_converter
 
 
 class ConstitutiveLaw(abc.ABC):
