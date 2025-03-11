@@ -123,6 +123,28 @@ def test_specify_fcm_exception(test_input):
         ConcreteMC2010(fck=test_input, fcm=test_input - 1)
 
 
+def test_Eci_getter():
+    """Test the getter for Eci."""
+    fck = 45
+    fcm = mc2010.fcm(fck=fck)
+    expected = mc2010.Eci(fcm=fcm)
+    assert ConcreteMC2010(fck=fck).Eci == expected
+
+
+def test_Eci_specified():
+    """Test specifying a value for Eci."""
+    fck = 45
+    excepted = 30000
+    assert ConcreteMC2010(fck=fck, Eci=excepted).Eci == excepted
+
+
+@pytest.mark.parametrize('Eci', (0.5e4, 2e5))
+def test_Eci_specified_warning(Eci):
+    """Test specifying Eci with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteMC2010(fck=45, Eci=Eci)
+
+
 fctm_parmetrized = pytest.mark.parametrize(
     'test_input, expected',
     [
@@ -327,6 +349,17 @@ def test_eps_c1_specified(test_input, expected):
     assert math.isclose(c.eps_c1, expected * 1e-3)
 
 
+@pytest.mark.parametrize(
+    'strain_limit',
+    ('eps_c1', 'eps_cu1', 'eps_c2', 'eps_cu2', 'eps_c3', 'eps_cu3'),
+)
+def test_strain_limits_specified_warning(strain_limit):
+    """Test specifying strain limits with a wrong value."""
+    kwargs = {strain_limit: 0.15}
+    with pytest.warns(UserWarning):
+        ConcreteMC2010(fck=45, **kwargs)
+
+
 @fck_parametrized
 def test_eps_cu1_getter(fck):
     """Test eps_cu1 getter."""
@@ -369,6 +402,12 @@ def test_k_specified(test_input, expected):
     c = ConcreteMC2010(fck=test_input, k_sargin=expected)
 
     assert math.isclose(c.k_sargin, expected)
+
+
+def test_k_specified_warning():
+    """Test specifying k_sargin with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteMC2010(fck=45, k_sargin=-1.0)
 
 
 @fck_parametrized
@@ -435,6 +474,18 @@ def test_n_specified(test_input, expected):
     c = ConcreteMC2010(fck=test_input, n_parabolic_rectangular=expected)
 
     assert math.isclose(c.n_parabolic_rectangular, expected)
+
+
+def test_n_specified_error():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteMC2010(fck=45, n_parabolic_rectangular=-1)
+
+
+def test_n_specified_warning():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteMC2010(fck=45, n_parabolic_rectangular=6)
 
 
 @fck_parametrized

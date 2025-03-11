@@ -147,6 +147,17 @@ def test_fctd_invalid_parameter(default_concrete):
         default_concrete.fctd(t_ref=invalid_t_ref)
 
 
+@pytest.mark.parametrize(
+    'strain_limit',
+    ('eps_c1', 'eps_cu1', 'eps_c2', 'eps_cu2'),
+)
+def test_strain_limits_specified_warning(strain_limit):
+    """Test specifying strain limits with a wrong value."""
+    kwargs = {strain_limit: 0.15}
+    with pytest.warns(UserWarning):
+        ConcreteEC2_2023(fck=45, **kwargs)
+
+
 def test_eps_c1_property(default_concrete):
     """Test for eps_c1 property."""
     expected_eps_c1 = 0.002353
@@ -174,6 +185,12 @@ def test_k_sargin(default_concrete):
     assert math.isclose(default_concrete.k_sargin, expected, rel_tol=0.001)
 
 
+def test_k_specified_warning():
+    """Test specifying k_sargin with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteEC2_2023(fck=45, k_sargin=-1.0)
+
+
 def test_eps_c2_property(default_concrete):
     """Test for eps_c2 property."""
     expected = 0.002
@@ -191,8 +208,12 @@ def test_setter_properties(default_concrete):
     peak_strain = 2.0e-3
     ultimate_strain = 3.5e-3
     exponent = 1.5
+    fctk_5 = 2.1
+    fctk_95 = 2.3
     concrete = ConcreteEC2_2023(
         fck=default_concrete.fck,
+        fctk_5=fctk_5,
+        fctk_95=fctk_95,
         eps_c1=peak_strain,
         eps_c2=peak_strain,
         eps_cu1=ultimate_strain,
@@ -206,3 +227,17 @@ def test_setter_properties(default_concrete):
     assert math.isclose(concrete.eps_cu2, ultimate_strain)
     assert math.isclose(concrete.n_parabolic_rectangular, exponent)
     assert math.isclose(concrete.k_sargin, exponent)
+    assert math.isclose(concrete.fctk_5, fctk_5)
+    assert math.isclose(concrete.fctk_95, fctk_95)
+
+
+def test_n_specified_error():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteEC2_2023(fck=45, n_parabolic_rectangular=-1)
+
+
+def test_n_specified_warning():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteEC2_2023(fck=45, n_parabolic_rectangular=6)
