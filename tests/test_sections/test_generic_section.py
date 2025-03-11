@@ -8,8 +8,11 @@ from shapely import Polygon
 
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
 from structuralcodes.geometry import (
+    CircularGeometry,
+    RectangularGeometry,
     SurfaceGeometry,
     add_reinforcement,
+    add_reinforcement_circle,
     add_reinforcement_line,
 )
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
@@ -1111,3 +1114,189 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
         section.section_calculator.calculate_strain_profile(
             n, my, mz, tol=1e-7
         )
+
+
+@pytest.mark.parametrize(
+    'w, h, fck, fyk, ftk, Es, eps_su, nbars, diameter, cover',
+    [(250, 1000, 75.0, 500.0, 550, 200000, 7.0e-2, 3, 25, 50)],
+)
+@pytest.mark.parametrize('n', [(x) for x in np.linspace(-3000e3, 200e3, 10)])
+def test_moment_curvature_slender(
+    w, h, fck, fyk, ftk, Es, eps_su, nbars, diameter, cover, n
+):
+    """Test moment-curvature for slender section.
+
+    This test did not pass with the current implementation of the
+    moment-curvature calculation. Fixed with PR #224.
+    """
+    # Create the materials
+    concrete = ConcreteMC2010(fck=fck)
+    reinforcement = ReinforcementMC2010(fyk=fyk, Es=Es, ftk=ftk, epsuk=eps_su)
+
+    # Create the geometry
+    geometry = RectangularGeometry(width=w, height=h, material=concrete)
+
+    # Add reinforcement
+    geometry = add_reinforcement_line(
+        geo=geometry,
+        coords_i=(-w / 2 + cover, -h / 2 + cover),
+        coords_j=(w / 2 - cover, -h / 2 + cover),
+        diameter=diameter,
+        material=reinforcement,
+        n=nbars,
+    )
+
+    # Create fiber section
+    section_fiber = GenericSection(geometry=geometry, integrator='fiber')
+
+    # Create marin section
+    section_marin = GenericSection(
+        geometry=geometry,
+    )
+
+    # Calculation
+    if (
+        n >= section_fiber.section_calculator.n_max
+        or n <= section_fiber.section_calculator.n_min
+    ):
+        return
+    results_fiber = (
+        section_fiber.section_calculator.calculate_moment_curvature(n=n)
+    )
+
+    results_marin = (
+        section_marin.section_calculator.calculate_moment_curvature(n=n)
+    )
+
+    # check
+    # Do not check last couple of points because with a not so fine fiber
+    # discretization some differences can arise.
+    # Also first point for some values of n has shows a diference of about
+    # 7-8% (with this discretization). That is why the rtol is set to 10%
+    assert np.allclose(
+        results_fiber.m_y[:-2], results_marin.m_y[:-2], rtol=1e-1, atol=1e-1
+    )
+    assert np.allclose(
+        results_fiber.chi_y[:-2],
+        results_marin.chi_y[:-2],
+        rtol=1e-1,
+        atol=1e-4,
+    )
+
+
+def test_moment_curvature_large_circular_section():
+    """Test moment-curvature for large hollow circular section.
+
+    This test did not pass with the current implementation of the
+    moment-curvature calculation. Fixed with PR #224.
+    """
+    # Geometry
+    outer_diameter = 10000
+    shaft_thickness = 500
+
+    # Reinforcement
+    diameter_reinf = 20
+    cc_reinf = 200
+    cover = 50
+
+    # Materials
+    fck = 45
+    gamma_c = 1.5
+    alpha_cc = 0.85
+    fyk = 500
+    Es = 200000
+
+    # Modelling
+    n_points_circle = 20
+
+    # Materials
+    concrete = ConcreteEC2_2004(fck=fck, gamma_c=gamma_c, alpha_cc=alpha_cc)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fyk,
+        Es=Es,
+        **reinforcement_duct_props(fyk=fyk, ductility_class='C'),
+    )
+
+    # Establish geometry
+    shaft = CircularGeometry(
+        diameter=outer_diameter,
+        material=concrete,
+        n_points=n_points_circle,
+    ) - CircularGeometry(
+        diameter=(outer_diameter - 2 * shaft_thickness),
+        material=concrete,
+        n_points=n_points_circle,
+    )
+
+    for radius in (
+        0.5 * outer_diameter - cover,
+        0.5 * outer_diameter - shaft_thickness + cover,
+    ):
+        shaft = add_reinforcement_circle(
+            shaft,
+            center=(0, 0),
+            radius=radius,
+            diameter=diameter_reinf,
+            material=reinforcement,
+            s=cc_reinf,
+        )
+
+    # Section
+    section = GenericSection(geometry=shaft, integrator='fiber')
+
+    # Moment-curvature
+    result = section.section_calculator.calculate_moment_curvature(n=-1e6)
+
+    # Compare
+    exp_result_chi = np.array(
+        [
+            -1e-08,
+            -3.7599839056175666e-08,
+            -6.519967811235132e-08,
+            -9.279951716852699e-08,
+            -1.2039935622470266e-07,
+            -1.4799919528087832e-07,
+            -1.75599034337054e-07,
+            -2.0319887339322965e-07,
+            -2.307987124494053e-07,
+            -2.5839855150558097e-07,
+            -8.015207515413767e-07,
+            -1.3446429515771726e-06,
+            -1.8877651516129684e-06,
+            -2.4308873516487644e-06,
+            -2.97400955168456e-06,
+            -3.517131751720356e-06,
+            -4.060253951756152e-06,
+            -4.603376151791947e-06,
+            -5.146498351827743e-06,
+            -5.689620551863539e-06,
+        ]
+    )
+
+    exp_result_m = np.array(
+        [
+            -8613653890.52184,
+            -22725186589.67346,
+            -36779440931.62941,
+            -50806257942.28751,
+            -64806593251.08801,
+            -78779756602.61072,
+            -92725024732.52774,
+            -106641638778.03406,
+            -120528802036.54901,
+            -134385676912.02483,
+            -183859600912.05872,
+            -191502968974.23624,
+            -195624241680.08868,
+            -198503788401.07617,
+            -200996102341.73346,
+            -203282595244.16156,
+            -205358773338.06586,
+            -207304317989.1097,
+            -209163943165.20175,
+            -210962561788.35544,
+        ]
+    )
+
+    assert np.allclose(result.chi_y, exp_result_chi, rtol=1e-5, atol=1e-6)
+    assert np.allclose(result.m_y, exp_result_m, rtol=1e-5, atol=1e-2)

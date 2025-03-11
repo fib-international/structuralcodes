@@ -81,6 +81,18 @@ from ._concrete_shear import (
     v_rds,
 )
 from ._concrete_torsion import t_rd, t_rd_max, v_ed_ti
+from ._interface_concrete_steel_rebar import (
+    K_tr,
+    eta_2,
+    f_stm,
+    s_1,
+    s_2,
+    s_3,
+    s_tau_bu_split,
+    tau_bmax,
+    tau_bu_split,
+    tau_yield,
+)
 from ._reinforcement_material_properties import (
     epsud,
     fyd,
@@ -162,6 +174,16 @@ __all__ = [
     'tau_edi',
     'tau_rdi_with_reinforcement',
     'tau_rdi_without_reinforcement',
+    'eta_2',
+    'tau_bu_split',
+    'K_tr',
+    'tau_bmax',
+    's_1',
+    's_2',
+    's_3',
+    's_tau_bu_split',
+    'f_stm',
+    'tau_yield',
 ]
 
 __title__: str = 'fib Model Code 2010'
