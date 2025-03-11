@@ -149,6 +149,11 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         )
         self._eps_c3 = abs(eps_c3) if eps_c3 is not None else None
         self._eps_cu3 = abs(eps_cu3) if eps_cu3 is not None else None
+
+        self.__post_init__()
+
+        # The constitutive law requires valid attributes, so it should be set
+        # after validation
         self._constitutive_law = (
             constitutive_law
             if isinstance(constitutive_law, ConstitutiveLaw)
@@ -156,8 +161,6 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
                 constitutive_law_name=constitutive_law, material=self
             )
         )
-
-        self.__post_init__()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
@@ -244,13 +247,6 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             warnings.warn(
                 'A suspect value is input for eps_cu3 that should be a pure'
                 f' number without units. Plase check ({self._eps_cu3} given).'
-            )
-
-        # constitutive law
-        if 'concrete' not in self._constitutive_law.__materials__:
-            raise ValueError(
-                'The constitutive law selected is not suitable '
-                'for being used with a concrete material.'
             )
 
     @property

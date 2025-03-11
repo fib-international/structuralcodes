@@ -131,6 +131,11 @@ class ConcreteMC2010(Concrete):
         )
         self._eps_c3 = abs(eps_c3) if eps_c3 is not None else None
         self._eps_cu3 = abs(eps_cu3) if eps_cu3 is not None else None
+
+        self.__post_init__()
+
+        # The constitutive law requires valid attributes, so it should be set
+        # after validation
         self._constitutive_law = (
             constitutive_law
             if isinstance(constitutive_law, ConstitutiveLaw)
@@ -138,8 +143,6 @@ class ConcreteMC2010(Concrete):
                 constitutive_law_name=constitutive_law, material=self
             )
         )
-
-        self.__post_init__()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""

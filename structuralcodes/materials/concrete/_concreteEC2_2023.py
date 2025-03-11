@@ -131,6 +131,10 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             else None
         )
 
+        self.__post_init__()
+
+        # The constitutive law requires valid attributes, so it should be set
+        # after validation
         self._constitutive_law = (
             constitutive_law
             if isinstance(constitutive_law, ConstitutiveLaw)
@@ -138,8 +142,6 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 constitutive_law_name=constitutive_law, material=self
             )
         )
-
-        self.__post_init__()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
