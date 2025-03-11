@@ -607,15 +607,13 @@ def test_rectangular_section_nmm_domain():
 # Test rectangular section with Sargin Model
 def test_rectangular_section_Sargin():
     """Test rectangular section."""
-    # Create materials to use
-    concrete = ConcreteMC2010(25)
-    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
     # Set a different constitutive law respect to default Parabola-Rectangle
     # Here we use Sargin law (MC2010 eq 5.1-26) with parameters taken from
     # MC2010 table 5.1-8
-    concrete.constitutive_law = Sargin(
-        fc=-35, eps_c1=-2.3e-3, eps_cu1=-3.5e-3, k=1.92
-    )
+    constitutive_law = Sargin(fc=-35, eps_c1=-2.3e-3, eps_cu1=-3.5e-3, k=1.92)
+    # Create materials to use
+    concrete = ConcreteMC2010(25, constitutive_law=constitutive_law)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
