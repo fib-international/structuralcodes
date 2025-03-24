@@ -5,6 +5,7 @@ import math
 import pytest
 
 from structuralcodes.materials.constitutive_laws import (
+    BilinearCompression,
     Elastic,
     ElasticPlastic,
 )
@@ -106,4 +107,23 @@ def test_constitutive_law_setter_invalid():
             ftk=550,
             epsuk=0.07,
             constitutive_law='parabolarectangle',
+        )
+
+
+@pytest.mark.parametrize(
+    'reinforcement_type',
+    (ReinforcementMC2010, ReinforcementEC2_2004, ReinforcementEC2_2023),
+)
+def test_invalid_constitutive_law(reinforcement_type):
+    """Test initializing a reinforcement object with an invalid constitutive
+    law.
+    """
+    invalid_constitutive_law = BilinearCompression(500, 500 / 200000, 6e-2)
+    with pytest.raises(ValueError):
+        reinforcement_type(
+            fyk=500,
+            ftk=500,
+            Es=200000,
+            epsuk=6e-2,
+            constitutive_law=invalid_constitutive_law,
         )

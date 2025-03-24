@@ -74,6 +74,10 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
                 constitutive_law_name=constitutive_law, material=self
             )
         )
+        if 'steel' not in self._constitutive_law.__materials__:
+            raise ValueError(
+                'The provided constitutive law is not valid for reinforcement.'
+            )
 
     def fyd(self) -> float:
         """The design yield strength."""

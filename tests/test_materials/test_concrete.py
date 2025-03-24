@@ -12,6 +12,7 @@ from structuralcodes.materials.concrete import (
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
+    ElasticPlastic,
     ParabolaRectangle,
     Popovics,
     Sargin,
@@ -125,3 +126,15 @@ def test_constitutive_law_setter_invalid():
     # Act and assert
     with pytest.raises(ValueError):
         ConcreteMC2010(45, constitutive_law='elasticplastic')
+
+
+@pytest.mark.parametrize(
+    'concrete_type', (ConcreteMC2010, ConcreteEC2_2004, ConcreteEC2_2023)
+)
+def test_invalid_constitutive_law(concrete_type):
+    """Test initializing a concrete object with an invalid constitutive law."""
+    invalid_constitutive_law = ElasticPlastic(
+        E=30000, fy=45, Eh=0, eps_su=3.5e-3
+    )
+    with pytest.raises(ValueError):
+        concrete_type(fck=45, constitutive_law=invalid_constitutive_law)

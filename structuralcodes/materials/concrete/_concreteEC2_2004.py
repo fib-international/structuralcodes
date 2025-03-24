@@ -161,6 +161,10 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
                 constitutive_law_name=constitutive_law, material=self
             )
         )
+        if 'concrete' not in self._constitutive_law.__materials__:
+            raise ValueError(
+                'The provided constitutive law is not valid for concrete.'
+            )
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
