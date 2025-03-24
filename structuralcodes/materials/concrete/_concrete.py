@@ -40,11 +40,6 @@ class Concrete(Material):
         return self._fck
 
     @property
-    def constitutive_law(self) -> ConstitutiveLaw:
-        """Returns the constitutive law object."""
-        return self._constitutive_law
-
-    @property
     @abc.abstractmethod
     def gamma_c(self) -> float:
         """Each concrete should implement its own getter for the partial factor
