@@ -647,7 +647,7 @@ class GenericSectionCalculator(SectionCalculator):
             matrix then `integrate='modulus'`.
 
         Examples:
-            result = self.integrate_strain_profile(strain,integrate='tangent')
+            result = self.integrate_strain_profile(strain,integrate='modulus')
             # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
 
             result = self.integrate_strain_profile(strain)
