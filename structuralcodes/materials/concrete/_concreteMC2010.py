@@ -101,7 +101,22 @@ class ConcreteMC2010(Concrete):
                 constitutive law.
 
         Raises:
-            ...
+            ValueError: If fcm is lower than fck.
+            ValueError: If k_sargin is negative.
+            ValueError: If n_parabolic_rectangular is negative.
+            ValueError: If the constitutive law name is not available for the
+                material.
+            ValueError: If the provided constitutive law is not valid for
+                concrete.
+            Warning: If Eci is lower than 1e4 or larger than 1e5.
+            Warning: If fctm is larger than 0.5 * fck.
+            Warning: If eps_c1 is larger than 0.1.
+            Warning: If eps_cu1 is larger than 0.1.
+            Warning: If eps_c2 is larger than 0.1.
+            Warning: If eps_cu2 is larger than 0.1.
+            Warning: If n_parabolic_rectangular is larger than 5.
+            Warning: If eps_c3 is larger than 0.1.
+            Warning: If eps_cu3 is larger than 0.1.
         """
         del kwargs
         if name is None:

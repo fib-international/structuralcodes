@@ -107,10 +107,10 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             ValueError: If fcm is lower than fck.
             ValueError: If k_sargin is negative.
             ValueError: If n_parabolic_rectangular is negative.
-            ValueError: If the provided constitutive law is not valid for the
-                material.
             ValueError: If the constitutive law name is not available for the
                 material.
+            ValueError: If the provided constitutive law is not valid for
+                concrete.
             ValueError: If the constitutive law name is unknown.
             Warning: If fctm is larger than 0.5 * fck.
             Warning: If eps_c1 is larger than 0.1.

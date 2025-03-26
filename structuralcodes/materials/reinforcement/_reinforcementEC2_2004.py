@@ -53,6 +53,12 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
                 constitutive law type for reinforcement. (valid options for
                 string: 'elastic', 'elasticplastic', or
                 'elasticperfectlyplastic').
+
+        Raises:
+            ValueError: If the constitutive law name is not available for the
+                material.
+            ValueError: If the provided constitutive law is not valid for
+                reinforcement.
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'

@@ -100,7 +100,19 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 parabolic rectangular constitutive law.
 
         Raises:
-            ...
+            ValueError: If the provided strength development class is invalid.
+            ValueError: If gamma_c is less than zero.
+            ValueError: If fcm is less than fck.
+            ValueError: If k_sargin is negative.
+            ValueError: If n_parabolic_rectangular is negative.
+            ValueError: If the constitutive law name is not available for the
+                material.
+            ValueError: If the provided constitutive law is not valid for
+                concrete.
+            Warning: If eps_c1 is larger than 0.1.
+            Warning: If eps_cu1 is larger than 0.1.
+            Warning: If eps_c2 is larger than 0.1.
+            Warning: If eps_cu2 is larger than 0.1.
         """
         del kwargs
         if name is None:
