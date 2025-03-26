@@ -6,7 +6,6 @@
 ```{eval-rst}
 .. autoclass:: structuralcodes.core.base.Material
 
-   .. automethod:: update_attributes
    .. autoproperty:: constitutive_law
    .. autoproperty:: name
    .. autoproperty:: density

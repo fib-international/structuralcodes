@@ -107,10 +107,10 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             ValueError: If fcm is lower than fck.
             ValueError: If k_sargin is negative.
             ValueError: If n_parabolic_rectangular is negative.
-            ValueError: If the provided constitutive law is not valid for the
-                material.
             ValueError: If the constitutive law name is not available for the
                 material.
+            ValueError: If the provided constitutive law is not valid for
+                concrete.
             ValueError: If the constitutive law name is unknown.
             Warning: If fctm is larger than 0.5 * fck.
             Warning: If eps_c1 is larger than 0.1.
@@ -190,14 +190,14 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         if self._eps_c1 is not None and self._eps_c1 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_c1 that should be a pure'
-                f' number without units. Plase check ({self._eps_c1} given).'
+                f' number without units. Please check ({self._eps_c1} given).'
             )
 
         # eps_cu1
         if self._eps_cu1 is not None and self._eps_cu1 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_cu1 that should be a pure'
-                f' number without units. Plase check ({self._eps_cu1} given).'
+                f' number without units. Please check ({self._eps_cu1} given).'
             )
 
         # k_sargin
@@ -210,14 +210,14 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         if self._eps_c2 is not None and self._eps_c2 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_c2 that should be a pure'
-                f' number without units. Plase check ({self._eps_c2} given).'
+                f' number without units. Please check ({self._eps_c2} given).'
             )
 
         # eps_cu2
         if self._eps_cu2 is not None and self._eps_cu2 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_cu2 that should be a pure'
-                f' number without units. Plase check ({self._eps_cu2} given).'
+                f' number without units. Please check ({self._eps_cu2} given).'
             )
 
         # n_parabolic_rectangular
@@ -235,7 +235,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         ):
             warnings.warn(
                 'A suspect value is input for n_parabolic_rectangular that '
-                'should be a pure number without units. Plase check '
+                'should be a pure number without units. Please check '
                 f'({self._n_parabolic_rectangular} given).'
             )
 
@@ -243,14 +243,14 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         if self._eps_c3 is not None and abs(self._eps_c3) >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_c3 that should be a pure'
-                f' number without units. Plase check ({self._eps_c3} given).'
+                f' number without units. Please check ({self._eps_c3} given).'
             )
 
         # eps_cu3
         if self._eps_cu3 is not None and abs(self._eps_cu3) >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_cu3 that should be a pure'
-                f' number without units. Plase check ({self._eps_cu3} given).'
+                f' number without units. Please check ({self._eps_cu3} given).'
             )
 
     @property
