@@ -67,6 +67,10 @@ class ShellReinforcement(Geometry):
         """Return the orientation angle of the reinforcement."""
         return self._phi
 
+    def _repr_svg_(self) -> str:
+        """Returns the svg representation."""
+        raise NotImplementedError
+
 
 class ShellGeometry(Geometry):
     """A class for a shell with a thickness and material."""
@@ -115,3 +119,7 @@ class ShellGeometry(Geometry):
             self._reinforcement.append(reinforcement)
         elif isinstance(reinforcement, list):
             self._reinforcement.extend(reinforcement)
+
+    def _repr_svg_(self) -> str:
+        """Returns the svg representation."""
+        raise NotImplementedError
