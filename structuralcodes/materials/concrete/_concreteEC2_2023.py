@@ -191,34 +191,34 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         if self._eps_c1 is not None and self._eps_c1 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_c1 that should be a pure'
-                f' number without units. Plase check ({self._eps_c1} given).'
+                f' number without units. Please check ({self._eps_c1} given).'
             )
 
         # Check eps_cu1
         if self._eps_cu1 is not None and self._eps_cu1 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_cu1 that should be a pure'
-                f' number without units. Plase check ({self._eps_cu1} given).'
+                f' number without units. Please check ({self._eps_cu1} given).'
             )
 
         # Check k_sargin
         if self._k_sargin is not None and self._k_sargin < 0:
             raise ValueError(
-                f'n should be a positive value ({self._k_sargin} given)'
+                f'k_sargin should be a positive value ({self._k_sargin} given)'
             )
 
         # Check eps_c2
         if self._eps_c2 is not None and self._eps_c2 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_c2 that should be a pure'
-                f' number without units. Plase check ({self._eps_c2} given).'
+                f' number without units. Please check ({self._eps_c2} given).'
             )
 
         # Check eps_cu2
         if self._eps_cu2 is not None and self._eps_cu2 >= 0.1:
             warnings.warn(
                 'A suspect value is input for eps_cu2 that should be a pure'
-                f' number without units. Plase check ({self._eps_cu2} given).'
+                f' number without units. Please check ({self._eps_cu2} given).'
             )
 
         # Check n_parabolic_rectangular
@@ -236,7 +236,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
         ):
             warnings.warn(
                 'A suspect value is input for eps_cu2 that should be a pure'
-                ' number without units. Plase check '
+                ' number without units. Please check '
                 f'({self._n_parabolic_rectangular} given).'
             )
 
