@@ -234,6 +234,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../codes/mc2010/material_reinforcement.html">Material properties for reinforcement steel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../codes/mc2010/shear.html">Shear, punching and torsion</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../codes/mc2010/creep_shrinkage.html">Creep and shrinkage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../codes/mc2010/bond_reinforcement.html">Bond of embedded steel reinforcement</a></li>
 </ul>
 </li>
 </ul>
@@ -318,7 +319,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.materials.constitutive_laws.create_constitutive_law">
-<span class="sig-prename descclassname"><span class="pre">structuralcodes.materials.constitutive_laws.</span></span><span class="sig-name descname"><span class="pre">create_constitutive_law</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constitutive_law_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="base_materials.html#structuralcodes.core.base.Material" title="structuralcodes.core.base.Material"><span class="pre">Material</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="base_materials.html#structuralcodes.core.base.ConstitutiveLaw" title="structuralcodes.core.base.ConstitutiveLaw"><span class="pre">ConstitutiveLaw</span></a></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\materials\constitutive_laws\__init__.py#L42-L84"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.materials.constitutive_laws.create_constitutive_law" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.materials.constitutive_laws.</span></span><span class="sig-name descname"><span class="pre">create_constitutive_law</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constitutive_law_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="base_materials.html#structuralcodes.core.base.Material" title="structuralcodes.core.base.Material"><span class="pre">Material</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="base_materials.html#structuralcodes.core.base.ConstitutiveLaw" title="structuralcodes.core.base.ConstitutiveLaw"><span class="pre">ConstitutiveLaw</span></a></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\materials\constitutive_laws\__init__.py#L42-L85"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.materials.constitutive_laws.create_constitutive_law" title="Link to this definition">¶</a></dt>
 <dd><p>A factory function to create the constitutive law.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -342,6 +343,14 @@ will be raised.</p>
 <p>If the consitutive law selected is not available for the specific
 material, an exception will be raised.</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the constitutive law is not available for the material.</p></li>
+<li><p><strong>ValueError</strong> – If the constitutive law name is unknown.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
