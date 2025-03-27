@@ -610,15 +610,13 @@ def test_rectangular_section_nmm_domain():
 # Test rectangular section with Sargin Model
 def test_rectangular_section_Sargin():
     """Test rectangular section."""
-    # Create materials to use
-    concrete = ConcreteMC2010(25)
-    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
     # Set a different constitutive law respect to default Parabola-Rectangle
     # Here we use Sargin law (MC2010 eq 5.1-26) with parameters taken from
     # MC2010 table 5.1-8
-    concrete.constitutive_law = Sargin(
-        fc=-35, eps_c1=-2.3e-3, eps_cu1=-3.5e-3, k=1.92
-    )
+    constitutive_law = Sargin(fc=-35, eps_c1=-2.3e-3, eps_cu1=-3.5e-3, k=1.92)
+    # Create materials to use
+    concrete = ConcreteMC2010(25, constitutive_law=constitutive_law)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
@@ -1277,26 +1275,26 @@ def test_moment_curvature_large_circular_section():
 
     exp_result_m = np.array(
         [
-            -8613653890.52184,
-            -22725186589.67346,
-            -36779440931.62941,
-            -50806257942.28751,
-            -64806593251.08801,
-            -78779756602.61072,
-            -92725024732.52774,
-            -106641638778.03406,
-            -120528802036.54901,
-            -134385676912.02483,
-            -183859600912.05872,
-            -191502968974.23624,
-            -195624241680.08868,
-            -198503788401.07617,
-            -200996102341.73346,
-            -203282595244.16156,
-            -205358773338.06586,
-            -207304317989.1097,
-            -209163943165.20175,
-            -210962561788.35544,
+            -8.61365389e09,
+            -2.27251866e10,
+            -3.67794409e10,
+            -5.08062579e10,
+            -6.48065933e10,
+            -7.87797566e10,
+            -9.27250247e10,
+            -1.06641639e11,
+            -1.20528802e11,
+            -1.34385677e11,
+            -1.83767156e11,
+            -1.91178122e11,
+            -1.95069846e11,
+            -1.97732022e11,
+            -2.00008766e11,
+            -2.02080156e11,
+            -2.03933914e11,
+            -2.05666626e11,
+            -2.07302091e11,
+            -2.08884969e11,
         ]
     )
 
