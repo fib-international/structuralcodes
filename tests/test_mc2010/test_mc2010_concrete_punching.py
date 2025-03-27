@@ -52,7 +52,10 @@ def test_m_ed_invalid():
 
 
 @pytest.mark.parametrize(
-    'psi_punching_level_one, psi_punching_level_two, psi_punching_level_three, approx_lvl_p, expected',
+    (
+        'psi_punching_level_one, psi_punching_level_two, '
+        'psi_punching_level_three, approx_lvl_p, expected'
+    ),
     [
         (0.013427, 0.47089, 0.47089, 1, 0.013427),  # Level 1
         (0.013427, 0.47089, 0.47089, 2, 0.47089),   # Level 2
@@ -60,12 +63,19 @@ def test_m_ed_invalid():
     ],
 )
 def test_psi_punching(
-    psi_punching_level_one, psi_punching_level_two, psi_punching_level_three, approx_lvl_p, expected
+    psi_punching_level_one,
+    psi_punching_level_two,
+    psi_punching_level_three,
+    approx_lvl_p,
+    expected,
 ):
     """Test the psi_punching function."""
     assert math.isclose(
         _concrete_punching.psi_punching(
-            psi_punching_level_one, psi_punching_level_two, psi_punching_level_three, approx_lvl_p
+            psi_punching_level_one,
+            psi_punching_level_two,
+            psi_punching_level_three,
+            approx_lvl_p,
         ),
         expected,
         rel_tol=0.001,
@@ -271,17 +281,24 @@ def test_psi_punching_level_one(l_x, l_y, f_yd, d_eff, e_s, expected):
         (440, 434, 160, 200e3, 1500, 140, 50, 0.5789), # With prestressing
     ],
 )
-def test_psi_punching_level_two(r_s, f_yd, d_eff, e_s, m_ed, m_rd, m_Pd, expected):
+def test_psi_punching_level_two(
+    r_s, f_yd, d_eff, e_s, m_ed, m_rd, m_Pd, expected
+):
     """Test the psi_punching_level_two function."""
     assert math.isclose(
-        _concrete_punching.psi_punching_level_two(r_s, f_yd, d_eff, e_s, m_ed, m_rd, m_Pd),
+        _concrete_punching.psi_punching_level_two(
+            r_s, f_yd, d_eff, e_s, m_ed, m_rd, m_Pd
+        ),
         expected,
         rel_tol=0.001,
     )
 
 
 @pytest.mark.parametrize(
-    'psi_punching_level_two, is_uncracked_model, is_moment_from_uncracked_model, expected',
+    (
+        'psi_punching_level_two, is_uncracked_model, '
+        'is_moment_from_uncracked_model, expected'
+    ),
     [
         (0.47089, False, False, 0.47089),  # No change
         (0.47089, True, True, 0.37671),    # Both conditions true
@@ -290,12 +307,17 @@ def test_psi_punching_level_two(r_s, f_yd, d_eff, e_s, m_ed, m_rd, m_Pd, expecte
     ],
 )
 def test_psi_punching_level_three(
-    psi_punching_level_two, is_uncracked_model, is_moment_from_uncracked_model, expected
+    psi_punching_level_two,
+    is_uncracked_model,
+    is_moment_from_uncracked_model,
+    expected,
 ):
     """Test the psi_punching_level_three function."""
     assert math.isclose(
         _concrete_punching.psi_punching_level_three(
-            psi_punching_level_two, is_uncracked_model, is_moment_from_uncracked_model
+            psi_punching_level_two,
+            is_uncracked_model,
+            is_moment_from_uncracked_model,
         ),
         expected,
         rel_tol=0.001,
@@ -303,21 +325,37 @@ def test_psi_punching_level_three(
 
 
 @pytest.mark.parametrize(
-    'l_x, l_y, x_direction, is_level_three_approximation, column_edge_or_corner, b_sr_val, expected',
+    (
+        'l_x, l_y, x_direction, is_level_three_approximation, '
+        'column_edge_or_corner, b_sr_val, expected'
+    ),
     [
         (2000, 3000, True, False, False, -1, 440),  # x direction
         (2000, 3000, False, False, False, -1, 660),  # y direction
-        (2000, 3000, True, True, True, 2000, 1340),  # Level 3, edge/corner, x direction
-        (2000, 3000, False, True, True, 2000, 1340),  # Level 3, edge/corner, y direction
+        (2000, 3000, True, True, True, 2000, 1340),  # Level 3, edge/corner,
+        # x direction
+        (2000, 3000, False, True, True, 2000, 1340),  # Level 3, edge/corner,
+        # y direction
     ],
 )
 def test_r_s(
-    l_x, l_y, x_direction, is_level_three_approximation, column_edge_or_corner, b_sr_val, expected
+    l_x,
+    l_y,
+    x_direction,
+    is_level_three_approximation,
+    column_edge_or_corner,
+    b_sr_val,
+    expected,
 ):
     """Test the r_s function."""
     assert math.isclose(
         _concrete_punching.r_s(
-            l_x, l_y, x_direction, is_level_three_approximation, column_edge_or_corner, b_sr_val
+            l_x,
+            l_y,
+            x_direction,
+            is_level_three_approximation,
+            column_edge_or_corner,
+            b_sr_val,
         ),
         expected,
         rel_tol=0.001,
@@ -326,7 +364,10 @@ def test_r_s(
 
 def test_r_s_error():
     """Test r_s with invalid inputs."""
-    with pytest.raises(ValueError, match='b_sr is not defined for Level 3 of Approximation'):
+    with pytest.raises(
+        ValueError,
+        match='b_sr is not defined for Level 3 of Approximation'
+    ):
         _concrete_punching.r_s(2000, 3000, True, True, True, -1)
 
 
@@ -356,10 +397,14 @@ def test_f_ywd(f_ywk, gamma_s, expected):
         (200e3, 0.015, 90, 3, 160, 300, 8, 300),     # Lower f_ywd
     ],
 )
-def test_sigma_swd(e_s, psi_punching, alpha, f_bd, d_eff, f_ywd, phi_w, expected):
+def test_sigma_swd(
+    e_s, psi_punching, alpha, f_bd, d_eff, f_ywd, phi_w, expected
+):
     """Test the sigma_swd function."""
     assert math.isclose(
-        _concrete_punching.sigma_swd(e_s, psi_punching, alpha, f_bd, d_eff, f_ywd, phi_w),
+        _concrete_punching.sigma_swd(
+            e_s, psi_punching, alpha, f_bd, d_eff, f_ywd, phi_w
+        ),
         expected,
         rel_tol=0.001,
     )
