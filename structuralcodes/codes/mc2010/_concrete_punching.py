@@ -2,7 +2,7 @@
 
 import warnings
 from math import cos, pi, sin
-
+import typing as t
 
 def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
@@ -104,7 +104,7 @@ def r_s(
     x_direction: bool,
     is_level_three_approximation: bool = False,
     column_edge_or_corner: bool = False,
-    b_sr: float = -1,
+    b_sr: t.Optional[float] = None
 ) -> float:
     """The position where the radial bending moment is zero with
     respect to the support axis.
@@ -129,7 +129,7 @@ def r_s(
     r_s = 0.22 * l_x if x_direction is True else 0.22 * l_y
 
     if column_edge_or_corner and is_level_three_approximation:
-        if b_sr == -1:
+        if b_sr is None:
             raise ValueError(
                 'b_sr is not defined for Level 3 of Approximation'
             )

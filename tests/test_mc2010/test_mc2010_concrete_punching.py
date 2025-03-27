@@ -368,7 +368,7 @@ def test_r_s_error():
         ValueError,
         match='b_sr is not defined for Level 3 of Approximation'
     ):
-        _concrete_punching.r_s(2000, 3000, True, True, True, -1)
+        _concrete_punching.r_s(2000, 3000, True, True, True, None)
 
 
 @pytest.mark.parametrize(
