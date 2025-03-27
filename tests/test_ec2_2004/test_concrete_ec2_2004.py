@@ -33,22 +33,6 @@ def test_create_concrete(design_code_to_set, fck, expected_name):
     assert c.density == expected_density
 
 
-@pytest.mark.parametrize(
-    'fck, fcm',
-    [(12, 20), (35, 43), (55, 63), (90, 98), (120, 128)],
-)
-def test_update_attributes(fck, fcm):
-    """Test update_attributes function."""
-    c = create_concrete(fck=fck, design_code='ec2_2004')
-    c.update_attributes({'fcm': fcm})
-    # Test a warning is raised when a not valid key is inputted
-    with pytest.warns(UserWarning):
-        c.update_attributes({'not_valid_key': fcm})
-
-    assert c.fcm is not None
-    assert c.fcm == fcm
-
-
 fck_parametrized = pytest.mark.parametrize('fck', [20, 25, 30, 35, 40])
 
 
@@ -60,53 +44,9 @@ def test_fck_getter(fck):
     assert c.fck == fck
 
 
-@fck_parametrized
-def test_fck_setter(fck):
-    """Test fck setter."""
-    c = ConcreteEC2_2004(fck)
-    c.fck = fck + 5
-
-    assert c.fck == fck + 5
-
-
 def test_properties_initialized_to_none():
     """Test if a ConcreteEC2_2004 has the attributes set to None."""
     c = ConcreteEC2_2004(fck=25)
-
-    assert c._fcm is None
-    assert c._fctm is None
-    assert c._fctk_5 is None
-    assert c._fctk_95 is None
-    assert c._Ecm is None
-    assert c._eps_c1 is None
-    assert c._eps_cu1 is None
-    assert c._k_sargin is None
-    assert c._eps_c2 is None
-    assert c._eps_cu2 is None
-    assert c._n_parabolic_rectangular is None
-    assert c._eps_c3 is None
-    assert c._eps_cu3 is None
-
-
-def test_reset_properties():
-    """Test _reset_attributes function."""
-    c = ConcreteEC2_2004(fck=25)
-
-    _ = c.fcm
-    _ = c.fctm
-    _ = c.fctk_5
-    _ = c.fctk_95
-    _ = c.Ecm
-    _ = c.eps_c1
-    _ = c.eps_cu1
-    _ = c.k_sargin
-    _ = c.eps_c2
-    _ = c.eps_cu2
-    _ = c.n_parabolic_rectangular
-    _ = c.eps_c3
-    _ = c.eps_cu3
-
-    c._reset_attributes()
 
     assert c._fcm is None
     assert c._fctm is None
@@ -138,10 +78,9 @@ fcm_parametrized = pytest.mark.parametrize(
 
 
 @fcm_parametrized
-def test_fcm_setter(test_input, expected):
-    """Test the fcm setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.fcm = expected
+def test_fcm_specified(test_input, expected):
+    """Test specifying fcm."""
+    c = ConcreteEC2_2004(fck=test_input, fcm=expected)
 
     assert math.isclose(c.fcm, expected)
 
@@ -150,11 +89,10 @@ def test_fcm_setter(test_input, expected):
     'test_input',
     [12, 35, 55, 90, 120],
 )
-def test_fcm_setter_exception(test_input):
-    """Test the fcm setter with a wrong value."""
-    c = ConcreteEC2_2004(fck=test_input)
+def test_fcm_specified_exception(test_input):
+    """Test the specifying fcm with a wrong value."""
     with pytest.raises(ValueError):
-        c.fcm = test_input - 1
+        ConcreteEC2_2004(fck=test_input, fcm=test_input - 1)
 
 
 @fck_parametrized
@@ -172,10 +110,9 @@ fctm_parametrized = pytest.mark.parametrize(
 
 
 @fctm_parametrized
-def test_fctm_setter(test_input, expected):
-    """Test the fctm setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.fctm = expected
+def test_fctm_specified(test_input, expected):
+    """Test specifying fctm."""
+    c = ConcreteEC2_2004(fck=test_input, fctm=expected)
 
     assert math.isclose(c.fctm, expected)
 
@@ -184,11 +121,10 @@ def test_fctm_setter(test_input, expected):
     'test_input',
     [12, 35, 55, 90],
 )
-def test_fctm_setter_warning(test_input):
-    """Test the fctm setter with a wrong value."""
-    c = ConcreteEC2_2004(fck=test_input)
+def test_fctm_specified_warning(test_input):
+    """Test specifying fctm with a wrong value."""
     with pytest.warns(UserWarning):
-        c.fctm = test_input * 0.5 + 1
+        ConcreteEC2_2004(fck=test_input, fctm=test_input * 0.5 + 1)
 
 
 @fck_parametrized
@@ -206,10 +142,9 @@ fctk5_parametrized = pytest.mark.parametrize(
 
 
 @fctk5_parametrized
-def test_fctk5_setter(test_input, expected):
-    """Test the fctk_5 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.fctk_5 = expected
+def test_fctk5_specified(test_input, expected):
+    """Test specifying fctk_5."""
+    c = ConcreteEC2_2004(fck=test_input, fctk_5=expected)
 
     assert math.isclose(c.fctk_5, expected)
 
@@ -229,10 +164,9 @@ fctk95_parametrized = pytest.mark.parametrize(
 
 
 @fctk95_parametrized
-def test_fctk95_setter(test_input, expected):
-    """Test the fctk_95 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.fctk_95 = expected
+def test_fctk95_specified(test_input, expected):
+    """Test specifying fctk_95."""
+    c = ConcreteEC2_2004(fck=test_input, fctk_95=expected)
 
     assert math.isclose(c.fctk_95, expected)
 
@@ -252,10 +186,9 @@ Ecm_parametrized = pytest.mark.parametrize(
 
 
 @Ecm_parametrized
-def test_Ecm_setter(test_input, expected):
-    """Test the Ecm setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.Ecm = expected
+def test_Ecm_specified(test_input, expected):
+    """Test specifying Ecm."""
+    c = ConcreteEC2_2004(fck=test_input, Ecm=expected)
 
     assert math.isclose(c.Ecm, expected)
 
@@ -297,12 +230,22 @@ eps_c1_parametrized = pytest.mark.parametrize(
 
 
 @eps_c1_parametrized
-def test_eps_c1_setter(test_input, expected):
-    """Test the eps_c1 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.eps_c1 = expected * 1e-3
+def test_eps_c1_specified(test_input, expected):
+    """Test specifying eps_c1."""
+    c = ConcreteEC2_2004(fck=test_input, eps_c1=expected * 1e-3)
 
     assert math.isclose(c.eps_c1, expected * 1e-3)
+
+
+@pytest.mark.parametrize(
+    'strain_limit',
+    ('eps_c1', 'eps_cu1', 'eps_c2', 'eps_cu2', 'eps_c3', 'eps_cu3'),
+)
+def test_strain_limits_specified_warning(strain_limit):
+    """Test specifying strain limits with a wrong value."""
+    kwargs = {strain_limit: 0.15}
+    with pytest.warns(UserWarning):
+        ConcreteEC2_2004(fck=45, **kwargs)
 
 
 @fck_parametrized
@@ -320,10 +263,9 @@ eps_cu1_parametrized = pytest.mark.parametrize(
 
 
 @eps_cu1_parametrized
-def test_eps_cu1_setter(test_input, expected):
-    """Test the eps_cu1 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.eps_cu1 = expected * 1e-3
+def test_eps_cu1_specified(test_input, expected):
+    """Test specifying eps_cu1."""
+    c = ConcreteEC2_2004(fck=test_input, eps_cu1=expected * 1e-3)
 
     assert math.isclose(c.eps_cu1, expected * 1e-3)
 
@@ -347,12 +289,17 @@ k_parametrized = pytest.mark.parametrize(
 
 
 @k_parametrized
-def test_k_setter(test_input, expected):
-    """Test the k_sargin setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.k_sargin = expected
+def test_k_specified(test_input, expected):
+    """Test specifying k_sargin."""
+    c = ConcreteEC2_2004(fck=test_input, k_sargin=expected)
 
     assert math.isclose(c.k_sargin, expected)
+
+
+def test_k_specified_warning():
+    """Test specifying k_sargin with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteEC2_2004(fck=45, k_sargin=-1.0)
 
 
 @fck_parametrized
@@ -370,10 +317,9 @@ eps_c2_parametrized = pytest.mark.parametrize(
 
 
 @eps_c2_parametrized
-def test_eps_c2_setter(test_input, expected):
-    """Test the eps_c2 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.eps_c2 = expected * 1e-3
+def test_eps_c2_specified(test_input, expected):
+    """Test specifying eps_c2."""
+    c = ConcreteEC2_2004(fck=test_input, eps_c2=expected * 1e-3)
 
     assert math.isclose(c.eps_c2, expected * 1e-3)
 
@@ -393,10 +339,9 @@ eps_cu2_parametrized = pytest.mark.parametrize(
 
 
 @eps_cu2_parametrized
-def test_eps_cu2_setter(test_input, expected):
-    """Test the eps_cu2 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.eps_cu2 = expected * 1e-3
+def test_eps_cu2_specified(test_input, expected):
+    """Test specifying eps_cu2."""
+    c = ConcreteEC2_2004(fck=test_input, eps_cu2=expected * 1e-3)
 
     assert math.isclose(c.eps_cu2, expected * 1e-3)
 
@@ -416,11 +361,22 @@ n_parametrized = pytest.mark.parametrize(
 
 
 @n_parametrized
-def test_n_setter(test_input, expected):
-    """Test the n_parabolic_rettangular setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.n_parabolic_rectangular = expected
+def test_n_specified(test_input, expected):
+    """Test specifying n_parabolic_rettangular."""
+    c = ConcreteEC2_2004(fck=test_input, n_parabolic_rectangular=expected)
     assert math.isclose(c.n_parabolic_rectangular, expected)
+
+
+def test_n_specified_error():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteEC2_2004(fck=45, n_parabolic_rectangular=-1)
+
+
+def test_n_specified_warning():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteEC2_2004(fck=45, n_parabolic_rectangular=6)
 
 
 @fck_parametrized
@@ -438,10 +394,9 @@ eps_c3_parametrized = pytest.mark.parametrize(
 
 
 @eps_c3_parametrized
-def test_eps_c3_setter(test_input, expected):
-    """Test the eps_c3 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.eps_c3 = expected * 1e-3
+def test_eps_c3_specified(test_input, expected):
+    """Test specifying eps_c3."""
+    c = ConcreteEC2_2004(fck=test_input, eps_c3=expected * 1e-3)
 
     assert math.isclose(c.eps_c3, expected * 1e-3)
 
@@ -461,9 +416,8 @@ eps_cu3_parametrized = pytest.mark.parametrize(
 
 
 @eps_cu3_parametrized
-def test_eps_cu3_setter(test_input, expected):
-    """Test the eps_cu3 setter."""
-    c = ConcreteEC2_2004(fck=test_input)
-    c.eps_cu3 = expected * 1e-3
+def test_eps_cu3_specified(test_input, expected):
+    """Test specifying eps_cu3."""
+    c = ConcreteEC2_2004(fck=test_input, eps_cu3=expected * 1e-3)
 
     assert math.isclose(c.eps_cu3, expected * 1e-3)

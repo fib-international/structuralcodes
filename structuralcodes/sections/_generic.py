@@ -647,7 +647,7 @@ class GenericSectionCalculator(SectionCalculator):
             matrix then `integrate='modulus'`.
 
         Examples:
-            result = self.integrate_strain_profile(strain,integrate='tangent')
+            result = self.integrate_strain_profile(strain,integrate='modulus')
             # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
 
             result = self.integrate_strain_profile(strain)
@@ -1358,7 +1358,7 @@ class GenericSectionCalculator(SectionCalculator):
             n (float): Axial load.
             my (float): Bending moment around y-axis.
             mz (float): Bending moment around z-axis.
-            initial (bool): If True the modified newton with initial tanget is
+            initial (bool): If True the modified newton with initial tangent is
                 used (default = False).
             max_iter (int): the maximum number of iterations in the iterative
                 process (default = 10).
