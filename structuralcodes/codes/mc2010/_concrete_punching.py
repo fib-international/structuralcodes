@@ -1,8 +1,9 @@
 """Covers punching in Model code 2010, 7.3.5.1 to 7.3.5.4."""
 
+import typing as t
 import warnings
 from math import cos, pi, sin
-import typing as t
+
 
 def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
