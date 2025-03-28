@@ -29,7 +29,7 @@ class Material(abc.ABC):
         self._name = name if name is not None else 'Material'
 
     @property
-    def constitutive_law(self):
+    def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the ConstitutiveLaw of the object."""
         return self._constitutive_law
 
