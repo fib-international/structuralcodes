@@ -199,7 +199,7 @@ class FiberIntegrator(SectionIntegrator):
 
         prepared_input = []
 
-        triangulated_data = kwargs.get('tri', None)
+        triangulated_data = kwargs.get('tri')
         if triangulated_data is None:
             # No triangulation is provided, triangulate the section
             # Fiber integrator for generic section uses delaunay triangulation
