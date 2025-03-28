@@ -8,7 +8,7 @@ from math import cos, pi, sin
 def b_0(v_ed: float, v_prep_d_max: float) -> float:
     """Gives the general output for b_0, shear-resisting control perimeter.
 
-    fib Model Code 2010, eq. (7.3-57).
+    fib Model Code 2010, Eq. (7.3-57).
 
     Args:
         V_ed (float): The acting shear force from the columns.
@@ -27,7 +27,7 @@ def b_s(
 ) -> float:
     """The width of the support strip for calculating m_ed.
 
-    fib Model Code 2010, eq. (7.3-76)
+    fib Model Code 2010, Eq. (7.3-76).
 
     Args:
         l_x (float): The width in x direction that the collumn carries.
@@ -53,8 +53,7 @@ def m_ed(
 ) -> float:
     """The average bending moment acting in the support strip.
 
-    fib Model Code 2010, eq. (7.3-71), (7.3-72), (7.3-73)
-    and (7.3-74).
+    fib Model Code 2010, Eq. (7.3-71), (7.3-72), (7.3-73) and (7.3-74).
 
     Args:
         v_ed (float): The acting shear force from the columns.
@@ -82,13 +81,14 @@ def m_ed(
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
     raise ValueError('Placement is not defined, only one needs to be True')
 
+
 def b_sr(
     l_x: float,
     l_y: float,
 ) -> float:
     """The width of the support strip in the radial direction.
 
-    fib Model Code 2010, 7.3.5.3
+    fib Model Code 2010, 7.3.5.3.
 
     Args:
         l_x (float): The width in x direction that the collumn carries.
@@ -99,19 +99,20 @@ def b_sr(
     """
     return min(l_x, l_y)
 
+
 def r_s(
     l_x: float,
     l_y: float,
     x_direction: bool,
     is_level_three_approximation: bool = False,
     column_edge_or_corner: bool = False,
-    b_sr: t.Optional[float] = None
+    b_sr: t.Optional[float] = None,
 ) -> float:
-    """The position where the radial bending moment is zero with
-    respect to the support axis.
+    """The position where the radial bending moment is zero with respect to the
+    support axis.
 
     fib Model Code 2010, 7.3.5.3 and Eq. (7.3-78) for Level III of
-        Approximation
+    Approximation.
 
     Args:
         l_x (float): The width in x direction that the collumn carries.
@@ -147,7 +148,7 @@ def psi_punching_level_one(
 ) -> float:
     """The psi value for the punching level one.
 
-    fib Model Code 2010, eq. (7.3-70)
+    fib Model Code 2010, Eq. (7.3-70).
 
     Args:
         r_s (float): The position where the radial bending moment is zero with
@@ -174,7 +175,7 @@ def psi_punching_level_two(
 ) -> float:
     """The psi value for the punching level two.
 
-    fib Model Code 2010, eq. (7.3-75) and (7.3-77)
+    fib Model Code 2010, Eq. (7.3-75) and (7.3-77).
 
     Args:
         r_s (float): The position where the radial bending moment is zero with
@@ -196,7 +197,6 @@ def psi_punching_level_two(
     ) ** 1.5
 
 
-
 def psi_punching_level_three(
     psi_punching_level_two: float,
     is_uncracked_model: bool = False,
@@ -204,8 +204,8 @@ def psi_punching_level_three(
 ) -> float:
     """The psi value for the punching level three.
 
-    fib Model Code 2010, Level III of Approximation (7.3-75) and (7.3-77)
-    with coefficient 1.2 instead of 1.5 under specific conditions.
+    fib Model Code 2010, Level III of Approximation Eq. (7.3-75) and Eq.
+    (7.3-77) with coefficient 1.2 instead of 1.5 under specific conditions.
 
     Args:
         psi_punching_level_two (float): The psi value for the punching level 2.
@@ -220,7 +220,7 @@ def psi_punching_level_three(
         float: The psi value for the punching level three.
     """
     if is_uncracked_model and is_moment_from_uncracked_model:
-        return 1.2/1.5 * psi_punching_level_two
+        return 1.2 / 1.5 * psi_punching_level_two
     return psi_punching_level_two
 
 
@@ -232,13 +232,13 @@ def psi_punching(
 ) -> float:
     """The rotation of the slab around the supported area.
 
-    fib Model Code 2010, Clause 7.3.5.4
+    fib Model Code 2010, Clause 7.3.5.4.
 
     Args:
         psi_punching_level_one (float): The psi value for the punching level 1.
         psi_punching_level_two (float): The psi value for the punching level 2.
-        psi_punching_level_three (float): The psi value for
-            the punching level 3.
+        psi_punching_level_three (float): The psi value for the punching level
+            3.
         approx_lvl_p (float): The approx level for punching.
 
     Returns:
@@ -258,13 +258,13 @@ def k_dg(
 ) -> float:
     """Calculate k_dg factor for punching resistance.
 
-    fib Model Code 2010, eq. (7.3-62).
+    fib Model Code 2010, Eq. (7.3-62).
 
     Args:
         d_g (float): Maximum size of aggregate.
 
     Returns:
-        float: k_dg factor
+        float: k_dg factor.
     """
     return max(32 / (16 + d_g), 0.75)
 
@@ -276,7 +276,7 @@ def k_psi(
 ) -> float:
     """Calculate k_psi factor for punching resistance.
 
-    fib Model Code 2010, eq. (7.3-63).
+    fib Model Code 2010, Eq. (7.3-63).
 
     Args:
         k_dg (float): k_dg factor.
@@ -284,7 +284,7 @@ def k_psi(
         psi_punching (float): psi value from psi_punching.
 
     Returns:
-        float: k_psi factor
+        float: k_psi factor.
     """
     return min(1 / (1.5 + 0.9 * k_dg * d_eff * psi_punching), 0.6)
 
@@ -298,7 +298,7 @@ def v_rdc_punching(
 ) -> float:
     """Punching resistance from the concrete.
 
-    fib Model Code 2010, eq. (7.3-61).
+    fib Model Code 2010, Eq. (7.3-61).
 
     Args:
         k_psi_val (float): k_psi value from k_psi.
@@ -319,7 +319,7 @@ def f_ywd(
 ) -> float:
     """Calculate f_ywd for punching resistance.
 
-    fib Model Code 2010, eq. (7.3-64).
+    fib Model Code 2010, Eq. (7.3-64).
 
     Args:
         f_ywk (float): Characteristic yield strength of the shear reinforcement
@@ -343,7 +343,7 @@ def sigma_swd(
 ) -> float:
     """Calculate sigma_swd for punching resistance.
 
-    fib Model Code 2010, eq. (7.3-65).
+    fib Model Code 2010, Eq. (7.3-65).
 
     Args:
         e_s (float): The E_modulus for steel in MPa.
@@ -355,13 +355,13 @@ def sigma_swd(
         phi_w (float): The diameter of the shear reinforcement.
 
     Returns:
-        float: sigma_swd
+        float: sigma_swd.
     """
     return min(
         (e_s * psi_punching / 6)
         * (sin(alpha * pi / 180) + cos(alpha * pi / 180))
         * (sin(alpha * pi / 180) + f_bd * d_eff / (f_ywd * phi_w)),
-        f_ywd
+        f_ywd,
     )
 
 
@@ -376,12 +376,12 @@ def v_rds_punching(
 ) -> float:
     """The punching resistance from shear reinforcement.
 
-    fib Model Code 2010, eq. (7.3-64).
+    fib Model Code 2010, Eq. (7.3-64).
 
     Args:
         f_ywd (float): Design yield strength of the shear reinforcement in MPa.
-        e_u (float): The ecentrisity of the result of shear forces
-            with respect to the centroid (Figure 7.3-27b).
+        e_u (float): The ecentrisity of the result of shear forces with respect
+            to the centroid (Figure 7.3-27b).
         b_u (float): The diamter of a circle with same surface as the region
             inside the basic control perimeter (Figure 7.3-27b).
         alpha (float): Inclination of the stirrups in degrees.
@@ -412,7 +412,7 @@ def v_rd_max_punching(
 ) -> float:
     """Finds the maximum value you can have for v_rd_punching.
 
-    fib Model Code 2010, eq. (7.3-69).
+    fib Model Code 2010, Eq. (7.3-69).
 
     Args:
         d_v (float): The effective depth considering support in mm.
@@ -440,14 +440,16 @@ def v_rd_max_punching(
 
 
 def v_rd_punching(v_rd_c: float, v_rd_s: float, v_rd_max: float) -> float:
-    """The total resistance for punching (MC2010 eq. 7.3-60).
+    """The total resistance for punching.
+
+    fib Model Code 2010, Eq. (7.3-60).
 
     Args:
-        v_rd_c: Concrete contribution to punching resistance
-        v_rd_s: Shear reinforcement contribution to punching resistance
-        v_rd_max: Maximum punching resistance
+        v_rd_c: Concrete contribution to punching resistance.
+        v_rd_s: Shear reinforcement contribution to punching resistance.
+        v_rd_max: Maximum punching resistance.
 
     Returns:
-        Total punching resistance as min(v_rd_c + v_rd_s, v_rd_max)
+        float: Total punching resistance as min(v_rd_c + v_rd_s, v_rd_max).
     """
     return min(v_rd_c + v_rd_s, v_rd_max)
