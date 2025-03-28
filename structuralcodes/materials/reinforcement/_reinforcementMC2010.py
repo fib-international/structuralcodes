@@ -125,7 +125,7 @@ class ReinforcementMC2010(Reinforcement):
         """Returns kwargs for ElasticPlastic constitutive law with strain
         hardening.
         """
-        Eh = (self.ftd() - self.fyd()) / (self.epsuk - self.epsyd)
+        Eh = (self.ftd() - self.fyd()) / (self.epsud() - self.epsyd)
         return {
             'E': self.Es,
             'fy': self.fyd(),
