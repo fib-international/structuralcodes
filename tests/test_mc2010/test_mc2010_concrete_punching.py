@@ -30,9 +30,7 @@ def test_b0():
         (10e3, 100, 660, True, False, False, False, 2007.58),  # Large ecc
     ],
 )
-def test_m_ed(
-    v_ed, e_u, b_s, inner, edge_par, edge_per, corner, expected
-):
+def test_m_ed(v_ed, e_u, b_s, inner, edge_par, edge_per, corner, expected):
     """Test the m_ed function."""
     assert math.isclose(
         _concrete_punching.m_ed(
@@ -46,9 +44,7 @@ def test_m_ed(
 def test_m_ed_invalid():
     """Test m_ed with invalid inputs."""
     with pytest.raises(ValueError, match='Placement is not defined'):
-        _concrete_punching.m_ed(
-            10e3, 20, 660, False, False, False, False
-        )
+        _concrete_punching.m_ed(10e3, 20, 660, False, False, False, False)
 
 
 @pytest.mark.parametrize(
@@ -58,8 +54,8 @@ def test_m_ed_invalid():
     ),
     [
         (0.013427, 0.47089, 0.47089, 1, 0.013427),  # Level 1
-        (0.013427, 0.47089, 0.47089, 2, 0.47089),   # Level 2
-        (0.013427, 0.47089, 0.37671, 3, 0.37671),   # Level 3
+        (0.013427, 0.47089, 0.47089, 2, 0.47089),  # Level 2
+        (0.013427, 0.47089, 0.37671, 3, 0.37671),  # Level 3
     ],
 )
 def test_psi_punching(
@@ -92,9 +88,9 @@ def test_psi_punching_invalid():
     'k_dg_val, d_eff, psi_punching_val, expected',
     [
         (0.75, 160, 0.015, 0.3205),  # Normal case
-        (0.75, 160, 0.05, 0.145),   # Larger rotation
+        (0.75, 160, 0.05, 0.145),  # Larger rotation
         (0.75, 160, 0.001, 0.6),  # Small rotation
-        (1.0, 160, 0.015, 0.273),   # Different k_dg
+        (1.0, 160, 0.015, 0.273),  # Different k_dg
     ],
 )
 def test_k_psi(k_dg_val, d_eff, psi_punching_val, expected):
@@ -110,9 +106,9 @@ def test_k_psi(k_dg_val, d_eff, psi_punching_val, expected):
     'd_g, expected',
     [
         (32, 0.75),  # Large aggregate, limited by 0.75
-        (16, 1.0),   # Medium aggregate
-        (8, 1.333),   # Small aggregate
-        (0, 2.0),    # No aggregate
+        (16, 1.0),  # Medium aggregate
+        (8, 1.333),  # Small aggregate
+        (0, 2.0),  # No aggregate
     ],
 )
 def test_k_dg(d_g, expected):
@@ -171,8 +167,10 @@ def test_v_rds_punching():
 
 
 @pytest.mark.parametrize(
-    ('d_v, f_ck, d_head, stirrups_compression, '
-     'b0_val, k_psi_val, gamma_c, expected'),
+    (
+        'd_v, f_ck, d_head, stirrups_compression, '
+        'b0_val, k_psi_val, gamma_c, expected'
+    ),
     [
         # Normal cases
         (160, 30, True, True, 500, 0.6, 1.5, 292118.70),
@@ -187,14 +185,19 @@ def test_v_rds_punching():
     ],
 )
 def test_v_rd_max_punching(
-    d_v, f_ck, d_head, stirrups_compression,
-    b0_val, k_psi_val, gamma_c, expected
+    d_v,
+    f_ck,
+    d_head,
+    stirrups_compression,
+    b0_val,
+    k_psi_val,
+    gamma_c,
+    expected,
 ):
     """Test the v_rd_max_punching function."""
     assert math.isclose(
         _concrete_punching.v_rd_max_punching(
-            d_v, f_ck, d_head, stirrups_compression,
-            b0_val, k_psi_val, gamma_c
+            d_v, f_ck, d_head, stirrups_compression, b0_val, k_psi_val, gamma_c
         ),
         expected,
         rel_tol=0.001,
@@ -259,7 +262,7 @@ def test_b_sr(l_x, l_y, expected):
     [
         (2000, 3000, 434, 160, 200e3, 0.013427),  # Normal case
         (1000, 1000, 434, 160, 200e3, 0.004476),  # Equal spans
-        (2000, 3000, 434, 50, 200e3, 0.042966),   # Small effective depth
+        (2000, 3000, 434, 50, 200e3, 0.042966),  # Small effective depth
         (2000, 3000, 500, 160, 200e3, 0.015476),  # Higher steel strength
     ],
 )
@@ -278,7 +281,7 @@ def test_psi_punching_level_one(l_x, l_y, f_yd, d_eff, e_s, expected):
         (440, 434, 160, 200e3, 1500, 140, 0, 0.3139),  # Normal case
         (440, 434, 160, 200e3, 1400, 140, 0, 0.2831),  # Lower m_ed
         (440, 434, 160, 200e3, 1500, 200, 0, 0.1839),  # Higher m_rd
-        (440, 434, 160, 200e3, 1500, 140, 50, 0.5789), # With prestressing
+        (440, 434, 160, 200e3, 1500, 140, 50, 0.5789),  # With prestressing
     ],
 )
 def test_psi_punching_level_two(
@@ -301,9 +304,9 @@ def test_psi_punching_level_two(
     ),
     [
         (0.47089, False, False, 0.47089),  # No change
-        (0.47089, True, True, 0.37671),    # Both conditions true
-        (0.47089, True, False, 0.47089),   # Only one condition true
-        (0.47089, False, True, 0.47089),   # Only one condition true
+        (0.47089, True, True, 0.37671),  # Both conditions true
+        (0.47089, True, False, 0.47089),  # Only one condition true
+        (0.47089, False, True, 0.47089),  # Only one condition true
     ],
 )
 def test_psi_punching_level_three(
@@ -365,8 +368,7 @@ def test_r_s(
 def test_r_s_error():
     """Test r_s with invalid inputs."""
     with pytest.raises(
-        ValueError,
-        match='b_sr is not defined for Level 3 of Approximation'
+        ValueError, match='b_sr is not defined for Level 3 of Approximation'
     ):
         _concrete_punching.r_s(2000, 3000, True, True, True, None)
 
@@ -376,7 +378,7 @@ def test_r_s_error():
     [
         (500, 1.15, 434.78),  # Normal case
         (600, 1.15, 521.74),  # Higher steel strength
-        (500, 1.0, 500),      # No safety factor
+        (500, 1.0, 500),  # No safety factor
     ],
 )
 def test_f_ywd(f_ywk, gamma_s, expected):
@@ -392,9 +394,9 @@ def test_f_ywd(f_ywk, gamma_s, expected):
     'e_s, psi_punching, alpha, f_bd, d_eff, f_ywd, phi_w, expected',
     [
         (200e3, 0.015, 90, 3, 160, 434.78, 8, 434.78),  # Limited by f_ywd
-        (200e3, 0.001, 90, 3, 160, 434.78, 8, 37.9334),   # Small rotation
+        (200e3, 0.001, 90, 3, 160, 434.78, 8, 37.9334),  # Small rotation
         (200e3, 0.015, 45, 3, 160, 434.78, 8, 434.78),  # Different angle
-        (200e3, 0.015, 90, 3, 160, 300, 8, 300),     # Lower f_ywd
+        (200e3, 0.015, 90, 3, 160, 300, 8, 300),  # Lower f_ywd
     ],
 )
 def test_sigma_swd(

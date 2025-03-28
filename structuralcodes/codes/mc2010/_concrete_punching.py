@@ -81,6 +81,7 @@ def m_ed(
         return max(v_ed * ((1 / 8) + e_u / (b_s)), v_ed / 2)
     raise ValueError('Placement is not defined, only one needs to be True')
 
+
 def b_sr(
     l_x: float,
     l_y: float,
@@ -98,13 +99,14 @@ def b_sr(
     """
     return min(l_x, l_y)
 
+
 def r_s(
     l_x: float,
     l_y: float,
     x_direction: bool,
     is_level_three_approximation: bool = False,
     column_edge_or_corner: bool = False,
-    b_sr: t.Optional[float] = None
+    b_sr: t.Optional[float] = None,
 ) -> float:
     """The position where the radial bending moment is zero with respect to the
     support axis.
@@ -195,7 +197,6 @@ def psi_punching_level_two(
     ) ** 1.5
 
 
-
 def psi_punching_level_three(
     psi_punching_level_two: float,
     is_uncracked_model: bool = False,
@@ -219,7 +220,7 @@ def psi_punching_level_three(
         float: The psi value for the punching level three.
     """
     if is_uncracked_model and is_moment_from_uncracked_model:
-        return 1.2/1.5 * psi_punching_level_two
+        return 1.2 / 1.5 * psi_punching_level_two
     return psi_punching_level_two
 
 
@@ -360,7 +361,7 @@ def sigma_swd(
         (e_s * psi_punching / 6)
         * (sin(alpha * pi / 180) + cos(alpha * pi / 180))
         * (sin(alpha * pi / 180) + f_bd * d_eff / (f_ywd * phi_w)),
-        f_ywd
+        f_ywd,
     )
 
 
