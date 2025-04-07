@@ -119,6 +119,14 @@ class ShellGeometry(Geometry):
             self._reinforcement.append(reinforcement)
         elif isinstance(reinforcement, list):
             self._reinforcement.extend(reinforcement)
+        for r in reinforcement:
+            half_thickness = self._thickness / 2
+            if not (-half_thickness <= r.z <= half_thickness):
+                raise ValueError(
+                    f'Reinforcement at z = {r.z:.2f} mm is outside the shell'
+                    f'thickness range [-{half_thickness:.2f},'
+                    f'{half_thickness:.2f}] mm.'
+                )
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
