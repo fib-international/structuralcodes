@@ -2,6 +2,8 @@
 
 import typing as t
 
+import numpy as np
+
 from ..core.base import Material
 from ._geometry import Geometry
 
@@ -122,4 +124,110 @@ class ShellGeometry(Geometry):
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
-        raise NotImplementedError
+        # Concrete dimensions and half sizes
+        w, h = 1000, 1000
+        hw, hh = w / 2, h / 2
+        # ViewBox for inner SVG elements
+        vb = f'{-hw - 100} {-hh - 100} {w + 200} {h + 200}'
+
+        # Draw extended reinforcement lines
+        def draw_rebars(view: str) -> str:
+            elems = []
+            for layer in self.reinforcement:
+                # Choose layers based on z-value (top vs bottom)
+                if (view == 'top' and layer.z >= 0) or (
+                    view == 'bottom' and layer.z < 0
+                ):
+                    phi = layer.phi
+                    sp = layer.cc_bars
+                    c, s = np.cos(phi), np.sin(phi)
+                    # Perpendicular vector for shifting parallel lines
+                    px, py = -s, c
+                    # Color based on orientation
+                    col = (
+                        'red'
+                        if np.isclose(phi % np.pi, 0)
+                        else 'blue'
+                        if np.isclose(phi % np.pi, np.pi / 2)
+                        else 'green'
+                    )
+                    n = int(w / sp) + 3
+                    L = 2000  # Extend lines
+                    for i in range(-n // 2, n // 2 + 1):
+                        ox = i * sp * px
+                        oy = i * sp * py
+                        x0, y0 = ox, oy
+                        # Extended endpoints along the rebar direction
+                        x1, y1 = x0 - L * c, y0 - L * s
+                        x2, y2 = x0 + L * c, y0 + L * s
+                        for j in range(int(layer.n_bars)):
+                            extra = (
+                                j - (layer.n_bars - 1) / 2
+                            ) * layer.diameter_bar
+                            sx, sy = extra * px, extra * py
+                            p1 = (x1 + sx, y1 + sy)
+                            p2 = (x2 + sx, y2 + sy)
+                            elems.append(
+                                f'<line x1="{p1[0]}" y1="{p1[1]}" x2="{p2[0]}"'
+                                f'y2="{p2[1]}" stroke="{col}" stroke-width="'
+                                f'{layer.diameter_bar}" stroke-opacity="0.7"/>'
+                            )
+            return ''.join(elems)
+
+        # Build one view (top or bottom)
+        def build_view(view: str) -> str:
+            # Define a clipPath for the concrete area
+            clip_def = (
+                f'<defs><clipPath id="clipConcrete">'
+                f'<rect x="{-hw}" y="{-hh}" width="{w}" height="{h}" />'
+                f'</clipPath></defs>'
+            )
+            # Draw rebar lines and clip them to the concrete area
+            rebar_svg = (
+                f'<g clip-path="url(#clipConcrete)">{draw_rebars(view)}</g>'
+            )
+            # Draw a background rectangle for the concrete (lightgray fill)
+            bg_rect = (
+                f'<rect x="{-hw}" y="{-hh}" width="{w}" height="{h}" '
+                + 'fill="lightgray" />'
+            )
+
+            # Draw a concrete outline and a label
+            outline = (
+                f'<rect x="{-hw}" y="{-hh}" width="{w}" height="{h}" '
+                + 'fill="none" stroke="black" stroke-width="2" />'
+            )
+            lbl = (
+                f'<text x="{-hw + 20}" y="{-hh - 40}" font-size="30" '
+                + 'fill="black">'
+                + f'{"Top View" if view == "top" else "Bottom View"}'
+                + '</text>'
+            )
+
+            return clip_def + bg_rect + rebar_svg + outline + lbl
+
+        # Assemble both views side by side
+        gap = 50  # gap between views
+        sw, sh = w + 200, h + 200  # single view width/height
+        total_w, total_h = sw * 2 + gap, sh
+        svg_parts = [
+            f'<svg width="{total_w}" height="{total_h}" '
+            + 'xmlns="http://www.w3.org/2000/svg">'
+        ]
+
+        # Top view (left)
+        svg_parts.append(
+            "<g transform='translate(0,0)'><svg x='0' y='0' "
+            + f"width='{sw}' height='{sh}' viewBox='{vb}'> "
+            + f"{build_view('top')}</svg></g>"
+        )
+
+        # Bottom view (right)
+        svg_parts.append(
+            f"<g transform='translate({sw + gap},0)'>"
+            f"<svg x='0' y='0' width='{sw}' height='{sh}' "
+            f"viewBox='{vb}'>{build_view('bottom')}</svg></g>"
+        )
+
+        svg_parts.append('</svg>')
+        return ''.join(svg_parts)
