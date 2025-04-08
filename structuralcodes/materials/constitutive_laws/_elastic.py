@@ -19,38 +19,19 @@ class Elastic(ConstitutiveLaw):
         'rebars',
     )
 
-    def __init__(
-        self,
-        E: float,
-        nu: t.Optional[float] = None,
-        name: t.Optional[str] = None,
-    ) -> None:
+    def __init__(self, E: float, name: t.Optional[str] = None) -> None:
         """Initialize an Elastic Material.
 
         Arguments:
             E (float): The elastic modulus.
-            nu (float, optional): Poisson's ratio for 2D operations.
-            name (str, optional): A descriptive name for the constitutive law.
+
+        Keyword Arguments:
+            name (str): A descriptive name for the constitutive law.
         """
         name = name if name is not None else 'ElasticLaw'
         super().__init__(name=name)
         self._E = E
         self._eps_su = None
-        self._nu = nu
-
-    @property
-    def E(self) -> float:
-        """Return the elastic modulus."""
-        return self._E
-
-    @property
-    def nu(self) -> float:
-        """Return Poisson's ratio."""
-        if self._nu is None:
-            raise ValueError(
-                "Poisson's ratio (nu) must be set for 2D operations."
-            )
-        return self._nu
 
     def get_stress(
         self, eps: t.Union[float, ArrayLike]
@@ -58,23 +39,6 @@ class Elastic(ConstitutiveLaw):
         """Return stress given strain."""
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         return self._E * eps
-
-    def get_stress_2d(self, eps: t.Union[ArrayLike, np.ndarray]) -> np.ndarray:
-        """Return a 2D stress vector [sigma_x, sigma_y, tau_xy]
-        given a 2D strain vector [eps_x, epx_y, gamma_xy].
-        """
-        eps = np.array(eps, dtype=float).reshape(3)
-
-        factor = self._E / (1 - self._nu**2)
-        C = factor * np.array(
-            [
-                [1.0, self._nu, 0.0],
-                [self._nu, 1.0, 0.0],
-                [0.0, 0.0, (1 - self._nu) / 2.0],
-            ]
-        )
-
-        return eps @ C
 
     def get_tangent(
         self, eps: t.Union[float, ArrayLike]
@@ -84,18 +48,6 @@ class Elastic(ConstitutiveLaw):
             return self._E
         eps = np.atleast_1d(eps)
         return np.ones_like(eps) * self._E
-
-    def get_tangent_2d(self, eps: t.Optional[ArrayLike] = None) -> np.ndarray:
-        """Return the 2D tangent stiffness matrix."""
-        factor = self._E / (1 - self._nu**2)
-        C = factor * np.array(
-            [
-                [1.0, self._nu, 0.0],
-                [self._nu, 1.0, 0.0],
-                [0.0, 0.0, (1 - self._nu) / 2.0],
-            ]
-        )
-        return C
 
     def __marin__(
         self, strain: t.Tuple[float, float]
