@@ -74,7 +74,7 @@ class ShellFiberIntegrator(SectionIntegrator):
             if integrate == 'stress':
                 integrand = material.get_stress(fiber_strain)
             elif integrate == 'modulus':
-                integrand = material.get_tangent(fiber_strain)
+                integrand = material.get_tangent()
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
