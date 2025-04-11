@@ -1,8 +1,9 @@
 import typing as t
 
 import numpy as np
-from _elastic import Elastic
 from numpy.typing import ArrayLike
+
+from ._elastic import Elastic
 
 
 class Elastic2D(Elastic):

@@ -9,6 +9,7 @@ from numpy.testing import assert_allclose
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
+    Elastic2D,
     ElasticPlastic,
     ParabolaRectangle,
     Popovics,
@@ -90,6 +91,129 @@ def test_elastic_numpy():
     sig_expected = E * strain
     sig = Elastic(E).get_stress(strain)
     assert np.allclose(sig, sig_expected)
+
+
+# Elastic2D tests
+@pytest.mark.parametrize(
+    'E, nu, strain, expected',
+    [
+        (
+            200000,
+            0.25,
+            [0.001, 0.0, 0.0],
+            [
+                200000 / (1 - 0.25**2) * (0.001 + 0.25 * 0.0),
+                200000 / (1 - 0.25**2) * (0.25 * 0.001 + 0.0),
+                200000 / (2 * (1 + 0.25)) * 0.0,
+            ],
+        ),
+        (
+            200000,
+            0.3,
+            [0.001, 0.0005, 0.0],
+            [
+                200000 / (1 - 0.3**2) * (0.001 + 0.3 * 0.0005),
+                200000 / (1 - 0.3**2) * (0.3 * 0.001 + 0.0005),
+                200000 / (2 * (1 + 0.3)) * 0.0,
+            ],
+        ),
+        (
+            210000,
+            0.25,
+            [0.001, 0.0005, 0.002],
+            [
+                210000 / (1 - 0.25**2) * (0.001 + 0.25 * 0.0005),
+                210000 / (1 - 0.25**2) * (0.25 * 0.001 + 0.0005),
+                210000 / (2 * (1 + 0.25)) * 0.002,
+            ],
+        ),
+        (
+            210000,
+            0.3,
+            [0.0, 0.0, 0.003],
+            [
+                210000 / (1 - 0.3**2) * (0.0 + 0.3 * 0.0),
+                210000 / (1 - 0.3**2) * (0.3 * 0.0 + 0.0),
+                210000 / (2 * (1 + 0.3)) * 0.003,
+            ],
+        ),
+    ],
+)
+def test_elastic2d_stress(E, nu, strain, expected):
+    """Test the get_stress method of Elastic2D."""
+    mat = Elastic2D(E, nu)
+    stress = mat.get_stress(strain)
+    assert math.isclose(stress[0], expected[0])
+    assert math.isclose(stress[1], expected[1])
+    assert math.isclose(stress[2], expected[2])
+
+
+@pytest.mark.parametrize(
+    'E, nu, expected',
+    [
+        (
+            200000,
+            0.3,
+            200000
+            / (1 - 0.3**2)
+            * np.array(
+                [
+                    [1.0, 0.3, 0.0],
+                    [0.3, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.3) / 2.0],
+                ]
+            ),
+        ),
+        (
+            210000,
+            0.25,
+            210000
+            / (1 - 0.25**2)
+            * np.array(
+                [
+                    [1.0, 0.25, 0.0],
+                    [0.25, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.25) / 2.0],
+                ]
+            ),
+        ),
+        (
+            200000,
+            0.25,
+            200000
+            / (1 - 0.25**2)
+            * np.array(
+                [
+                    [1.0, 0.25, 0.0],
+                    [0.25, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.25) / 2.0],
+                ]
+            ),
+        ),
+        (
+            210000,
+            0.3,
+            210000
+            / (1 - 0.3**2)
+            * np.array(
+                [
+                    [1.0, 0.3, 0.0],
+                    [0.3, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.3) / 2.0],
+                ]
+            ),
+        ),
+    ],
+)
+def test_elastic2d_tangent(E, nu, expected):
+    """Test the get_tangent method of Elastic2D."""
+    mat = Elastic2D(E, nu)
+    tangent = mat.get_tangent()
+    assert math.isclose(tangent[0, 0], expected[0, 0])
+    assert math.isclose(tangent[1, 1], expected[1, 1])
+    assert math.isclose(tangent[2, 2], expected[2, 2])
+    assert math.isclose(tangent[0, 1], expected[0, 1])
+    assert math.isclose(tangent[1, 0], expected[1, 0])
 
 
 @pytest.mark.parametrize(
