@@ -143,9 +143,14 @@ def test_elastic2d_stress(E, nu, strain, expected):
     """Test the get_stress method of Elastic2D."""
     mat = Elastic2D(E, nu)
     stress = mat.get_stress(strain)
-    assert math.isclose(stress[0], expected[0])
-    assert math.isclose(stress[1], expected[1])
-    assert math.isclose(stress[2], expected[2])
+    assert np.allclose(stress, expected)
+
+
+def test_strain_input_for_stress():
+    """Test the get_stress method of Elastic2D with invalid strain input."""
+    mat = Elastic2D(200000, 0.25)
+    with pytest.raises(ValueError):
+        mat.get_stress([0.001, 0.002])
 
 
 @pytest.mark.parametrize(
@@ -209,11 +214,7 @@ def test_elastic2d_tangent(E, nu, expected):
     """Test the get_tangent method of Elastic2D."""
     mat = Elastic2D(E, nu)
     tangent = mat.get_tangent()
-    assert math.isclose(tangent[0, 0], expected[0, 0])
-    assert math.isclose(tangent[1, 1], expected[1, 1])
-    assert math.isclose(tangent[2, 2], expected[2, 2])
-    assert math.isclose(tangent[0, 1], expected[0, 1])
-    assert math.isclose(tangent[1, 0], expected[1, 0])
+    assert np.allclose(tangent, expected)
 
 
 @pytest.mark.parametrize(
