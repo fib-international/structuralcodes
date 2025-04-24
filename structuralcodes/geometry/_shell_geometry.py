@@ -122,6 +122,21 @@ class ShellGeometry(Geometry):
         elif isinstance(reinforcement, list):
             self._reinforcement.extend(reinforcement)
 
+        # Validate each reinforcement layer
+        for r in reinforcement:
+            half_thickness = self._thickness / 2
+            if not (
+                -half_thickness + r.diameter_bar / 2
+                <= r.z
+                <= half_thickness - r.diameter_bar / 2
+            ):
+                raise ValueError(
+                    f'Reinforcement at z = {r.z:.2f} mm is outside the'
+                    f'range [-{half_thickness:.2f}, {half_thickness:.2f}] mm.'
+                )
+            return self
+        return None
+
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
         # Concrete dimensions and half sizes
@@ -151,7 +166,7 @@ class ShellGeometry(Geometry):
                         if np.isclose(phi % np.pi, np.pi / 2)
                         else 'green'
                     )
-                    n = int(w / sp) + 3
+                    n = int(w / sp) + 3  # Safety margin to take care of angels
                     L = 2000  # Extend lines
                     for i in range(-n // 2, n // 2 + 1):
                         ox = i * sp * px
@@ -206,28 +221,34 @@ class ShellGeometry(Geometry):
 
             return clip_def + bg_rect + rebar_svg + outline + lbl
 
+        scale = 0.6
+
         # Assemble both views side by side
         gap = 50  # gap between views
         sw, sh = w + 200, h + 200  # single view width/height
-        total_w, total_h = sw * 2 + gap, sh
+        total_w, total_h = (sw * 2 + gap) * scale, sh * scale
+
         svg_parts = [
-            f'<svg width="{total_w}" height="{total_h}" '
-            + 'xmlns="http://www.w3.org/2000/svg">'
+            f'<svg width="{total_w * scale}" height="{total_h * scale}" '
+            f'viewBox="0 0 {total_w} {total_h}" '
+            'xmlns="http://www.w3.org/2000/svg">'
+            # everything is grouped to scale
+            f'<g transform="scale({scale})">'
         ]
 
-        # Top view (left)
+        # Top-view (left)
         svg_parts.append(
             "<g transform='translate(0,0)'><svg x='0' y='0' "
-            + f"width='{sw}' height='{sh}' viewBox='{vb}'> "
-            + f"{build_view('top')}</svg></g>"
+            f"width='{sw}' height='{sh}' viewBox='{vb}'>"
+            f"{build_view('top')}</svg></g>"
         )
 
-        # Bottom view (right)
+        # Bottom-view (right)
         svg_parts.append(
             f"<g transform='translate({sw + gap},0)'>"
             f"<svg x='0' y='0' width='{sw}' height='{sh}' "
             f"viewBox='{vb}'>{build_view('bottom')}</svg></g>"
         )
 
-        svg_parts.append('</svg>')
+        svg_parts.append('</g></svg>')
         return ''.join(svg_parts)
