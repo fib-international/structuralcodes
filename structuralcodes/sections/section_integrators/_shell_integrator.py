@@ -41,24 +41,27 @@ class ShellFiberIntegrator(SectionIntegrator):
                 generalised strains to stress resultants (default is 'stress').
 
         Keyword Arguments:
+            z_coords (ArrayLike): The z-coordinates of the layers in the shell.
             mesh_size (float): fraction of the total shell thickness for each
                 layer ([0,1]). Default is 0.01.
-            z_values (ArrayLike): The z-coordinates of the layers in the shell.
+
 
         Returns:
             Tuple: (prepared_input, z_coords)
         """
-        mesh_size = kwargs.get('mesh_size', 0.01)
-
-        if not (0 < mesh_size <= 1):
-            raise ValueError('mesh_size must be [0,1].')
+        z_coords = kwargs.get('z_coords', None)
 
         t_total = geo.thickness
-        n_layers = max(1, math.ceil(1 / mesh_size))
-        dz = t_total / n_layers
-        z_coords = np.linspace(
-            -t_total / 2 + dz / 2, t_total / 2 - dz / 2, n_layers
-        )
+
+        if z_coords is None:
+            mesh_size = kwargs.get('mesh_size', 0.01)
+            if not (0 < mesh_size <= 1):
+                raise ValueError('mesh_size must be [0,1].')
+            n_layers = max(1, math.ceil(1 / mesh_size))
+            dz = t_total / n_layers
+            z_coords = np.linspace(
+                -t_total / 2 + dz / 2, t_total / 2 - dz / 2, n_layers
+            )
 
         material = geo.material
 
@@ -126,17 +129,12 @@ class ShellFiberIntegrator(SectionIntegrator):
         B = np.zeros((3, 3))
         D = np.zeros((3, 3))
 
-        for i in range(len(z)):
-            C_dz = MA[i]
-            z_i = z[i]
-
+        for C_dz, z_i in zip(MA, z):
             A += C_dz
             B += z_i * C_dz
             D += z_i**2 * C_dz
 
-        stiffness = np.block([[A, B], [B, D]])
-
-        return stiffness  # noqa: RET504
+        return np.block([[A, B], [B, D]])
 
     def integrate_strain_response_on_geometry(
         self,
