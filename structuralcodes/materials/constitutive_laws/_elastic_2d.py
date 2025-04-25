@@ -69,7 +69,6 @@ class Elastic2D(Elastic):
         eps = np.atleast_1d(eps)
         try:
             return self.C_matrix @ eps
-        # Sjekk at det er en ValueError
         except ValueError as e:
             raise ValueError(
                 'The input strain vector must have a length of 3.'
