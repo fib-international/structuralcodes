@@ -134,8 +134,6 @@ class ShellGeometry(Geometry):
                     f'Reinforcement at z = {r.z:.2f} mm is outside the'
                     f'range [-{half_thickness:.2f}, {half_thickness:.2f}] mm.'
                 )
-            return self
-        return None
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
