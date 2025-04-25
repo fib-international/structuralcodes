@@ -1,12 +1,15 @@
-"""A concrete implementation of a shell integrator."""
+"""A concrete implementation of a shell integrator using fiber
+discretization.
+"""
 
+import math
 import typing as t
 
 import numpy as np
-from _section_integrator import SectionIntegrator
 from numpy.typing import ArrayLike, NDArray
 
 from ...geometry._shell_geometry import ShellGeometry
+from ._section_integrator import SectionIntegrator
 
 
 class ShellFiberIntegrator(SectionIntegrator):
@@ -27,9 +30,8 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         Arguments:
             geo (ShellGeometry): The shell geometry object.
-            strain (ArrayLike): The strains and curvatures of the shell
-                section, given in the format (eps_x, eps_y, gamma_xy,
-                kappa_x, kappa_y, kappa_xy).
+            strain (ArrayLike): The strains and curvatures of the shell section
+                [eps_x, eps_y, gamma_xy, kappa_x, kappa_y, kappa_xy].
             integrate (str): A string indicating the quantity to integrate over
                 the shell section. It can be 'stress' or 'modulus'. When
                 'stress' is selected, the return value will be the generalised
@@ -39,17 +41,20 @@ class ShellFiberIntegrator(SectionIntegrator):
                 generalised strains to stress resultants (default is 'stress').
 
         Keyword Arguments:
-            layer_thickness (float): The thickness of each layer in
-            the shell section in mm (default is 0.1 * (total shell thickness)).
+            mesh_size (float): fraction of the total shell thickness for each
+                layer ([0,1]). Default is 0.01.
+            z_values (ArrayLike): The z-coordinates of the layers in the shell.
 
         Returns:
-        Tuple: (prepared input, triangulation_data=None)
+            Tuple: (prepared_input, z_coords)
         """
-        eps_x, eps_y, gamma_xy, kappa_x, kappa_y, kappa_xy = strain
+        mesh_size = kwargs.get('mesh_size', 0.01)
+
+        if not (0 < mesh_size <= 1):
+            raise ValueError('mesh_size must be [0,1].')
 
         t_total = geo.thickness
-        t_layer = kwargs.get('layer_thickness', 0.1 * t_total)
-        n_layers = max(1, int(round(t_total / t_layer)))
+        n_layers = max(1, math.ceil(1 / mesh_size))
         dz = t_total / n_layers
         z_coords = np.linspace(
             -t_total / 2 + dz / 2, t_total / 2 - dz / 2, n_layers
@@ -59,31 +64,23 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         prepared_input = []
 
-        z_values = []
         IA = []
 
         for z in z_coords:
-            fiber_strain = np.array(
-                [
-                    eps_x + z * kappa_x,
-                    eps_y + z * kappa_y,
-                    gamma_xy + z * kappa_xy,
-                ]
-            )
+            fiber_strain = strain[:3] + z * strain[3:]
 
             if integrate == 'stress':
                 integrand = material.get_stress(fiber_strain)
             elif integrate == 'modulus':
-                integrand = material.get_tangent()
+                integrand = material.get_tangent(fiber_strain)
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
-            z_values.append(z)
-            IA.append(integrand.squeeze() * dz)
+            IA.append(integrand * dz)
 
-        prepared_input = [(np.array(z_values), np.array(IA))]
+        prepared_input = [(np.array(z_coords), np.array(IA))]
 
-        return prepared_input, None
+        return prepared_input, z_coords
 
     def integrate_stress(
         self,
