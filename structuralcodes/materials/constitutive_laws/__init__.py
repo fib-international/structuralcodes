@@ -5,6 +5,7 @@ import typing as t
 from ...core.base import ConstitutiveLaw, Material
 from ._bilinearcompression import BilinearCompression
 from ._elastic import Elastic
+from ._elastic_2d import Elastic2D
 from ._elasticplastic import ElasticPlastic
 from ._parabolarectangle import ParabolaRectangle
 from ._popovics import Popovics
@@ -13,6 +14,7 @@ from ._userdefined import UserDefined
 
 __all__ = [
     'Elastic',
+    'Elastic2D',
     'ElasticPlastic',
     'ParabolaRectangle',
     'BilinearCompression',
@@ -25,6 +27,7 @@ __all__ = [
 
 CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'elastic': Elastic,
+    'elastic2d': Elastic2D,
     'elasticplastic': ElasticPlastic,
     'elasticperfectlyplastic': ElasticPlastic,
     'bilinearcompression': BilinearCompression,
