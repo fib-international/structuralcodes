@@ -14,6 +14,7 @@ from ._reinforcement import (
     add_reinforcement_circle,
     add_reinforcement_line,
 )
+from ._shell_geometry import ShellGeometry
 from ._steel_sections import HE, IPE, IPN, UB, UBP, UC, UPN
 
 __all__ = [
@@ -34,4 +35,5 @@ __all__ = [
     'CircularGeometry',
     'add_reinforcement_circle',
     'RectangularGeometry',
+    'ShellGeometry',
 ]
