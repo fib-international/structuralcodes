@@ -25,7 +25,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         """Prepare general input to the integration of stress or material
         modulus in the shell section.
 
-        Calculate the stress resultants or tangent section stiffness based on
+        Calculate the stress resultants or secant section stiffness based on
         strains at discrete fibers along the shell thickness.
 
         Arguments:
@@ -75,7 +75,7 @@ class ShellFiberIntegrator(SectionIntegrator):
             if integrate == 'stress':
                 integrand = material.get_stress(fiber_strain)
             elif integrate == 'modulus':
-                integrand = material.get_tangent(fiber_strain)
+                integrand = material.get_secant(fiber_strain)
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
@@ -149,7 +149,7 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         This method evaluates the response of a shell section subjected to a
         generalised strain state, either by integrating the stresses to obtain
-        resultant forces and moments, or by integrating the tangent stiffness
+        resultant forces and moments, or by integrating the secant stiffness
         to obtain the section stiffness matrix.
 
         Arguments:
