@@ -12,6 +12,7 @@ from structuralcodes.materials.constitutive_laws import (
     Elastic2D,
     ElasticPlastic,
     ParabolaRectangle,
+    ParabolaRectangle2D,
     Popovics,
     Sargin,
     UserDefined,
@@ -277,6 +278,24 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
     mat = ParabolaRectangle(fc, eps_0, eps_u)
     assert math.isclose(mat.get_stress(strain), stress)
     assert math.isclose(mat.get_tangent(strain), tangent)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, strain, stress',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            [-0.0015, 0.0, 0.001],
+            [-23.04, -5.76, 11.52],
+        ),
+    ],
+)
+def test_parabola_rectangle_2d(fc, eps_0, eps_u, strain, stress):
+    """Test the parabola-rectangle 2D material."""
+    mat = ParabolaRectangle2D(fc, eps_0, eps_u)
+    assert np.allclose(mat.get_stress(strain), stress)
 
 
 @pytest.mark.parametrize(
