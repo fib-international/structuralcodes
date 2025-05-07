@@ -64,5 +64,5 @@ class ElasticPlastic2D(ElasticPlastic):
         return sig_s @ self.C_s / self.E
 
     def get_tangent(self) -> np.ndarray:
-        """Compute the 3x3 secant stiffness matrix C."""
+        """Compute the 3x3 tangent stiffness matrix C."""
         return self.C_s
