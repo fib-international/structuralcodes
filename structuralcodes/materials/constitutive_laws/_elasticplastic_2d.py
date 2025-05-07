@@ -41,14 +41,6 @@ class ElasticPlastic2D(ElasticPlastic):
         """
         name = name if name is not None else 'ElasticPlasticLaw2D'
         super().__init__(E=E, fy=fy, Eh=Eh, eps_su=eps_su, name=name)
-        if E > 0:
-            self._E = E
-        else:
-            raise ValueError('Elastic modulus E must be greater than zero')
-        self._fy = fy
-        self._Eh = Eh
-        self._eps_su = eps_su
-        self._eps_sy = fy / E
 
     @property
     def E(self) -> float:
