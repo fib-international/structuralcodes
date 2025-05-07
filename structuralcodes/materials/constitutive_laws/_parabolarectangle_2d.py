@@ -51,7 +51,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
     @property
     def f_cr(self) -> float:
         """Return the cracking strength of concrete."""
-        return -0.33 * np.sqrt(-self._fc)
+        return 0.33 * np.sqrt(-self._fc)
 
     @property
     def eps_cr(self) -> float:
@@ -75,13 +75,12 @@ class ParabolaRectangle2D(ParabolaRectangle):
         return T, T @ eps
 
     def get_effective_principal_strains(self, strain: ArrayLike) -> np.ndarray:
-        """Compute the effective principal strains. Taken from 'Nonlinear
-        Analysis of Reinforced-Concrete Shells' by M. A. Polak and F. J.
-        Vecchio [eq. 5].
+        """Compute the effective principal strains to include the influence of
+        Poisson's ratio. Taken from 'Nonlinear Analysis of Reinforced-Concrete
+        Shells' by M. A. Polak and F. J. Vecchio [eq. 5].
         """
         _, eps_p = self.transform(strain)
 
-        # Effective principal strains accounting for Poisson's ratio
         nu = self._nu
         eps_1f = ((1 - nu) * eps_p[0] + nu * eps_p[1] + nu * eps_p[2]) / (
             (1 + nu) * (1 - 2 * nu)
@@ -93,19 +92,30 @@ class ParabolaRectangle2D(ParabolaRectangle):
             (1 + nu) * (1 - 2 * nu)
         )
 
-        eps_pf = np.array([eps_1f, eps_2f, eps_3f])
+        return np.array([eps_1f, eps_2f, eps_3f])
 
-        # Check if the material is cracked
-        cracked = np.any(eps_pf < self.eps_cr)
+    def is_cracked(self, strain: ArrayLike) -> bool:
+        """Check if the material is cracked.
+        The material is considered cracked if any of the effective principal
+        strains are greater than the cracking strain (eps_cr).
+        """
+        eps_pf = self.get_effective_principal_strains(strain)
+
+        return np.any(eps_pf > self.eps_cr)
+
+    def get_corrected_principal_strains(self, strain: ArrayLike) -> np.ndarray:
+        """Apply the corrected strain to the material."""
+        _, eps_p = self.transform(strain)
+        eps_pf = self.get_effective_principal_strains(strain)
 
         # If cracked, Poisson's ratio (nu) is neglected
-        if cracked:
+        if self.is_cracked(strain):
             eps_pf = eps_p
             print("Material is cracked, Poisson's ratio is neglected.")
         else:
             # If not cracked, use the effective principal strains (eps_pf)
             print(
-                'Material is not cracked, using effective principal strains.'
+                'Material is uncracked, applying effective principal strains.'
             )
 
         return eps_pf
@@ -115,7 +125,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
         given a 2D strain vector [eps_x, epx_y, gamma_xy].
         """
         T, _ = self.transform(strain)
-        eps_pf = self.get_effective_principal_strains(strain)
+        eps_pf = self.get_corrected_principal_strains(strain)
 
         sig_p = super().get_stress(eps_pf)
 
@@ -125,7 +135,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
     def get_secant(self, strain: ArrayLike) -> np.ndarray:
         """Compute the 3x3 secant stiffness matrix C."""
         T, _ = self.transform(strain)
-        eps_pf = self.get_effective_principal_strains(strain)
+        eps_pf = self.get_corrected_principal_strains(strain)
 
         sig_p = super().get_stress(eps_pf)
 
