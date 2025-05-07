@@ -290,12 +290,62 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
             [-0.0015, 0.0, 0.001],
             [-23.04, -5.76, 11.52],
         ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.003, 0.002, 0],
+            [-45, 0, 0],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.002, -0.0035, -0.001],
+            [-60.3264, 15.3264, -0.2448],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.001, -0.0015, -0.0045],
+            [-16.4780, -28.5220, -21.6792],
+        ),
     ],
 )
 def test_parabola_rectangle_2d(fc, eps_0, eps_u, strain, stress):
     """Test the parabola-rectangle 2D material."""
     mat = ParabolaRectangle2D(fc, eps_0, eps_u)
-    assert np.allclose(mat.get_stress(strain), stress)
+    assert np.allclose(mat.get_stress(strain), stress, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, nu, strain, expected',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            0.0,
+            [-0.001, -0.001, 0.0],
+            [[22500, 0.0, 0.0], [0.0, 22500, 0.0], [0.0, 0.0, 0.5 * 22500]],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            0.2,
+            [-0.003, 0.002, 0],
+            [[15000, 0, 0], [0, 0, 0], [0, 0, 3750]],
+        ),
+    ],
+)
+def test_get_secant(fc, eps_0, eps_u, nu, strain, expected):
+    """Test the secant stiffness matrix of the parabola-rectangle
+    2D material.
+    """
+    mat = ParabolaRectangle2D(fc, eps_0, eps_u, nu=nu)
+    assert np.allclose(mat.get_secant(strain), expected)
 
 
 @pytest.mark.parametrize(
