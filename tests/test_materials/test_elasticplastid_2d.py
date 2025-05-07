@@ -43,9 +43,9 @@ def test_elasticplastic_2d_input_correct():
         (195000, 500),
     ],
 )
-def test_elasticplastic_get_secant(E, fy):
+def test_elasticplastic_get_tangent(E, fy):
     """Test the elasticPlastic2D material."""
     assert np.allclose(
-        ElasticPlastic2D(E, fy).get_secant(),
+        ElasticPlastic2D(E, fy).get_tangent(),
         np.array([[E, 0, 0], [0, E, 0], [0, 0, 0]]),
     )
