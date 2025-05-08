@@ -4,6 +4,16 @@ import pytest
 from structuralcodes.materials.constitutive_laws import ElasticPlastic2D
 
 
+def test_elasticplastic_2d_init():
+    """Test elasticplastic 2D material."""
+    mat = ElasticPlastic2D(210000, 410)
+    assert mat.E == 210000
+    assert mat._fy == 410
+    assert mat._Eh == 0.0
+    assert mat._eps_su is None
+    assert mat.name == 'ElasticPlasticLaw2D'
+
+
 @pytest.mark.parametrize(
     'E, fy, strain',
     [
