@@ -119,11 +119,18 @@ class ShellGeometry(Geometry):
         """Add reinforcement to the shell geometry."""
         if isinstance(reinforcement, ShellReinforcement):
             self._reinforcement.append(reinforcement)
+            to_validate = [reinforcement]
         elif isinstance(reinforcement, list):
             self._reinforcement.extend(reinforcement)
+            to_validate = reinforcement
+        else:
+            raise TypeError(
+                'Reinforcement must be a ShellReinforcement or a list of '
+                'ShellReinforcement.'
+            )
 
         # Validate each reinforcement layer
-        for r in reinforcement:
+        for r in to_validate:
             half_thickness = self._thickness / 2
             if not (
                 -half_thickness + r.diameter_bar / 2
@@ -131,7 +138,7 @@ class ShellGeometry(Geometry):
                 <= half_thickness - r.diameter_bar / 2
             ):
                 raise ValueError(
-                    f'Reinforcement at z = {r.z:.2f} mm is outside the'
+                    f'Reinforcement at z = {r.z:.2f} mm is outside the '
                     f'range [-{half_thickness:.2f}, {half_thickness:.2f}] mm.'
                 )
 
