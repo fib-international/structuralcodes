@@ -174,7 +174,7 @@ class ShellGeometry(Geometry):
                     if np.isclose(phi % np.pi, np.pi / 2)
                     else 'green'
                 )
-                n = int(w / sp) + 3  # linecount with safety margin for angles
+                n = int(w / sp) + 3  # lines count
                 L = 2000  # line length extension
                 for i in range(-n // 2, n // 2 + 1):
                     ox, oy = i * sp * px, i * sp * py
