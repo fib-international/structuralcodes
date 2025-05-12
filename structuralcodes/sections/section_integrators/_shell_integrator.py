@@ -123,10 +123,10 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         Ks = np.zeros((6, 6))
         for r in geo.reinforcement:
-            C_loc = r.material.C_s  # [[E,0,0],[0,E,0],[0,0,0]]
+            Cs_local = r.material.C_s
 
             c, s = np.cos(r.phi), np.sin(r.phi)
-            T3 = np.array(
+            T = np.array(
                 [
                     [c * c, s * s, c * s],
                     [s * s, c * c, -c * s],
@@ -134,15 +134,15 @@ class ShellFiberIntegrator(SectionIntegrator):
                 ]
             )
 
-            C_glob = T3.T @ C_loc @ T3
+            Cs_global = T.T @ Cs_local @ T
 
             As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
             z = r.z
             Ksr = np.zeros((6, 6))
-            Ksr[:3, :3] = As * C_glob
-            Ksr[:3, 3:] = -z * As * C_glob
-            Ksr[3:, :3] = -z * As * C_glob
-            Ksr[3:, 3:] = (z**2) * As * C_glob
+            Ksr[:3, :3] = As * Cs_global
+            Ksr[:3, 3:] = -z * As * Cs_global
+            Ksr[3:, :3] = -z * As * Cs_global
+            Ksr[3:, 3:] = (z**2) * As * Cs_global
 
             Ks += Ksr
 
