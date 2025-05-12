@@ -24,7 +24,6 @@ class ShellFiberIntegrator(SectionIntegrator):
     ) -> t.Tuple[t.List[t.Tuple[np.ndarray, np.ndarray]], None]:
         """Prepare general input to the integration of stress or material
         modulus in the shell section.
-
         Calculate the stress resultants or secant section stiffness based on
         strains at discrete fibers along the shell thickness.
 
@@ -45,14 +44,11 @@ class ShellFiberIntegrator(SectionIntegrator):
             mesh_size (float): fraction of the total shell thickness for each
                 layer ([0,1]). Default is 0.01.
 
-
         Returns:
             Tuple: (prepared_input, z_coords)
         """
-        z_coords = kwargs.get('z_coords', None)
-
+        z_coords = kwargs.get('z_coords')
         t_total = geo.thickness
-
         if z_coords is None:
             mesh_size = kwargs.get('mesh_size', 0.01)
             if not (0 < mesh_size <= 1):
@@ -62,16 +58,11 @@ class ShellFiberIntegrator(SectionIntegrator):
             z_coords = np.linspace(
                 -t_total / 2 + dz / 2, t_total / 2 - dz / 2, n_layers
             )
-
         material = geo.material
-
         prepared_input = []
-
         IA = []
-
         for z in z_coords:
             fiber_strain = strain[:3] + z * strain[3:]
-
             if integrate == 'stress':
                 integrand = material.get_stress(fiber_strain)
             elif integrate == 'modulus':
@@ -80,9 +71,7 @@ class ShellFiberIntegrator(SectionIntegrator):
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
             IA.append(integrand * dz)
-
         prepared_input = [(np.array(z_coords), np.array(IA))]
-
         return prepared_input, z_coords
 
     def integrate_stress(
@@ -99,20 +88,18 @@ class ShellFiberIntegrator(SectionIntegrator):
             The stress resultants Nx, Ny, Nxy, Mx, My, Mxy
         """
         z, stress_resultants = prepared_input[0]
-
         Nx = np.sum(stress_resultants[:, 0])
         Ny = np.sum(stress_resultants[:, 1])
         Nxy = np.sum(stress_resultants[:, 2])
-
         Mx = np.sum(stress_resultants[:, 0] * z)
         My = np.sum(stress_resultants[:, 1] * z)
         Mxy = np.sum(stress_resultants[:, 2] * z)
-
         return Nx, Ny, Nxy, Mx, My, Mxy
 
     def integrate_modulus(
         self,
         prepared_input: t.List[t.Tuple[np.ndarray, np.ndarray]],
+        geo: ShellGeometry,
     ) -> NDArray:
         """Integrate material modulus over shell thickness to obtain shell
         section stiffness.
@@ -124,17 +111,42 @@ class ShellFiberIntegrator(SectionIntegrator):
             NDArray: Section stiffness matrix (6x6).
         """
         z, MA = prepared_input[0]
-
         A = np.zeros((3, 3))
         B = np.zeros((3, 3))
         D = np.zeros((3, 3))
-
         for C_dz, z_i in zip(MA, z):
             A += C_dz
             B += z_i * C_dz
             D += z_i**2 * C_dz
 
-        return np.block([[A, B], [B, D]])
+        Kc = np.block([[A, B], [B, D]])
+
+        Ks = np.zeros((6, 6))
+        for r in geo.reinforcement:
+            C_loc = r.material.C_s  # [[E,0,0],[0,E,0],[0,0,0]]
+
+            c, s = np.cos(r.phi), np.sin(r.phi)
+            T3 = np.array(
+                [
+                    [c * c, s * s, c * s],
+                    [s * s, c * c, -c * s],
+                    [-2 * c * s, 2 * c * s, c * c - s * s],
+                ]
+            )
+
+            C_glob = T3.T @ C_loc @ T3
+
+            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
+            z = r.z
+            Ksr = np.zeros((6, 6))
+            Ksr[:3, :3] = As * C_glob
+            Ksr[:3, 3:] = -z * As * C_glob
+            Ksr[3:, :3] = -z * As * C_glob
+            Ksr[3:, 3:] = (z**2) * As * C_glob
+
+            Ks += Ksr
+
+        return Ks + Kc
 
     def integrate_strain_response_on_geometry(
         self,
@@ -146,7 +158,6 @@ class ShellFiberIntegrator(SectionIntegrator):
         t.Tuple[float, float, float, float, float, float], np.ndarray
     ]:
         """Integrate strain profile through the shell thickness.
-
         This method evaluates the response of a shell section subjected to a
         generalised strain state, either by integrating the stresses to obtain
         resultant forces and moments, or by integrating the secant stiffness
@@ -179,10 +190,9 @@ class ShellFiberIntegrator(SectionIntegrator):
         prepared_input, _ = self.prepare_input(
             geo=geo, strain=strain, integrate=integrate, **kwargs
         )
-
         # Return the calculated response
         if integrate == 'stress':
             return self.integrate_stress(prepared_input)
         if integrate == 'modulus':
-            return self.integrate_modulus(prepared_input)
+            return self.integrate_modulus(prepared_input, geo)
         raise ValueError(f'Unknown integrate type: {integrate}')
