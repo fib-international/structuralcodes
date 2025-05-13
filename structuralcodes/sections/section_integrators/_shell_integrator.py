@@ -61,6 +61,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         material = geo.material
         prepared_input = []
         IA = []
+        z_list = []
         for z in z_coords:
             fiber_strain = strain[:3] + z * strain[3:]
             if integrate == 'stress':
@@ -71,7 +72,37 @@ class ShellFiberIntegrator(SectionIntegrator):
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
             IA.append(integrand * dz)
-        prepared_input = [(np.array(z_coords), np.array(IA))]
+            z_list.append(z)
+
+        for r in geo.reinforcement:
+            material = r.material
+            z_r = r.z
+            c, s = np.cos(r.phi), np.sin(r.phi)
+            T = np.array(
+                [
+                    [c * c, s * s, c * s],
+                    [s * s, c * c, -c * s],
+                    [-2 * c * s, 2 * c * s, c * c - s * s],
+                ]
+            )
+
+            fiber_strain = strain[:3] + z_r * strain[3:]
+            if integrate == 'stress':
+                integrand = material.get_stress(fiber_strain)
+            elif integrate == 'modulus':
+                integrand = material.get_tangent(fiber_strain)
+            else:
+                raise ValueError(f'Unknown integrate type: {integrate}')
+
+            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
+
+            IA.append(T.T @ integrand @ T * As)
+            z_list.append(z_r)
+
+        MA = np.stack(IA, axis=0)
+        z_coord = np.array(z_list)
+        prepared_input = [(z_coord, MA)]
+
         return prepared_input, z_coords
 
     def integrate_stress(
@@ -99,7 +130,6 @@ class ShellFiberIntegrator(SectionIntegrator):
     def integrate_modulus(
         self,
         prepared_input: t.List[t.Tuple[np.ndarray, np.ndarray]],
-        geo: ShellGeometry,
     ) -> NDArray:
         """Integrate material modulus over shell thickness to obtain shell
         section stiffness.
@@ -114,39 +144,12 @@ class ShellFiberIntegrator(SectionIntegrator):
         A = np.zeros((3, 3))
         B = np.zeros((3, 3))
         D = np.zeros((3, 3))
-        for C_dz, z_i in zip(MA, z):
-            A += C_dz
-            B += z_i * C_dz
-            D += z_i**2 * C_dz
+        for C_layer, z_i in zip(MA, z):
+            A += C_layer
+            B += z_i * C_layer
+            D += z_i**2 * C_layer
 
-        Kc = np.block([[A, B], [B, D]])
-
-        Ks = np.zeros((6, 6))
-        for r in geo.reinforcement:
-            Cs_local = r.material.C_s
-
-            c, s = np.cos(r.phi), np.sin(r.phi)
-            T = np.array(
-                [
-                    [c * c, s * s, c * s],
-                    [s * s, c * c, -c * s],
-                    [-2 * c * s, 2 * c * s, c * c - s * s],
-                ]
-            )
-
-            Cs_global = T.T @ Cs_local @ T
-
-            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
-            z = r.z
-            Ksr = np.zeros((6, 6))
-            Ksr[:3, :3] = As * Cs_global
-            Ksr[:3, 3:] = -z * As * Cs_global
-            Ksr[3:, :3] = -z * As * Cs_global
-            Ksr[3:, 3:] = (z**2) * As * Cs_global
-
-            Ks += Ksr
-
-        return Ks + Kc
+        return np.block([[A, B], [B, D]])
 
     def integrate_strain_response_on_geometry(
         self,
@@ -194,5 +197,5 @@ class ShellFiberIntegrator(SectionIntegrator):
         if integrate == 'stress':
             return self.integrate_stress(prepared_input)
         if integrate == 'modulus':
-            return self.integrate_modulus(prepared_input, geo)
+            return self.integrate_modulus(prepared_input)
         raise ValueError(f'Unknown integrate type: {integrate}')
