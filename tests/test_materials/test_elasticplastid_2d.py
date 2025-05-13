@@ -1,3 +1,5 @@
+"""Tests for the ElasticPlastic2D class."""
+
 import numpy as np
 import pytest
 
