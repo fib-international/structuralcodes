@@ -31,7 +31,6 @@ __all__ = [
     'IPN',
     'UPN',
     'add_reinforcement',
-    'add_reinforcement',
     'add_reinforcement_line',
     'CircularGeometry',
     'add_reinforcement_circle',
