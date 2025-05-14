@@ -75,25 +75,26 @@ class ShellFiberIntegrator(SectionIntegrator):
             z_list.append(z)
 
         for r in geo.reinforcement:
-            material = r.material
             z_r = r.z
+            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
 
             fiber_strain = strain[:3] + z_r * strain[3:]
+            eps_sj = r.T @ fiber_strain
+
             if integrate == 'stress':
-                integrand = material.get_stress(fiber_strain)
+                sig_sj = material.get_stress(eps_sj)
+                integrand = As * r.T.T @ np.array([sig_sj[0], 0, 0])
             elif integrate == 'modulus':
-                integrand = material.get_tangent(fiber_strain)
+                mod = material.get_secant(eps_sj)
+                integrand = r.T.T @ np.diag([mod[0][0], 0, 0]) @ r.T * As
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
-            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
-
-            IA.append(r.T.T @ integrand @ r.T * As)
+            IA.append(integrand * z_r)
             z_list.append(z_r)
 
         MA = np.stack(IA, axis=0)
-        z_coord = np.array(z_list)
-        prepared_input = [(z_coord, MA)]
+        prepared_input = [(z_list, MA)]
 
         return prepared_input, z_coords
 
