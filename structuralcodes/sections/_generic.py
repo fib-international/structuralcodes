@@ -720,6 +720,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             UltimateBendingMomentResults: The results from the calculation.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
@@ -727,8 +730,6 @@ class GenericSectionCalculator(SectionCalculator):
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
 
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -794,6 +795,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             MomentCurvatureResults: The calculation results.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
         res.n = n
@@ -802,9 +806,6 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is not None:
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
-
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
 
         if chi is None:
             # Find ultimate curvature from the strain distribution
