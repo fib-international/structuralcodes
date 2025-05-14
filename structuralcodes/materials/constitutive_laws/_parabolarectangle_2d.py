@@ -42,9 +42,9 @@ class ParabolaRectangle2D(ParabolaRectangle):
             name (str): A name for the constitutive law.
             nu (float): Poisson's ratio. Default value = 0.2.
             c_1 (float): First coefficient for the compressive-strength
-                reduction factor due to lateral shear. Default value = 0.8.
+                reduction factor due to lateral tension. Default value = 0.8.
             c_2 (float): Second coefficient for the compressive-strength
-                reduction factor due to lateral shear. Default value = 100.
+                reduction factor due to lateral tension. Default value = 100.
         """
         super().__init__(fc=fc, eps_0=eps_0, eps_u=eps_u, n=n, name=name)
         self._nu = nu
@@ -54,14 +54,14 @@ class ParabolaRectangle2D(ParabolaRectangle):
     @property
     def c_1(self) -> float:
         """Return the first coefficient for the compressive-strength reduction
-        factor due to lateral shear. Default value = 0.8.
+        factor due to lateral tension. Default value = 0.8.
         """
         return self._c_1
 
     @property
     def c_2(self) -> float:
         """Return the second coefficient for the compressive-strength reduction
-        factor due to lateral shear. Default value = 100.
+        factor due to lateral tension. Default value = 100.
         """
         return self._c_2
 
@@ -103,10 +103,10 @@ class ParabolaRectangle2D(ParabolaRectangle):
     def strength_reduction_lateral_cracking(
         self, eps_p: ArrayLike, cracked: bool
     ) -> float:
-        """Return the strength reduction factor for lateral cracking.
-        This relation comes from Vecchio & Collins (1986), "The Modified
-        Compression-Field Theory for Reinforced Concrete Elements Subjected to
-        Shear.
+        """Return the compressive-strength reduction factor due to lateral
+        tension. This relation comes from Vecchio & Collins (1986), "The
+        Modified Compression-Field Theory for Reinforced Concrete Elements
+        Subjected to Shear.
         """
         if not cracked:
             return 1
@@ -124,7 +124,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
         cracked = np.any(eps_p > 0)
 
         nu = 0.0 if cracked else self._nu
-        # Lateral cracking reduction factor
+        # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p, cracked)
 
         eps_pf = self.get_effective_principal_strains(eps_p, nu)
@@ -148,7 +148,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
 
         sig_p = super().get_stress(eps_pf)
 
-        # Lateral cracking reduction factor
+        # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p, cracked)
 
         E11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
