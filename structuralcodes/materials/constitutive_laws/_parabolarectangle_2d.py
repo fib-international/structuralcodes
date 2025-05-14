@@ -24,6 +24,8 @@ class ParabolaRectangle2D(ParabolaRectangle):
         eps_u: float = -0.0035,
         n: float = 2.0,
         nu: float = 0.2,
+        c_1: float = 0.8,
+        c_2: float = 100,
         name: t.Optional[str] = None,
     ) -> None:
         """Initialize a Parabola-Rectangle 2D Material.
@@ -39,24 +41,29 @@ class ParabolaRectangle2D(ParabolaRectangle):
             n (float): Exponent for the pre-peak branch. Default value = 2.
             name (str): A name for the constitutive law.
             nu (float): Poisson's ratio. Default value = 0.2.
+            c_1 (float): First coefficient for the compressive-strength
+                reduction factor due to lateral shear. Default value = 0.8.
+            c_2 (float): Second coefficient for the compressive-strength
+                reduction factor due to lateral shear. Default value = 100.
         """
         super().__init__(fc=fc, eps_0=eps_0, eps_u=eps_u, n=n, name=name)
         self._nu = nu
+        self._c_1 = c_1
+        self._c_2 = c_2
 
     @property
-    def E_c(self) -> float:
-        """Return the elastic modulus of concrete."""
-        return 2 * self._fc / self._eps_0
+    def c_1(self) -> float:
+        """Return the first coefficient for the compressive-strength reduction
+        factor due to lateral shear. Default value = 0.8.
+        """
+        return self._c_1
 
     @property
-    def f_cr(self) -> float:
-        """Return the cracking strength of concrete."""
-        return 0.33 * np.sqrt(-self._fc)
-
-    @property
-    def eps_cr(self) -> float:
-        """Return the cracking strain of concrete."""
-        return self.f_cr / self.E_c
+    def c_2(self) -> float:
+        """Return the second coefficient for the compressive-strength reduction
+        factor due to lateral shear. Default value = 100.
+        """
+        return self._c_2
 
     def transform(self, strain: ArrayLike) -> np.ndarray:
         """Transform the strain vector to principal directions."""
@@ -74,81 +81,79 @@ class ParabolaRectangle2D(ParabolaRectangle):
         )
         return T, T @ eps
 
-    def get_effective_principal_strains(self, strain: ArrayLike) -> np.ndarray:
+    def get_effective_principal_strains(
+        self, eps_p: ArrayLike, nu: float
+    ) -> np.ndarray:
         """Compute the effective principal strains to include the influence of
         Poisson's ratio. Taken from 'Nonlinear Analysis of Reinforced-Concrete
-        Shells' by M. A. Polak and F. J. Vecchio [eq. 5].
+        Shells' by M. A. Polak and F. J. Vecchio (1993).
         """
-        _, eps_p = self.transform(strain)
+        denom = (1 + nu) * (1 - 2 * nu)
 
-        nu = self._nu
-        eps_1f = ((1 - nu) * eps_p[0] + nu * eps_p[1] + nu * eps_p[2]) / (
-            (1 + nu) * (1 - 2 * nu)
-        )
-        eps_2f = ((1 - nu) * eps_p[1] + nu * eps_p[0] + nu * eps_p[2]) / (
-            (1 + nu) * (1 - 2 * nu)
-        )
-        eps_3f = ((1 - nu) * eps_p[2] + nu * eps_p[0] + nu * eps_p[1]) / (
-            (1 + nu) * (1 - 2 * nu)
+        P = np.array(
+            [
+                [(1 - nu) / denom, nu / denom, nu / denom],
+                [nu / denom, (1 - nu) / denom, nu / denom],
+                [nu / denom, nu / denom, (1 - nu) / denom],
+            ]
         )
 
-        return np.array([eps_1f, eps_2f, eps_3f])
+        return P @ eps_p
 
-    def is_cracked(self, strain: ArrayLike) -> bool:
-        """Check if the material is cracked.
-        The material is considered cracked if any of the effective principal
-        strains are greater than the cracking strain (eps_cr).
+    def strength_reduction_lateral_cracking(
+        self, eps_p: ArrayLike, cracked: bool
+    ) -> float:
+        """Return the strength reduction factor for lateral cracking.
+        This relation comes from Vecchio & Collins (1986), "The Modified
+        Compression-Field Theory for Reinforced Concrete Elements Subjected to
+        Shear.
         """
-        eps_pf = self.get_effective_principal_strains(strain)
+        if not cracked:
+            return 1
 
-        return np.any(eps_pf > self.eps_cr)
+        beta = 1 / (self.c_1 + self.c_2 * max(eps_p))
 
-    def get_corrected_principal_strains(self, strain: ArrayLike) -> np.ndarray:
-        """Apply the corrected strain to the material."""
-        _, eps_p = self.transform(strain)
-        eps_pf = self.get_effective_principal_strains(strain)
-
-        # If cracked, Poisson's ratio (nu) is neglected
-        if self.is_cracked(strain):
-            eps_pf = eps_p
-            print("Material is cracked, Poisson's ratio is neglected.")
-        else:
-            # If not cracked, use the effective principal strains (eps_pf)
-            print(
-                'Material is uncracked, applying effective principal strains.'
-            )
-
-        return eps_pf
+        return min(beta, 1)
 
     def get_stress(self, strain: ArrayLike) -> np.ndarray:
         """Return a 2D stress vector [sigma_x, sigma_y, tau_xy]
         given a 2D strain vector [eps_x, epx_y, gamma_xy].
         """
-        T, _ = self.transform(strain)
-        eps_pf = self.get_corrected_principal_strains(strain)
+        T, eps_p = self.transform(strain)
+
+        cracked = np.any(eps_p > 0)
+
+        nu = 0.0 if cracked else self._nu
+        # Lateral cracking reduction factor
+        beta = self.strength_reduction_lateral_cracking(eps_p, cracked)
+
+        eps_pf = self.get_effective_principal_strains(eps_p, nu)
 
         sig_p = super().get_stress(eps_pf)
+        sig_p[2] = 0
 
-        # Rotate back to global coords
+        for i in (0, 1):
+            if sig_p[i] < 0:
+                sig_p[i] *= beta
+
+        # Transform back to global coords
         return T.T @ sig_p
 
     def get_secant(self, strain: ArrayLike) -> np.ndarray:
         """Compute the 3x3 secant stiffness matrix C."""
-        T, _ = self.transform(strain)
-        eps_pf = self.get_corrected_principal_strains(strain)
+        T, eps_p = self.transform(strain)
+        cracked = np.any(eps_p > 0)
+        nu = 0.0 if cracked else self._nu
+        eps_pf = self.get_effective_principal_strains(eps_p, nu)
 
         sig_p = super().get_stress(eps_pf)
 
-        E11 = sig_p[0] / eps_pf[0]
-        E22 = sig_p[1] / eps_pf[1]
+        # Lateral cracking reduction factor
+        beta = self.strength_reduction_lateral_cracking(eps_p, cracked)
+
+        E11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
+        E22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
         E12 = (E11 + E22) / 2
 
-        Cp = np.array(
-            [
-                [E11, 0.0, 0.0],
-                [0.0, E22, 0.0],
-                [0.0, 0.0, 0.5 * E12],
-            ]
-        )
-
+        Cp = np.diag([E11, E22, 0.5 * E12])
         return T.T @ Cp @ T
