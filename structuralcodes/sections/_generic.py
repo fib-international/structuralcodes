@@ -42,6 +42,8 @@ class GenericSection(Section):
             strength, moment curvature, etc.).
     """
 
+    geometry: CompoundGeometry
+
     def __init__(
         self,
         geometry: t.Union[SurfaceGeometry, CompoundGeometry],
@@ -96,6 +98,7 @@ class GenericSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
 
     integrator: SectionIntegrator
+    section: GenericSection
 
     def __init__(
         self,
@@ -309,15 +312,38 @@ class GenericSectionCalculator(SectionCalculator):
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
+                # This is left on purpose: even if tempted we should not do
+                # this check:
                 # if g != other_g:
                 eps_p = g.material.get_ultimate_strain(yielding=yielding)[1]
                 if isinstance(g, SurfaceGeometry):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
                     y_p = g._point.coords[0][1]
+                # Check if the section is a reinforced concrete section:
+                # If it is, we need to obtain the "yield" strain of concrete
+                # (-0.002 for default parabola-rectangle concrete)
+                # If the geometry is not concrete, don't get the yield strain
+                # If it is not a reinforced concrete section, return
+                # the yield strain if asked.
+                is_rc_section = self.section.geometry.reinforced_concrete
+                is_concrete_geom = (
+                    isinstance(other_g, SurfaceGeometry) and other_g.concrete
+                )
+
+                use_yielding = (
+                    yielding
+                    if (
+                        (is_rc_section and is_concrete_geom)
+                        or (not is_rc_section)
+                    )
+                    else False
+                )
+
                 eps_n = other_g.material.get_ultimate_strain(
-                    yielding=yielding
+                    yielding=use_yielding
                 )[0]
+
                 if isinstance(other_g, SurfaceGeometry):
                     y_n = other_g.polygon.bounds[3]
                 elif isinstance(other_g, PointGeometry):
