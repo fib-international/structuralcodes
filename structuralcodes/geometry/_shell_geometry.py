@@ -69,6 +69,18 @@ class ShellReinforcement(Geometry):
         """Return the orientation angle of the reinforcement."""
         return self._phi
 
+    @property
+    def T(self) -> np.ndarray:
+        """Return the transformation matrix for the reinforcement."""
+        c, s = np.cos(self.phi), np.sin(self.phi)
+        return np.array(
+            [
+                [c * c, s * s, c * s],
+                [s * s, c * c, -c * s],
+                [-2 * c * s, 2 * c * s, c * c - s * s],
+            ]
+        )
+
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
         raise NotImplementedError

@@ -77,14 +77,6 @@ class ShellFiberIntegrator(SectionIntegrator):
         for r in geo.reinforcement:
             material = r.material
             z_r = r.z
-            c, s = np.cos(r.phi), np.sin(r.phi)
-            T = np.array(
-                [
-                    [c * c, s * s, c * s],
-                    [s * s, c * c, -c * s],
-                    [-2 * c * s, 2 * c * s, c * c - s * s],
-                ]
-            )
 
             fiber_strain = strain[:3] + z_r * strain[3:]
             if integrate == 'stress':
@@ -96,7 +88,7 @@ class ShellFiberIntegrator(SectionIntegrator):
 
             As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
 
-            IA.append(T.T @ integrand @ T * As)
+            IA.append(r.T.T @ integrand @ r.T * As)
             z_list.append(z_r)
 
         MA = np.stack(IA, axis=0)
