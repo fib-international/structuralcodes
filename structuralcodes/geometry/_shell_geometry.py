@@ -46,7 +46,7 @@ class ShellReinforcement(Geometry):
 
     @property
     def n_bars(self) -> float:
-        """Return the number of bars per unit width."""
+        """Return the number of bars per bundle."""
         return self._n_bars
 
     @property
