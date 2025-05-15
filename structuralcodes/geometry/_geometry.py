@@ -18,9 +18,9 @@ from shapely.geometry import (
 )
 from shapely.ops import split
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.core.base import Material
+from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import Concrete
-from structuralcodes.materials.constitutive_laws import Elastic
 
 
 class Geometry:
@@ -72,7 +72,7 @@ class Geometry:
     @staticmethod
     def from_geometry(
         geo: Geometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> Geometry:
         """Create a new geometry with a different material."""
         raise NotImplementedError(
@@ -91,8 +91,7 @@ class PointGeometry(Geometry):
         self,
         point: t.Union[Point, ArrayLike],
         diameter: float,
-        material: t.Union[Material, ConstitutiveLaw],
-        density: t.Optional[float] = None,
+        material: Material,
         name: t.Optional[str] = None,
         group_label: t.Optional[str] = None,
     ):
@@ -105,12 +104,7 @@ class PointGeometry(Geometry):
             point (Union(Point, ArrayLike)): A couple of coordinates or a
                 shapely Point object.
             diameter (float): The diameter of the point.
-            material (Union(Material, ConstitutiveLaw)): The material for the
-                point (this can be a Material or a ConstitutiveLaw).
-            density (Optional(float)): When a ConstitutiveLaw is passed as
-                material, the density can be providen by this argument. When
-                the material is a Material object the density is taken from the
-                material.
+            material (Material): The material for the point.
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects
                 (default is None).
@@ -131,22 +125,12 @@ class PointGeometry(Geometry):
                 warn_str += ' discarded'
                 warnings.warn(warn_str)
             point = Point(coords)
-        if not isinstance(material, Material) and not isinstance(
-            material, ConstitutiveLaw
-        ):
+        if not isinstance(material, Material):
             raise TypeError(
-                f'mat should be a valid structuralcodes.base.Material \
-                or structuralcodes.base.ConstitutiveLaw object. \
+                f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(material)}'
             )
-        # Pass a constitutive law to the PointGeometry
-        self._density = density
-        if isinstance(material, Material):
-            self._density = material.density
-            self._material = material.constitutive_law
-        elif isinstance(material, ConstitutiveLaw):
-            self._material = material
-
+        self._material = material
         self._point = point
         self._diameter = diameter
         self._area = np.pi * diameter**2 / 4.0
@@ -162,14 +146,14 @@ class PointGeometry(Geometry):
         return self._area
 
     @property
-    def material(self) -> ConstitutiveLaw:
+    def material(self) -> Material:
         """Returns the point material."""
         return self._material
 
     @property
     def density(self) -> float:
         """Returns the density."""
-        return self._density
+        return self.material.density
 
     @property
     def x(self) -> float:
@@ -204,7 +188,6 @@ class PointGeometry(Geometry):
             point=affinity.translate(self._point, dx, dy),
             diameter=self._diameter,
             material=self._material,
-            density=self._density,
             name=self._name,
             group_label=self._group_label,
         )
@@ -231,7 +214,6 @@ class PointGeometry(Geometry):
             ),
             diameter=self._diameter,
             material=self._material,
-            density=self._density,
             name=self._name,
             group_label=self._group_label,
         )
@@ -239,16 +221,15 @@ class PointGeometry(Geometry):
     @staticmethod
     def from_geometry(
         geo: PointGeometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> PointGeometry:
         """Create a new PointGeometry with a different material.
 
         Arguments:
             geo (PointGeometry): The geometry.
-            new_material (Optional(Union(Material, ConstitutiveLaw))): A new
-                material to be applied to the geometry. If new_material is
-                None an Elastic material with same stiffness as the original
-                material is created.
+            new_material (Optional(Material)): A new material to be applied to
+                the geometry. If new_material is None an Elastic material with
+                same stiffness as the original material is created.
 
         Returns:
             PointGeometry: The new PointGeometry.
@@ -261,24 +242,24 @@ class PointGeometry(Geometry):
             raise TypeError('geo should be a PointGeometry')
         if new_material is not None:
             # provided a new_material
-            if not isinstance(new_material, Material) and not isinstance(
-                new_material, ConstitutiveLaw
-            ):
+            if not isinstance(new_material, Material):
                 raise TypeError(
                     f'new_material should be a valid structuralcodes.base.\
-                    Material or structuralcodes.base.ConstitutiveLaw object. \
+                    Material object. \
                     {repr(new_material)}'
                 )
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0))
+            new_material = ElasticMaterial(
+                E=geo.material.constitutive_law.get_tangent(eps=0),
+                density=geo.material.density,
+            )
 
         return PointGeometry(
             point=geo._point,
             diameter=geo._diameter,
             material=new_material,
-            density=geo._density,
             name=geo._name,
             group_label=geo._group_label,
         )
@@ -331,13 +312,12 @@ class SurfaceGeometry(Geometry):
     holes.
     """
 
-    _material: ConstitutiveLaw
+    _material: Material
 
     def __init__(
         self,
         poly: Polygon,
-        material: t.Union[Material, ConstitutiveLaw],
-        density: t.Optional[float] = None,
+        material: Material,
         concrete: bool = False,
         name: t.Optional[str] = None,
         group_label: t.Optional[str] = None,
@@ -346,11 +326,7 @@ class SurfaceGeometry(Geometry):
 
         Arguments:
             poly (shapely.Polygon): A Shapely polygon.
-            material (Union(Material, ConstitutiveLaw)): A Material or
-                ConsitutiveLaw class applied to the geometry.
-            density (Optional(float)): When a ConstitutiveLaw is passed as mat,
-                the density can be provided by this argument. When mat is a
-                Material object the density is taken from the material.
+            material (Material): A Material applied to the geometry.
             concrete (bool): Flag to indicate if the geometry is concrete.
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects.
@@ -362,24 +338,15 @@ class SurfaceGeometry(Geometry):
                 f'poly need to be a valid shapely.geometry.Polygon object. \
                 {repr(poly)}'
             )
-        if not isinstance(material, Material) and not isinstance(
-            material, ConstitutiveLaw
-        ):
+        if not isinstance(material, Material):
             raise TypeError(
-                f'mat should be a valid structuralcodes.base.Material \
-                or structuralcodes.base.ConstitutiveLaw object. \
+                f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(material)}'
             )
         self._polygon = poly
-        # Pass a constitutive law to the SurfaceGeometry
-        self._density = density
-        if isinstance(material, Material):
-            self._density = material.density
-            if isinstance(material, Concrete):
-                concrete = True
-            material = material.constitutive_law
-
         self._material = material
+        if isinstance(material, Concrete):
+            concrete = True
         self._concrete = concrete
 
     @property
@@ -403,11 +370,11 @@ class SurfaceGeometry(Geometry):
     @property
     def density(self) -> float:
         """Returns the density."""
-        return self._density
+        return self.material.density
 
     @property
-    def material(self) -> ConstitutiveLaw:
-        """Returns the Constitutive law."""
+    def material(self) -> Material:
+        """Returns the material."""
         return self._material
 
     @property
@@ -527,7 +494,6 @@ class SurfaceGeometry(Geometry):
             SurfaceGeometry: The resulting SurfaceGeometry.
         """
         material = self.material
-        density = self._density
 
         # if we subtract a point from a surface we obtain the same surface
         sub_polygon = self.polygon
@@ -540,9 +506,7 @@ class SurfaceGeometry(Geometry):
             for g in other.geometries:
                 sub_polygon = sub_polygon - g.polygon
 
-        return SurfaceGeometry(
-            poly=sub_polygon, material=material, density=density
-        )
+        return SurfaceGeometry(poly=sub_polygon, material=material)
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
@@ -561,7 +525,6 @@ class SurfaceGeometry(Geometry):
         return SurfaceGeometry(
             poly=affinity.translate(self.polygon, dx, dy),
             material=self.material,
-            density=self._density,
             concrete=self.concrete,
         )
 
@@ -589,23 +552,21 @@ class SurfaceGeometry(Geometry):
                 self.polygon, angle, origin=point, use_radians=use_radians
             ),
             material=self.material,
-            density=self._density,
             concrete=self.concrete,
         )
 
     @staticmethod
     def from_geometry(
         geo: SurfaceGeometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> SurfaceGeometry:
         """Create a new SurfaceGeometry with a different material.
 
         Arguments:
             geo (SurfaceGeometry): The geometry.
-            new_material: (Optional(Union(Material, ConstitutiveLaw))): A new
-                material to be applied to the geometry. If new_material is None
-                an Elastic material with same stiffness of the original
-                material is created.
+            new_material: (Optional(Material)): A new material to be applied to
+                the geometry. If new_material is None an Elastic material with
+                same stiffness of the original material is created.
 
         Returns:
             SurfaceGeometry: The new SurfaceGeometry.
@@ -618,22 +579,21 @@ class SurfaceGeometry(Geometry):
             raise TypeError('geo should be a SurfaceGeometry')
         if new_material is not None:
             # provided a new_material
-            if not isinstance(new_material, Material) and not isinstance(
-                new_material, ConstitutiveLaw
-            ):
+            if not isinstance(new_material, Material):
                 raise TypeError(
                     f'new_material should be a valid structuralcodes.base.\
-                    Material or structuralcodes.base.ConstitutiveLaw object. \
+                    Material object. \
                     {repr(new_material)}'
                 )
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0))
+            new_material = ElasticMaterial(
+                E=geo.material.constitutive_law.get_tangent(eps=0),
+                density=geo.material.density,
+            )
 
-        return SurfaceGeometry(
-            poly=geo.polygon, material=new_material, density=geo._density
-        )
+        return SurfaceGeometry(poly=geo.polygon, material=new_material)
 
     # here we can also add static methods like:
     # from_points
@@ -648,14 +608,12 @@ class SurfaceGeometry(Geometry):
 
 def _process_geometries_multipolygon(
     geometries: MultiPolygon,
-    materials: t.Optional[
-        t.Union[t.List[Material], Material, ConstitutiveLaw]
-    ],
+    materials: t.Optional[t.Union[t.List[Material], Material]],
 ) -> list[Geometry]:
     """Process geometries for initialization."""
     checked_geometries = []
     # a MultiPolygon is provided
-    if isinstance(materials, (ConstitutiveLaw, Material)):
+    if isinstance(materials, Material):
         for g in geometries.geoms:
             checked_geometries.append(
                 SurfaceGeometry(poly=g, material=materials)
@@ -698,20 +656,23 @@ class CompoundGeometry(Geometry):
     properties.
     """
 
-    geometries: t.List[Geometry]
+    geometries: t.List[t.Union[SurfaceGeometry, PointGeometry]]
 
     def __init__(
         self,
-        geometries: t.Union[t.List[Geometry], MultiPolygon],
+        geometries: t.Union[
+            t.List[t.Union[SurfaceGeometry, PointGeometry, CompoundGeometry]],
+            MultiPolygon,
+        ],
         materials: t.Optional[t.Union[t.List[Material], Material]] = None,
     ) -> None:
         """Creates a compound geometry.
 
         Arguments:
             geometries (Union(List(Geometry), MultiPolygon)): A list of
-                Geometry objects (i.e. PointGeometry or SurfaceGeometry) or a
-                shapely MultiPolygon object (in this latter case also a list of
-                materials should be given).
+                Geometry objects (i.e. PointGeometry, SurfaceGeometry or
+                CompoundGeometry) or a shapely MultiPolygon object (in this
+                latter case also a list of materials should be given).
             materials (Optional(List(Material), Material)): A material (applied
                 to all polygons) or a list of materials. In this case the
                 number of polygons should match the number of materials.
@@ -868,7 +829,7 @@ class CompoundGeometry(Geometry):
     @staticmethod
     def from_geometry(
         geo: CompoundGeometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> CompoundGeometry:
         """Create a new CompoundGeometry with a different material.
 

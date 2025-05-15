@@ -4,7 +4,8 @@ import typing as t
 
 import structuralcodes.core._section_results as s_res
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
-from structuralcodes.materials.constitutive_laws import Elastic, UserDefined
+from structuralcodes.materials.basic import ElasticMaterial, GenericMaterial
+from structuralcodes.materials.constitutive_laws import UserDefined
 from structuralcodes.sections import GenericSection
 from structuralcodes.sections.section_integrators import FiberIntegrator
 
@@ -57,13 +58,21 @@ def calculate_elastic_cracked_properties(
     rotated_geometry = section.geometry.rotate(-theta)
 
     for geo in rotated_geometry.geometries:
-        Ec = geo.material.get_tangent(eps=0)
-        elastic_concrete = UserDefined([-100, 0], [-100 * Ec, 0])
+        Ec = geo.material.constitutive_law.get_tangent(eps=0)
+        density = geo.material.density
+        elastic_concrete_law = UserDefined([-100, 0], [-100 * Ec, 0])
+        elastic_concrete = GenericMaterial(
+            density=density,
+            constitutive_law=elastic_concrete_law,
+        )
         geo._material = elastic_concrete
 
     for pg in rotated_geometry.point_geometries:
-        Es = pg.material.get_tangent(eps=0)
-        elastic_steel = Elastic(Es, 'elastic steel')
+        Es = pg.material.constitutive_law.get_tangent(eps=0)
+        density = pg.material.density
+        elastic_steel = ElasticMaterial(
+            E=Es, density=density, name='elastic steel'
+        )
         pg._material = elastic_steel
 
     curv = -1e-5  # Any curvature should return the same mechanical properties.
