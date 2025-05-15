@@ -1301,3 +1301,86 @@ def test_moment_curvature_large_circular_section():
 
     assert np.allclose(result.chi_y, exp_result_chi, rtol=1e-5, atol=1e-6)
     assert np.allclose(result.m_y, exp_result_m, rtol=1e-5, atol=1e-2)
+
+
+def test_rotate_triangulation_data():
+    """Test showing a bug in the storing of triangulation data.
+
+    Triangulation data was stored after the rotation of the section leading to
+    an inconsistency in the results.
+    """
+    # Create materials to use
+    fc = 40
+    fy = 500
+    Es = 200000
+    concrete = ConcreteEC2_2004(fck=fc)
+    duct_props = reinforcement_duct_props(fyk=fy, ductility_class='C')
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fy, Es=Es, ftk=fy, epsuk=duct_props['epsuk']
+    )
+
+    # The section
+    width = 1000
+    height = 250
+
+    diameter_bottom = [10]
+    spacing_bottom = [200]
+    diameter_top = [12, 16]
+    spacing_top = [200, 200]
+    cover_bottom = 35
+    cover_top = 35
+
+    # Create the geometry
+    rectangle = Polygon(
+        (
+            (-width / 2, -height / 2),
+            (width / 2, -height / 2),
+            (width / 2, height / 2),
+            (-width / 2, height / 2),
+        )
+    )
+
+    # Create the section
+    geometry = SurfaceGeometry(rectangle, concrete)
+    # Base reinforcement
+    for diameter, spacing in zip(diameter_bottom, spacing_bottom):
+        geometry = add_reinforcement_line(
+            geo=geometry,
+            coords_i=(-width / 2 + cover_bottom, -height / 2 + cover_bottom),
+            coords_j=(width / 2 - cover_bottom, -height / 2 + cover_bottom),
+            diameter=diameter,
+            material=reinforcement,
+            s=spacing,
+        )
+    for diameter, spacing in zip(diameter_top, spacing_top):
+        geometry = add_reinforcement_line(
+            geo=geometry,
+            coords_i=(-width / 2 + cover_top, height / 2 - cover_top),
+            coords_j=(width / 2 - cover_top, height / 2 - cover_top),
+            diameter=diameter,
+            material=reinforcement,
+            s=spacing,
+        )
+
+    # geometry = geometry.translate(width/2, height/2)
+    section = GenericSection(
+        geometry=geometry,
+        integrator='Fiber',
+        mesh_size=0.001,
+    )
+
+    section.section_calculator.calculate_bending_strength(theta=0)
+
+    res1 = section.section_calculator.calculate_bending_strength(theta=np.pi)
+
+    # geometry = geometry.translate(width/2, height/2)
+    section = GenericSection(
+        geometry=geometry,
+        integrator='Fiber',
+        mesh_size=0.001,
+    )
+    section.geometry
+
+    res2 = section.section_calculator.calculate_bending_strength(theta=np.pi)
+
+    assert math.isclose(res2.m_y, res1.m_y, rel_tol=1e-3)

@@ -42,6 +42,8 @@ class GenericSection(Section):
             strength, moment curvature, etc.).
     """
 
+    geometry: CompoundGeometry
+
     def __init__(
         self,
         geometry: t.Union[SurfaceGeometry, CompoundGeometry],
@@ -314,6 +316,8 @@ class GenericSectionCalculator(SectionCalculator):
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
+                # This is left on purpose: even if tempted we should not do
+                # this check:
                 # if g != other_g:
                 eps_p = g.material.constitutive_law.get_ultimate_strain(
                     yielding=yielding
@@ -322,9 +326,30 @@ class GenericSectionCalculator(SectionCalculator):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
                     y_p = g._point.coords[0][1]
+                # Check if the section is a reinforced concrete section:
+                # If it is, we need to obtain the "yield" strain of concrete
+                # (-0.002 for default parabola-rectangle concrete)
+                # If the geometry is not concrete, don't get the yield strain
+                # If it is not a reinforced concrete section, return
+                # the yield strain if asked.
+                is_rc_section = self.section.geometry.reinforced_concrete
+                is_concrete_geom = (
+                    isinstance(other_g, SurfaceGeometry) and other_g.concrete
+                )
+
+                use_yielding = (
+                    yielding
+                    if (
+                        (is_rc_section and is_concrete_geom)
+                        or (not is_rc_section)
+                    )
+                    else False
+                )
+
                 eps_n = other_g.material.constitutive_law.get_ultimate_strain(
-                    yielding=yielding
+                    yielding=use_yielding
                 )[0]
+
                 if isinstance(other_g, SurfaceGeometry):
                     y_n = other_g.polygon.bounds[3]
                 elif isinstance(other_g, PointGeometry):
@@ -707,6 +732,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             UltimateBendingMomentResults: The results from the calculation.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
@@ -714,8 +742,6 @@ class GenericSectionCalculator(SectionCalculator):
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
 
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -781,6 +807,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             MomentCurvatureResults: The calculation results.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
         res.n = n
@@ -789,9 +818,6 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is not None:
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
-
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
 
         if chi is None:
             # Find ultimate curvature from the strain distribution
