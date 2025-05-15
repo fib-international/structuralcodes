@@ -147,18 +147,27 @@ class ParabolaRectangle2D(ParabolaRectangle):
     def get_secant(self, strain: ArrayLike) -> np.ndarray:
         """Compute the 3x3 secant stiffness matrix C."""
         T, eps_p = self.transform(strain)
-        cracked = np.any(eps_p > 0)
-        nu = 0.0 if cracked else self._nu
+        eps_p = eps_p[:2]
+        nu = 0.0 if self.check_cracked(eps_p) else self._nu
+        beta = self.strength_reduction_lateral_cracking(eps_p)
         eps_pf = self.get_effective_principal_strains(eps_p, nu)
 
         sig_p = super().get_stress(eps_pf)
 
-        # Compressive-strength reduction factor due to lateral tension.
-        beta = self.strength_reduction_lateral_cracking(eps_p, cracked)
+        # Avoid division by zero
+        tol = 1e-12
+        if abs(eps_pf[0]) > tol:
+            E11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
+        else:
+            E11 = self._fc * 2.0 / self._eps_0
 
-        E11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
-        E22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
+        if abs(eps_pf[1]) > tol:
+            E22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
+        else:
+            E22 = self._fc * 2.0 / self._eps_0
+
         E12 = (E11 + E22) / 2
 
         Cp = np.diag([E11, E22, 0.5 * E12])
+
         return T.T @ Cp @ T
