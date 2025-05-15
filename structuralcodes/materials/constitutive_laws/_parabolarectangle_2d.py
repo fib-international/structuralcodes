@@ -69,7 +69,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
         """Transform the strain vector to principal directions."""
         eps = np.atleast_1d(strain)
         # Use arctan2 to obtain the angle in the correct quadrant
-        theta = 0.5 * np.arctan2(2 * eps[2], eps[0] - eps[1])
+        theta = 0.5 * np.arctan2(eps[2], eps[0] - eps[1])
         c = np.cos(theta)
         s = np.sin(theta)
         T = np.array(
@@ -92,23 +92,26 @@ class ParabolaRectangle2D(ParabolaRectangle):
 
         P = np.array(
             [
-                [(1 - nu) / denom, nu / denom, nu / denom],
-                [nu / denom, (1 - nu) / denom, nu / denom],
-                [nu / denom, nu / denom, (1 - nu) / denom],
+                [(1 - nu) / denom, nu / denom],
+                [nu / denom, (1 - nu) / denom],
             ]
         )
 
         return P @ eps_p
 
-    def strength_reduction_lateral_cracking(
-        self, eps_p: ArrayLike, cracked: bool
-    ) -> float:
+    def check_cracked(self, eps_p: ArrayLike) -> bool:
+        """Check if the concrete is cracked. Returns True if any principal
+        strain (eps_p1, eps_p2) is greater than zero.
+        """
+        return np.any(eps_p > 0)
+
+    def strength_reduction_lateral_cracking(self, eps_p: ArrayLike) -> float:
         """Return the compressive-strength reduction factor due to lateral
         tension. This relation comes from Vecchio & Collins (1986), "The
         Modified Compression-Field Theory for Reinforced Concrete Elements
         Subjected to Shear.
         """
-        if not cracked:
+        if not self.check_cracked(eps_p):
             return 1
 
         beta = 1 / (self.c_1 + self.c_2 * max(eps_p))
@@ -121,23 +124,25 @@ class ParabolaRectangle2D(ParabolaRectangle):
         """
         T, eps_p = self.transform(strain)
 
-        cracked = np.any(eps_p > 0)
+        # Neglect shear strain related to the principal strain direction
+        eps_p = eps_p[:2]
 
-        nu = 0.0 if cracked else self._nu
+        nu = 0.0 if self.check_cracked(eps_p) else self._nu
+
         # Compressive-strength reduction factor due to lateral tension.
-        beta = self.strength_reduction_lateral_cracking(eps_p, cracked)
+        beta = self.strength_reduction_lateral_cracking(eps_p)
 
+        # Include the influence of Poisson's ratio on the principal strains.
         eps_pf = self.get_effective_principal_strains(eps_p, nu)
 
+        # Compute the principal stresses from 1D parabola-rectangle law.
         sig_p = super().get_stress(eps_pf)
-        sig_p[2] = 0
 
-        for i in (0, 1):
-            if sig_p[i] < 0:
-                sig_p[i] *= beta
+        # Apply the compressive-strength reduction factor
+        sig_p[sig_p < 0] *= beta
 
         # Transform back to global coords
-        return T.T @ sig_p
+        return T.T @ np.array([*sig_p, 0])
 
     def get_secant(self, strain: ArrayLike) -> np.ndarray:
         """Compute the 3x3 secant stiffness matrix C."""
