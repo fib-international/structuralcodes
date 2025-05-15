@@ -24,7 +24,6 @@ class ShellFiberIntegrator(SectionIntegrator):
     ) -> t.Tuple[t.List[t.Tuple[np.ndarray, np.ndarray]], None]:
         """Prepare general input to the integration of stress or material
         modulus in the shell section.
-
         Calculate the stress resultants or secant section stiffness based on
         strains at discrete fibers along the shell thickness.
 
