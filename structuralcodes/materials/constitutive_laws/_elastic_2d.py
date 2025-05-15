@@ -74,7 +74,7 @@ class Elastic2D(Elastic):
                 'The input strain vector must have a length of 3.'
             ) from e
 
-    def get_tangent(self, *args, **kwargs) -> np.ndarray:
-        """Return the 2D tangent stiffness matrix."""
+    def get_secant(self, *args, **kwargs) -> np.ndarray:
+        """Return the 2D secant stiffness matrix."""
         del args, kwargs
         return self.C_matrix

@@ -94,7 +94,6 @@ def test_elastic_numpy():
     assert np.allclose(sig, sig_expected)
 
 
-# Elastic2D tests
 @pytest.mark.parametrize(
     'E, nu, strain, expected',
     [
@@ -211,11 +210,11 @@ def test_strain_input_for_stress():
         ),
     ],
 )
-def test_elastic2d_tangent(E, nu, expected):
-    """Test the get_tangent method of Elastic2D."""
+def test_elastic2d_secant(E, nu, expected):
+    """Test the get_secant method of Elastic2D."""
     mat = Elastic2D(E, nu)
-    tangent = mat.get_tangent()
-    assert np.allclose(tangent, expected)
+    secant = mat.get_secant()
+    assert np.allclose(secant, expected)
 
 
 @pytest.mark.parametrize(
