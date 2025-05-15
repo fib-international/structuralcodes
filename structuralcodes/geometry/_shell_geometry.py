@@ -154,7 +154,7 @@ class ShellGeometry(Geometry):
                     f'range [-{half_thickness:.2f}, {half_thickness:.2f}] mm.'
                 )
 
-    def _repr_svg_(self) -> str:
+    def _repr_svg_(self) -> str:  # noqa: PLR0915
         """Returns the svg representation."""
         # overall drawing area dimensions
         w, h = 1000, 1000
