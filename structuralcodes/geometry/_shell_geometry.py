@@ -46,7 +46,7 @@ class ShellReinforcement(Geometry):
 
     @property
     def n_bars(self) -> float:
-        """Return the number of bars per unit width."""
+        """Return the number of bars per bundle."""
         return self._n_bars
 
     @property
@@ -154,118 +154,230 @@ class ShellGeometry(Geometry):
                     f'range [-{half_thickness:.2f}, {half_thickness:.2f}] mm.'
                 )
 
-    def _repr_svg_(self) -> str:
+    def _repr_svg_(self) -> str:  # noqa: PLR0915
         """Returns the svg representation."""
-        # Concrete dimensions and half sizes
+        # overall drawing area dimensions
         w, h = 1000, 1000
+        t_val = self.thickness
+        # half-width/height for centering
         hw, hh = w / 2, h / 2
-        # ViewBox for inner SVG elements
-        vb = f'{-hw - 100} {-hh - 100} {w + 200} {h + 200}'
+        # single view dimensions
+        sw, sh = w + 200, h + 200
+        # side view height based on thickness
+        sh_side = int(t_val + 200)
+        # main and side view ViewBox definitions
+        vb_main = f'{-hw - 100} {-hh - 100} {w + 200} {h + 200}'
+        vb_side = f'{-hw - 100} {-t_val / 2 - 100} {w + 200} {t_val + 200}'
+        # scaling and spacing between views
+        scale, gap = 0.6, 50
 
-        # Draw extended reinforcement lines
         def draw_rebars(view: str) -> str:
-            elems = []
+            # draw parallel rebar lines for top/bottom plan views
+            lines: t.List[str] = []
             for layer in self.reinforcement:
-                # Choose layers based on z-value (top vs bottom)
-                if (view == 'top' and layer.z >= 0) or (
-                    view == 'bottom' and layer.z < 0
-                ):
-                    phi = layer.phi
-                    sp = layer.cc_bars
-                    c, s = np.cos(phi), np.sin(phi)
-                    # Perpendicular vector for shifting parallel lines
-                    px, py = -s, c
-                    # Color based on orientation
+                # select only top or bottom layers
+                top = view == 'top' and layer.z >= 0
+                bot = view == 'bottom' and layer.z < 0
+                if not (top or bot):
+                    continue
+                # orientation and spacing
+                phi, sp = layer.phi, layer.cc_bars
+                c, s = np.cos(phi), np.sin(phi)
+                # perpendicular offset vector
+                px, py = -s, c
+                # color by orientation
+                col = (
+                    'red'
+                    if np.isclose(phi % np.pi, 0)
+                    else 'blue'
+                    if np.isclose(phi % np.pi, np.pi / 2)
+                    else 'green'
+                )
+                n = int(w / sp) + 3  # linecount with safety margin to angles
+                L = 2000  # line length extension
+                for i in range(-n // 2, n // 2 + 1):
+                    ox, oy = i * sp * px, i * sp * py
+                    # line endpoints
+                    x1, y1 = ox - L * c, oy - L * s
+                    x2, y2 = ox + L * c, oy + L * s
+                    for _ in range(int(layer.n_bars)):
+                        # actual bar offset
+                        lines.append(
+                            f'<line x1="{x1}" y1="{y1}" '
+                            f'x2="{x2}" y2="{y2}" '
+                            f'stroke="{col}" '
+                            f'stroke-width="{layer.diameter_bar}" '
+                            'stroke-opacity="0.7"/>'
+                        )
+            return ''.join(lines)
+
+        def build_plan(view: str) -> str:
+            # define clipping area for concrete
+            clip = (
+                '<defs><clipPath id="clip' + view + '">'
+                f'<rect x="{-hw}" y="{-hh}" '
+                f'width="{w}" height="{h}"/>'
+                '</clipPath></defs>'
+            )
+            # concrete background
+            bg = (
+                f'<rect x="{-hw}" y="{-hh}" '
+                f'width="{w}" height="{h}" '
+                'fill="lightgray"/>'
+            )
+            # concrete outline
+            out = (
+                f'<rect x="{-hw}" y="{-hh}" '
+                f'width="{w}" height="{h}" '
+                'fill="none" stroke="black" '
+                'stroke-width="2"/>'
+            )
+            # view label
+            lbl = (
+                f'<text x="{-hw + 20}" y="{-hh - 40}" '
+                'font-size="30">' + f'{view} view</text>'
+            )
+            # rebar lines clipped to concrete area
+            body = (
+                '<g clip-path="url(#clip'
+                + view
+                + ')">'
+                + draw_rebars(view)
+                + '</g>'
+            )
+            return clip + bg + body + out + lbl
+
+        def build_side(ax: str) -> str:
+            # side view perpendicular direction
+            span = w if ax == 'x' else h
+            half = span / 2
+            t_ht = self.thickness
+            cid = 'clipSide' + ax
+            # clipping region for shell thickness
+            clip = (
+                '<defs><clipPath id="' + cid + '">'
+                f'<rect x="{-half}" y="{-t_ht / 2}" '
+                f'width="{span}" height="{t_ht}"/>'
+                '</clipPath></defs>'
+            )
+            # shell background
+            bg = (
+                f'<rect x="{-half}" y="{-t_ht / 2}" '
+                f'width="{span}" height="{t_ht}" '
+                'fill="lightgray"/>'
+            )
+            # shell outline
+            out = (
+                f'<rect x="{-half}" y="{-t_ht / 2}" '
+                f'width="{span}" height="{t_ht}" '
+                'fill="none" stroke="black" '
+                'stroke-width="2"/>'
+            )
+            # side view label
+            lbl = (
+                f'<text x="{-half + 20}" y="{-t_ht / 2 - 40}" '
+                'font-size="30">' + f'Side {ax.upper()}-view</text>'
+            )
+            elems: t.List[str] = []
+            for layer in self.reinforcement:
+                # select bars not parallel to this side-plane
+                perp = not (
+                    (
+                        ax == 'x'
+                        and np.isclose(layer.phi % np.pi, np.pi / 2, atol=1e-2)
+                    )
+                    or (
+                        ax == 'y'
+                        and np.isclose(layer.phi % np.pi, 0, atol=1e-2)
+                    )
+                )
+                if perp:
+                    # draw circles for perp layers
+                    step = layer.cc_bars or span
+                    kmax = int(np.floor(half / step))
+                    xs = [k * step for k in range(-kmax, kmax + 1)]
                     col = (
                         'red'
-                        if np.isclose(phi % np.pi, 0)
+                        if np.isclose(layer.phi % np.pi, 0)
                         else 'blue'
-                        if np.isclose(phi % np.pi, np.pi / 2)
+                        if np.isclose(layer.phi % np.pi, np.pi / 2)
                         else 'green'
                     )
-                    n = int(w / sp) + 3  # Safety margin to take care of angels
-                    L = 2000  # Extend lines
-                    for i in range(-n // 2, n // 2 + 1):
-                        ox = i * sp * px
-                        oy = i * sp * py
-                        x0, y0 = ox, oy
-                        # Extended endpoints along the rebar direction
-                        x1, y1 = x0 - L * c, y0 - L * s
-                        x2, y2 = x0 + L * c, y0 + L * s
+                    for x in xs:
                         for j in range(int(layer.n_bars)):
-                            extra = (
+                            ex = (
                                 j - (layer.n_bars - 1) / 2
                             ) * layer.diameter_bar
-                            sx, sy = extra * px, extra * py
-                            p1 = (x1 + sx, y1 + sy)
-                            p2 = (x2 + sx, y2 + sy)
+                            cy = -layer.z
                             elems.append(
-                                f'<line x1="{p1[0]}" y1="{p1[1]}" x2="{p2[0]}"'
-                                f'y2="{p2[1]}" stroke="{col}" stroke-width="'
-                                f'{layer.diameter_bar}" stroke-opacity="0.7"/>'
+                                f'<circle cx="{x + ex:.1f}" '  # bar position
+                                f'cy="{cy:.1f}" '
+                                f'r="{layer.diameter_bar / 2}" '
+                                f'fill="{col}" '
+                                'fill-opacity="0.9"/>'
                             )
-            return ''.join(elems)
-
-        # Build one view (top or bottom)
-        def build_view(view: str) -> str:
-            # Define a clipPath for the concrete area
-            clip_def = (
-                f'<defs><clipPath id="clipConcrete">'
-                f'<rect x="{-hw}" y="{-hh}" width="{w}" height="{h}" />'
-                f'</clipPath></defs>'
+                else:
+                    # draw lines for parallel layers
+                    col = (
+                        'red'
+                        if np.isclose(layer.phi % np.pi, 0)
+                        else 'blue'
+                        if np.isclose(layer.phi % np.pi, np.pi / 2)
+                        else 'green'
+                    )
+                    y = -layer.z
+                    for j in range(int(layer.n_bars)):
+                        ex = (j - (layer.n_bars - 1) / 2) * layer.diameter_bar
+                        x1 = -half + ex
+                        x2 = half + ex
+                        elems.append(
+                            f'<line x1="{x1}" y1="{y}" '  # bar top view
+                            f'x2="{x2}" y2="{y}" '
+                            f'stroke="{col}" '
+                            f'stroke-width="{layer.diameter_bar}" '
+                            'stroke-opacity="0.7"/>'
+                        )
+            body = (
+                '<g clip-path="url(#' + cid + ')">' + ''.join(elems) + '</g>'
             )
-            # Draw rebar lines and clip them to the concrete area
-            rebar_svg = (
-                f'<g clip-path="url(#clipConcrete)">{draw_rebars(view)}</g>'
-            )
-            # Draw a background rectangle for the concrete (lightgray fill)
-            bg_rect = (
-                f'<rect x="{-hw}" y="{-hh}" width="{w}" height="{h}" '
-                + 'fill="lightgray" />'
-            )
+            return clip + bg + body + out + lbl
 
-            # Draw a concrete outline and a label
-            outline = (
-                f'<rect x="{-hw}" y="{-hh}" width="{w}" height="{h}" '
-                + 'fill="none" stroke="black" stroke-width="2" />'
-            )
-            lbl = (
-                f'<text x="{-hw + 20}" y="{-hh - 40}" font-size="30" '
-                + 'fill="black">'
-                + f'{"Top View" if view == "top" else "Bottom View"}'
-                + '</text>'
-            )
-
-            return clip_def + bg_rect + rebar_svg + outline + lbl
-
-        scale = 0.6
-
-        # Assemble both views side by side
-        gap = 50  # gap between views
-        sw, sh = w + 200, h + 200  # single view width/height
-        total_w, total_h = (sw * 2 + gap) * scale, sh * scale
-
-        svg_parts = [
-            f'<svg width="{total_w * scale}" height="{total_h * scale}" '
-            f'viewBox="0 0 {total_w} {total_h}" '
-            'xmlns="http://www.w3.org/2000/svg">'
-            # everything is grouped to scale
-            f'<g transform="scale({scale})">'
+        # assemble all SVG fragments
+        svg = [
+            f'<svg width="{(sw * 2 + gap) * scale:.0f}" '
+            f'height="{(sh + gap + sh_side) * scale:.0f}" '
+            f'viewBox="0 0 {(sw * 2 + gap):.0f} '
+            f'{(sh + gap + sh_side):.0f}"'
+            ' xmlns="http://www.w3.org/2000/svg"><g>'
         ]
-
-        # Top-view (left)
-        svg_parts.append(
-            "<g transform='translate(0,0)'><svg x='0' y='0' "
-            f"width='{sw}' height='{sh}' viewBox='{vb}'>"
-            f"{build_view('top')}</svg></g>"
+        # plan views
+        svg.append(
+            '<g><svg width="' + str(sw) + '" '  # top plan
+            'height="' + str(sh) + '" '
+            'viewBox="' + vb_main + '">' + build_plan('top') + '</svg></g>'
         )
-
-        # Bottom-view (right)
-        svg_parts.append(
-            f"<g transform='translate({sw + gap},0)'>"
-            f"<svg x='0' y='0' width='{sw}' height='{sh}' "
-            f"viewBox='{vb}'>{build_view('bottom')}</svg></g>"
+        svg.append(
+            '<g transform="translate(' + str(sw + gap) + ',0)">'  # bottom plan
+            '<svg width="' + str(sw) + '" '
+            'height="' + str(sh) + '" '
+            'viewBox="' + vb_main + '">' + build_plan('bottom') + '</svg></g>'
         )
-
-        svg_parts.append('</g></svg>')
-        return ''.join(svg_parts)
+        # side views
+        svg.append(
+            '<g transform="translate(0,' + str(sh + gap) + ')">'  # side-x
+            '<svg width="' + str(sw) + '" '
+            'height="' + str(sh_side) + '" '
+            'viewBox="' + vb_side + '">' + build_side('x') + '</svg></g>'
+        )
+        svg.append(
+            '<g transform="translate('
+            + str(sw + gap)
+            + ','
+            + str(sh + gap)
+            + ')">'  # side-y
+            '<svg width="' + str(sw) + '" '
+            'height="' + str(sh_side) + '" '
+            'viewBox="' + vb_side + '">' + build_side('y') + '</svg></g>'
+        )
+        svg.append('</g></svg>')
+        return ''.join(svg)

@@ -79,7 +79,7 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         for r in geo.reinforcement:
             z_r = r.z
-            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2
+            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2 / r.cc_bars
 
             fiber_strain = strain[:3] + z_r * strain[3:]
             eps_sj = r.T @ fiber_strain
