@@ -47,6 +47,8 @@ class ShellFiberIntegrator(SectionIntegrator):
         Returns:
             Tuple: (prepared_input, z_coords)
         """
+        strain = np.atleast_1d(strain)
+
         layers = kwargs.get('layers')
         z_coords, dz = (None, None) if layers is None else layers
         t_total = geo.thickness
