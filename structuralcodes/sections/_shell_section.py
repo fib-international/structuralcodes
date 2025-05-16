@@ -48,6 +48,7 @@ class ShellSectionCalculator(SectionCalculator):
     """A calculator for shell sections."""
 
     section: ShellSection
+    mesh_size: float
 
     def __init__(
         self,
@@ -62,7 +63,7 @@ class ShellSectionCalculator(SectionCalculator):
         super().__init__(section=section)
         self.integrator = ShellFiberIntegrator()
         self.mesh_size = kwargs.get('mesh_size', 0.01)
-        self.z_coords = None
+        self.layers: t.Optional[t.Tuple] = None
 
     def _calculate_gross_section_properties(self):
         pass
@@ -77,7 +78,6 @@ class ShellSectionCalculator(SectionCalculator):
         self,
         strain: ArrayLike,
         integrate: t.Literal['stress', 'modulus'] = 'stress',
-        **kwargs,
     ) -> t.Union[t.Tuple[float, float, float, float, float, float], NDArray]:
         """Integrate a strain profile returning stress resultants or tangent
         section stiffness matrix.
@@ -111,12 +111,20 @@ class ShellSectionCalculator(SectionCalculator):
             ValueError: If a unkown value is passed to the `integrate`
             parameter.
         """
-        return self.integrator.integrate_strain_response_on_geometry(
+        result = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
             strain=strain,
             integrate=integrate,
-            **kwargs,
+            mesh_size=self.mesh_size,
+            layers=self.layers,
         )
+
+        # Save layers for future use
+        if self.layers is None and result[-1] is not None:
+            self.layers = result[-1]
+
+        # Return the results without layers
+        return result[:-1]
 
     def calculate_strain_profile(
         self,

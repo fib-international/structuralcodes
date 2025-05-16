@@ -47,9 +47,10 @@ class ShellFiberIntegrator(SectionIntegrator):
         Returns:
             Tuple: (prepared_input, z_coords)
         """
-        z_coords = kwargs.get('z_coords')
+        layers = kwargs.get('layers')
+        z_coords, dz = (None, None) if layers is None else layers
         t_total = geo.thickness
-        if z_coords is None:
+        if z_coords is None and dz is None:
             mesh_size = kwargs.get('mesh_size', 0.01)
             if not (0 < mesh_size <= 1):
                 raise ValueError('mesh_size must be [0,1].')
@@ -96,7 +97,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         MA = np.stack(IA, axis=0)
         prepared_input = [(z_list, MA)]
 
-        return prepared_input, z_coords
+        return prepared_input, (z_coords, dz)
 
     def integrate_stress(
         self,
@@ -183,12 +184,15 @@ class ShellFiberIntegrator(SectionIntegrator):
             ValueError: If `integrate` is not 'stress' or 'modulus'.
         """
         # Prepare the general input based on the geometry and the input strains
-        prepared_input, _ = self.prepare_input(
-            geo=geo, strain=strain, integrate=integrate, **kwargs
+        prepared_input, layers = self.prepare_input(
+            geo=geo,
+            strain=strain,
+            integrate=integrate,
+            **kwargs,
         )
         # Return the calculated response
         if integrate == 'stress':
-            return self.integrate_stress(prepared_input)
+            return *self.integrate_stress(prepared_input), layers
         if integrate == 'modulus':
-            return self.integrate_modulus(prepared_input)
+            return self.integrate_modulus(prepared_input), layers
         raise ValueError(f'Unknown integrate type: {integrate}')
