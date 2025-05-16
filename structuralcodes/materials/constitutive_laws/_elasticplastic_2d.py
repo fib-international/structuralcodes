@@ -63,7 +63,6 @@ class ElasticPlastic2D(ElasticPlastic):
         sig_s = super().get_stress(eps)
         return sig_s @ self.C_s / self.E
 
-    def get_tangent(self, eps: ArrayLike) -> np.ndarray:
+    def get_tangent(self) -> np.ndarray:
         """Compute the 3x3 tangent stiffness matrix C."""
-        eps = np.atleast_1d(eps)
         return self.C_s
