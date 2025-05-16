@@ -56,7 +56,7 @@ def test_integrate_strain_profile(
 def test_integrate_strain_profile_tangent(E=30000, nu=0.20, t=200):
     """Elastic plate: tangent stiffness matrix."""
     shell = ShellSection(ShellGeometry(t, Elastic2D(E, nu)))
-    K = shell._section_calculator.integrate_strain_profile(
+    K = shell.section_calculator.integrate_strain_profile(
         np.array([1e-3] * 3 + [1e-6] * 3), integrate='modulus'
     )
 
@@ -85,7 +85,7 @@ def test_wrong_integrator():
     """Unknown keyword must raise ValueError."""
     shell = ShellSection(ShellGeometry(200, Elastic2D(30000, 0.20)))
     with pytest.raises(ValueError):
-        shell._section_calculator.integrate_strain_profile(
+        shell.section_calculator.integrate_strain_profile(
             np.zeros(6), integrate='tangent'
         )
 

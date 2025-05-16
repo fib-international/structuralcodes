@@ -34,7 +34,7 @@ class ShellSection(Section):
             name = 'ShellSection'
         super().__init__(name)
         self._geometry = geometry
-        self._section_calculator = ShellSectionCalculator(
+        self.section_calculator = ShellSectionCalculator(
             section=self, **kwargs
         )
 
