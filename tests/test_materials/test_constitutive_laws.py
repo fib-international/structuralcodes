@@ -12,6 +12,7 @@ from structuralcodes.materials.constitutive_laws import (
     Elastic2D,
     ElasticPlastic,
     ParabolaRectangle,
+    ParabolaRectangle2D,
     Popovics,
     Sargin,
     UserDefined,
@@ -93,7 +94,6 @@ def test_elastic_numpy():
     assert np.allclose(sig, sig_expected)
 
 
-# Elastic2D tests
 @pytest.mark.parametrize(
     'E, nu, strain, expected',
     [
@@ -210,11 +210,11 @@ def test_strain_input_for_stress():
         ),
     ],
 )
-def test_elastic2d_tangent(E, nu, expected):
-    """Test the get_tangent method of Elastic2D."""
+def test_elastic2d_secant(E, nu, expected):
+    """Test the get_secant method of Elastic2D."""
     mat = Elastic2D(E, nu)
-    tangent = mat.get_tangent()
-    assert np.allclose(tangent, expected)
+    secant = mat.get_secant()
+    assert np.allclose(secant, expected)
 
 
 @pytest.mark.parametrize(
@@ -277,6 +277,81 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
     mat = ParabolaRectangle(fc, eps_0, eps_u)
     assert math.isclose(mat.get_stress(strain), stress)
     assert math.isclose(mat.get_tangent(strain), tangent)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, strain, stress',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            [-0.0015, 0.0, 0.001],
+            [-26.64581728, -2.44270432, 8.06770432],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.003, 0.002, 0],
+            [-45, 0, 0],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.002, -0.0035, -0.001],
+            [-41.22113162, -3.77886838, 12.48075442],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.001, -0.0015, -0.0045],
+            [-11.20993578, -32.37821129, -19.05144796],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.02, 0.0, -0.01],
+            [-0.67731096, -12.153852, -2.86913526],
+        ),
+    ],
+)
+def test_parabola_rectangle_2d(fc, eps_0, eps_u, strain, stress):
+    """Test the parabola-rectangle 2D material."""
+    mat = ParabolaRectangle2D(fc, eps_0, eps_u)
+    assert np.allclose(mat.get_stress(strain), stress, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, nu, strain, expected',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            0.0,
+            [-0.001, -0.001, 0.0],
+            [[22500, 0.0, 0.0], [0.0, 22500, 0.0], [0.0, 0.0, 0.5 * 22500]],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            0.2,
+            [-0.003, 0.002, 0],
+            [[15000, 0, 0], [0, 0, 0], [0, 0, 3750]],
+        ),
+    ],
+)
+def test_get_secant(fc, eps_0, eps_u, nu, strain, expected):
+    """Test the secant stiffness matrix of the parabola-rectangle
+    2D material.
+    """
+    mat = ParabolaRectangle2D(fc, eps_0, eps_u, nu=nu)
+    assert np.allclose(mat.get_secant(strain), expected)
 
 
 @pytest.mark.parametrize(
