@@ -90,7 +90,7 @@ class ShellFiberIntegrator(SectionIntegrator):
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
-            IA.append(integrand * z_r)
+            IA.append(integrand)
             z_list.append(z_r)
 
         MA = np.stack(IA, axis=0)
