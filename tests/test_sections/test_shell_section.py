@@ -34,7 +34,7 @@ def test_integrate_strain_profile(
     shell = ShellSection(ShellGeometry(thickness, material))
 
     # Numerically integrated forces/moments
-    R = shell._section_calculator.integrate_strain_profile(
+    R = shell.section_calculator.integrate_strain_profile(
         np.array([eps_x, eps_y, eps_xy, chi_x, chi_y, chi_xy])
     )
 
@@ -109,7 +109,7 @@ mxy = np.linspace(-1e8, 1e8, 2)
 def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     """Loads → strains for an isotropic plate."""
     shell = ShellSection(ShellGeometry(t, Elastic2D(Ec, nu)))
-    eps = shell._section_calculator.calculate_strain_profile(
+    eps = shell.section_calculator.calculate_strain_profile(
         nx, ny, nxy, mx, my, mxy
     )
 
@@ -130,12 +130,15 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
 
 def test_default_equals_explicit_mesh_size(t=200):
     """Default mesh_size (0.01) equals explicit 0.01."""
-    shell = ShellSection(ShellGeometry(t, Elastic2D(30_000, 0.20)))
-    K0 = shell._section_calculator.integrate_strain_profile(
+    shell_0 = ShellSection(ShellGeometry(t, Elastic2D(30_000, 0.20)))
+    K0 = shell_0.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )
-    K1 = shell._section_calculator.integrate_strain_profile(
-        np.zeros(6), integrate='modulus', mesh_size=0.01
+    shell_1 = ShellSection(
+        ShellGeometry(t, Elastic2D(30_000, 0.20)), mesh_size=0.01
+    )
+    K1 = shell_1.section_calculator.integrate_strain_profile(
+        np.zeros(6), integrate='modulus'
     )
     assert np.allclose(K0, K1)
 
@@ -143,8 +146,10 @@ def test_default_equals_explicit_mesh_size(t=200):
 @pytest.mark.parametrize('invalid', [-0.2, 0.0, 1.5])
 def test_invalid_mesh_size_raises(invalid, t=200):
     """mesh_size outside (0,1] → ValueError."""
-    shell = ShellSection(ShellGeometry(t, Elastic2D(30000, 0.20)))
+    shell = ShellSection(
+        ShellGeometry(t, Elastic2D(30000, 0.20)), mesh_size=invalid
+    )
     with pytest.raises(ValueError):
-        shell._section_calculator.integrate_strain_profile(
-            np.zeros(6), integrate='stress', mesh_size=invalid
+        shell.section_calculator.integrate_strain_profile(
+            np.zeros(6), integrate='stress'
         )
