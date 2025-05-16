@@ -2,6 +2,7 @@ import typing as t
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from scipy.linalg import lu_factor, lu_solve
 
 from ..core.base import Section, SectionCalculator
 from ..geometry import ShellGeometry
@@ -134,35 +135,91 @@ class ShellSectionCalculator(SectionCalculator):
         mx: float,
         my: float,
         mxy: float,
+        initial: bool = False,
+        max_iter: int = 10,
+        tol: float = 1e-6,
     ) -> t.List[float]:
         """Computes the strain profile for a given set of stress resultants.
 
-        The strain profile is computed by solving:
-
-            eps = K^(-1) * R
-
-        where:
-        - K is the integrated concrete stiffness (6x6) over the thickness plus
-            the sum of the reinforcement contributions (6x6),
-            computed from each reinforcement layer.
-
-        Parameters:
-        nx, ny, nxy, mx, my, mxy (float): The stress resultants.
+        Args:
+            nx (float): Membrane force in x-direction.
+            ny (float): Membrane force in y-direction.
+            nxy (float): Membrane shear.
+            mx (float): Plate moment giving stresses in x-direction.
+            my (float): Plate moment giving stresses in y-direction.
+            mxy (float): Plate moment giving shear stresses in the xy-plane.
 
         Returns:
-        NDArray[float]: 6 floats: eps_x, eps_y, gamma_xy, kappa_x, kappa_y and
-        kappa_xy.
+            list(float): The strain response eps_x, eps_y, gamma_xy, chi_x,
+            chi_y and chi_xy.
         """
-        stress = nx, ny, nxy, mx, my, mxy
+        # Get the gometry
+        geom = self.section.geometry
 
-        geo = self.section.geometry
-        integrator = self.integrator
+        # Collect loads in a numpy array
+        loads = np.array([nx, ny, nxy, mx, my, mxy])
 
-        strain = np.zeros(6)
-        prepared_input, _ = integrator.prepare_input(
-            geo=geo, strain=strain, integrate='modulus'
+        # Compute initial tangent stiffness matrix
+        stiffness, layers = (
+            self.integrator.integrate_strain_response_on_geometry(
+                geom,
+                [0, 0, 0, 0, 0, 0],
+                integrate='modulus',
+                mesh_size=self.mesh_size,
+                layers=self.layers,
+            )
         )
-        K = integrator.integrate_modulus(prepared_input)
 
-        # Solve for the strain profile using the pseudoinverse
-        return np.linalg.pinv(K) @ stress
+        # Save layers if needed
+        if self.layers is None and layers is not None:
+            self.layers = layers
+
+        # Calculate strain plane with Newton Rhapson Iterative method
+        num_iter = 0
+        strain = np.zeros(6)
+
+        # Factorize once the stiffness matrix if using initial
+        if initial:
+            # LU factorization
+            lu, piv = lu_factor(stiffness)
+
+        # Do Newton loops
+        while True:
+            # Check if number of iterations exceeds the maximum
+            if num_iter > max_iter:
+                break
+
+            # Calculate response and residuals
+            response = np.array(self.integrate_strain_profile(strain=strain))
+            residual = loads - response
+
+            if initial:
+                # Solve using the decomposed matrix
+                delta_strain = lu_solve((lu, piv), residual)
+            else:
+                # Calculate the current stiffness
+                stiffness, _ = (
+                    self.integrator.integrate_strain_response_on_geometry(
+                        geom,
+                        strain,
+                        integrate='modulus',
+                        layers=self.layers,
+                    )
+                )
+
+                # Solve using the current stiffness
+                delta_strain = np.linalg.solve(stiffness, residual)
+
+            # Update the strain
+            strain += delta_strain
+
+            num_iter += 1
+
+            # Check for convergence:
+            if np.linalg.norm(delta_strain) < tol:
+                break
+
+        if num_iter >= max_iter:
+            raise StopIteration('Maximum number of iterations reached.')
+
+        return strain.tolist()
