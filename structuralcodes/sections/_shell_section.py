@@ -192,11 +192,7 @@ class ShellSectionCalculator(SectionCalculator):
         while True:
             # Check if number of iterations exceeds the maximum
             if num_iter > max_iter:
-                break
-
-            # Calculate response and residuals
-            response = np.array(self.integrate_strain_profile(strain=strain))
-            residual = loads - response
+                raise StopIteration('Maximum number of iterations reached.')
 
             if initial:
                 # If the initial stiffness is used, we follow a regular
@@ -238,8 +234,5 @@ class ShellSectionCalculator(SectionCalculator):
             # Check for convergence:
             if np.linalg.norm(delta_strain) < tol:
                 break
-
-        if num_iter >= max_iter:
-            raise StopIteration('Maximum number of iterations reached.')
 
         return strain.tolist()
