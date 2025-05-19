@@ -8,6 +8,7 @@ from ._elastic import Elastic
 from ._elastic_2d import Elastic2D
 from ._elasticplastic import ElasticPlastic
 from ._parabolarectangle import ParabolaRectangle
+from ._parabolarectangle_2d import ParabolaRectangle2D
 from ._popovics import Popovics
 from ._sargin import Sargin
 from ._userdefined import UserDefined
@@ -17,6 +18,7 @@ __all__ = [
     'Elastic2D',
     'ElasticPlastic',
     'ParabolaRectangle',
+    'ParabolaRectangle2D',
     'BilinearCompression',
     'Popovics',
     'Sargin',
@@ -32,6 +34,7 @@ CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'elasticperfectlyplastic': ElasticPlastic,
     'bilinearcompression': BilinearCompression,
     'parabolarectangle': ParabolaRectangle,
+    'parabolarectangle2d': ParabolaRectangle2D,
     'popovics': Popovics,
     'sargin': Sargin,
 }
