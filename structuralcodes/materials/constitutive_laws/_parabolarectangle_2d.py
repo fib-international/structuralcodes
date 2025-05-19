@@ -167,7 +167,14 @@ class ParabolaRectangle2D(ParabolaRectangle):
             E22 = self._fc * 2.0 / self._eps_0
 
         E12 = (E11 + E22) / 2
+        G12 = E12 / (2 * (1 + nu))
 
-        Cp = np.diag([E11, E22, 0.5 * E12])
+        Cp = np.array(
+            [
+                [E11, nu * E12, 0],
+                [nu * E12, E22, 0],
+                [0, 0, G12],
+            ]
+        )
 
         return T.T @ Cp @ T
