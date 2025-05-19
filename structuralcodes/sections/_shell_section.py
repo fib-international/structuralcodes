@@ -125,6 +125,11 @@ class ShellSectionCalculator(SectionCalculator):
             self.layers = result[-1]
 
         # Return the results without layers
+        if len(result) == 2:
+            # Return only the stiffness matrix
+            return result[0]
+
+        # Return only the stress resultants
         return result[:-1]
 
     def calculate_strain_profile(
