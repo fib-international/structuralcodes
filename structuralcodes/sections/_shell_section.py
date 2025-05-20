@@ -125,6 +125,11 @@ class ShellSectionCalculator(SectionCalculator):
             self.layers = result[-1]
 
         # Return the results without layers
+        if len(result) == 2:
+            # Return only the stiffness matrix
+            return result[0]
+
+        # Return only the stress resultants
         return result[:-1]
 
     def calculate_strain_profile(
@@ -187,16 +192,27 @@ class ShellSectionCalculator(SectionCalculator):
         while True:
             # Check if number of iterations exceeds the maximum
             if num_iter > max_iter:
-                break
-
-            # Calculate response and residuals
-            response = np.array(self.integrate_strain_profile(strain=strain))
-            residual = loads - response
+                raise StopIteration('Maximum number of iterations reached.')
 
             if initial:
+                # If the initial stiffness is used, we follow a regular
+                # Newton-Raphson scheme where we calculate the strain increment
+                # from the residual and the initial tangent stiffness matrix
+
+                # Calculate response and residuals
+                response = np.array(
+                    self.integrate_strain_profile(strain=strain)
+                )
+                residual = loads - response
+
                 # Solve using the decomposed matrix
                 delta_strain = lu_solve((lu, piv), residual)
+
             else:
+                # The the current stiffness is used, we use a secant stiffness
+                # and calculate a new total strain from which we derive the
+                # strain increment
+
                 # Calculate the current stiffness
                 stiffness, _ = (
                     self.integrator.integrate_strain_response_on_geometry(
@@ -208,7 +224,7 @@ class ShellSectionCalculator(SectionCalculator):
                 )
 
                 # Solve using the current stiffness
-                delta_strain = np.linalg.solve(stiffness, residual)
+                delta_strain = np.linalg.solve(stiffness, loads) - strain
 
             # Update the strain
             strain += delta_strain
@@ -218,8 +234,5 @@ class ShellSectionCalculator(SectionCalculator):
             # Check for convergence:
             if np.linalg.norm(delta_strain) < tol:
                 break
-
-        if num_iter >= max_iter:
-            raise StopIteration('Maximum number of iterations reached.')
 
         return strain.tolist()
