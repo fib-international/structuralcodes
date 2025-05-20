@@ -47,9 +47,12 @@ class ShellFiberIntegrator(SectionIntegrator):
         Returns:
             Tuple: (prepared_input, z_coords)
         """
-        z_coords = kwargs.get('z_coords')
+        strain = np.atleast_1d(strain)
+
+        layers = kwargs.get('layers')
+        z_coords, dz = (None, None) if layers is None else layers
         t_total = geo.thickness
-        if z_coords is None:
+        if z_coords is None and dz is None:
             mesh_size = kwargs.get('mesh_size', 0.01)
             if not (0 < mesh_size <= 1):
                 raise ValueError('mesh_size must be [0,1].')
@@ -77,16 +80,17 @@ class ShellFiberIntegrator(SectionIntegrator):
         for r in geo.reinforcement:
             z_r = r.z
             As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2 / r.cc_bars
+            material = r.material
 
             fiber_strain = strain[:3] + z_r * strain[3:]
             eps_sj = r.T @ fiber_strain
 
             if integrate == 'stress':
-                sig_sj = material.get_stress(eps_sj)
-                integrand = As * r.T.T @ np.array([sig_sj[0], 0, 0])
+                sig_sj = material.get_stress(eps_sj[0])
+                integrand = As * r.T.T @ np.array([sig_sj, 0, 0])
             elif integrate == 'modulus':
-                mod = material.get_secant(eps_sj)
-                integrand = r.T.T @ np.diag([mod[0][0], 0, 0]) @ r.T * As
+                mod = material.get_secant(eps_sj[0])
+                integrand = r.T.T @ np.diag([mod, 0, 0]) @ r.T * As
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
@@ -96,7 +100,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         MA = np.stack(IA, axis=0)
         prepared_input = [(z_list, MA)]
 
-        return prepared_input, z_coords
+        return prepared_input, (z_coords, dz)
 
     def integrate_stress(
         self,
@@ -183,12 +187,15 @@ class ShellFiberIntegrator(SectionIntegrator):
             ValueError: If `integrate` is not 'stress' or 'modulus'.
         """
         # Prepare the general input based on the geometry and the input strains
-        prepared_input, _ = self.prepare_input(
-            geo=geo, strain=strain, integrate=integrate, **kwargs
+        prepared_input, layers = self.prepare_input(
+            geo=geo,
+            strain=strain,
+            integrate=integrate,
+            **kwargs,
         )
         # Return the calculated response
         if integrate == 'stress':
-            return self.integrate_stress(prepared_input)
+            return *self.integrate_stress(prepared_input), layers
         if integrate == 'modulus':
-            return self.integrate_modulus(prepared_input)
+            return self.integrate_modulus(prepared_input), layers
         raise ValueError(f'Unknown integrate type: {integrate}')
