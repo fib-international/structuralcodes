@@ -8,6 +8,7 @@ from ._geometry import (
     SurfaceGeometry,
     create_line_point_angle,
 )
+from ._rectangular import RectangularGeometry
 from ._reinforcement import (
     add_reinforcement,
     add_reinforcement_circle,
@@ -32,4 +33,5 @@ __all__ = [
     'add_reinforcement_line',
     'CircularGeometry',
     'add_reinforcement_circle',
+    'RectangularGeometry',
 ]

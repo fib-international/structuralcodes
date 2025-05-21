@@ -7,7 +7,8 @@
 .. autoclass:: structuralcodes.sections.SectionIntegrator
 
     .. automethod:: prepare_input
-    .. automethod:: integrate
+    .. automethod:: integrate_stress
+    .. automethod:: integrate_modulus
     .. automethod:: integrate_strain_response_on_geometry
 
 ```
@@ -25,7 +26,8 @@
 .. autoclass:: structuralcodes.sections.MarinIntegrator
 
     .. automethod:: prepare_input
-    .. automethod:: integrate
+    .. automethod:: integrate_stress
+    .. automethod:: integrate_modulus
     .. automethod:: integrate_strain_response_on_geometry
 
 ```
@@ -41,7 +43,8 @@
 .. autoclass:: structuralcodes.sections.FiberIntegrator
 
     .. automethod:: prepare_input
-    .. automethod:: integrate
+    .. automethod:: integrate_stress
+    .. automethod:: integrate_modulus
     .. automethod:: integrate_strain_response_on_geometry
     .. automethod:: prepare_triangulation
 

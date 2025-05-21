@@ -173,6 +173,50 @@ class UserDefined(ConstitutiveLaw):
 
         return strains, coeff
 
+    def __marin_tangent__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration of
+        tangent in a simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            # understand in which branch are we
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
+            found = False
+            for i in range(len(self._x) - 1):
+                if self._x[i] <= strain[0] and self._x[i + 1] >= strain[0]:
+                    strains = None
+                    stiffness = (self._y[i + 1] - self._y[i]) / (
+                        self._x[i + 1] - self._x[i]
+                    )
+                    coeff.append((stiffness,))
+                    found = True
+                    break
+            if not found:
+                strains = None
+                coeff.append((0.0,))
+        else:
+            for i in range(len(self._x) - 1):
+                # For each branch of the linear piecewise function
+                stiffness = (self._y[i + 1] - self._y[i]) / (
+                    self._x[i + 1] - self._x[i]
+                )
+                strains.append((self._x[i], self._x[i + 1]))
+                coeff.append((stiffness,))
+
+        return strains, coeff
+
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         del kwargs

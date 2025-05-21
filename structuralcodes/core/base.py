@@ -4,7 +4,6 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import abc
 import typing as t
-import warnings
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -29,28 +28,8 @@ class Material(abc.ABC):
         self._density = abs(density)
         self._name = name if name is not None else 'Material'
 
-    def update_attributes(self, updated_attributes: t.Dict) -> None:
-        """Function for updating the attributes specified in the input
-        dictionary.
-
-        Args:
-            updated_attributes (dict): the dictionary of parameters to be
-                updated (not found parameters are skipped with a warning)
-        """
-        for key, value in updated_attributes.items():
-            if not hasattr(self, '_' + key):
-                str_list_keys = ', '.join(updated_attributes.keys())
-                str_warn = (
-                    f"WARNING: attribute '{key}' not found."
-                    " Ignoring the entry.\n"
-                    f"Used keys in the call: {str_list_keys}"
-                )
-                warnings.warn(str_warn)
-                continue
-            setattr(self, '_' + key, value)
-
     @property
-    def constitutive_law(self):
+    def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the ConstitutiveLaw of the object."""
         return self._constitutive_law
 
@@ -130,14 +109,8 @@ class ConstitutiveLaw(abc.ABC):
 
         return eps
 
-    def __marin__(self, **kwargs):
-        """Function for getting the strain limits and coefficients
-        for marin integration.
-
-        By default the law is discretized as a piecewise linear
-        function. Then marin coefficients are computed based on this
-        discretization.
-        """
+    def _discretize_law(self) -> ConstitutiveLaw:
+        """Discretize the law as a piecewise linear function."""
 
         # Discretize the constitutive law in a "smart way"
         def find_x_lim(x, y):
@@ -179,8 +152,29 @@ class ConstitutiveLaw(abc.ABC):
         sig = self.get_stress(eps)
         from structuralcodes.materials.constitutive_laws import UserDefined
 
-        # Return Marin coefficients for linearized version
-        return UserDefined(eps, sig).__marin__(**kwargs)
+        return UserDefined(eps, sig)
+
+    def __marin__(self, **kwargs):
+        """Function for getting the strain limits and coefficients
+        for marin integration.
+
+        By default the law is discretized as a piecewise linear
+        function. Then marin coefficients are computed based on this
+        discretization.
+        """
+        piecewise_law = self._discretize_law()
+        return piecewise_law.__marin__(**kwargs)
+
+    def __marin_tangent__(self, **kwargs):
+        """Function for getting the strain limits and coefficients
+        for marin integration of tangent modulus.
+
+        By default the law is discretized as a piecewise linear
+        function. Then marin coefficients are computed based on this
+        discretization.
+        """
+        piecewise_law = self._discretize_law()
+        return piecewise_law.__marin_tangent__(**kwargs)
 
     def get_secant(self, eps: float) -> float:
         """Method to return the
@@ -228,7 +222,7 @@ class SectionCalculator(abc.ABC):
         self.section = section
 
     @abc.abstractmethod
-    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+    def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
         """Calculates the gross section properties of the section
         This function is private and called when the section is created
         It stores the result into the result object.
