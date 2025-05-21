@@ -158,6 +158,20 @@ def test_delta_fcd_confined(
 
 
 @pytest.mark.parametrize(
+    'sigma_c2d, f_cd, ddg',
+    [
+        (-1.0, 30.0, 32.0),  # Negative sigma_c2d
+        (10.0, -30.0, 32.0),  # Negative f_cd
+        (10.0, 30.0, -32.0),  # Negative ddg
+    ],
+)
+def test_delta_fcd_confined_raises_value_error(sigma_c2d, f_cd, ddg):
+    """Test delta_fcd_confined raises ValueError for negative inputs."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.delta_fcd_confined(sigma_c2d, f_cd, ddg)
+
+
+@pytest.mark.parametrize(
     'A_s_conf, f_yd, b_cs, s, expected',
     [
         (500.0, 500.0, 200.0, 150.0, 16.67),
@@ -171,6 +185,25 @@ def test_confinement_sigma_c2d_circular_square(
         A_s_conf, f_yd, b_cs, s
     )
     assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_conf, f_yd, b_cs, s',
+    [
+        (-1.0, 500.0, 200.0, 150.0),
+        (500.0, -500.0, 200.0, 150.0),
+        (500.0, 500.0, -200.0, 150.0),
+        (500.0, 500.0, 200.0, -150.0),
+    ],
+)
+def test_confinement_sigma_c2d_circular_square_raises_value_error(
+    A_s_conf, f_yd, b_cs, s
+):
+    """Test ValueError is raised for negative inputs."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.confinement_sigma_c2d_circular_square(
+            A_s_conf, f_yd, b_cs, s
+        )
 
 
 @pytest.mark.parametrize(
@@ -192,6 +225,26 @@ def test_confinement_sigma_c2d_rectangular(
         A_s_conf, f_yd, b_csx, b_csy, s
     )
     assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_conf, f_yd, b_csx, b_csy, s',
+    [
+        (-1.0, 500.0, 250.0, 300.0, 150.0),
+        (500.0, -500.0, 250.0, 300.0, 150.0),
+        (500.0, 500.0, -250.0, 300.0, 150.0),
+        (500.0, 500.0, 250.0, -300.0, 150.0),
+        (500.0, 500.0, 250.0, 300.0, -150.0),
+    ],
+)
+def test_confinement_sigma_c2d_rectangular_raises_value_error(
+    A_s_conf, f_yd, b_csx, b_csy, s
+):
+    """Test ValueError is raised for negative inputs."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.confinement_sigma_c2d_rectangular(
+            A_s_conf, f_yd, b_csx, b_csy, s
+        )
 
 
 @pytest.mark.parametrize(
@@ -217,6 +270,27 @@ def test_confinement_sigma_c2d_multiple(
 
 
 @pytest.mark.parametrize(
+    'A_s_confx, A_s_confy, f_yd, b_csx, b_csy, s',
+    [
+        ([-100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, 150.0),
+        ([100.0, 100.0], [-100.0, 100.0], 500.0, 250.0, 300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], -500.0, 250.0, 300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], 500.0, -250.0, 300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, -300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, -150.0),
+    ],
+)
+def test_confinement_sigma_c2d_multiple_raises_value_error(
+    A_s_confx, A_s_confy, f_yd, b_csx, b_csy, s
+):
+    """Test ValueError is raised for negative inputs."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.confinement_sigma_c2d_multiple(
+            A_s_confx, A_s_confy, f_yd, b_csx, b_csy, s
+        )
+
+
+@pytest.mark.parametrize(
     'A_s_confx, A_s_confy, f_yd, b_csy, b_csx, s, expected',
     [
         ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, 150.0, 2.22),
@@ -236,6 +310,27 @@ def test_confinement_sigma_c2d_compression_zones(
         A_s_confx, A_s_confy, f_yd, b_csy, b_csx, s
     )
     assert pytest.approx(result, 0.01) == expected
+
+
+@pytest.mark.parametrize(
+    'A_s_confx, A_s_confy, f_yd, b_csy, x_cs, s',
+    [
+        ([-100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, 150.0),
+        ([100.0, 100.0], [-100.0, 100.0], 500.0, 250.0, 300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], -500.0, 250.0, 300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], 500.0, -250.0, 300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, -300.0, 150.0),
+        ([100.0, 100.0], [100.0, 100.0], 500.0, 250.0, 300.0, -150.0),
+    ],
+)
+def test_confinement_sigma_c2d_compression_zones_raises_value_error(
+    A_s_confx, A_s_confy, f_yd, b_csy, x_cs, s
+):
+    """Test ValueError is raised for negative inputs."""
+    with pytest.raises(ValueError):
+        _section_8_1_bending.confinement_sigma_c2d_compression_zones(
+            A_s_confx, A_s_confy, f_yd, b_csy, x_cs, s
+        )
 
 
 @pytest.mark.parametrize(
