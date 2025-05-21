@@ -1,6 +1,7 @@
-from typing import List, Literal
+from typing import Literal
 
-from scipy.interpolate import interp1d
+import numpy as np
+from numpy.typing import ArrayLike
 
 
 def MEd_min(h: float, NEd: float) -> float:
@@ -21,6 +22,20 @@ def MEd_min(h: float, NEd: float) -> float:
     """
     ed_min = max(h / 30, 20) / 1000
     return NEd * ed_min
+
+
+def e_min(h: float) -> float:
+    """Compute the minimum eccentricity for geometric imperfections.
+
+    EN1992-1-1:2023 Eq.(8.1).
+
+    Args:
+        h (float): Height of the element in mm.
+
+    Returns:
+        float: Minimum eccentricity in m.
+    """
+    return max(h / 30, 20) / 1000
 
 
 def NRd0(Ac: float, fcd: float, As: float, fyd: float) -> float:
@@ -83,12 +98,12 @@ def biaxial_resistant_ratio(
     """
     if section_type in ('elliptical', 'circular'):
         an = 2.0
-    elif Ned_NRd <= 0.1:
-        an = 1.0
-    elif Ned_NRd >= 1.0:
-        an = 2.0
     else:
-        an = interp1d([0.1, 0.7, 2.0], [1.0, 1.5, 2.0])(Ned_NRd)
+        an = np.interp(
+            Ned_NRd,
+            xp=[0.1, 0.7, 2.0],
+            fp=[1.0, 1.5, 2.0],
+        )
 
     return abs(MEdz_MRdz) ** an + abs(MEdy_MRdy) ** an
 
@@ -98,7 +113,7 @@ def sigma_cd(fcd: float, eps_c: float) -> float:
 
     EN1992-1-1:2023 Eq. (8.4).
 
-    Computes the scress distribution in the cmpressiopn zones (compressive
+    Computes the scress distribution in the compression zones (compressive
     shown as positive).
 
     Args:
@@ -128,7 +143,8 @@ def delta_fcd_confined(sigma_c2d: float, f_cd: float, ddg: float) -> float:
     EN1992-1-1:2023 Eq. (8.9 and 8.10).
 
     Args:
-        sigma_c2d (float): Transverse compressive stress in MPa.
+        sigma_c2d (float): the absolute alue of the minum principal
+            transverse compressive stress in MPa.
         f_cd (float): Compressive design strength in MPa.
         ddg (float): Maximum aggregate size in mm.
 
@@ -137,14 +153,12 @@ def delta_fcd_confined(sigma_c2d: float, f_cd: float, ddg: float) -> float:
     """
     if sigma_c2d < 0:
         raise ValueError(
-            f'signma_c2d must be non-negative. Got {sigma_c2d} instead.'
+            f'sigma_c2d must be non-negative. Got {sigma_c2d} instead.'
         )
     if f_cd < 0:
-        raise ValueError(
-            f'f_cd must be non-negative. Got {sigma_c2d} instead.'
-        )
+        raise ValueError(f'f_cd must be non-negative. Got {f_cd} instead.')
     if ddg < 0:
-        raise ValueError(f'ddg must be non-negative. Got {sigma_c2d} instead.')
+        raise ValueError(f'ddg must be non-negative. Got {ddg} instead.')
 
     if sigma_c2d <= 0.6 * f_cd:
         delta_f_cd = 4 * sigma_c2d
@@ -168,7 +182,7 @@ def confinement_sigma_c2d_circular_square(
     Args:
         A_s_conf (float): Cross-sectional area of one leg of confinement
             reinforcement in mm2.
-        f_yd (float): Yield strength of reinforcement in MPa.
+        f_yd (float): Yield design strength of reinforcement in MPa.
         b_cs (float): Width of the confinement core in mm.
         s (float): Spacing of confinement reinforcement in mm.
 
@@ -225,8 +239,8 @@ def confinement_sigma_c2d_rectangular(
 
 
 def confinement_sigma_c2d_multiple(
-    A_s_confx: List[float],
-    A_s_confy: List[float],
+    A_s_confx: ArrayLike,
+    A_s_confy: ArrayLike,
     f_yd: float,
     b_csx: float,
     b_csy: float,
@@ -238,9 +252,9 @@ def confinement_sigma_c2d_multiple(
     EN1992-1-1:2023 Eq. (8.13).
 
     Args:
-        A_s_confx (List[float]): Cross-sectional areas of confinement
+        A_s_confx (ArrayLike): Cross-sectional areas of confinement
             reinforcement in x direction in mm2.
-        A_s_confy (List[float]): Cross-sectional areas of confinement
+        A_s_confy (ArrayLike): Cross-sectional areas of confinement
             reinforcement in y direction in mm2.
         f_yd (float): Yield strength of reinforcement in MPa.
         b_csx (float): Width of the confinement core in x direction in mm.
@@ -250,16 +264,14 @@ def confinement_sigma_c2d_multiple(
     Returns:
         float: Confinement stress in mm.
     """
-    for value in A_s_confx:
-        if value < 0:
-            raise ValueError(
-                f'A_s_confx must be non-negative. Got {value} instead.'
-            )
-    for value in A_s_confy:
-        if value < 0:
-            raise ValueError(
-                f'A_s_confy must be non-negative. Got {value} instead.'
-            )
+    A_s_confx = np.atleast_1d(A_s_confx)
+    A_s_confy = np.atleast_1d(A_s_confy)
+
+    if np.any(A_s_confx < 0):
+        raise ValueError(f'A_s_confx must be non-negative. Got {A_s_confx}')
+    if np.any(A_s_confy < 0):
+        raise ValueError(f'A_s_confy must be non-negative. Got {A_s_confy}')
+
     if f_yd < 0:
         raise ValueError(f'f_yd must be non-negative. Got {f_yd} instead.')
     if b_csx < 0:
@@ -273,8 +285,8 @@ def confinement_sigma_c2d_multiple(
 
 
 def confinement_sigma_c2d_compression_zones(
-    A_s_confx: List[float],
-    A_s_confy: List[float],
+    A_s_confx: ArrayLike,
+    A_s_confy: ArrayLike,
     f_yd: float,
     b_csy: float,
     x_cs: float,
@@ -285,28 +297,26 @@ def confinement_sigma_c2d_compression_zones(
     EN1992-1-1:2023 Eq. (8.14).
 
     Args:
-        A_s_confx (List[float]): Cross-sectional area of confinement
+        A_s_confx (ArrayLike): Cross-sectional area of confinement
             reinforcement in x direction in mm2.
-        A_s_confy (List[float]): Cross-sectional area of confinement
+        A_s_confy (ArrayLike): Cross-sectional area of confinement
             reinforcement in y direction in mm2.
         f_yd (float): Yield strength of reinforcement in MPa.
-        b_csy (float): Width of the confinement core in y direction in mm.
-        x_cs (float): Width of the confinement core in x direction in mm.
+        b_csy (float): Width of the confinement core in mm.
+        x_cs (float): Width of the confinement core in mm.
         s (float): Spacing of confinement reinforcement in mm.
 
     Returns:
         float: Confinement stress in mm2.
     """
-    for value in A_s_confx:
-        if value < 0:
-            raise ValueError(
-                f'A_s_confx must be non-negative. Got {value} instead.'
-            )
-    for value in A_s_confy:
-        if value < 0:
-            raise ValueError(
-                f'A_s_confy must be non-negative. Got {value} instead.'
-            )
+    A_s_confx = np.atleast_1d(A_s_confx)
+    A_s_confy = np.atleast_1d(A_s_confy)
+
+    if np.any(A_s_confx < 0):
+        raise ValueError(f'A_s_confx must be non-negative. Got {A_s_confx}')
+    if np.any(A_s_confy < 0):
+        raise ValueError(f'A_s_confy must be non-negative. Got {A_s_confy}')
+
     if f_yd < 0:
         raise ValueError(f'f_yd must be non-negative. Got {f_yd} instead.')
     if x_cs < 0:
@@ -420,7 +430,7 @@ def kconf_b_circular(bcs: float, b: float) -> float:
 
 
 def kconf_b_multiple(
-    bcsx: float, bcsy: float, b_i: List[float], bx: float, by: float
+    bcsx: float, bcsy: float, b_i: ArrayLike, bx: float, by: float
 ) -> float:
     """Calculate the kconf_b effectiveness factor for square and rectangular
     members in compression with multiple confinement reinforcement.
@@ -430,28 +440,26 @@ def kconf_b_multiple(
     Args:
         bcsx (float): Width of the confined section in x-direction in mm.
         bcsy (float): Width of the confined section in y-direction in mm.
-        b_i (List[float]): Distances between bends of straight segments in mm.
+        b_i (ArrayLike): Distances between bends of straight segments in mm.
         bx (float): Width of the unconfined section in x-direction in mm.
         by (float): Width of the unconfined section in y-direction in mm.
 
     Returns:
         float: The effectiveness factor kconf_b.
     """
+    b_i = np.atleast_1d(b_i)
     if bcsx < 0:
         raise ValueError(f'bcsx must be non-negative. Got {bcsx} instead.')
     if bcsy < 0:
-        raise ValueError(f'b must be non-negative. Got {bcsy} instead.')
-    for value in b_i:
-        if value < 0:
-            raise ValueError(f'b_i must be non-negative. Got {b_i} instead.')
+        raise ValueError(f'bcsy must be non-negative. Got {bcsy} instead.')
+    if np.any(b_i < 0):
+        raise ValueError(f'b_i must be non-negative. Got {b_i} instead.')
     if bx < 0:
         raise ValueError(f'bx must be non-negative. Got {bx} instead.')
     if by < 0:
         raise ValueError(f'by must be non-negative. Got {by} instead.')
 
-    sq_sum = 0
-    for item in b_i:
-        sq_sum += item**2
+    sq_sum = np.sum(b_i**2)
 
     return (bcsx * bcsy - (1 / 6) * sq_sum) / (bx * by)
 
@@ -480,7 +488,7 @@ def kconf_s_multiple(s: float, bcsx: float, bcsy: float) -> float:
     return max((1 - s / (2 * bcsx)), 0) * max((1 - s / (2 * bcsy)), 0)
 
 
-def kconf_b_bending(Ac_conf: float, Acc: float, b_i: List[float]) -> float:
+def kconf_b_bending(Ac_conf: float, Acc: float, b_i: ArrayLike) -> float:
     """Calculate the kconf_b effectiveness factor for compression zones due to
     bending and axial force.
 
@@ -490,7 +498,7 @@ def kconf_b_bending(Ac_conf: float, Acc: float, b_i: List[float]) -> float:
         Ac_conf (float): Confined area within the centrelines of the
             confinement reinforcement and the neutral axis in mm2.
         Acc (float): Compressive area mm2.
-        b_i (List[float]): Distances between bends of straight segments in mm.
+        b_i (ArrayLike): Distances between bends of straight segments in mm.
 
     Returns:
         float: The effectiveness factor kconf_b.
@@ -501,31 +509,31 @@ def kconf_b_bending(Ac_conf: float, Acc: float, b_i: List[float]) -> float:
         )
     if Acc < 0:
         raise ValueError(f'Acc must be non-negative. Got {Acc} instead.')
-    for value in b_i:
-        if value < 0:
-            raise ValueError(f'b_i must be non-negative. Got {b_i} instead.')
+    b_i = np.atleast_1d(b_i)
+    if np.any(b_i < 0):
+        raise ValueError(f'b_i must be non-negative. Got {b_i} instead.')
 
-    sq_sum = 0
-    for item in b_i:
-        sq_sum += item**2
+    sq_sum = np.sum(b_i**2)
 
     return (Ac_conf - (1 / 6) * sq_sum) / Acc
 
 
 def kconf_s_bending(s: float, xcs: float, bcsx: float, bcsy: float) -> float:
-    """Calculate the kconf_s effectiveness factor for compression zones due to
-    bending and axial force.
+    """Calculate the kconf_s effectiveness factor for compression zones
+        under bending and axial force.
 
-    EN1992-1-1:2023 Table (8.1).
+    Based on EN1992-1-1:2023 Table (8.1).
 
     Args:
         s (float): Spacing of the confinement reinforcement.
-        xcs (float): Distance to the neutral axis.
-        bcsx (float): Width of the confined section in x-direction.
-        bcsy (float): Width of the confined section in y-direction.
+        xcs (float): Shortest perpendicular distance from the confined
+            reinforcement to the neutral axis.
+        bcsx (float): Width of the total confined section.
+        bcsy (float): Width of the confined section
+            delimited by the neutral axis and confinement reinforcement.
 
     Returns:
-        float: The effectiveness factor kconf_s.
+        float: The effectiveness factor kconf_s (dimensionless).
     """
     if s < 0:
         raise ValueError(f's must be non-negative. Got {s} instead.')

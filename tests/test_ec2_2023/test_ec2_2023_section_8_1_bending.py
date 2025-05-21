@@ -25,6 +25,22 @@ def test_MEd_min(h, NEd, expected):
 
 
 @pytest.mark.parametrize(
+    'h, expected',
+    [
+        (600, 0.02),
+        (900, 0.03),
+        (3000, 0.1),
+        (30, 0.02),
+        (1500, 0.05),
+        (20, 0.02),
+    ],
+)
+def test_e_min(h, expected):
+    """Test minimum eccentricity for geometric imperfections."""
+    assert _section_8_1_bending.e_min(h) == pytest.approx(expected, rel=1e-5)
+
+
+@pytest.mark.parametrize(
     'Ac, fcd, As, fyd, expected',
     [
         (10000, 30, 1000, 500, 800),
@@ -75,7 +91,7 @@ def test_NRd0_errors(Ac, fcd, As, fyd):
             0.4,
             1.0,
             'rectangular',
-            0.3**2.0 + 0.4**2.0,
+            0.3706,
         ),  # an = 2.0 (Ned_NRd >= 1.0)
         (
             0.1,
