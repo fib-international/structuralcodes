@@ -83,11 +83,10 @@ class ParabolaRectangle2D(ParabolaRectangle):
 
     def poisson_matrix(self, nu: float) -> np.ndarray:
         """Return the Poisson's ratio matrix."""
-        denom = (1 + nu) * (1 - 2 * nu)
-        return np.array(
+        return (1 / (1 - nu**2)) * np.array(
             [
-                [(1 - nu) / denom, nu / denom],
-                [nu / denom, (1 - nu) / denom],
+                [1, nu],
+                [nu, 1],
             ]
         )
 
@@ -174,7 +173,10 @@ class ParabolaRectangle2D(ParabolaRectangle):
 
         # Initial 2x2 secant
         D = np.diag([E_11, E_22])
-        C = P.T @ D @ P
+        C = P @ D
+
+        # Ensure symmetry
+        C = 0.5 * (C + C.T)
 
         # Shear modulus
         G_12 = np.array([[(E_11 + E_22) / (4 * (1 + nu))]])  # Shape (1, 1)
