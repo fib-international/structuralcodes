@@ -81,6 +81,15 @@ class ParabolaRectangle2D(ParabolaRectangle):
         )
         return T, T @ eps
 
+    def poisson_matrix(self, nu: float) -> np.ndarray:
+        """Return the Poisson's ratio matrix."""
+        return (1 / (1 - nu**2)) * np.array(
+            [
+                [1, nu],
+                [nu, 1],
+            ]
+        )
+
     def get_effective_principal_strains(
         self, eps_p: ArrayLike, nu: float
     ) -> np.ndarray:
@@ -88,16 +97,7 @@ class ParabolaRectangle2D(ParabolaRectangle):
         Poisson's ratio. Taken from 'Nonlinear Analysis of Reinforced-Concrete
         Shells' by M. A. Polak and F. J. Vecchio (1993).
         """
-        denom = (1 + nu) * (1 - 2 * nu)
-
-        P = np.array(
-            [
-                [(1 - nu) / denom, nu / denom],
-                [nu / denom, (1 - nu) / denom],
-            ]
-        )
-
-        return P @ eps_p
+        return self.poisson_matrix(nu) @ eps_p
 
     def check_cracked(self, eps_p: ArrayLike) -> bool:
         """Check if the concrete is cracked. Returns True if any principal
@@ -149,7 +149,12 @@ class ParabolaRectangle2D(ParabolaRectangle):
         T, eps_p = self.transform(strain)
         eps_p = eps_p[:2]
         nu = 0.0 if self.check_cracked(eps_p) else self._nu
+
+        # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p)
+
+        # Poisson correction
+        P = self.poisson_matrix(nu)
         eps_pf = self.get_effective_principal_strains(eps_p, nu)
 
         sig_p = super().get_stress(eps_pf)
@@ -157,17 +162,34 @@ class ParabolaRectangle2D(ParabolaRectangle):
         # Avoid division by zero
         tol = 1e-12
         if abs(eps_pf[0]) > tol:
-            E11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
+            E_11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
         else:
-            E11 = self._fc * 2.0 / self._eps_0
+            E_11 = self._fc * 2.0 / self._eps_0
 
         if abs(eps_pf[1]) > tol:
-            E22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
+            E_22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
         else:
-            E22 = self._fc * 2.0 / self._eps_0
+            E_22 = self._fc * 2.0 / self._eps_0
 
-        E12 = (E11 + E22) / 2
+        # Initial 2x2 secant
+        D = np.diag([E_11, E_22])
+        C = P @ D
 
-        Cp = np.diag([E11, E22, 0.5 * E12])
+        # Ensure symmetry
+        C = 0.5 * (C + C.T)
+
+        # Shear modulus
+        G_12 = np.array([[(E_11 + E_22) / (4 * (1 + nu))]])  # Shape (1, 1)
+
+        Z_21 = np.zeros((2, 1))  # Shape (2, 1)
+        Z_12 = np.zeros((1, 2))  # Shape (1, 2)
+
+        # 3x3 secant stiffness matrix
+        Cp = np.block(
+            [
+                [C, Z_21],
+                [Z_12, G_12],
+            ]
+        )
 
         return T.T @ Cp @ T
