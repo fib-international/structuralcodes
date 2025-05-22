@@ -42,6 +42,8 @@ class GenericSection(Section):
             strength, moment curvature, etc.).
     """
 
+    geometry: CompoundGeometry
+
     def __init__(
         self,
         geometry: t.Union[SurfaceGeometry, CompoundGeometry],
@@ -96,6 +98,7 @@ class GenericSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
 
     integrator: SectionIntegrator
+    section: GenericSection
 
     def __init__(
         self,
@@ -309,15 +312,38 @@ class GenericSectionCalculator(SectionCalculator):
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
+                # This is left on purpose: even if tempted we should not do
+                # this check:
                 # if g != other_g:
                 eps_p = g.material.get_ultimate_strain(yielding=yielding)[1]
                 if isinstance(g, SurfaceGeometry):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
                     y_p = g._point.coords[0][1]
+                # Check if the section is a reinforced concrete section:
+                # If it is, we need to obtain the "yield" strain of concrete
+                # (-0.002 for default parabola-rectangle concrete)
+                # If the geometry is not concrete, don't get the yield strain
+                # If it is not a reinforced concrete section, return
+                # the yield strain if asked.
+                is_rc_section = self.section.geometry.reinforced_concrete
+                is_concrete_geom = (
+                    isinstance(other_g, SurfaceGeometry) and other_g.concrete
+                )
+
+                use_yielding = (
+                    yielding
+                    if (
+                        (is_rc_section and is_concrete_geom)
+                        or (not is_rc_section)
+                    )
+                    else False
+                )
+
                 eps_n = other_g.material.get_ultimate_strain(
-                    yielding=yielding
+                    yielding=use_yielding
                 )[0]
+
                 if isinstance(other_g, SurfaceGeometry):
                     y_n = other_g.polygon.bounds[3]
                 elif isinstance(other_g, PointGeometry):
@@ -439,12 +465,18 @@ class GenericSectionCalculator(SectionCalculator):
         apply the bisection algorithm.
         """
         ITMAX = 20
+        MAXRESTATTEMPTS = 20
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
+        restarts = 0
         delta = 1e-3
-        while not found and it < ITMAX:
-            eps_0_b = eps_0_a + sign * delta * (it + 1)
+        # Use a growth factor for an exponential finding
+        r = 2.0
+        diverging = False
+        diverging_steps = 0
+        while not found and it < ITMAX and restarts < MAXRESTATTEMPTS:
+            eps_0_b = eps_0_a + sign * delta * r ** (it)
             (
                 n_int,
                 _,
@@ -457,10 +489,20 @@ class GenericSectionCalculator(SectionCalculator):
             if dn_a * dn_b < 0:
                 found = True
             elif abs(dn_b) > abs(dn_a):
-                # we are driving aay from the solution, probably due
+                # we are driving away from the solution, probably due
                 # to failure of a material
-                delta /= 2
-                it -= 1
+                diverging = True
+                if diverging:
+                    # Count for how many steps we are diverging
+                    diverging_steps += 1
+                # If we are consistently diverging for more than 10 steps,
+                # Restart the process with a small delta
+                if diverging_steps > 10:
+                    delta /= 2
+                    it = 0
+                    restarts += 1
+                    diverging = False
+                    diverging_steps = 0
             it += 1
         if it >= ITMAX and not found:
             s = f'Last iteration reached a unbalance of: \
@@ -631,7 +673,7 @@ class GenericSectionCalculator(SectionCalculator):
             matrix then `integrate='modulus'`.
 
         Examples:
-            result = self.integrate_strain_profile(strain,integrate='tangent')
+            result = self.integrate_strain_profile(strain,integrate='modulus')
             # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
 
             result = self.integrate_strain_profile(strain)
@@ -678,6 +720,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             UltimateBendingMomentResults: The results from the calculation.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
@@ -685,8 +730,6 @@ class GenericSectionCalculator(SectionCalculator):
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
 
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -752,6 +795,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             MomentCurvatureResults: The calculation results.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
         res.n = n
@@ -760,9 +806,6 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is not None:
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
-
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
 
         if chi is None:
             # Find ultimate curvature from the strain distribution
@@ -1342,7 +1385,7 @@ class GenericSectionCalculator(SectionCalculator):
             n (float): Axial load.
             my (float): Bending moment around y-axis.
             mz (float): Bending moment around z-axis.
-            initial (bool): If True the modified newton with initial tanget is
+            initial (bool): If True the modified newton with initial tangent is
                 used (default = False).
             max_iter (int): the maximum number of iterations in the iterative
                 process (default = 10).

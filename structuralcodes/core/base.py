@@ -4,7 +4,6 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import abc
 import typing as t
-import warnings
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -29,28 +28,8 @@ class Material(abc.ABC):
         self._density = abs(density)
         self._name = name if name is not None else 'Material'
 
-    def update_attributes(self, updated_attributes: t.Dict) -> None:
-        """Function for updating the attributes specified in the input
-        dictionary.
-
-        Args:
-            updated_attributes (dict): the dictionary of parameters to be
-                updated (not found parameters are skipped with a warning)
-        """
-        for key, value in updated_attributes.items():
-            if not hasattr(self, '_' + key):
-                str_list_keys = ', '.join(updated_attributes.keys())
-                str_warn = (
-                    f"WARNING: attribute '{key}' not found."
-                    " Ignoring the entry.\n"
-                    f"Used keys in the call: {str_list_keys}"
-                )
-                warnings.warn(str_warn)
-                continue
-            setattr(self, '_' + key, value)
-
     @property
-    def constitutive_law(self):
+    def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the ConstitutiveLaw of the object."""
         return self._constitutive_law
 

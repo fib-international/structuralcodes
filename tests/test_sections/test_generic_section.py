@@ -8,8 +8,11 @@ from shapely import Polygon
 
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
 from structuralcodes.geometry import (
+    CircularGeometry,
+    RectangularGeometry,
     SurfaceGeometry,
     add_reinforcement,
+    add_reinforcement_circle,
     add_reinforcement_line,
 )
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
@@ -607,15 +610,13 @@ def test_rectangular_section_nmm_domain():
 # Test rectangular section with Sargin Model
 def test_rectangular_section_Sargin():
     """Test rectangular section."""
-    # Create materials to use
-    concrete = ConcreteMC2010(25)
-    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
     # Set a different constitutive law respect to default Parabola-Rectangle
     # Here we use Sargin law (MC2010 eq 5.1-26) with parameters taken from
     # MC2010 table 5.1-8
-    concrete.constitutive_law = Sargin(
-        fc=-35, eps_c1=-2.3e-3, eps_cu1=-3.5e-3, k=1.92
-    )
+    constitutive_law = Sargin(fc=-35, eps_c1=-2.3e-3, eps_cu1=-3.5e-3, k=1.92)
+    # Create materials to use
+    concrete = ConcreteMC2010(25, constitutive_law=constitutive_law)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.0675)
 
     # The section
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
@@ -1113,3 +1114,272 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
         section.section_calculator.calculate_strain_profile(
             n, my, mz, tol=1e-7
         )
+
+
+@pytest.mark.parametrize(
+    'w, h, fck, fyk, ftk, Es, eps_su, nbars, diameter, cover',
+    [(250, 1000, 75.0, 500.0, 550, 200000, 7.0e-2, 3, 25, 50)],
+)
+@pytest.mark.parametrize('n', [(x) for x in np.linspace(-3000e3, 200e3, 10)])
+def test_moment_curvature_slender(
+    w, h, fck, fyk, ftk, Es, eps_su, nbars, diameter, cover, n
+):
+    """Test moment-curvature for slender section.
+
+    This test did not pass with the current implementation of the
+    moment-curvature calculation. Fixed with PR #224.
+    """
+    # Create the materials
+    concrete = ConcreteMC2010(fck=fck)
+    reinforcement = ReinforcementMC2010(fyk=fyk, Es=Es, ftk=ftk, epsuk=eps_su)
+
+    # Create the geometry
+    geometry = RectangularGeometry(width=w, height=h, material=concrete)
+
+    # Add reinforcement
+    geometry = add_reinforcement_line(
+        geo=geometry,
+        coords_i=(-w / 2 + cover, -h / 2 + cover),
+        coords_j=(w / 2 - cover, -h / 2 + cover),
+        diameter=diameter,
+        material=reinforcement,
+        n=nbars,
+    )
+
+    # Create fiber section
+    section_fiber = GenericSection(geometry=geometry, integrator='fiber')
+
+    # Create marin section
+    section_marin = GenericSection(
+        geometry=geometry,
+    )
+
+    # Calculation
+    if (
+        n >= section_fiber.section_calculator.n_max
+        or n <= section_fiber.section_calculator.n_min
+    ):
+        return
+    results_fiber = (
+        section_fiber.section_calculator.calculate_moment_curvature(n=n)
+    )
+
+    results_marin = (
+        section_marin.section_calculator.calculate_moment_curvature(n=n)
+    )
+
+    # check
+    # Do not check last couple of points because with a not so fine fiber
+    # discretization some differences can arise.
+    # Also first point for some values of n has shows a diference of about
+    # 7-8% (with this discretization). That is why the rtol is set to 10%
+    assert np.allclose(
+        results_fiber.m_y[:-2], results_marin.m_y[:-2], rtol=1e-1, atol=1e-1
+    )
+    assert np.allclose(
+        results_fiber.chi_y[:-2],
+        results_marin.chi_y[:-2],
+        rtol=1e-1,
+        atol=1e-4,
+    )
+
+
+def test_moment_curvature_large_circular_section():
+    """Test moment-curvature for large hollow circular section.
+
+    This test did not pass with the current implementation of the
+    moment-curvature calculation. Fixed with PR #224.
+    """
+    # Geometry
+    outer_diameter = 10000
+    shaft_thickness = 500
+
+    # Reinforcement
+    diameter_reinf = 20
+    cc_reinf = 200
+    cover = 50
+
+    # Materials
+    fck = 45
+    gamma_c = 1.5
+    alpha_cc = 0.85
+    fyk = 500
+    Es = 200000
+
+    # Modelling
+    n_points_circle = 20
+
+    # Materials
+    concrete = ConcreteEC2_2004(fck=fck, gamma_c=gamma_c, alpha_cc=alpha_cc)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fyk,
+        Es=Es,
+        **reinforcement_duct_props(fyk=fyk, ductility_class='C'),
+    )
+
+    # Establish geometry
+    shaft = CircularGeometry(
+        diameter=outer_diameter,
+        material=concrete,
+        n_points=n_points_circle,
+    ) - CircularGeometry(
+        diameter=(outer_diameter - 2 * shaft_thickness),
+        material=concrete,
+        n_points=n_points_circle,
+    )
+
+    for radius in (
+        0.5 * outer_diameter - cover,
+        0.5 * outer_diameter - shaft_thickness + cover,
+    ):
+        shaft = add_reinforcement_circle(
+            shaft,
+            center=(0, 0),
+            radius=radius,
+            diameter=diameter_reinf,
+            material=reinforcement,
+            s=cc_reinf,
+        )
+
+    # Section
+    section = GenericSection(geometry=shaft, integrator='fiber')
+
+    # Moment-curvature
+    result = section.section_calculator.calculate_moment_curvature(n=-1e6)
+
+    # Compare
+    exp_result_chi = np.array(
+        [
+            -1e-08,
+            -3.7599839056175666e-08,
+            -6.519967811235132e-08,
+            -9.279951716852699e-08,
+            -1.2039935622470266e-07,
+            -1.4799919528087832e-07,
+            -1.75599034337054e-07,
+            -2.0319887339322965e-07,
+            -2.307987124494053e-07,
+            -2.5839855150558097e-07,
+            -8.015207515413767e-07,
+            -1.3446429515771726e-06,
+            -1.8877651516129684e-06,
+            -2.4308873516487644e-06,
+            -2.97400955168456e-06,
+            -3.517131751720356e-06,
+            -4.060253951756152e-06,
+            -4.603376151791947e-06,
+            -5.146498351827743e-06,
+            -5.689620551863539e-06,
+        ]
+    )
+
+    exp_result_m = np.array(
+        [
+            -8.61365389e09,
+            -2.27251866e10,
+            -3.67794409e10,
+            -5.08062579e10,
+            -6.48065933e10,
+            -7.87797566e10,
+            -9.27250247e10,
+            -1.06641639e11,
+            -1.20528802e11,
+            -1.34385677e11,
+            -1.83835739e11,
+            -1.91419082e11,
+            -1.95481133e11,
+            -1.98304138e11,
+            -2.00740666e11,
+            -2.02971492e11,
+            -2.04990133e11,
+            -2.06880606e11,
+            -2.08682290e11,
+            -2.10425206e11,
+        ]
+    )
+
+    assert np.allclose(result.chi_y, exp_result_chi, rtol=1e-5, atol=1e-6)
+    assert np.allclose(result.m_y, exp_result_m, rtol=1e-5, atol=1e-2)
+
+
+def test_rotate_triangulation_data():
+    """Test showing a bug in the storing of triangulation data.
+
+    Triangulation data was stored after the rotation of the section leading to
+    an inconsistency in the results.
+    """
+    # Create materials to use
+    fc = 40
+    fy = 500
+    Es = 200000
+    concrete = ConcreteEC2_2004(fck=fc)
+    duct_props = reinforcement_duct_props(fyk=fy, ductility_class='C')
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fy, Es=Es, ftk=fy, epsuk=duct_props['epsuk']
+    )
+
+    # The section
+    width = 1000
+    height = 250
+
+    diameter_bottom = [10]
+    spacing_bottom = [200]
+    diameter_top = [12, 16]
+    spacing_top = [200, 200]
+    cover_bottom = 35
+    cover_top = 35
+
+    # Create the geometry
+    rectangle = Polygon(
+        (
+            (-width / 2, -height / 2),
+            (width / 2, -height / 2),
+            (width / 2, height / 2),
+            (-width / 2, height / 2),
+        )
+    )
+
+    # Create the section
+    geometry = SurfaceGeometry(rectangle, concrete)
+    # Base reinforcement
+    for diameter, spacing in zip(diameter_bottom, spacing_bottom):
+        geometry = add_reinforcement_line(
+            geo=geometry,
+            coords_i=(-width / 2 + cover_bottom, -height / 2 + cover_bottom),
+            coords_j=(width / 2 - cover_bottom, -height / 2 + cover_bottom),
+            diameter=diameter,
+            material=reinforcement,
+            s=spacing,
+        )
+    for diameter, spacing in zip(diameter_top, spacing_top):
+        geometry = add_reinforcement_line(
+            geo=geometry,
+            coords_i=(-width / 2 + cover_top, height / 2 - cover_top),
+            coords_j=(width / 2 - cover_top, height / 2 - cover_top),
+            diameter=diameter,
+            material=reinforcement,
+            s=spacing,
+        )
+
+    # geometry = geometry.translate(width/2, height/2)
+    section = GenericSection(
+        geometry=geometry,
+        integrator='Fiber',
+        mesh_size=0.001,
+    )
+
+    section.section_calculator.calculate_bending_strength(theta=0)
+
+    res1 = section.section_calculator.calculate_bending_strength(theta=np.pi)
+
+    # geometry = geometry.translate(width/2, height/2)
+    section = GenericSection(
+        geometry=geometry,
+        integrator='Fiber',
+        mesh_size=0.001,
+    )
+    section.geometry
+
+    res2 = section.section_calculator.calculate_bending_strength(theta=np.pi)
+
+    assert math.isclose(res2.m_y, res1.m_y, rel_tol=1e-3)
