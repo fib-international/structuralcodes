@@ -222,6 +222,23 @@ def test_VRds(Asw, s, z, theta, fyk, alpha, gamma_s, expected):
 
 
 @pytest.mark.parametrize(
+    'Ved, z, theta, fyk, expected',
+    [
+        (100e3, 300, 45, 500, 0.76666),
+        (150e3, 300, 45, 500, 1.14999),
+        (200e3, 350, 30, 500, 0.75880),
+        (250e3, 350, 45, 500, 1.64285),
+        (120e3, 400, 45, 500, 0.68999),
+        (180e3, 350, 35, 500, 0.82824),
+    ],
+)
+def test_Asw_s_required(Ved, z, theta, fyk, expected):
+    """Test the Asw_s_required function."""
+    result = shear.Asw_s_required(Ved, z, theta, fyk)
+    assert math.isclose(result, expected, rel_tol=0.01)
+
+
+@pytest.mark.parametrize(
     (
         'bw, z, fck, theta, Ned, Ac, gamma_c, alpha, alpha_cc, limit_fyd, '
         'expected'
