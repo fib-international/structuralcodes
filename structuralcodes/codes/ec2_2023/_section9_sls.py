@@ -51,7 +51,7 @@ def As_min_y(
         fyk (float): Characteristic yield strength of steel in MPa.
 
     Returns:
-        tuple(float, float): The minimum tensile reinforcement to avoid
+        Tuple(float, float): The minimum tensile reinforcement to avoid
         yielding of steel on the most tensioned fibre of the rectangle
         (As_min_y1) in cm2, and the minimum tensile reinforcement to avoid
         yielding of steel on the most tensioned fibre of the rectangle
@@ -430,7 +430,7 @@ def Ac_eff(  # noqa: PLR0912, PLR0915
     section_type: str = 'rectangular',
     bar_spacing: float = None,
     ax: float = None,
-) -> tuple[float, float]:
+) -> Tuple[float, float]:
     """Returns the effective area of concrete in tension surrounding the
     reinforcement or prestressing tendons.
 
@@ -456,7 +456,7 @@ def Ac_eff(  # noqa: PLR0912, PLR0915
                     reinforcement bars in mm (Figure 9.3 f).
 
     Returns:
-        tuple: (Ac_eff, hc_eff)
+        Tuple: (Ac_eff, hc_eff)
             Ac_eff (float): The effective area in mm2.
             hc_eff (float): The effective height in mm.
 
