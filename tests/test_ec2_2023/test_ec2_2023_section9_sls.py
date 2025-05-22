@@ -513,7 +513,8 @@ def test__lower_circular_segment_area(d, x, expected):
 
 
 @pytest.mark.parametrize(
-    'x, ay, phi, h, b, diameter, n, sy, loading_type, section_type, bar_spacing, ax, expected',
+    'x, ay, phi, h, b, diameter, n, sy, loading_type, section_type,'
+    'bar_spacing, ax, expected',
     [
         (
             100,
