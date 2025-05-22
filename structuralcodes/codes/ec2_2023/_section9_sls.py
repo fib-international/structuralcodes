@@ -391,13 +391,13 @@ def xi1(xi: float, phi_p: float, phi_s: float) -> float:
 
 
 def _lower_circular_segment_area(d, x):
-    """Calculates the area of the lower circular segment cut by a horizontal line at a height `x`
-    from the top of the circle.
+    """Calculates the area of the lower circular segment cut by a horizontal
+    line at a height `x` from the top of the circle.
 
     Args:
         d (float): Diameter of the circle. Must be greater than 0.
-        x (float): Vertical distance from the top edge of the circle to the horizontal chord.
-                   Must satisfy 0 < x < d.
+        x (float): Vertical distance from the top edge of the circle to the
+                   horizontal chord. Must satisfy 0 < x < d.
 
     Returns:
         float: Area of the circular segment below the chord.
@@ -417,7 +417,7 @@ def _lower_circular_segment_area(d, x):
     return r**2 * math.pi - upper_area  # lower area
 
 
-def Ac_eff(
+def Ac_eff(  # noqa: PLR0912, PLR0915
     x: float,
     ay,
     phi,
@@ -438,17 +438,22 @@ def Ac_eff(
 
     Args:
         x (float): distance in mm to the zero tensile stress line.
-        ay (float): distance from extreme fibre of concrete to centroid of reinforcement bars in mm.
+        ay (float): distance from extreme fibre of concrete to centroid of
+                    reinforcement bars in mm.
         phi (float): diameter of the tensioned bars in mm.
         h (float): total heigth of the rectangular section in mm.
         b (float): total width of the rectangular section in mm.
         diameter (float): diameter of the circular section in mm.
         n (int): Number of layers. Default is 1.
         sy (float): Spacing of the layers in mm. Default is None.
-        loading_type (str): Type of loading. Default is 'bending'. Can be 'bending' or 'tension'.
-        section_type (str): Type of section. Default is 'rectangular'. Can be 'rectangular' or 'circular'.
-        bar_spacing (float): Spacing of the bars in mm. Default is less than 10 times phi.
-        ax (float): distance from extreme fibre of concrete to centroid of reinforcement bars in mm (Figure 9.3 f).
+        loading_type (str): Type of loading. Default is 'bending'. Can be
+                            bending' or 'tension'.
+        section_type (str): Type of section. Default is 'rectangular'.
+                            Can be 'rectangular' or 'circular'.
+        bar_spacing (float): Spacing of the bars in mm. Default is less than 10
+                             times phi.
+        ax (float): distance from extreme fibre of concrete to centroid of
+                    reinforcement bars in mm (Figure 9.3 f).
 
     Returns:
         tuple: (Ac_eff, hc_eff)
@@ -468,7 +473,10 @@ def Ac_eff(
     """
     if section_type not in ['rectangular', 'circular']:
         raise ValueError(
-            f'section_type={section_type} not implemented. It should be "rectangular" or "circular for this method"'
+            (
+                f'section_type={section_type} not implemented. '
+                'It should be "rectangular" or "circular for this method"'
+            )
         )
     if section_type == 'rectangular':
         if b is None:
@@ -508,7 +516,8 @@ def Ac_eff(
         raise ValueError(f'sy cannot be None if n={n} > 1')
     if loading_type not in ['bending', 'tension']:
         raise ValueError(
-            f'loading_type={loading_type} is not valid. It should be "bending" or "tension"'
+            f'loading_type={loading_type} is not valid. It should be "bending"'
+            'or "tension"'
         )
 
     if section_type == 'rectangular' and loading_type == 'bending':
