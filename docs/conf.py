@@ -21,7 +21,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.linkcode',
     'sphinx.ext.intersphinx',
-    'sphinx_tippy',
 ]
 
 myst_enable_extensions = [
@@ -78,12 +77,6 @@ autodoc_type_aliases = {
     'ArrayLike': 'ArrayLike',
     'npt.ArrayLike': 'ArrayLike',
 }
-
-# Options for sphinx-tippy
-tippy_rtd_urls = [
-    'https://shapely.readthedocs.io/en/stable/',
-]
-tippy_props = {'interactive': True}
 
 
 # Function to resolve links to source

@@ -2,12 +2,13 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import math
 import typing as t
 import warnings
-from math import cos, sin
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
+from scipy.linalg import lu_factor, lu_solve
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -20,7 +21,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.constitutive_laws import Elastic
 
-from .section_integrators import integrator_factory
+from .section_integrators import SectionIntegrator, integrator_factory
 
 
 class GenericSection(Section):
@@ -41,6 +42,8 @@ class GenericSection(Section):
             strength, moment curvature, etc.).
     """
 
+    geometry: CompoundGeometry
+
     def __init__(
         self,
         geometry: t.Union[SurfaceGeometry, CompoundGeometry],
@@ -55,6 +58,16 @@ class GenericSection(Section):
                 of the section.
             name (str): The name of the section.
             integrator (str): The name of the SectionIntegrator to use.
+            kwargs (dict): A collection of keyword arguments to pass on to the
+                section calculator.
+
+        Note:
+            The GenericSection uses a GenericSectionCalculator for all
+            calculations. The GenericSectionCalculator uses a SectionIntegrator
+            for integrating over the section. Any additional keyword arguments
+            used when creating the GenericSection are passed on to the
+            SectionCalculator to customize the behaviour. See
+            GenericSectionCalculator for available keyword arguments.
         """
         if name is None:
             name = 'GenericSection'
@@ -72,7 +85,7 @@ class GenericSection(Section):
         self._gross_properties = None
 
     @property
-    def gross_properties(self) -> s_res.GrossProperties:
+    def gross_properties(self) -> s_res.SectionProperties:
         """Return the gross properties of the section."""
         if self._gross_properties is None:
             self._gross_properties = (
@@ -83,6 +96,9 @@ class GenericSection(Section):
 
 class GenericSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
+
+    integrator: SectionIntegrator
+    section: GenericSection
 
     def __init__(
         self,
@@ -98,7 +114,7 @@ class GenericSectionCalculator(SectionCalculator):
                 (default = 'marin').
 
         Note:
-            When using 'fiber' integrator the kwarg 'mesh_size' can be used to
+            When using `fiber` integrator the kwarg `mesh_size` can be used to
             specify a dimensionless number (between 0 and 1) specifying the
             size of the resulting mesh.
         """
@@ -113,17 +129,17 @@ class GenericSectionCalculator(SectionCalculator):
         self._n_max = None
         self._n_min = None
 
-    def _calculate_gross_section_properties(self) -> s_res.GrossProperties:
+    def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
         """Calculates the gross section properties of the GenericSection.
 
         This function is private and called when the section is created.
         It stores the result into the result object.
 
         Returns:
-            GrossProperties: The gross properties of the section.
+            SectionProperties: The gross properties of the section.
         """
         # It will use the algorithms for generic sections
-        gp = s_res.GrossProperties()
+        gp = s_res.SectionProperties()
 
         # Computation of perimeter using shapely
         polygon = unary_union(
@@ -142,13 +158,13 @@ class GenericSectionCalculator(SectionCalculator):
         # Computation of surface area, reinforcement area, EA (axial rigidity)
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
 
         for geo in self.section.geometry.point_geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)[0]
+            gp.ea += geo.area * geo.material.get_tangent(eps=0)
             gp.area_reinforcement += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
@@ -208,7 +224,13 @@ class GenericSectionCalculator(SectionCalculator):
             )
             # Change sign due to moment sign convention
             izz *= -1
-            if abs(abs(izy) - abs(iyz)) > 10:
+
+            # Compute reasonable value for absolute tolerance for checking iyz
+            rel_tol = 1e-9
+            abs_tol = 0.5 * (iyy + izz) * rel_tol
+
+            # Check calculated cross moment
+            if not math.isclose(iyz, izy, rel_tol=rel_tol, abs_tol=abs_tol):
                 error_str = 'Something went wrong with computation of '
                 error_str += f'moments of area: iyz = {iyz}, izy = {izy}.\n'
                 error_str += 'They should be equal but are not!'
@@ -290,15 +312,38 @@ class GenericSectionCalculator(SectionCalculator):
         chi_min = 1e10
         for g in geom.geometries + geom.point_geometries:
             for other_g in geom.geometries + geom.point_geometries:
+                # This is left on purpose: even if tempted we should not do
+                # this check:
                 # if g != other_g:
                 eps_p = g.material.get_ultimate_strain(yielding=yielding)[1]
                 if isinstance(g, SurfaceGeometry):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
                     y_p = g._point.coords[0][1]
+                # Check if the section is a reinforced concrete section:
+                # If it is, we need to obtain the "yield" strain of concrete
+                # (-0.002 for default parabola-rectangle concrete)
+                # If the geometry is not concrete, don't get the yield strain
+                # If it is not a reinforced concrete section, return
+                # the yield strain if asked.
+                is_rc_section = self.section.geometry.reinforced_concrete
+                is_concrete_geom = (
+                    isinstance(other_g, SurfaceGeometry) and other_g.concrete
+                )
+
+                use_yielding = (
+                    yielding
+                    if (
+                        (is_rc_section and is_concrete_geom)
+                        or (not is_rc_section)
+                    )
+                    else False
+                )
+
                 eps_n = other_g.material.get_ultimate_strain(
-                    yielding=yielding
+                    yielding=use_yielding
                 )[0]
+
                 if isinstance(other_g, SurfaceGeometry):
                     y_n = other_g.polygon.bounds[3]
                 elif isinstance(other_g, PointGeometry):
@@ -319,7 +364,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def find_equilibrium_fixed_pivot(
         self, geom: CompoundGeometry, n: float, yielding: bool = False
-    ) -> t.Tuple[float, float, float]:
+    ) -> t.List[float]:
         """Find the equilibrium changing curvature fixed a pivot.
         The algorithm uses bisection algorithm between curvature
         of balanced failure and 0. Selected the pivot point as
@@ -333,8 +378,8 @@ class GenericSectionCalculator(SectionCalculator):
             yielding (bool): ...
 
         Returns:
-            Tuple(float, float, float): 3 floats: Axial strain at (0,0), and
-            curvatures of y* and z* axes. Note that being uniaxial bending,
+            List(float): 3 floats: Axial strain at (0,0), and curvatures of y*
+            and z* axes. Note that being uniaxial bending,
             curvature along z* is 0.0.
         """
         # Number of maximum iteration for the bisection algorithm
@@ -353,6 +398,10 @@ class GenericSectionCalculator(SectionCalculator):
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom, strain, tri=self.triangulated_data, mesh_size=self.mesh_size
         )
+        # save the triangulation data
+        if self.triangulated_data is None and tri is not None:
+            self.triangulated_data = tri
+
         # Check if there is equilibrium with this strain distribution
         chi_a = strain[1]
         dn_a = n_int - n
@@ -398,9 +447,6 @@ class GenericSectionCalculator(SectionCalculator):
             s = f'Last iteration reached a unbalance of {dn_c}'
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         # Found equilibrium
-        # save the triangulation data
-        if self.triangulated_data is None:
-            self.triangulated_data = tri
         # Return the strain distribution
         return [eps_0, chi_c, 0]
 
@@ -419,12 +465,18 @@ class GenericSectionCalculator(SectionCalculator):
         apply the bisection algorithm.
         """
         ITMAX = 20
+        MAXRESTATTEMPTS = 20
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
+        restarts = 0
         delta = 1e-3
-        while not found and it < ITMAX:
-            eps_0_b = eps_0_a + sign * delta * (it + 1)
+        # Use a growth factor for an exponential finding
+        r = 2.0
+        diverging = False
+        diverging_steps = 0
+        while not found and it < ITMAX and restarts < MAXRESTATTEMPTS:
+            eps_0_b = eps_0_a + sign * delta * r ** (it)
             (
                 n_int,
                 _,
@@ -437,10 +489,20 @@ class GenericSectionCalculator(SectionCalculator):
             if dn_a * dn_b < 0:
                 found = True
             elif abs(dn_b) > abs(dn_a):
-                # we are driving aay from the solution, probably due
+                # we are driving away from the solution, probably due
                 # to failure of a material
-                delta /= 2
-                it -= 1
+                diverging = True
+                if diverging:
+                    # Count for how many steps we are diverging
+                    diverging_steps += 1
+                # If we are consistently diverging for more than 10 steps,
+                # Restart the process with a small delta
+                if diverging_steps > 10:
+                    delta /= 2
+                    it = 0
+                    restarts += 1
+                    diverging = False
+                    diverging_steps = 0
             it += 1
         if it >= ITMAX and not found:
             s = f'Last iteration reached a unbalance of: \
@@ -480,7 +542,7 @@ class GenericSectionCalculator(SectionCalculator):
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom, [eps_0, curv, 0], tri=self.triangulated_data
         )
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         dn_a = n_int - n
         # It may occur that dn_a is already almost zero (in eqiulibrium)
@@ -541,7 +603,7 @@ class GenericSectionCalculator(SectionCalculator):
             self.section.geometry, [eps_p, 0, 0], tri=tri
         )
 
-        if self.triangulated_data is None:
+        if self.triangulated_data is None and tri is not None:
             self.triangulated_data = tri
         return n_min, n_max
 
@@ -574,7 +636,12 @@ class GenericSectionCalculator(SectionCalculator):
         """Rotate triangulated data of angle theta."""
         rotated_triangulated_data = []
         for tr in self.triangulated_data:
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             coords = np.vstack((tr[0], tr[1]))
             coords_r = T @ coords
             rotated_triangulated_data.append(
@@ -583,25 +650,60 @@ class GenericSectionCalculator(SectionCalculator):
         self.triangulated_data = rotated_triangulated_data
 
     def integrate_strain_profile(
-        self, strain: ArrayLike
-    ) -> t.Tuple[float, float, float]:
-        """Integrate a strain profile returning internal forces.
+        self,
+        strain: ArrayLike,
+        integrate: t.Literal['stress', 'modulus'] = 'stress',
+    ) -> t.Union[t.Tuple[float, float, float], NDArray]:
+        """Integrate a strain profile returning stress resultants or tangent
+        section stiffness matrix.
 
         Arguments:
             strain (ArrayLike): Represents the deformation plane. The strain
                 should have three entries representing respectively: axial
                 strain (At 0,0 coordinates), curv_y, curv_z.
+            integrate (str): a string indicating the quantity to integrate over
+                the section. It can be 'stress' or 'modulus'. When 'stress'
+                is selected, the return value will be the stress resultants N,
+                My, Mz, while if 'modulus' is selected, the return will be the
+                tangent section stiffness matrix (default is 'stress').
 
         Returns:
-            Tuple(float, float, float): N, My and Mz.
+            Union(Tuple(float, float, float),NDArray): N, My and Mz when
+            `integrate='stress'`, or a numpy array representing the stiffness
+            matrix then `integrate='modulus'`.
+
+        Examples:
+            result = self.integrate_strain_profile(strain,integrate='modulus')
+            # `result` will be the tangent stiffness matrix (a 3x3 numpy array)
+
+            result = self.integrate_strain_profile(strain)
+            # `result` will be a tuple containing section forces (N, My, Mz)
+
+        Raises:
+            ValueError: If a unkown value is passed to the `integrate`
+            parameter.
         """
-        N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
+        result = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
             strain=strain,
+            integrate=integrate,
             tri=self.triangulated_data,
             mesh_size=self.mesh_size,
         )
-        return N, My, Mz
+
+        # Save triangulation data for future use
+        if self.triangulated_data is None and result[-1] is not None:
+            self.triangulated_data = result[-1]
+
+        # manage the returning from integrate_strain_response_on_geometry:
+        # this function returns one of the two:
+        # a. float, float, float, tri (i.e. N, My, Mz, tri)
+        # b. (NDArray, tri) (i.e. section stiff matrix, tri)
+        # We need to return only forces or stifness
+        # (without triangultion data)
+        if len(result) == 2:
+            return result[0]
+        return result[:-1]
 
     def calculate_bending_strength(
         self, theta=0, n=0
@@ -618,6 +720,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             UltimateBendingMomentResults: The results from the calculation.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Compute the bending strength with the bisection algorithm
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
@@ -625,8 +730,6 @@ class GenericSectionCalculator(SectionCalculator):
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
 
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
         strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
@@ -636,18 +739,22 @@ class GenericSectionCalculator(SectionCalculator):
         )
 
         # Rotate back to section CRS TODO Check
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         M = T @ np.array([[My], [Mz]])
         if self.triangulated_data is not None:
             # Rotate back also triangulated data!
             self._rotate_triangulated_data(theta)
+        # Rotate also curvature!
+        strain_rotated = T @ np.array([[strain[1]], [strain[2]]])
 
         # Create result object
         res = s_res.UltimateBendingMomentResults()
         res.theta = theta
         res.n = N
-        res.chi_y = strain[1]
-        res.chi_z = strain[2]
+        res.chi_y = strain_rotated[0, 0]
+        res.chi_z = strain_rotated[1, 0]
         res.eps_a = strain[0]
         res.m_y = M[0, 0]
         res.m_z = M[1, 0]
@@ -688,6 +795,9 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             MomentCurvatureResults: The calculation results.
         """
+        # Check if the section can carry the axial load
+        self.check_axial_load(n=n)
+
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
         res.n = n
@@ -696,9 +806,6 @@ class GenericSectionCalculator(SectionCalculator):
         if self.triangulated_data is not None:
             # Rotate also triangulated data!
             self._rotate_triangulated_data(-theta)
-
-        # Check if the section can carry the axial load
-        self.check_axial_load(n=n)
 
         if chi is None:
             # Find ultimate curvature from the strain distribution
@@ -771,7 +878,12 @@ class GenericSectionCalculator(SectionCalculator):
                 geo=rotated_geom, strain=strain, tri=self.triangulated_data
             )
             # Rotate back to section CRS
-            T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+            T = np.array(
+                [
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)],
+                ]
+            )
             M = T @ np.array([[My], [Mz]])
             eps_a[i] = strain[0]
             my[i] = M[0, 0]
@@ -941,7 +1053,7 @@ class GenericSectionCalculator(SectionCalculator):
                     mesh_size=self.mesh_size,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
@@ -1106,7 +1218,9 @@ class GenericSectionCalculator(SectionCalculator):
         eps_a = eps_n - kappa_y * y_n
 
         # rotate back components to work in section CRS
-        T = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
+        T = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
         components = np.vstack((kappa_y, np.zeros_like(kappa_y)))
         rotated_components = T @ components
         return np.column_stack((eps_a, rotated_components.T)), field_num
@@ -1209,7 +1323,7 @@ class GenericSectionCalculator(SectionCalculator):
                     tri=self.triangulated_data,
                 )
             )
-            if self.triangulated_data is None:
+            if self.triangulated_data is None and tri is not None:
                 self.triangulated_data = tri
             forces[i, 0] = N
             forces[i, 1] = My
@@ -1255,3 +1369,99 @@ class GenericSectionCalculator(SectionCalculator):
             res.strains[i, 2] = res_bend_strength.chi_z
 
         return res
+
+    def calculate_strain_profile(
+        self,
+        n,
+        my,
+        mz,
+        initial: bool = False,
+        max_iter: int = 10,
+        tol: float = 1e-6,
+    ) -> t.List[float]:
+        """Get the strain plane for a given axial force and biaxial bending.
+
+        Args:
+            n (float): Axial load.
+            my (float): Bending moment around y-axis.
+            mz (float): Bending moment around z-axis.
+            initial (bool): If True the modified newton with initial tangent is
+                used (default = False).
+            max_iter (int): the maximum number of iterations in the iterative
+                process (default = 10).
+            tol (float): the tolerance for convergence test in terms of strain
+                increment.
+
+        Returns:
+            List(float): 3 floats: Axial strain at (0,0), and curvatures of the
+            section around y and z axes.
+        """
+        # Get the gometry
+        geom = self.section.geometry
+
+        # Collect loads in a numpy array
+        loads = np.array([n, my, mz])
+
+        # Compute initial tangent stiffness matrix
+        stiffness_tangent, tri = (
+            self.integrator.integrate_strain_response_on_geometry(
+                geom,
+                [0, 0, 0],
+                integrate='modulus',
+                tri=self.triangulated_data,
+            )
+        )
+        # eventually save the triangulation data
+        if self.triangulated_data is None and tri is not None:
+            self.triangulated_data = tri
+
+        # Calculate strain plane with Newton Rhapson Iterative method
+        num_iter = 0
+        strain = np.zeros(3)
+
+        # Factorize once the stiffness matrix if using initial
+        if initial:
+            # LU factorization
+            # (maybe also Choelesky could work if matrix always SPD?)
+            lu, piv = lu_factor(stiffness_tangent)
+
+        # Do Newton loops
+        while True:
+            # Check if number of iterations exceeds the maximum
+            if num_iter > max_iter:
+                break
+
+            # Calculate response and residuals
+            response = np.array(self.integrate_strain_profile(strain=strain))
+            residual = loads - response
+
+            if initial:
+                # Solve using the decomposed matrix
+                delta_strain = lu_solve((lu, piv), residual)
+            else:
+                # Calculate the current tangent stiffness
+                stiffness_tangent, _ = (
+                    self.integrator.integrate_strain_response_on_geometry(
+                        geom,
+                        strain,
+                        integrate='modulus',
+                        tri=self.triangulated_data,
+                    )
+                )
+
+                # Solve using the current tangent stiffness
+                delta_strain = np.linalg.solve(stiffness_tangent, residual)
+
+            # Update the strain
+            strain += delta_strain
+
+            num_iter += 1
+
+            # Check for convergence:
+            if np.linalg.norm(delta_strain) < tol:
+                break
+
+        if num_iter >= max_iter:
+            raise StopIteration('Maximum number of iterations reached.')
+
+        return strain.tolist()
