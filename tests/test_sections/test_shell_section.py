@@ -3,8 +3,15 @@
 import numpy as np
 import pytest
 
-from structuralcodes.geometry._shell_geometry import ShellGeometry
-from structuralcodes.materials.constitutive_laws import Elastic2D
+from structuralcodes.geometry._shell_geometry import (
+    ShellGeometry,
+    ShellReinforcement,
+)
+from structuralcodes.materials.constitutive_laws import (
+    Elastic2D,
+    ElasticPlastic,
+    ParabolaRectangle2D,
+)
 from structuralcodes.sections import ShellSection
 
 # Membrane and bending-strain parameter ranges
@@ -152,4 +159,145 @@ def test_invalid_mesh_size_raises(invalid, t=200):
     with pytest.raises(ValueError):
         shell.section_calculator.integrate_strain_profile(
             np.zeros(6), integrate='stress'
+        )
+
+
+def test_parabola_section():
+    """ParabolaRectangle2D with mesh_size 0.5."""
+    concrete = ParabolaRectangle2D(35, nu=0)
+    reinforcement = ElasticPlastic(200000, 500)
+
+    Asx1 = ShellReinforcement(-157, 1, 300, 16, reinforcement, 0)
+
+    geo = ShellGeometry(400, concrete)
+    geo.add_reinforcement([Asx1])
+
+    section = ShellSection(geo, mesh_size=0.1)
+    calculator = section.section_calculator
+    strain = calculator.calculate_strain_profile(-1000, 0, 0, 0, 0, 0)
+
+    assert np.allclose(
+        strain,
+        np.array([-7.20105642e-05, 0, 0, 1.07581081e-08, 0, 0]),
+        rtol=1e-6,
+        atol=1e-7,
+    )
+
+
+@pytest.mark.parametrize(
+    'nx,nxy,expected,tol',
+    [
+        (
+            0,
+            1000,
+            np.array([3.046432e-05, 3.079979e-05, 1.914840e-04, 0, 0, 0]),
+            1e-4,
+        ),
+        (
+            -1000,
+            1000,
+            np.array([-6.191136e-05, -1.100878e-22, 1.269841e-04, 0, 0, 0]),
+            0.001,
+        ),
+        (
+            1000,
+            1000,
+            np.array([6.191136e-05, -1.100878e-22, 1.269841e-04, 0, 0, 0]),
+            0.001,
+        ),
+    ],
+)
+def test_parabola_cracked(nx, nxy, expected, tol):
+    """Test parabola rectangle with nu = 0."""
+    concrete = ParabolaRectangle2D(45, nu=0)
+    reinforcement = ElasticPlastic(200000, 500)
+    geo = ShellGeometry(350, concrete)
+    Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
+    Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)
+    Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
+    Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
+    geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
+    section = ShellSection(geo)
+    calculator = section.section_calculator
+    strain = calculator.calculate_strain_profile(
+        nx, 0, nxy, 0, 0, 0, initial=True, tol=tol
+    )
+
+    assert np.allclose(
+        strain,
+        expected,
+        rtol=1e-6,
+        atol=1e-7,
+    )
+
+
+@pytest.mark.parametrize(
+    'nx,nxy,expected,tol',
+    [
+        (
+            0,
+            1000,
+            np.array([2.923437e-05, 2.961959e-05, 2.150748e-04, 0, 0, 0]),
+            1e-4,
+        ),
+        (
+            -1000,
+            1000,
+            np.array([-6.187717e-05, 1.220713e-05, 1.523810e-04, 0, 0, 0]),
+            0.001,
+        ),
+        (
+            1000,
+            1000,
+            np.array([6.187717e-05, -1.220713e-05, 1.523810e-04, 0, 0, 0]),
+            0.001,
+        ),
+    ],
+)
+def test_parabola_uncracked(nx, nxy, expected, tol):
+    """Test parabola rectangle with nu = 0.2."""
+    concrete = ParabolaRectangle2D(45)
+    reinforcement = ElasticPlastic(200000, 500)
+    geo = ShellGeometry(350, concrete)
+    Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
+    Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)
+    Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
+    Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
+    geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
+    section = ShellSection(geo)
+    calculator = section.section_calculator
+    strain = calculator.calculate_strain_profile(
+        nx, 0, nxy, 0, 0, 0, initial=True, tol=tol
+    )
+
+    assert np.allclose(
+        strain,
+        expected,
+        rtol=1e-6,
+        atol=1e-7,
+    )
+
+
+def test_exceed_max_iterations():
+    """Test that the maximum number of iterations is exceeded."""
+    concrete = ParabolaRectangle2D(45)
+    reinforcement = ElasticPlastic(200000, 500)
+    geo = ShellGeometry(350, concrete)
+    Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
+    Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)
+    Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
+    Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
+    geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
+    section = ShellSection(geo)
+
+    with pytest.raises(
+        StopIteration, match='Maximum number of iterations reached'
+    ):
+        section.section_calculator.calculate_strain_profile(
+            -1000,
+            0,
+            1000,
+            0,
+            0,
+            0,
         )
