@@ -649,3 +649,32 @@ def test_reinforcement_group_label_line():
     assert len(point_geometries) == n_bars
     for point in point_geometries:
         assert point.group_label == group_label
+
+
+def test_surface_geometry_name_group_label():
+    """Test the name and group label attribute of a SurfaceGeometry."""
+    # Arrange
+    width = 200
+    height = 500
+    concrete = ConcreteMC2010(fck=35)
+    name = 'concrete_geometry'
+    group_label = 'concrete'
+
+    # Act
+    geometry = SurfaceGeometry(
+        poly=Polygon(
+            (
+                (-width / 2, -height / 2),
+                (width / 2, -height / 2),
+                (width / 2, height / 2),
+                (-width / 2, height / 2),
+            )
+        ),
+        material=concrete,
+        name=name,
+        group_label=group_label,
+    )
+
+    # Assert
+    assert geometry.name == name
+    assert geometry.group_label == group_label

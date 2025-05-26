@@ -8,8 +8,8 @@ from numpy.typing import ArrayLike
 
 
 @dataclass
-class GrossProperties:
-    """Simple dataclass for storing gross section properties."""
+class SectionProperties:
+    """Simple dataclass for storing section properties."""
 
     # section areas
     area: float = field(default=0, metadata={'description': 'Total area'})
@@ -108,7 +108,7 @@ class GrossProperties:
         Arguments:
             spec (str): The string specifying the format.
         """
-        output_string = 'Gross Concrete Section Properties:\n'
+        output_string = 'Section Properties:\n'
         for f in fields(self):
             value = getattr(self, f.name)
             description = f.metadata.get(
@@ -120,24 +120,10 @@ class GrossProperties:
         return output_string
 
     def __str__(self) -> str:
-        """Returns the informal string representation of the gross concrete
-        section properties.
+        """Returns the informal string representation of the section
+        properties.
         """
         return f'{self}'
-
-
-@dataclass
-class CrackedProperties:
-    """Simple dataclass for storing cracked section properties."""
-
-    # second moments of area
-    i_yy: float = 0
-    i_zz: float = 0
-    i_yz: float = 0
-
-    # section cracked flexural rigidity
-    ei_yy: float = 0
-    ei_zz: float = 0
 
 
 @dataclass

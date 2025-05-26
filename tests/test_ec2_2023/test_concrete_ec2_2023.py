@@ -19,7 +19,7 @@ def test_initialization(default_concrete):
     assert default_concrete.name.startswith('C')
     assert default_concrete.density == 2400.0
     assert default_concrete._kE == 9500
-    assert default_concrete._strength_dev_class == 'CN'
+    assert default_concrete._strength_dev_class == 'cn'
     assert default_concrete.gamma_c == 1.5
 
 
@@ -41,18 +41,19 @@ def test_fcm_property(default_concrete):
     assert default_concrete.fcm == expected_fcm
 
 
-def test_fcm_setter_invalid_value(default_concrete):
+def test_fcm_specified_error():
     """Test for fcm setter with invalid value."""
+    fck = 30
     with pytest.raises(ValueError):
-        default_concrete.fcm = default_concrete.fck - 1
+        ConcreteEC2_2023(fck=fck, fcm=fck - 1)
 
 
-def test_fcm_setter(default_concrete):
+def test_fcm_specified(default_concrete):
     """Test the setter for the fcm property."""
     expected_fcm = default_concrete.fcm + 1
-    default_concrete.fcm = default_concrete.fcm + 1
+    new_concrete = ConcreteEC2_2023(fck=default_concrete.fck, fcm=expected_fcm)
 
-    assert math.isclose(default_concrete.fcm, expected_fcm)
+    assert math.isclose(new_concrete.fcm, expected_fcm)
 
 
 def test_fcd_default_parameters(default_concrete):
@@ -88,11 +89,11 @@ def test_fctm_property(default_concrete):
     assert math.isclose(default_concrete.fctm, expected_fctm, rel_tol=0.001)
 
 
-def test_fctm_setter(default_concrete):
+def test_fctm_specified(default_concrete):
     """Test for custom fctm value."""
     custom_fctm = 3.5
-    default_concrete.fctm = custom_fctm
-    assert default_concrete._fctm == custom_fctm
+    new_concrete = ConcreteEC2_2023(fck=default_concrete.fck, fctm=custom_fctm)
+    assert new_concrete.fctm == custom_fctm
 
 
 def test_fctk_5_property(default_concrete):
@@ -111,13 +112,13 @@ def test_fctk_95_property(default_concrete):
     )
 
 
-def test_Ecm_property_and_setter(default_concrete):
-    """Test for Ecm property and its setter."""
+def test_Ecm_default_and_specified(default_concrete):
+    """Test for Ecm property."""
     expected_Ecm = 31938.766
     assert math.isclose(default_concrete.Ecm, expected_Ecm, rel_tol=0.001)
     custom_Ecm = 35000  # Test the override of Ecm
-    default_concrete.Ecm = custom_Ecm
-    assert default_concrete._Ecm == custom_Ecm
+    new_concrete = ConcreteEC2_2023(fck=default_concrete.fck, Ecm=custom_Ecm)
+    assert new_concrete.Ecm == custom_Ecm
 
 
 def test_fctd_default_parameter(default_concrete):
@@ -144,6 +145,17 @@ def test_fctd_invalid_parameter(default_concrete):
     invalid_t_ref = -5
     with pytest.raises(ValueError):
         default_concrete.fctd(t_ref=invalid_t_ref)
+
+
+@pytest.mark.parametrize(
+    'strain_limit',
+    ('eps_c1', 'eps_cu1', 'eps_c2', 'eps_cu2'),
+)
+def test_strain_limits_specified_warning(strain_limit):
+    """Test specifying strain limits with a wrong value."""
+    kwargs = {strain_limit: 0.15}
+    with pytest.warns(UserWarning):
+        ConcreteEC2_2023(fck=45, **kwargs)
 
 
 def test_eps_c1_property(default_concrete):
@@ -173,6 +185,12 @@ def test_k_sargin(default_concrete):
     assert math.isclose(default_concrete.k_sargin, expected, rel_tol=0.001)
 
 
+def test_k_specified_warning():
+    """Test specifying k_sargin with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteEC2_2023(fck=45, k_sargin=-1.0)
+
+
 def test_eps_c2_property(default_concrete):
     """Test for eps_c2 property."""
     expected = 0.002
@@ -187,45 +205,39 @@ def test_eps_cu2_property(default_concrete):
 
 def test_setter_properties(default_concrete):
     """Test for setting properties to custom values."""
-    value = 2.0e-3
-    default_concrete.eps_c1 = value
-    assert math.isclose(default_concrete.eps_c1, value)
-
-    default_concrete.eps_c2 = value
-    assert math.isclose(default_concrete.eps_c2, value)
-
-    default_concrete.eps_c3 = value
-    assert math.isclose(default_concrete.eps_c3, value)
-
-    value = 3.5e-3
-    default_concrete.eps_cu1 = value
-    assert math.isclose(default_concrete.eps_cu1, value)
-
-    default_concrete.eps_cu2 = value
-    assert math.isclose(default_concrete.eps_cu2, value)
-
-    default_concrete.eps_cu3 = value
-    assert math.isclose(default_concrete.eps_cu3, value)
-
-    value = 1.5
-    default_concrete.n_parabolic_rectangular = value
-    assert math.isclose(default_concrete.n_parabolic_rectangular, value)
-
-    default_concrete.k_sargin = value
-    assert math.isclose(default_concrete.k_sargin, value)
+    peak_strain = 2.0e-3
+    ultimate_strain = 3.5e-3
+    exponent = 1.5
+    fctk_5 = 2.1
+    fctk_95 = 2.3
+    concrete = ConcreteEC2_2023(
+        fck=default_concrete.fck,
+        fctk_5=fctk_5,
+        fctk_95=fctk_95,
+        eps_c1=peak_strain,
+        eps_c2=peak_strain,
+        eps_cu1=ultimate_strain,
+        eps_cu2=ultimate_strain,
+        n_parabolic_rectangular=exponent,
+        k_sargin=exponent,
+    )
+    assert math.isclose(concrete.eps_c1, peak_strain)
+    assert math.isclose(concrete.eps_c2, peak_strain)
+    assert math.isclose(concrete.eps_cu1, ultimate_strain)
+    assert math.isclose(concrete.eps_cu2, ultimate_strain)
+    assert math.isclose(concrete.n_parabolic_rectangular, exponent)
+    assert math.isclose(concrete.k_sargin, exponent)
+    assert math.isclose(concrete.fctk_5, fctk_5)
+    assert math.isclose(concrete.fctk_95, fctk_95)
 
 
-def test_reset_attributes(default_concrete):
-    """Test resetting the attributes."""
-    default_concrete._reset_attributes()
-    assert default_concrete._fcm is None
-    assert default_concrete._fctm is None
-    assert default_concrete._Ecm is None
-    assert default_concrete._fctk_5 is None
-    assert default_concrete._fctk_95 is None
-    assert default_concrete._eps_c1 is None
-    assert default_concrete._eps_cu1 is None
-    assert default_concrete._k_sargin is None
-    assert default_concrete._eps_c2 is None
-    assert default_concrete._eps_cu2 is None
-    assert default_concrete._n_parabolic_rectangular is None
+def test_n_specified_error():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteEC2_2023(fck=45, n_parabolic_rectangular=-1)
+
+
+def test_n_specified_warning():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteEC2_2023(fck=45, n_parabolic_rectangular=6)
