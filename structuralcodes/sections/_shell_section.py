@@ -232,7 +232,7 @@ class ShellSectionCalculator(SectionCalculator):
             num_iter += 1
 
             # Check for convergence:
-            if np.linalg.norm(delta_strain) < tol:
+            if np.linalg.norm(delta_strain) < tol and num_iter > 1:
                 break
 
         return strain.tolist()
