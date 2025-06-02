@@ -164,12 +164,12 @@ class ParabolaRectangle2D(ParabolaRectangle):
         if abs(eps_pf[0]) > tol:
             E_11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
         else:
-            E_11 = self._fc * 2.0 / self._eps_0
+            E_11 = self._fc * self._n / self._eps_0
 
         if abs(eps_pf[1]) > tol:
             E_22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
         else:
-            E_22 = self._fc * 2.0 / self._eps_0
+            E_22 = self._fc * self._n / self._eps_0
 
         # Initial 2x2 secant
         D = np.diag([E_11, E_22])
