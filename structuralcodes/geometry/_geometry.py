@@ -251,10 +251,7 @@ class PointGeometry(Geometry):
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = ElasticMaterial(
-                E=geo.material.constitutive_law.get_tangent(eps=0),
-                density=geo.material.density,
-            )
+            new_material = ElasticMaterial.from_material(geo.material)
 
         return PointGeometry(
             point=geo._point,
@@ -588,10 +585,7 @@ class SurfaceGeometry(Geometry):
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = ElasticMaterial(
-                E=geo.material.constitutive_law.get_tangent(eps=0),
-                density=geo.material.density,
-            )
+            new_material = ElasticMaterial.from_material(geo.material)
 
         return SurfaceGeometry(poly=geo.polygon, material=new_material)
 

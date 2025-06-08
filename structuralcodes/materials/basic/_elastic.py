@@ -36,3 +36,17 @@ class ElasticMaterial(Material):
     def __elastic__(self) -> dict:
         """Returns kwargs for creating an elastic constitutive law."""
         return {'E': self.E}
+
+    @classmethod
+    def from_material(cls, other_material: Material):
+        """Create an elastic material based on another material."""
+        # Create name of elastic material
+        name = other_material.name
+        if name is not None:
+            name += '_elastic'
+
+        return cls(
+            E=other_material.constitutive_law.get_tangent(eps=0),
+            density=other_material.density,
+            name=name,
+        )
