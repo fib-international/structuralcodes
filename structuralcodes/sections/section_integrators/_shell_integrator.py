@@ -115,13 +115,13 @@ class ShellFiberIntegrator(SectionIntegrator):
             Tuple(float, float, float, float, float, float):
             The stress resultants Nx, Ny, Nxy, Mx, My, Mxy
         """
-        z, stress_resultants = prepared_input[0]
-        Nx = np.sum(stress_resultants[:, 0])
-        Ny = np.sum(stress_resultants[:, 1])
-        Nxy = np.sum(stress_resultants[:, 2])
-        Mx = np.sum(stress_resultants[:, 0] * z)
-        My = np.sum(stress_resultants[:, 1] * z)
-        Mxy = np.sum(stress_resultants[:, 2] * z)
+        z, fiber_stress = prepared_input[0]
+        Nx = np.sum(fiber_stress[:, 0])
+        Ny = np.sum(fiber_stress[:, 1])
+        Nxy = np.sum(fiber_stress[:, 2])
+        Mx = np.sum(fiber_stress[:, 0] * z)
+        My = np.sum(fiber_stress[:, 1] * z)
+        Mxy = np.sum(fiber_stress[:, 2] * z)
         return Nx, Ny, Nxy, Mx, My, Mxy
 
     def integrate_modulus(
