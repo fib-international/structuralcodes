@@ -64,6 +64,7 @@ def calculate_elastic_cracked_properties(
         elastic_concrete = GenericMaterial(
             density=density,
             constitutive_law=elastic_concrete_law,
+            name='elastic concrete',
         )
         geo._material = elastic_concrete
 
