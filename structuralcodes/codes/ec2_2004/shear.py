@@ -405,9 +405,8 @@ def Asw_s_required(
     Ved: float,
     z: float,
     theta: float,
-    fyk: float,
+    fywd: float,
     alpha: float = 90.0,
-    gamma_s: float = 1.15,
 ) -> float:
     """Calculate the required shear reinforcement.
 
@@ -417,7 +416,7 @@ def Asw_s_required(
         Ved (float): The shear force in N.
         z (float): The inner lever arm of internal forces in mm.
         theta (float): The angle of the compression strut in degrees.
-        fyk (float): The characteristic strength of the reinforcement steel in
+        fywd (float): The design strength of the shear reinforcement steel in
             MPa.
 
     Keyword Args:
@@ -433,7 +432,6 @@ def Asw_s_required(
     Raises:
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
     """
-    fywd = fyk / gamma_s
     theta = math.radians(theta)
     alpha = math.radians(alpha)
     return (
@@ -525,7 +523,7 @@ def Asw_max(
         bw (float): The smallest width of the cross-section in tension in mm.
         s (float): The centre-to-centre distance of the shear reinforcement in
             mm.
-        fwyd (float): The design strength of the shear reinforcement steel in
+        fywd (float): The design strength of the shear reinforcement steel in
             MPa.
         NEd (float): The normal force in the cross-section due to loading or
             prestress (NEd > 0 for compression) in N.
