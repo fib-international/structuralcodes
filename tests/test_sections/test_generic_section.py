@@ -15,8 +15,9 @@ from structuralcodes.geometry import (
     add_reinforcement_circle,
     add_reinforcement_line,
 )
+from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import Elastic, Sargin
+from structuralcodes.materials.constitutive_laws import Sargin
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
@@ -145,7 +146,7 @@ def test_rectangular_section():
 def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     """Test stiffness matrix of elastic rectangular section."""
     # Create materials to use
-    elastic = Elastic(E)
+    elastic = ElasticMaterial(E=E, density=2450)
 
     # The section
     poly = Polygon(
@@ -352,7 +353,7 @@ def test_rectangular_rc_section_tangent_stiffness(
 
     # For comparison, let's compare this with a elastic section of only
     # reacting concrete:
-    elastic = Elastic(Ec)
+    elastic = ElasticMaterial(E=Ec, density=concrete.density)
     geo = SurfaceGeometry(
         Polygon(
             (
@@ -412,7 +413,7 @@ def test_rectangular_rc_section_tangent_stiffness(
 def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
     """Test stiffness matrix of elastic rectangular section."""
     # Create materials to use
-    elastic = Elastic(E)
+    elastic = ElasticMaterial(E=E, density=2450)
 
     # The section
     poly = Polygon(((0, 0), (b, 0), (b, h), (0, h)))
@@ -870,7 +871,7 @@ def test_strain_plane_calculation_elastic_Nmm(n, my, mz, Ec, b, h):
     Elastic materials, test many load combinations.
     """
     # Create materials to use
-    concrete = Elastic(Ec)
+    concrete = ElasticMaterial(E=Ec, density=2450)
 
     # Create the section
     geom = SurfaceGeometry(
@@ -944,7 +945,7 @@ def test_strain_plane_calculation_elastic_kNm(n, my, mz, Ec, b, h):
     Units in kN, m and kPa
     """
     # Create materials to use
-    concrete = Elastic(Ec)
+    concrete = ElasticMaterial(E=Ec, density=2450)
 
     # Create the section
     geom = SurfaceGeometry(
