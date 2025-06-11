@@ -422,12 +422,9 @@ def Asw_s_required(
     Keyword Args:
         alpha (float): The angle of the shear reinforcement with respect to the
             neutral axis in degrees. Default value = 90 degrees.
-        gamma_s (float): Partial factor of the reinforcement steel. Default
-            value = 1.15. Value might differ between National Annexes.
 
     Returns:
-        float: (float): the amount of required shear reinforcement in
-            mm2/mm.
+        float: The amount of required shear reinforcement in mm2/mm.
 
     Raises:
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
