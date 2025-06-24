@@ -79,6 +79,17 @@ class Geometry:
             'This method should be implemented by subclasses'
         )
 
+    def __add__(self, other: Geometry) -> CompoundGeometry:
+        """Add operator "+" for geometries.
+
+        Arguments:
+            other (Geometry): The other geometry to add.
+
+        Returns:
+            CompoundGeometry: A new CompoundGeometry.
+        """
+        return CompoundGeometry([self, other])
+
 
 class PointGeometry(Geometry):
     """Class for a point geometry with material.
@@ -470,17 +481,6 @@ class SurfaceGeometry(Geometry):
         # get the intersection
         return self.polygon.intersection(lines_polygon)
 
-    def __add__(self, other: Geometry) -> CompoundGeometry:
-        """Add operator "+" for geometries.
-
-        Arguments:
-            other (Geometry): The other geometry to add.
-
-        Returns:
-            CompoundGeometry: A new CompoundGeometry.
-        """
-        return CompoundGeometry([self, other])
-
     def __sub__(self, other: Geometry) -> SurfaceGeometry:
         """Add operator "-" for geometries.
 
@@ -788,17 +788,6 @@ class CompoundGeometry(Geometry):
         for pg in self.point_geometries:
             processed_geoms.append(pg.rotate(angle, point, use_radians))
         return CompoundGeometry(geometries=processed_geoms)
-
-    def __add__(self, other: Geometry) -> CompoundGeometry:
-        """Add operator "+" for geometries.
-
-        Arguments:
-            other (Geometry): The other geometry to add.
-
-        Returns:
-            CompoundGeometry: A new CompoundGeometry.
-        """
-        return CompoundGeometry([self, other])
 
     def __sub__(self, other: Geometry) -> CompoundGeometry:
         """Add operator "-" for geometries.
