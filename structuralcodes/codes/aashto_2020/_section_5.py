@@ -1,0 +1,218 @@
+## AASHTO LRFD functions ##
+import math
+
+def calc_s_xe(sx: float,ag: float) -> float:
+    """Determines the crack spacing parameter that is influenced by aggregate size
+
+    AASHTO LRFD 2020 9th Edition, Eq. (5.7.4.3.2-7)
+
+    Args:
+        ag (float) = maximum agreggate size(in)
+
+    Keyword Args:
+        sx (float):  crack spacing parameter that is taken as the lesser between dv or the maximum distance between layers of
+        longitudinal crack reinforcement
+
+    Returns:
+        The crack spacing parameter in (in)
+    
+    Raises:
+        ValueError: If ag is less than 0
+        ValueError: If sx is less than 0
+    """
+    if ag < 0:
+        raise ValueError(f'ag={ag} cannot be less than 0')
+    if sx < 0:
+        raise ValueError(f'sx={sx} cannot be less than 0')
+
+    return sx*(1.38/(ag+0.63))
+
+
+def calc_strain(VkN: float,rho_l: float,bw: float,dv: float) -> float:
+    """Determines the longitudinal strain
+
+    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-4)
+
+    Args:
+        VkN (float): Assumed shear force in kips
+        rho_l (float): Longitudinal reinforcement ratio
+        bw (float): Width of the web in (mm)
+        dv (float): Effective depth of longitudinal reinforcement in (mm)
+
+    Returns:
+        The longitudinal strain
+
+    Raises:
+        ValueError: If VkN is less than 0
+        ValueError: If rho_l is less than 0
+        ValueError: If bw is less than 0
+        ValueError: If dv is less than 0
+    """
+    if VkN < 0:
+        raise ValueError(f'VkN={VkN} cannot be less than 0')
+    if rho_l < 0:
+        raise ValueError(f'rho_l={rho_l} cannot be less than 0')
+    if bw < 0:
+        raise ValueError(f'bw={ag} cannot be less than 0')
+    if dv < 0:
+        raise ValueError(f'dv={sx} cannot be less than 0')
+    
+    return (3.5*VkN)/(210000000*rho_l*(bw*dv*0.000001))
+
+#Calculates the beta factor
+def calc_beta(s_xe: float,strain: float) -> float:
+    """Determines the shear resistance factor
+
+    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
+
+    Args:
+        s_xe (float): The crack spacing parameter that is influenced by the aggregate size (in)
+        strain (float): The longitudinal strain 
+
+    Returns:
+        The shear resistance factor
+    
+    Raises:
+        ValueError: If s_xe is not between 12 and 80 (in)
+    """
+    if s_xe < 12:
+        raise ValueError(f's_xe={s_xe} cannot be less than 12')
+    if s_xe > 80:
+        raise ValueError(f's_xe={s_xe} cannot be greater than 80')
+
+    return (4.8/(1 + 750*strain))*(51/(39 + s_xe))
+
+#Calculates the shear stress resistance in MPa
+def calc_tau(beta: float,fc_prime: float) -> float:
+    """Determines the shear stress resistance in MPa
+
+    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.3-3)
+        This formula was modified to leave the calculated value in stress instead of force
+
+    Args:
+        beta (float): The shear resistance factor
+        fc_prime (float): The compressive strength of concrete in ksi
+
+    Returns:
+        The shear stress resistance
+    
+    Raises:
+        ValueError: If beta is less than 0
+        ValueError: If fc_prime is less than 0
+    """
+    if beta < 0:
+        raise ValueError(f'beta={beta} cannot be less than 0')
+    if fc_prime < 0:
+        raise ValueError(f'fc_prime={fc_prime} cannot be less than 0')
+
+    Vc_ksi = 0.0316*beta*math.sqrt(fc_prime) #ksi
+
+    Vc_MPa = Vc_ksi/0.145 #MPa
+    
+    return Vc_MPa
+
+#Iterate for convergence
+def converge(VkN: float,bw: float,dv: float,rho_l: float,s_xe: float,
+             strain: float,beta: float,fc_prime: float, tau_MPa:float) -> float:
+    """Iterates the initial guess of shear stress to determine a more accurate calculation
+
+    Args:
+        VkN (float): The initial assumed value of shear force in kips
+        bw (float): The width of the web in (mm)
+        dv (float): The effective depth of the longitudinal reinforcement in (mm)
+        rho_l (float): The longitudinal reinforcement ratio
+        s_xe (float): The crack spacing parameter influenced by aggregate size (in)
+        strain (float): The longitudinal strain
+        beta (float): The shear resistance factor
+        fc_prime (float): The compressive strength of concrete
+        tau_MPa (float): The initial shear stress resistance based on the assumed shear force
+
+    Raises:
+        ValueError: If VkN is less than 0
+        ValueError: If bw is less than 0
+        ValueError: If dv is less than 0
+        ValueError: If rho_l is less than 0
+        ValueError: If s_xe is not between 12 and 80 (in)
+        ValueError: If beta is less than 0
+        ValueError: If fc_prime is lsess than 0
+    """
+    if VkN < 0:
+        raise ValueError(f'VkN={VkN} cannot be less than 0')
+    if bw < 0:
+        raise ValueError(f'bw={ag} cannot be less than 0')
+    if dv < 0:
+        raise ValueError(f'dv={sx} cannot be less than 0')
+    if rho_l < 0:
+        raise ValueError(f'rho_l={rho_l} cannot be less than 0')
+    if s_xe < 12:
+        raise ValueError(f's_xe={s_xe} cannot be less than 12')
+    if s_xe > 80:
+        raise ValueError(f's_xe={s_xe} cannot be greater than 80')
+    if beta < 0:
+        raise ValueError(f'beta={beta} cannot be less than 0')
+    if fc_prime < 0:
+        raise ValueError(f'fc_prime={fc_prime} cannot be less than 0')
+
+    error = 1
+    while error > 0.001:
+        tau_ref = VkN/((bw/1000)*(dv/1000)*1000)
+        delta = tau_ref - tau_MPa
+        
+        """ 
+        If delta is negative, the next guess of shear should be bigger
+        If delta is positive, the next guess of shear should be smaller (This 
+        idea is based on the effects shear has on the strain and beta 
+        factor calculations)
+        """
+        
+        if delta < 0:
+            VkN += 0.5
+            strain = calc_strain(VkN,rho_l,bw,dv)
+            beta = calc_beta(s_xe,strain)
+            tau_MPa = calc_tau(beta, fc_prime)
+            tau_ref = VkN/((bw/1000)*(dv/1000)*1000)
+            error = abs(tau_ref - tau_MPa)/tau_MPa
+            
+        if delta > 0:
+            VkN -= 0.5
+            strain = calc_strain(VkN,rho_l,bw,dv)
+            beta = calc_beta(s_xe,strain)
+            tau_MPa = calc_tau(beta, fc_prime)
+            tau_ref = VkN/((bw/1000)*(dv/1000)*1000)
+            error = abs(tau_ref - tau_MPa)/tau_MPa
+            
+    return tau_MPa
+
+
+def calc_theta(strain: float) -> float:
+    """Determines the angle theta in degrees
+
+    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
+
+    Args:
+        Strain (float): The longitudinal strain
+    
+    Returns:
+        The angle theta in degrees
+    """
+    
+    return 29 + 3500*strain
+
+def calc_beta_with_reinforcement(strain: float) -> float:
+    """Determines the shear resistance factor when there is minimum transverse reinforcment
+
+    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-1)
+
+    Args:
+        Strain (float): The longitudinal strain
+    
+    Returns:
+        The shear resistance factor
+    """
+    
+    return 4.8/(1+750*strain)
+
+
+
+
+
