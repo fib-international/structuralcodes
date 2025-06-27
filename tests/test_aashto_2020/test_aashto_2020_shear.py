@@ -66,6 +66,60 @@ def test_calc_tau(beta, fc_prime, expected):
 
 
 @pytest.mark.parametrize(
+    'VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa, expected',
+    [
+        (
+            296.9441,
+            1000,
+            300,
+            0.01,
+            12.9367,
+            0.0016497,
+            2.1068,
+            3.625,
+            0.8742,
+            0.9132,
+        ),
+        (
+            399.1398,
+            1000,
+            300,
+            0.01,
+            12.9367,
+            0.0022174,
+            1.7699,
+            10.15,
+            1.2289,
+            1.2668,
+        ),
+        (
+            414.5062,
+            1000,
+            300,
+            0.01,
+            12.9367,
+            0.0023028,
+            1.7284,
+            14.50,
+            1.4343,
+            1.4136,
+        ),
+    ],
+)
+def test_converge(
+    VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa, expected
+):
+    """Test the convergence function."""
+    assert math.isclose(
+        _section_5.converge(
+            VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa
+        ),
+        expected,
+        rel_tol=0.005,
+    )
+
+
+@pytest.mark.parametrize(
     'strain, expected',
     [
         (0.003894, 42.63),
