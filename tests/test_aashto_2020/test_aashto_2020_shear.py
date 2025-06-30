@@ -59,7 +59,11 @@ def test_eps(VkN, rho_l, bw, dv, expected):
 )
 def test_beta(s_xe, strain, expected):
     """Test the beta function."""
-    assert math.isclose(_section_5.beta(s_xe, strain), expected, rel_tol=0.005)
+    assert math.isclose(
+        _section_5.beta_wo_rein(s_xe, strain),
+        expected,
+        rel_tol=0.005,
+    )
 
 
 @pytest.mark.parametrize(

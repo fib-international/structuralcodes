@@ -64,7 +64,7 @@ def eps(VkN: float, rho_l: float, bw: float, dv: float) -> float:
 
 
 # Calculates the beta factor
-def beta(s_xe: float, strain: float) -> float:
+def beta_wo_rein(s_xe: float, strain: float) -> float:
     """Determines the shear resistance factor.
 
     AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
@@ -187,7 +187,7 @@ def _converge(
         if delta < 0:
             VkN += 0.5
             strain = eps(VkN, rho_l, bw, dv)
-            beta = beta(s_xe, strain)
+            beta = beta_wo_rein(s_xe, strain)
             tau_MPa = tau(beta, fc_prime)
             tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
@@ -195,7 +195,7 @@ def _converge(
         if delta > 0:
             VkN -= 0.5
             strain = eps(VkN, rho_l, bw, dv)
-            beta = beta(s_xe, strain)
+            beta = beta_wo_rein(s_xe, strain)
             tau_MPa = tau(beta, fc_prime)
             tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
