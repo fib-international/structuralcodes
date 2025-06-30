@@ -53,10 +53,10 @@ def test_eps(VkN, rho_l, bw, dv, expected):
     'VkN, rho_l, bw, dv',
     [(-50, -0.015, 2, 5), (50, 0.01, -20, -8), (-30, -0.02, -15, -20)],
 )
-def test_eps_raises_errors(sx, ag):
+def test_eps_raises_errors(VkN, rho_l, bw, dv):
     """Test eps errors."""
     with pytest.raises(ValueError):
-        _section_5.eps(sx, ag)
+        _section_5.eps(VkN, rho_l, bw, dv)
 
 
 @pytest.mark.parametrize(
@@ -159,6 +159,20 @@ def test_converge(
 
 
 @pytest.mark.parametrize(
+    'VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa',
+    [(-2, -15, -30, -0.01, -10, 0.0016, -1.7, -15.5, 1.14)],
+)
+def test_converge_errors(
+    VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa
+):
+    """Test converge errors."""
+    with pytest.raises(ValueError):
+        _section_5._converge(
+            VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa
+        )
+
+
+@pytest.mark.parametrize(
     'strain, expected',
     [
         (0.003894, 42.63),
@@ -203,6 +217,20 @@ def test_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
         expected,
         rel_tol=0.005,
     )
+
+
+@pytest.mark.parametrize(
+    'Av, fy, dv, bw, cot_theta, s',
+    [
+        (-0.5, -30, -5, -3, 1.75, -2),
+        (-0.5, 40, -5, -3, 1.75, 21),
+        (8, -30, 21, -3, 1.75, -2),
+    ],
+)
+def test_tau_s_errors(Av, fy, dv, bw, cot_theta, s):
+    """Test tau_s errors."""
+    with pytest.raises(ValueError):
+        _section_5.tau_s(Av, fy, dv, bw, cot_theta, s)
 
 
 @pytest.mark.parametrize(
