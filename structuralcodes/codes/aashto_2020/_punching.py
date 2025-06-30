@@ -1,7 +1,7 @@
 import math
 
 
-def bo_edge(W: float, L: float, df: float) -> float:
+def b0_edge(W: float, L: float, df: float) -> float:
     """Determines the critical perimeter for a bearing on the edge of the beam.
 
     AASHTO LRFD 2020 9th Edition, Eq. (5.8.4.4-4)
@@ -65,7 +65,7 @@ def b0_corner(W: float, L: float, df: float, c: float) -> float:
     return 0.5 * W + L + df + c
 
 
-def bo_interior(W: float, L: float, df: float) -> float:
+def b0_interior(W: float, L: float, df: float) -> float:
     """Determines the critical perimeter for a bearing in the interior of
     the beam.
 
