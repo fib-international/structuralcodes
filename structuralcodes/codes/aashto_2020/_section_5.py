@@ -118,7 +118,7 @@ def tau(beta: float, fc_prime: float) -> float:
 
 
 # Iterate for convergence
-def converge(
+def _converge(
     VkN: float,
     bw: float,
     dv: float,

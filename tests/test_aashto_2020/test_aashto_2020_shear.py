@@ -21,6 +21,20 @@ def test_s_xe(sx, ag, expected):
 
 
 @pytest.mark.parametrize(
+    'sx, ag',
+    [
+        (-0.5, 2),
+        (2, -0.5),
+        (-3, -4),
+    ],
+)
+def test_s_xe_raises_errors(sx, ag):
+    """Test s_xe errors."""
+    with pytest.raises(ValueError):
+        _section_5.s_xe(sx, ag)
+
+
+@pytest.mark.parametrize(
     'VkN, rho_l, bw, dv, expected',
     [
         (273.9709, 0.01, 1000, 300, 0.001522),
@@ -109,7 +123,7 @@ def test_converge(
 ):
     """Test the convergence function."""
     assert math.isclose(
-        _section_5.converge(
+        _section_5._converge(
             VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa
         ),
         expected,
