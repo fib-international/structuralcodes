@@ -114,4 +114,11 @@ def Vn(fc_prime: float, b0: float, df: float) -> float:
         ValueError: If b0 is less than 0
         ValueError: If df is less than 0
     """
+    if fc_prime < 0:
+        raise ValueError(f'fc_prime={fc_prime} cannot be less than 0')
+    if b0 < 0:
+        raise ValueError(f'b0={b0} cannot be less than 0')
+    if df < 0:
+        raise ValueError(f'df={0} cannot be less than 0')
+
     return 0.125 * math.sqrt(fc_prime) * b0 * df
