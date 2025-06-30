@@ -50,6 +50,16 @@ def test_eps(VkN, rho_l, bw, dv, expected):
 
 
 @pytest.mark.parametrize(
+    'VkN, rho_l, bw, dv',
+    [(-50, -0.015, 2, 5), (50, 0.01, -20, -8), (-30, -0.02, -15, -20)],
+)
+def test_eps_raises_errors(sx, ag):
+    """Test eps errors."""
+    with pytest.raises(ValueError):
+        _section_5.eps(sx, ag)
+
+
+@pytest.mark.parametrize(
     's_xe, strain, expected',
     [
         (12.93668, 0.001522, 2.2009),
@@ -64,6 +74,19 @@ def test_beta(s_xe, strain, expected):
         expected,
         rel_tol=0.005,
     )
+
+
+@pytest.mark.parametrize(
+    's_xe, strain',
+    [
+        (11, 0.0016),
+        (85, 0.0017),
+    ],
+)
+def test_beta_raise_errors(s_xe, strain):
+    """Test beta_wo_rein errors."""
+    with pytest.raises(ValueError):
+        _section_5.beta_wo_rein(s_xe, strain)
 
 
 @pytest.mark.parametrize(
