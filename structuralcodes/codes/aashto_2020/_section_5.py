@@ -2,7 +2,7 @@
 import math
 
 
-def calc_s_xe(sx: float, ag: float) -> float:
+def s_xe(sx: float, ag: float) -> float:
     """Determines the crack spacing parameter that is influenced by aggregate
     size.
 
@@ -31,7 +31,7 @@ def calc_s_xe(sx: float, ag: float) -> float:
     return sx * (1.38 / (ag + 0.63))
 
 
-def calc_strain(VkN: float, rho_l: float, bw: float, dv: float) -> float:
+def eps(VkN: float, rho_l: float, bw: float, dv: float) -> float:
     """Determines the longitudinal strain.
 
     AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-4)
@@ -64,7 +64,7 @@ def calc_strain(VkN: float, rho_l: float, bw: float, dv: float) -> float:
 
 
 # Calculates the beta factor
-def calc_beta(s_xe: float, strain: float) -> float:
+def beta(s_xe: float, strain: float) -> float:
     """Determines the shear resistance factor.
 
     AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
@@ -89,7 +89,7 @@ def calc_beta(s_xe: float, strain: float) -> float:
 
 
 # Calculates the shear stress resistance in MPa
-def calc_tau(beta: float, fc_prime: float) -> float:
+def tau(beta: float, fc_prime: float) -> float:
     """Determines the shear stress resistance in MPa.
 
     AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.3-3)
@@ -186,24 +186,24 @@ def converge(
 
         if delta < 0:
             VkN += 0.5
-            strain = calc_strain(VkN, rho_l, bw, dv)
-            beta = calc_beta(s_xe, strain)
-            tau_MPa = calc_tau(beta, fc_prime)
+            strain = eps(VkN, rho_l, bw, dv)
+            beta = beta(s_xe, strain)
+            tau_MPa = tau(beta, fc_prime)
             tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
 
         if delta > 0:
             VkN -= 0.5
-            strain = calc_strain(VkN, rho_l, bw, dv)
-            beta = calc_beta(s_xe, strain)
-            tau_MPa = calc_tau(beta, fc_prime)
+            strain = eps(VkN, rho_l, bw, dv)
+            beta = beta(s_xe, strain)
+            tau_MPa = tau(beta, fc_prime)
             tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
 
     return tau_MPa
 
 
-def calc_theta(strain: float) -> float:
+def theta(strain: float) -> float:
     """Determines the angle theta in degrees.
 
     AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
@@ -217,7 +217,7 @@ def calc_theta(strain: float) -> float:
     return 29 + 3500 * strain
 
 
-def calc_beta_with_reinforcement(strain: float) -> float:
+def beta_with_reinforcement(strain: float) -> float:
     """Determines the shear resistance factor when there is minimum transverse
     reinforcment.
 
@@ -232,7 +232,7 @@ def calc_beta_with_reinforcement(strain: float) -> float:
     return 4.8 / (1 + 750 * strain)
 
 
-def calc_tau_s(
+def tau_s(
     Av: float, fy: float, dv: float, bw: float, cot_theta: float, s: float
 ) -> float:
     """Determines the shear stress resistance of the transverese reinforcement
@@ -274,7 +274,7 @@ def calc_tau_s(
     return tau_s / 0.145
 
 
-def calc_tau_nominal(tau: float, tau_s: float, tau_p: float) -> float:
+def tau_nominal(tau: float, tau_s: float, tau_p: float) -> float:
     """Determines the nominal shear stress resistance in MPa.
 
     Args:

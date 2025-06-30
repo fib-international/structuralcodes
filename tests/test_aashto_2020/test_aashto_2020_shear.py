@@ -15,9 +15,9 @@ from structuralcodes.codes.aashto_2020 import _section_5
         (11.811, 0.82677, 11.18857),
     ],
 )
-def test_calc_s_xe(sx, ag, expected):
-    """Test the calc_s_xe function."""
-    assert math.isclose(_section_5.calc_s_xe(sx, ag), expected, rel_tol=0.005)
+def test_s_xe(sx, ag, expected):
+    """Test the s_xe function."""
+    assert math.isclose(_section_5.s_xe(sx, ag), expected, rel_tol=0.005)
 
 
 @pytest.mark.parametrize(
@@ -28,10 +28,10 @@ def test_calc_s_xe(sx, ag, expected):
         (424.0828, 0.01, 1000, 300, 0.002356),
     ],
 )
-def test_calc_strain(VkN, rho_l, bw, dv, expected):
-    """Test the calc_strain function."""
+def test_eps(VkN, rho_l, bw, dv, expected):
+    """Test the eps function."""
     assert math.isclose(
-        _section_5.calc_strain(VkN, rho_l, bw, dv), expected, rel_tol=0.005
+        _section_5.eps(VkN, rho_l, bw, dv), expected, rel_tol=0.005
     )
 
 
@@ -43,11 +43,9 @@ def test_calc_strain(VkN, rho_l, bw, dv, expected):
         (12.93668, 0.002356, 1.7034),
     ],
 )
-def test_calc_beta(s_xe, strain, expected):
-    """Test the calc_beta function."""
-    assert math.isclose(
-        _section_5.calc_beta(s_xe, strain), expected, rel_tol=0.005
-    )
+def test_beta(s_xe, strain, expected):
+    """Test the beta function."""
+    assert math.isclose(_section_5.beta(s_xe, strain), expected, rel_tol=0.005)
 
 
 @pytest.mark.parametrize(
@@ -58,10 +56,10 @@ def test_calc_beta(s_xe, strain, expected):
         (1.7034, 14.50, 1.414),
     ],
 )
-def test_calc_tau(beta, fc_prime, expected):
-    """Test the calc_tau function."""
+def test_tau(beta, fc_prime, expected):
+    """Test the tau function."""
     assert math.isclose(
-        _section_5.calc_tau(beta, fc_prime), expected, rel_tol=0.005
+        _section_5.tau(beta, fc_prime), expected, rel_tol=0.005
     )
 
 
@@ -127,9 +125,9 @@ def test_converge(
         (0.004312, 44.09),
     ],
 )
-def test_calc_theta(strain, expected):
-    """Test the calc_theta function."""
-    assert math.isclose(_section_5.calc_theta(strain), expected, rel_tol=0.005)
+def test_theta(strain, expected):
+    """Test the theta function."""
+    assert math.isclose(_section_5.theta(strain), expected, rel_tol=0.005)
 
 
 @pytest.mark.parametrize(
@@ -140,10 +138,10 @@ def test_calc_theta(strain, expected):
         (0.004312, 1.13375),
     ],
 )
-def test_calc_beta_with_reinforcement(strain, expected):
-    """Test the calc_beta_with_reinforcement."""
+def test_beta_with_reinforcement(strain, expected):
+    """Test the beta_with_reinforcement."""
     assert math.isclose(
-        _section_5.calc_beta_with_reinforcement(strain),
+        _section_5.beta_with_reinforcement(strain),
         expected,
         rel_tol=0.005,
     )
@@ -157,10 +155,10 @@ def test_calc_beta_with_reinforcement(strain, expected):
         (1.2985, 72.5, 11.811, 39.37, 1.032, 8.858, 1.9217),
     ],
 )
-def test_calc_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
-    """Test the calc_tau_s function."""
+def test_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
+    """Test the tau_s function."""
     assert math.isclose(
-        _section_5.calc_tau_s(Av, fy, dv, bw, cot_theta, s),
+        _section_5.tau_s(Av, fy, dv, bw, cot_theta, s),
         expected,
         rel_tol=0.005,
     )
@@ -174,10 +172,10 @@ def test_calc_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
         (0.6653, 1.9217, 0, 2.587),
     ],
 )
-def test_calc_tau_nominal(tau, tau_s, tau_p, expected):
-    """Test the calc_tau_nominal function."""
+def test_tau_nominal(tau, tau_s, tau_p, expected):
+    """Test the tau_nominal function."""
     assert math.isclose(
-        _section_5.calc_tau_nominal(tau, tau_s, tau_p),
+        _section_5.tau_nominal(tau, tau_s, tau_p),
         expected,
         rel_tol=0.005,
     )
