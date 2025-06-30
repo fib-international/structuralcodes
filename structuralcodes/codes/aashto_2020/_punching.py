@@ -1,3 +1,4 @@
+# Functions for AASHTO LRFD 2020 9th Edition Shear Punching Design
 import math
 
 
@@ -96,4 +97,21 @@ def b0_interior(W: float, L: float, df: float) -> float:
     return 2 * W + 2 * L + 4 * df
 
 
-v = math.sqrt(5)
+def Vn(fc_prime: float, b0: float, df: float) -> float:
+    """Determines the nominal punching shear resistance.
+
+    Args:
+        fc_prime (float): compressive strength of concrete in ksi
+        b0: the critical perimeter of the bearing in (in)
+        df: distance from the top of the ledge to the bottom
+        longitudinal reinforcement (in)
+
+    Returns:
+        The nominal punching shear resitance in kips
+
+    Raises:
+        ValueError: If fc_prime is less than 0
+        ValueError: If b0 is less than 0
+        ValueError: If df is less than 0
+    """
+    return 0.125 * math.sqrt(fc_prime) * b0 * df
