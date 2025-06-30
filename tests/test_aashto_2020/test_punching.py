@@ -42,3 +42,18 @@ def test_b0_interior(W, L, df, expected):
     assert math.isclose(
         _punching.b0_interior(W, L, df), expected, rel_tol=0.005
     )
+
+
+@pytest.mark.parametrize(
+    'fc_prime, b0, df, expected',
+    [
+        (3.625, 68.992, 11.811, 193.392),
+        (10.15, 86.614, 11.811, 407.397),
+        (14.5, 133.858, 11.811, 752.532),
+    ],
+)
+def test_Vn(fc_prime, b0, df, expected):
+    """Test the Vn function."""
+    assert math.isclose(
+        _punching.Vn(fc_prime, b0, df), expected, rel_tol=0.005
+    )
