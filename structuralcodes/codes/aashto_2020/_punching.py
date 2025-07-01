@@ -97,8 +97,8 @@ def b0_interior(W: float, L: float, df: float) -> float:
     return 2 * W + 2 * L + 4 * df
 
 
-def Vn(fc_prime: float, b0: float, df: float) -> float:
-    """Determines the nominal punching shear resistance.
+def tau_n(fc_prime: float, b0: float, df: float) -> float:
+    """Determines the nominal punching shear stress resistance.
 
     Args:
         fc_prime (float): compressive strength of concrete in ksi
@@ -107,7 +107,7 @@ def Vn(fc_prime: float, b0: float, df: float) -> float:
         longitudinal reinforcement (in)
 
     Returns:
-        The nominal punching shear resitance in kips
+        The nominal punching shear stress resitance in MPa
 
     Raises:
         ValueError: If fc_prime is less than 0
@@ -121,4 +121,4 @@ def Vn(fc_prime: float, b0: float, df: float) -> float:
     if df < 0:
         raise ValueError(f'df={0} cannot be less than 0')
 
-    return 0.125 * math.sqrt(fc_prime) * b0 * df
+    return (0.125 * math.sqrt(fc_prime)) / 0.145

@@ -35,7 +35,7 @@ def test_b0_edge_errors(W, L, df):
 @pytest.mark.parametrize(
     'W, L, df, c, expected',
     [
-        (23.622, 19.685, 11.811, 25.685, 68.992),
+        (23.622, 19.685, 11.811, 17.811, 61.118),
     ],
 )
 def test_b0_corner(W, L, df, c, expected):
@@ -89,15 +89,15 @@ def test_b0_interior_errors(W, L, df):
 @pytest.mark.parametrize(
     'fc_prime, b0, df, expected',
     [
-        (3.625, 68.992, 11.811, 193.392),
-        (10.15, 86.614, 11.811, 407.397),
-        (14.5, 133.858, 11.811, 752.532),
+        (3.625, 61.811, 11.811, 1.641),
+        (10.15, 86.614, 11.811, 2.746),
+        (14.5, 133.858, 11.811, 3.283),
     ],
 )
 def test_Vn(fc_prime, b0, df, expected):
     """Test the Vn function."""
     assert math.isclose(
-        _punching.Vn(fc_prime, b0, df), expected, rel_tol=0.005
+        _punching.tau_n(fc_prime, b0, df), expected, rel_tol=0.005
     )
 
 
@@ -112,4 +112,4 @@ def test_Vn(fc_prime, b0, df, expected):
 def test_Vn_errors(fc_prime, b0, df):
     """Test Vn errors."""
     with pytest.raises(ValueError):
-        _punching.Vn(fc_prime, b0, df)
+        _punching.tau_n(fc_prime, b0, df)
