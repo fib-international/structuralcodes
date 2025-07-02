@@ -52,3 +52,7 @@ def s(fyk: float, beta_s: float, gamma_e: float, dc: float) -> float:
         raise ValueError(f'gamma_e={gamma_e} cannot be less than 0')
     if dc < 0:
         raise ValueError(f'dc={dc} cannot be less than 0')
+
+    fss = 0.6 * fyk
+
+    return (700 * gamma_e / (beta_s * fss)) - (2 * dc)
