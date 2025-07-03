@@ -40,3 +40,17 @@ def test_s(fyk, beta_s, gamma_e, dc, expected):
     assert math.isclose(
         _crack_control.s(fyk, beta_s, gamma_e, dc), expected, rel_tol=0.005
     )
+
+
+@pytest.mark.parametrize(
+    'fyk, beta_s, gamma_e, dc',
+    [
+        (-25, -1.12, -0.98, 2.5),
+        (30, -1.12, -0.98, 2.5),
+        (-45, 2.1, -0.98, -1),
+    ],
+)
+def test_s_errors(fyk, beta_s, gamma_e, dc):
+    """Test s errors."""
+    with pytest.raises(ValueError):
+        _crack_control.s(fyk, beta_s, gamma_e, dc)
