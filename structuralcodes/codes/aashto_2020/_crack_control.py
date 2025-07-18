@@ -8,7 +8,7 @@ def beta_s(h: float, dc) -> float:
 
     Args:
         h (float): height of the cross section in (in)
-        d (float): the thickness of the concrete cover from the surface
+        dc (float): the thickness of the concrete cover from the surface
         to the center of the reinforcement in (in)
 
     Returns:
@@ -21,7 +21,7 @@ def beta_s(h: float, dc) -> float:
     if h < 0:
         raise ValueError(f'h={h} cannot be less than 0')
     if dc < 0:
-        raise ValueError(f'd={dc} cannot be less than 0')
+        raise ValueError(f'dc={dc} cannot be less than 0')
 
     return 1 + (dc / (0.7 * (h - dc)))
 
