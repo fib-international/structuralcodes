@@ -270,18 +270,18 @@ def Vs(
     return (Av * fy * dv * cot_theta) / s
 
 
-def Vn(Vc: float, V_s: float, Vp: float) -> float:
+def Vn(Vc: float, Vs: float, Vp: float) -> float:
     """Determines the nominal shear resistance in kips.
 
     AASHTO LRFD 2024 10th Edition, Eq (5.7.3.3-1)
 
     Args:
-        tau (float): Compressive shear resistance in kips
-        tau_s (float): Shear resistance of tranverse reinforcement in
+        Vc (float): Compressive shear resistance in kips
+        Vs (float): Shear resistance of tranverse reinforcement in
         kips
-        tau_p (float): Prestressing shear stress resistance in kips
+        Vp (float): Prestressing shear stress resistance in kips
 
     Returns:
         The nominal shear stress resistance
     """
-    return Vc + V_s + Vp
+    return Vc + Vs + Vp
