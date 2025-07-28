@@ -197,7 +197,7 @@ def delta(
     E: float,
     Ieff: float,
 ) -> float:
-    """Determines the deflection of the beam.
+    """Determines the instantaneous deflection of the beam.
 
     Args:
         qqp (float): quasi permanent load in (k/in)
@@ -221,3 +221,33 @@ def delta(
         raise ValueError(f'Ieff={Ieff} cannot be less than 0')
 
     return (5 * qqp * L**4) / (384 * E * Ieff)
+
+
+def time_delta(deflection: float, factor: float, rho_prime: float) -> float:
+    """Determines the time dependent deflection of the beam.
+
+    AASHTO LRFD 2024 10th Edition, Eq (5.6.3.5.2b-1)
+
+    Args:
+        deflection (float): instantaneous deflection in (in)
+        factor (float): time dependent factor for sustained loads
+        rho_prime (float): compressive reinforcement ratio
+
+    Returns:
+        The time dependent deflection in (in)
+
+    Raises:
+        ValueError: If deflection is less than 0
+        ValueError: If factor is less than 0
+        ValueError: If rho_prime is less than 0
+    """
+    if deflection < 0:
+        raise ValueError(f'deflection={deflection} cannot be less than 0')
+    if factor < 0:
+        raise ValueError(f'factor={factor} cannot be less than 0')
+    if rho_prime < 0:
+        raise ValueError(f'rho_prime={rho_prime} cannot be less than 0')
+
+    landa_delta = factor / (1 + 50 * rho_prime)
+
+    return landa_delta * deflection
