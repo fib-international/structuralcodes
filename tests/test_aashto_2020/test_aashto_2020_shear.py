@@ -1,4 +1,4 @@
-"""Test module for testing the AASHTO 2020 shear."""
+"""Test module for testing the AASHTO 2024 shear."""
 
 import math
 
@@ -99,9 +99,7 @@ def test_beta_raise_errors(s_xe, strain):
 )
 def test_tau(beta, fc_prime, expected):
     """Test the tau function."""
-    assert math.isclose(
-        _section_5.tau(beta, fc_prime), expected, rel_tol=0.005
-    )
+    assert math.isclose(_section_5.Vc(beta, fc_prime), expected, rel_tol=0.005)
 
 
 @pytest.mark.parametrize(
@@ -213,7 +211,7 @@ def test_beta_with_reinforcement(strain, expected):
 def test_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
     """Test the tau_s function."""
     assert math.isclose(
-        _section_5.tau_s(Av, fy, dv, bw, cot_theta, s),
+        _section_5.Vs(Av, fy, dv, bw, cot_theta, s),
         expected,
         rel_tol=0.005,
     )
@@ -230,7 +228,7 @@ def test_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
 def test_tau_s_errors(Av, fy, dv, bw, cot_theta, s):
     """Test tau_s errors."""
     with pytest.raises(ValueError):
-        _section_5.tau_s(Av, fy, dv, bw, cot_theta, s)
+        _section_5.Vs(Av, fy, dv, bw, cot_theta, s)
 
 
 @pytest.mark.parametrize(

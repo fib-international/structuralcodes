@@ -6,7 +6,7 @@ def s_xe(sx: float, ag: float) -> float:
     """Determines the crack spacing parameter that is influenced by aggregate
     size.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.7.4.3.2-7)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.7.4.3.2-7)
 
     Args:
         ag (float) = maximum agreggate size(in)
@@ -34,7 +34,7 @@ def s_xe(sx: float, ag: float) -> float:
 def eps(VkN: float, rho_l: float, bw: float, dv: float) -> float:
     """Determines the longitudinal strain.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-4)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.4.2-4)
 
     Args:
         VkN (float): Assumed shear force in kips
@@ -67,7 +67,7 @@ def eps(VkN: float, rho_l: float, bw: float, dv: float) -> float:
 def beta_wo_rein(s_xe: float, strain: float) -> float:
     """Determines the shear resistance factor.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.4.2-2)
 
     Args:
         s_xe (float): The crack spacing parameter that is influenced by the
@@ -89,16 +89,16 @@ def beta_wo_rein(s_xe: float, strain: float) -> float:
 
 
 # Calculates the shear stress resistance in MPa
-def tau(beta: float, fc_prime: float) -> float:
-    """Determines the shear stress resistance in MPa.
+def Vc(beta: float, fc_prime: float, bw: float, d: float) -> float:
+    """Determines the shear resistance in kips.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.3-3)
-        This formula was modified to leave the calculated value in stress
-        instead of force
+    AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.3-3)
 
     Args:
         beta (float): The shear resistance factor
         fc_prime (float): The compressive strength of concrete in ksi
+        bw (float): The width of the web in (in)
+        d (float): The effective depth in (in)
 
     Returns:
         The shear stress resistance
@@ -112,9 +112,7 @@ def tau(beta: float, fc_prime: float) -> float:
     if fc_prime < 0:
         raise ValueError(f'fc_prime={fc_prime} cannot be less than 0')
 
-    Vc_ksi = 0.0316 * beta * math.sqrt(fc_prime)  # ksi
-
-    return Vc_ksi / 0.145  # MPa
+    return 0.0316 * beta * math.sqrt(fc_prime) * bw * d  # ksi
 
 
 # Iterate for convergence
@@ -188,7 +186,7 @@ def _converge(
             VkN += 0.5
             strain = eps(VkN, rho_l, bw, dv)
             beta = beta_wo_rein(s_xe, strain)
-            tau_MPa = tau(beta, fc_prime)
+            tau_MPa = Vc(beta, fc_prime)
             tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
 
@@ -196,7 +194,7 @@ def _converge(
             VkN -= 0.5
             strain = eps(VkN, rho_l, bw, dv)
             beta = beta_wo_rein(s_xe, strain)
-            tau_MPa = tau(beta, fc_prime)
+            tau_MPa = Vc(beta, fc_prime)
             tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
 
@@ -206,7 +204,7 @@ def _converge(
 def theta(strain: float) -> float:
     """Determines the angle theta in degrees.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-2)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.4.2-2)
 
     Args:
         Strain (float): The longitudinal strain
@@ -221,7 +219,7 @@ def beta_with_reinforcement(strain: float) -> float:
     """Determines the shear resistance factor when there is minimum transverse
     reinforcment.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.7.3.4.2-1)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.4.2-1)
 
     Args:
         Strain (float): The longitudinal strain
@@ -232,11 +230,13 @@ def beta_with_reinforcement(strain: float) -> float:
     return 4.8 / (1 + 750 * strain)
 
 
-def tau_s(
+def Vs(
     Av: float, fy: float, dv: float, bw: float, cot_theta: float, s: float
 ) -> float:
-    """Determines the shear stress resistance of the transverese reinforcement
-    in MPa.
+    """Determines the shear resistance of the transverese reinforcement
+    in kips.
+
+    AASHTO LRFD 2024 10th Edition, Eq (C5.7.3.3-1)
 
     Args:
         Av (float): The transverse reinforcement area (in^2)
@@ -247,7 +247,7 @@ def tau_s(
         s (float): The spacing of the transverse reinforcement (in)
 
     Returns:
-        The shear stress resistance of the transverse reinforcement
+        The shear resistance of the transverse reinforcement
 
     Raises:
         ValueError: If Av is less than 0
@@ -267,23 +267,21 @@ def tau_s(
     if s < 0:
         raise ValueError(f's={s} cannot be less than 0')
 
-    Vs = (Av * fy * dv * cot_theta) / s
-
-    tau_s = Vs / (bw * dv)
-
-    return tau_s / 0.145
+    return (Av * fy * dv * cot_theta) / s
 
 
-def tau_nominal(tau: float, tau_s: float, tau_p: float) -> float:
-    """Determines the nominal shear stress resistance in MPa.
+def Vn(Vc: float, V_s: float, Vp: float) -> float:
+    """Determines the nominal shear resistance in kips.
+
+    AASHTO LRFD 2024 10th Edition, Eq (5.7.3.3-1)
 
     Args:
-        tau (float): Compressive shear stress resistance in MPa
-        tau_s (float): Shear stress resistance of tranverse reinforcement in
-        MPa
-        tau_p (float): Prestressing shear stressed resistance in MPa
+        tau (float): Compressive shear resistance in kips
+        tau_s (float): Shear resistance of tranverse reinforcement in
+        kips
+        tau_p (float): Prestressing shear stress resistance in kips
 
     Returns:
         The nominal shear stress resistance
     """
-    return tau + tau_s + tau_p
+    return Vc + V_s + Vp
