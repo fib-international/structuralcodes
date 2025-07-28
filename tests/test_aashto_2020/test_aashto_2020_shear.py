@@ -97,8 +97,8 @@ def test_beta_raise_errors(s_xe, strain):
         (1.7034, 14.50, 11.811, 39.37, 95.31),
     ],
 )
-def test_tau(beta, fc_prime, bw, d, expected):
-    """Test the tau function."""
+def test_Vc(beta, fc_prime, bw, d, expected):
+    """Test the Vc function."""
     assert math.isclose(
         _section_5.Vc(beta, fc_prime, bw, d), expected, rel_tol=0.005
     )
@@ -211,7 +211,7 @@ def test_beta_with_reinforcement(strain, expected):
     ],
 )
 def test_Vs(Av, fy, dv, bw, cot_theta, s, expected):
-    """Test the tau_s function."""
+    """Test the Vs_s function."""
     assert math.isclose(
         _section_5.Vs(Av, fy, dv, bw, cot_theta, s),
         expected,
@@ -227,8 +227,8 @@ def test_Vs(Av, fy, dv, bw, cot_theta, s, expected):
         (8, -30, 21, -3, 1.75, -2),
     ],
 )
-def test_tau_s_errors(Av, fy, dv, bw, cot_theta, s):
-    """Test tau_s errors."""
+def test_Vs_errors(Av, fy, dv, bw, cot_theta, s):
+    """Test Vs errors."""
     with pytest.raises(ValueError):
         _section_5.Vs(Av, fy, dv, bw, cot_theta, s)
 
