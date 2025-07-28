@@ -90,16 +90,18 @@ def test_beta_raise_errors(s_xe, strain):
 
 
 @pytest.mark.parametrize(
-    'beta, fc_prime, expected',
+    'beta, fc_prime, bw, d, expected',
     [
-        (2.2009, 3.625, 0.9132),
-        (1.8245, 10.15, 1.267),
-        (1.7034, 14.50, 1.414),
+        (2.2009, 3.625, 11.811, 39.37, 61.57),
+        (1.8245, 10.15, 11.811, 39.37, 85.41),
+        (1.7034, 14.50, 11.811, 39.37, 95.31),
     ],
 )
-def test_tau(beta, fc_prime, expected):
+def test_tau(beta, fc_prime, bw, d, expected):
     """Test the tau function."""
-    assert math.isclose(_section_5.Vc(beta, fc_prime), expected, rel_tol=0.005)
+    assert math.isclose(
+        _section_5.Vc(beta, fc_prime, bw, d), expected, rel_tol=0.005
+    )
 
 
 @pytest.mark.parametrize(
@@ -203,12 +205,12 @@ def test_beta_with_reinforcement(strain, expected):
 @pytest.mark.parametrize(
     'Av, fy, dv, bw, cot_theta, s, expected',
     [
-        (1.2985, 58, 11.811, 39.37, 1.086, 8.858, 1.618),
-        (1.2985, 65.25, 11.811, 39.37, 1.058, 8.858, 1.7735),
-        (1.2985, 72.5, 11.811, 39.37, 1.032, 8.858, 1.9217),
+        (1.2985, 58.00, 11.811, 39.37, 1.086, 8.858, 109.09),
+        (1.2985, 65.25, 11.811, 39.37, 1.058, 8.858, 119.58),
+        (1.2985, 72.50, 11.811, 39.37, 1.032, 8.858, 129.57),
     ],
 )
-def test_tau_s(Av, fy, dv, bw, cot_theta, s, expected):
+def test_Vs(Av, fy, dv, bw, cot_theta, s, expected):
     """Test the tau_s function."""
     assert math.isclose(
         _section_5.Vs(Av, fy, dv, bw, cot_theta, s),
@@ -232,17 +234,17 @@ def test_tau_s_errors(Av, fy, dv, bw, cot_theta, s):
 
 
 @pytest.mark.parametrize(
-    'tau, tau_s, tau_p, expected',
+    'V_c, V_s, V_p, expected',
     [
-        (0.7184, 1.6190, 0, 2.336),
-        (0.6904, 1.7735, 0, 2.464),
-        (0.6653, 1.9217, 0, 2.587),
+        (48.44, 109.09, 0, 157.53),
+        (46.55, 119.58, 0, 166.13),
+        (44.86, 129.57, 0, 174.43),
     ],
 )
-def test_tau_nominal(tau, tau_s, tau_p, expected):
-    """Test the tau_nominal function."""
+def test_Vn(V_c, V_s, V_p, expected):
+    """Test the Vn function."""
     assert math.isclose(
-        _section_5.tau_nominal(tau, tau_s, tau_p),
+        _section_5.Vn(V_c, V_s, V_p),
         expected,
         rel_tol=0.005,
     )
