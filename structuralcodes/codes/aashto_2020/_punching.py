@@ -35,7 +35,7 @@ def b0_corner(W: float, L: float, df: float, c: float) -> float:
     """Determines the critical perimeter for a bearing in the corner of
     the beam.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.8.4.4-5)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.8.4.4-5)
 
     Args:
         W (float) = width of the bearing plate or pad (in)
@@ -97,8 +97,10 @@ def b0_interior(W: float, L: float, df: float) -> float:
     return 2 * W + 2 * L + 4 * df
 
 
-def tau_n(fc_prime: float, b0: float, df: float) -> float:
-    """Determines the nominal punching shear stress resistance.
+def punching_Vn(fc_prime: float, b0: float, df: float) -> float:
+    """Determines the nominal punching shear resistance.
+
+    AASHTO LRFD 2024 10th Edition, Eq (5.8.4.3.4-3)
 
     Args:
         fc_prime (float): compressive strength of concrete in ksi
@@ -107,7 +109,7 @@ def tau_n(fc_prime: float, b0: float, df: float) -> float:
         longitudinal reinforcement (in)
 
     Returns:
-        The nominal punching shear stress resitance in MPa
+        The nominal punching shear resitance in kips
 
     Raises:
         ValueError: If fc_prime is less than 0
@@ -121,4 +123,4 @@ def tau_n(fc_prime: float, b0: float, df: float) -> float:
     if df < 0:
         raise ValueError(f'df={0} cannot be less than 0')
 
-    return (0.125 * math.sqrt(fc_prime)) / 0.145
+    return 0.125 * math.sqrt(fc_prime) * b0 * df
