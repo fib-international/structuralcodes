@@ -63,13 +63,7 @@ def Mu(
     return phi * (As * fy * (d - 0.4 * x))
 
 
-def Mcr(
-    fc_prime: float,
-    b: float,
-    h: float,
-    d: float,
-    L: float,
-) -> float:
+def Mcr(fc_prime: float, b: float, h: float, d: float) -> float:
     """Determines the cracking moment.
 
     AASHTO LRFD 2024 10th Edition, Eq (5.6.3.2a-1)
@@ -79,7 +73,6 @@ def Mcr(
         b (float): width of the cross section in (in)
         h (float): height of the cross section in (in)
         d (float): effective depth of cross section in (in)
-        L (float): span in (in)
 
     Returns:
         Cracking moment in (k-in)
@@ -89,7 +82,6 @@ def Mcr(
         ValueError: If b is less than 0
         ValueError: If h is less than 0
         ValueError: If d is less than 0
-        ValueError: If L is less than 0
     """
     if fc_prime < 0:
         raise ValueError(f'fc_prime={fc_prime} fc_prime cannot be less than 0')
@@ -99,8 +91,6 @@ def Mcr(
         raise ValueError(f'h={h} h cannot be less than 0')
     if d < 0:
         raise ValueError(f'd={d} d cannot be less than 0')
-    if L < 0:
-        raise ValueError(f'L={L} L cannot be less than 0')
 
     fr = 0.24 * math.sqrt(fc_prime)
     Ig = b * (h**3) / 12
@@ -179,7 +169,7 @@ def Ie(
     Ac = n * As
     Ig = b * (h**3) / 12
     Ma = Mu(fc_prime, fy, rho, b, h, d, L, phi)
-    M_cr = Mcr(fc_prime, b, h, d, L)
+    M_cr = Mcr(fc_prime, b, h, d)
     two_thirds_Mcr = (2 / 3) * M_cr
     x = As * fy / (fc_prime * b * 0.8)
     Icr = ((b * x**3) / 3) + Ac * (d - x) ** 2
@@ -194,7 +184,7 @@ def Ie(
 def delta(
     qqp: float,
     L: float,
-    E: float,
+    Ec: float,
     Ieff: float,
 ) -> float:
     """Determines the instantaneous deflection of the beam.
@@ -202,7 +192,7 @@ def delta(
     Args:
         qqp (float): quasi permanent load in (k/in)
         L (float): span (in)
-        E (float): modulus of elasticity of concrete (ksi)
+        Ec (float): modulus of elasticity of concrete (ksi)
         Ieff (float): effective moment of inertia (in^4)
 
     Returns:
@@ -210,17 +200,17 @@ def delta(
 
     Raises:
         ValueError: If L is less than 0
-        ValueError: If E is less than 0
+        ValueError: If Ec is less than 0
         ValueError: If Ieff is less than 0
     """
     if L < 0:
         raise ValueError(f'L={L} cannot be less than 0')
-    if E < 0:
-        raise ValueError(f'E={E} cannot be less than 0')
+    if Ec < 0:
+        raise ValueError(f'Ec={Ec} cannot be less than 0')
     if Ieff < 0:
         raise ValueError(f'Ieff={Ieff} cannot be less than 0')
 
-    return (5 * qqp * L**4) / (384 * E * Ieff)
+    return (5 * qqp * L**4) / (384 * Ec * Ieff)
 
 
 def time_delta(deflection: float, factor: float, rho_prime: float) -> float:
