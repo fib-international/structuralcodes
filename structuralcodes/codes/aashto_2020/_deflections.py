@@ -6,7 +6,7 @@ import math
 def Mu(
     fc_prime: float,
     fy: float,
-    rho: float,
+    As: float,
     b: float,
     h: float,
     d: float,
@@ -20,7 +20,7 @@ def Mu(
     Args:
         fc_prime (float): compressive strength of concrete in (ksi)
         fy (float): yield strength of the steel reinforcement in (ksi)
-        rho (float): reinforcement ratio
+        As (float): area of steel reinforcement
         b (float): width of the cross section in (in)
         h (float): height of the cross section in (in)
         d (float): effective depth of cross section in (in)
@@ -33,7 +33,7 @@ def Mu(
     Raises:
         ValueError: If fc_prime is less than 0
         ValueError: If fy is less than 0
-        ValueError: If rho is less than 0
+        ValueError: If As is less than 0
         ValueError: If b is less than 0
         ValueError: If h is less than 0
         ValueError: If d is less than 0
@@ -44,8 +44,8 @@ def Mu(
         raise ValueError(f'fc_prime={fc_prime} fc_prime cannot be less than 0')
     if fy < 0:
         raise ValueError(f'fy={fy} fy cannot be less than 0')
-    if rho < 0:
-        raise ValueError(f'rho={rho} rho cannot be less than 0')
+    if As < 0:
+        raise ValueError(f'As={As} As cannot be less than 0')
     if b < 0:
         raise ValueError(f'b={b} b cannot be less than 0')
     if h < 0:
@@ -57,7 +57,6 @@ def Mu(
     if phi < 0:
         raise ValueError(f'phi={phi} phi cannot be less than 0')
 
-    As = rho * b * d
     x = As * fy / (fc_prime * b * 0.8)
 
     return phi * (As * fy * (d - 0.4 * x))
@@ -103,7 +102,7 @@ def Mcr(fc_prime: float, b: float, h: float, d: float) -> float:
 def Ie(
     fc_prime: float,
     fy: float,
-    rho: float,
+    As: float,
     b: float,
     h: float,
     d: float,
@@ -119,7 +118,7 @@ def Ie(
     Args:
         fc_prime (float): compressive strength of concrete in (ksi)
         fy (float): yield strength of the steel reinforcement in (ksi)
-        rho (float): reinforcement ratio
+        As (float): area of steel reinforcement
         b (float): width of the cross section in (in)
         h (float): height of the cross section in (in)
         d (float): effective depth of cross section in (in)
@@ -134,7 +133,7 @@ def Ie(
     Raises:
         ValueError: If fc_prime is less than 0
         ValueError: If fy is less than 0
-        ValueError: If rho is less than 0
+        ValueError: If As is less than 0
         ValueError: If b is less than 0
         ValueError: If h is less than 0
         ValueError: If d is less than 0
@@ -147,8 +146,8 @@ def Ie(
         raise ValueError(f'fc_prime={fc_prime} fc_prime cannot be less than 0')
     if fy < 0:
         raise ValueError(f'fy={fy} fy cannot be less than 0')
-    if rho < 0:
-        raise ValueError(f'rho={rho} rho cannot be less than 0')
+    if As < 0:
+        raise ValueError(f'As={As} As cannot be less than 0')
     if b < 0:
         raise ValueError(f'b={b} b cannot be less than 0')
     if h < 0:
@@ -164,17 +163,18 @@ def Ie(
     if Ec < 0:
         raise ValueError(f'Ec={Ec} Es cannot be less than 0')
 
-    As = rho * b * d
     n = Es / Ec
     Ac = n * As
     Ig = b * (h**3) / 12
-    Ma = Mu(fc_prime, fy, rho, b, h, d, L, phi)
+    Ma = Mu(fc_prime, fy, As, b, h, d, L, phi)
     M_cr = Mcr(fc_prime, b, h, d)
     two_thirds_Mcr = (2 / 3) * M_cr
     x = As * fy / (fc_prime * b * 0.8)
     Icr = ((b * x**3) / 3) + Ac * (d - x) ** 2
-
+    print(Ma)
+    print(two_thirds_Mcr)
     if Ma < two_thirds_Mcr:
+        print(Ig)
         return Ig
 
     if Ma > two_thirds_Mcr:
