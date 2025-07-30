@@ -171,10 +171,8 @@ def Ie(
     two_thirds_Mcr = (2 / 3) * M_cr
     x = As * fy / (fc_prime * b * 0.8)
     Icr = ((b * x**3) / 3) + Ac * (d - x) ** 2
-    print(Ma)
-    print(two_thirds_Mcr)
+
     if Ma < two_thirds_Mcr:
-        print(Ig)
         return Ig
 
     if Ma > two_thirds_Mcr:
