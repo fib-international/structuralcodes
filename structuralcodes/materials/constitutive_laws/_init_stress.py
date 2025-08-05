@@ -44,14 +44,14 @@ class InitStress(ConstitutiveLaw):
 
         # Iteratively compute the initial strain that gives the desired
         # initial stress. Note that the wrapped law can be nonlinear
-        TOL = 1e-12
-        MAX_ITER = 100
+        tol = 1e-12
+        max_iter = 100
         target_stress = initial_stress
         strain = 0.0
         stress = self._wrapped_law.get_stress(strain)
         d_stress = target_stress - stress
-        count = 0
-        while abs(d_stress) > TOL and count < MAX_ITER:
+        num_iter = 0
+        while abs(d_stress) > tol and num_iter < max_iter:
             tangent = self._wrapped_law.get_tangent(strain)
             if tangent == 0:
                 raise ValueError(
@@ -61,9 +61,9 @@ class InitStress(ConstitutiveLaw):
             strain += d_strain
             stress = self._wrapped_law.get_stress(strain)
             d_stress = target_stress - stress
-            count += 1
+            num_iter += 1
 
-        if abs(d_stress) > TOL:
+        if abs(d_stress) > tol:
             raise RuntimeError('Failed to converge for given initial stress.')
 
         self._initial_strain = strain
