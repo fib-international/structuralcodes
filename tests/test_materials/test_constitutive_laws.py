@@ -10,6 +10,7 @@ from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
     ElasticPlastic,
+    InitStrain,
     ParabolaRectangle,
     Popovics,
     Sargin,
@@ -525,3 +526,45 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
+
+
+@pytest.mark.parametrize(
+    'fy, eps_su',
+    [
+        (350, 0.07),
+        (250, 0.03),
+        (355, 0.002),
+    ],
+)
+@pytest.mark.parametrize(
+    'initial_strain', [0.0, 0.001, 0.005, 0.01, -0.001, -0.005]
+)
+def test_initstrain(fy, eps_su, initial_strain):
+    """Test InitStrain constitutive law."""
+    base_law = ElasticPlastic(fy=fy, E=200000, eps_su=eps_su)
+    law = InitStrain(constitutive_law=base_law, initial_strain=initial_strain)
+
+    ult_strain_base = base_law.get_ultimate_strain()
+    ult_strain = law.get_ultimate_strain()
+    assert math.isclose(
+        ult_strain_base[0] - initial_strain,
+        ult_strain[0],
+    )
+    assert math.isclose(
+        ult_strain_base[1] - initial_strain,
+        ult_strain[1],
+    )
+
+    strain = np.linspace(-eps_su * 1.1, eps_su * 1.1, 100)
+
+    # Test stresses
+    sig_expected = base_law.get_stress(strain + initial_strain)
+    sig_computed = law.get_stress(strain)
+
+    assert_allclose(sig_computed, sig_expected)
+
+    # Test tangents
+    tan_expected = base_law.get_tangent(strain + initial_strain)
+    tan_computed = law.get_tangent(strain)
+
+    assert_allclose(tan_computed, tan_expected)
