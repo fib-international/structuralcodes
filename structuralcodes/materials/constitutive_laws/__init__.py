@@ -7,6 +7,7 @@ from ._bilinearcompression import BilinearCompression
 from ._elastic import Elastic
 from ._elasticplastic import ElasticPlastic
 from ._init_strain import InitStrain
+from ._init_stress import InitStress
 from ._parabolarectangle import ParabolaRectangle
 from ._popovics import Popovics
 from ._sargin import Sargin
@@ -21,6 +22,7 @@ __all__ = [
     'Sargin',
     'UserDefined',
     'InitStrain',
+    'InitStress',
     'get_constitutive_laws_list',
     'create_constitutive_law',
 ]
@@ -34,6 +36,7 @@ CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'popovics': Popovics,
     'sargin': Sargin,
     'initstrain': InitStrain,
+    'initstress': InitStress,
 }
 
 

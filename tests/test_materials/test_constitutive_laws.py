@@ -11,6 +11,7 @@ from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
     InitStrain,
+    InitStress,
     ParabolaRectangle,
     Popovics,
     Sargin,
@@ -543,6 +544,47 @@ def test_initstrain(fy, eps_su, initial_strain):
     """Test InitStrain constitutive law."""
     base_law = ElasticPlastic(fy=fy, E=200000, eps_su=eps_su)
     law = InitStrain(constitutive_law=base_law, initial_strain=initial_strain)
+
+    ult_strain_base = base_law.get_ultimate_strain()
+    ult_strain = law.get_ultimate_strain()
+    assert math.isclose(
+        ult_strain_base[0] - initial_strain,
+        ult_strain[0],
+    )
+    assert math.isclose(
+        ult_strain_base[1] - initial_strain,
+        ult_strain[1],
+    )
+
+    strain = np.linspace(-eps_su * 1.1, eps_su * 1.1, 100)
+
+    # Test stresses
+    sig_expected = base_law.get_stress(strain + initial_strain)
+    sig_computed = law.get_stress(strain)
+
+    assert_allclose(sig_computed, sig_expected)
+
+    # Test tangents
+    tan_expected = base_law.get_tangent(strain + initial_strain)
+    tan_computed = law.get_tangent(strain)
+
+    assert_allclose(tan_computed, tan_expected)
+
+
+@pytest.mark.parametrize(
+    'fy, eps_su',
+    [
+        (350, 0.07),
+        (250, 0.03),
+        (355, 0.002),
+    ],
+)
+@pytest.mark.parametrize('initial_stress', [0.0, 200, -200])
+def test_initstress(fy, eps_su, initial_stress):
+    """Test InitStress constitutive law."""
+    base_law = ElasticPlastic(fy=fy, E=200000, eps_su=eps_su)
+    law = InitStress(constitutive_law=base_law, initial_stress=initial_stress)
+    initial_strain = initial_stress / 200000
 
     ult_strain_base = base_law.get_ultimate_strain()
     ult_strain = law.get_ultimate_strain()
