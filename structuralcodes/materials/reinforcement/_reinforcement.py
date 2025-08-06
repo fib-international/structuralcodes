@@ -24,10 +24,17 @@ class Reinforcement(Material):
         epsuk: float,
         gamma_s: t.Optional[float] = None,
         name: t.Optional[str] = None,
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
     ) -> None:
         """Initializes an abstract reinforcement material."""
         name = name if name is not None else 'Reinforcement'
-        super().__init__(density, name)
+        super().__init__(
+            density=density,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            name=name,
+        )
 
         self._fyk = abs(fyk)
         self._Es = abs(Es)

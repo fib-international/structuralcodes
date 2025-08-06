@@ -21,10 +21,17 @@ class Concrete(Material):
         density: float = 2400,
         gamma_c: t.Optional[float] = None,
         existing: t.Optional[bool] = False,
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
     ) -> None:
         """Initializes an abstract concrete material."""
         name = name if name is not None else 'Concrete'
-        super().__init__(density=density, name=name)
+        super().__init__(
+            density=density,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            name=name,
+        )
 
         self._fck = abs(fck)
         if existing:

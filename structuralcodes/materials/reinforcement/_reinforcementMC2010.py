@@ -31,6 +31,8 @@ class ReinforcementMC2010(Reinforcement):
                 ConstitutiveLaw,
             ]
         ] = 'elasticplastic',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
     ):
         """Initializes a new instance of Reinforcement for MC2010.
 
@@ -53,6 +55,10 @@ class ReinforcementMC2010(Reinforcement):
                 constitutive law type for reinforcement. (valid options for
                 string: 'elastic', 'elasticplastic', or
                 'elasticperfectlyplastic').
+            initial_strain (float, optional): The initial strain of the
+                material, default value None.
+            initial_stress (float, optional): The initial stress of the
+                material, default value None.
 
         Raises:
             ValueError: If the constitutive law name is not available for the
@@ -71,6 +77,8 @@ class ReinforcementMC2010(Reinforcement):
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
         )
         self._gamma_eps = gamma_eps
         self._constitutive_law = (
@@ -84,6 +92,7 @@ class ReinforcementMC2010(Reinforcement):
             raise ValueError(
                 'The provided constitutive law is not valid for reinforcement.'
             )
+        self._apply_initial_strain()
 
     def fyd(self) -> float:
         """The design yield strength."""

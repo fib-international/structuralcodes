@@ -21,6 +21,8 @@ class ElasticPlasticMaterial(Material):
         density: float,
         Eh: float = 0,
         eps_su: t.Optional[float] = None,
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
         name: t.Optional[str] = None,
     ):
         """Initialize a material with an elastic plastic constitutive law.
@@ -31,9 +33,18 @@ class ElasticPlasticMaterial(Material):
             density (float): The density.
             Eh (float, optional): The hardening modulus, default value 0.
             eps_su (float, optional): The ultimate strain, default value None.
+            initial_strain (float, optional): The initial strain of the
+                material, default value None.
+            initial_stress (float, optional): The initial stress of the
+                material, default value None.
             name (str, optional): The name of the material, default value None.
         """
-        super().__init__(density=density, name=name)
+        super().__init__(
+            density=density,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            name=name,
+        )
         self._E = E
         self._fy = fy
         self._Eh = Eh
@@ -42,6 +53,7 @@ class ElasticPlasticMaterial(Material):
         self._constitutive_law = create_constitutive_law(
             'elasticplastic', self
         )
+        self._apply_initial_strain()
 
     @property
     def E(self) -> float:

@@ -30,6 +30,8 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
                 ConstitutiveLaw,
             ]
         ] = 'elasticplastic',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
     ):
         """Initializes a new instance of Reinforcement for EC2 2023.
 
@@ -50,6 +52,10 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
                 constitutive law type for reinforcement. (valid options for
                 string: 'elastic', 'elasticplastic', or
                 'elasticperfectlyplastic').
+            initial_strain (float, optional): The initial strain of the
+                material, default value None.
+            initial_stress (float, optional): The initial stress of the
+                material, default value None.
 
         Raises:
             ValueError: If the constitutive law name is not available for the
@@ -67,6 +73,8 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
         )
         self._constitutive_law = (
             constitutive_law
@@ -79,6 +87,7 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
             raise ValueError(
                 'The provided constitutive law is not valid for reinforcement.'
             )
+        self._apply_initial_strain()
 
     def fyd(self) -> float:
         """The design yield strength."""
