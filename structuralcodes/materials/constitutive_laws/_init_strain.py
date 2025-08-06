@@ -18,6 +18,8 @@ class InitStrain(ConstitutiveLaw):
         'concrete',
     )
 
+    _wrapped_law: ConstitutiveLaw = None
+
     def __init__(
         self,
         constitutive_law: ConstitutiveLaw,
@@ -42,6 +44,11 @@ class InitStrain(ConstitutiveLaw):
             )
         self._wrapped_law = constitutive_law
         self._initial_strain = initial_strain
+
+    @property
+    def wrapped_law(self) -> ConstitutiveLaw:
+        """Return the wrapped constitutive law."""
+        return self._wrapped_law
 
     def get_stress(
         self, eps: t.Union[float, ArrayLike]

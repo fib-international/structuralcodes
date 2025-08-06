@@ -127,3 +127,69 @@ def test_invalid_constitutive_law(reinforcement_type):
             epsuk=6e-2,
             constitutive_law=invalid_constitutive_law,
         )
+
+
+@pytest.mark.parametrize(
+    'initial_strain, initial_stress',
+    [(None, 300), (0.0015, None), (None, 450), (0.0025, None)],
+)
+def test_initial_strain_and_stress(initial_strain, initial_stress):
+    """Test initializing reinforcement with initial strain and stress."""
+    # Arrange
+    fyk = 500
+    Es = 200000
+    ftk = 1.15 * fyk
+    epsuk = 7.5e-2
+
+    # Act
+    reinf = ReinforcementEC2_2004(
+        fyk=fyk,
+        Es=Es,
+        ftk=ftk,
+        epsuk=epsuk,
+        initial_strain=initial_strain,
+        initial_stress=initial_stress,
+    )
+
+    # Assert
+    assert reinf.fyk == fyk
+    assert reinf.Es == Es
+    assert math.isclose(reinf.fyd(), fyk / 1.15)
+    if initial_strain is not None:
+        expected_stress = (
+            initial_strain * Es
+            if initial_strain < reinf.epsyd
+            else reinf.constitutive_law.wrapped_law.get_stress(initial_strain)
+        )
+        assert math.isclose(reinf.initial_strain, initial_strain)
+        assert math.isclose(reinf.initial_stress, expected_stress)
+    if initial_stress is not None:
+        expected_strain = (
+            initial_stress / Es
+            if initial_stress < reinf.fyd()
+            else (initial_stress - reinf.fyd())
+            / reinf.constitutive_law.wrapped_law._Eh
+            + reinf.epsyd
+        )
+        assert math.isclose(reinf.initial_strain, expected_strain)
+        assert math.isclose(reinf.initial_stress, initial_stress)
+
+
+def test_initial_strain_and_stress_invalid():
+    """Test initializing reinforcement with initial strain and stress."""
+    # Arrange
+    fyk = 500
+    Es = 200000
+    ftk = 1.15 * fyk
+    epsuk = 7.5e-2
+
+    # Act
+    with pytest.raises(ValueError):
+        ReinforcementEC2_2004(
+            fyk=fyk,
+            Es=Es,
+            ftk=ftk,
+            epsuk=epsuk,
+            initial_strain=0.002,
+            initial_stress=400,
+        )
