@@ -33,6 +33,7 @@ def create_reinforcement(
     name: t.Optional[str] = None,
     density: float = 7850,
     design_code: t.Optional[str] = None,
+    **kwargs,
 ) -> t.Optional[Reinforcement]:
     """A factory function to create the correct type of reinforcement based on
     the desired design code.
@@ -80,5 +81,6 @@ def create_reinforcement(
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            **kwargs,
         )
     return None
