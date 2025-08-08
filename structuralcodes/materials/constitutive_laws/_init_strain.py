@@ -4,6 +4,7 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import typing as t
 
+import numpy as np
 from numpy.typing import ArrayLike
 
 from ...core.base import ConstitutiveLaw
@@ -11,6 +12,8 @@ from ...core.base import ConstitutiveLaw
 
 class InitStrain(ConstitutiveLaw):
     """Class for initial strain Constitutive Law."""
+
+    _strain_compatibility: bool = True
 
     __materials__: t.Tuple[str] = (
         'steel',
@@ -44,6 +47,7 @@ class InitStrain(ConstitutiveLaw):
             )
         self._wrapped_law = constitutive_law
         self._initial_strain = initial_strain
+        self._initial_stress = self._wrapped_law.get_stress(initial_strain)
 
     @property
     def wrapped_law(self) -> ConstitutiveLaw:
@@ -54,12 +58,18 @@ class InitStrain(ConstitutiveLaw):
         self, eps: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
         """Return the stress given strain."""
-        return self._wrapped_law.get_stress(eps + self._initial_strain)
+        stress = self._wrapped_law.get_stress(eps + self._initial_strain)
+        if not self._strain_compatibility:
+            # If strain compatibility is enforced, return initial stress
+            return np.ones_like(stress) * self._initial_stress
+        return stress
 
     def get_tangent(
         self, eps: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
         """Return the tangent for given strain."""
+        if not self._strain_compatibility:
+            return self._wrapped_law.get_tangent(0) * 1e-6
         return self._wrapped_law.get_tangent(eps + self._initial_strain)
 
     def __marin__(
