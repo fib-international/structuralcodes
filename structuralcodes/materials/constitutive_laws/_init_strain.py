@@ -10,7 +10,7 @@ from numpy.typing import ArrayLike
 from ...core.base import ConstitutiveLaw
 
 
-class InitStrain(ConstitutiveLaw):
+class InitialStrain(ConstitutiveLaw):
     """Class for initial strain Constitutive Law."""
 
     _strain_compatibility: bool = True
@@ -29,7 +29,7 @@ class InitStrain(ConstitutiveLaw):
         initial_strain: float,
         name: t.Optional[str] = None,
     ) -> None:
-        """Initialize an Initial Strain Material.
+        """Initialize an Initial Strain Constitutive Law.
 
         This constitutive law is a wrapper for another constitutive law
         that assigns an initial strain.
@@ -38,7 +38,7 @@ class InitStrain(ConstitutiveLaw):
             constitutive_law (ConstitutiveLaw): Wrapped constitutive law.
             initial_strain (float): The initial strain to be applied.
         """
-        name = name if name is not None else 'InitStrainLaw'
+        name = name if name is not None else 'InitialStrainLaw'
         super().__init__(name=name)
         if not isinstance(constitutive_law, ConstitutiveLaw):
             raise TypeError(

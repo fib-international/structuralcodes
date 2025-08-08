@@ -9,7 +9,7 @@ from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
     ElasticPlastic,
-    InitStrain,
+    InitialStrain,
     ParabolaRectangle,
     UserDefined,
 )
@@ -310,7 +310,7 @@ def test_marin_init_strain_uniform_strain(
     compression for InitialStrain constitutive law.
     """
     base_law = ElasticPlastic(E, fy, Eh, eps_su)
-    law = InitStrain(base_law, init_strain)
+    law = InitialStrain(base_law, init_strain)
 
     eps_y = base_law._eps_sy
     _, eps_su_p = law.get_ultimate_strain()

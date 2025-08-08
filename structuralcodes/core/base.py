@@ -79,7 +79,9 @@ class Material(abc.ABC):
             self._initial_strain_from_stress()
         if self._initial_strain is not None:
             # Lazy import to avoid circular dependency
-            from structuralcodes.materials.constitutive_laws import InitStrain
+            from structuralcodes.materials.constitutive_laws import (
+                InitialStrain,
+            )
 
             if self._initial_stress is None:
                 # Compute the stress from the strain
@@ -87,7 +89,7 @@ class Material(abc.ABC):
                     self._initial_strain
                 )
 
-            self._constitutive_law = InitStrain(
+            self._constitutive_law = InitialStrain(
                 self._constitutive_law, self._initial_strain
             )
 

@@ -10,7 +10,7 @@ from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
     ElasticPlastic,
-    InitStrain,
+    InitialStrain,
     ParabolaRectangle,
     Popovics,
     Sargin,
@@ -542,7 +542,9 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
 def test_initstrain(fy, eps_su, initial_strain):
     """Test InitStrain constitutive law."""
     base_law = ElasticPlastic(fy=fy, E=200000, eps_su=eps_su)
-    law = InitStrain(constitutive_law=base_law, initial_strain=initial_strain)
+    law = InitialStrain(
+        constitutive_law=base_law, initial_strain=initial_strain
+    )
 
     ult_strain_base = base_law.get_ultimate_strain()
     ult_strain = law.get_ultimate_strain()

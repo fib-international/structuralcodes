@@ -17,7 +17,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.basic import ElasticMaterial, GenericMaterial
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import InitStrain, Sargin
+from structuralcodes.materials.constitutive_laws import InitialStrain, Sargin
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
@@ -1408,7 +1408,7 @@ def test_rectangular_section_init_strain(fck, fyk, ductility_class):
     )
 
     # Create a dummy initStrain material
-    init_strain = InitStrain(steel.constitutive_law, 0.0)
+    init_strain = InitialStrain(steel.constitutive_law, 0.0)
     init_strain_material = GenericMaterial(
         density=7850, constitutive_law=init_strain
     )
