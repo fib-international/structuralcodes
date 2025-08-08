@@ -48,6 +48,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         ] = 'parabolarectangle',
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         fcm: t.Optional[float] = None,
         fctm: t.Optional[float] = None,
         fctk_5: t.Optional[float] = None,
@@ -86,6 +87,8 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
                 material, default value None.
             initial_stress (float, optional): The initial stress of the
                 material, default value None.
+            strain_compatibility (bool, optional): If False, the strain
+                compatibility is not enforced, default value None.
             fcm (float, optional): The mean compressive strength.
             fctm (float, optional): The mean tensile strength.
             fctk_5 (float, optional): The 5% fractile for the tensile strength.
@@ -138,6 +141,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             gamma_c=gamma_c,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._alpha_cc = alpha_cc
         self._fcm = abs(fcm) if fcm is not None else None

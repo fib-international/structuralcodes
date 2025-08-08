@@ -33,6 +33,7 @@ class ReinforcementMC2010(Reinforcement):
         ] = 'elasticplastic',
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ):
         """Initializes a new instance of Reinforcement for MC2010.
 
@@ -59,6 +60,8 @@ class ReinforcementMC2010(Reinforcement):
                 material, default value None.
             initial_stress (float, optional): The initial stress of the
                 material, default value None.
+            strain_compatibility (bool, optional): If False, the strain
+                compatibility is not enforced, default value None.
 
         Raises:
             ValueError: If the constitutive law name is not available for the
@@ -79,6 +82,7 @@ class ReinforcementMC2010(Reinforcement):
             gamma_s=gamma_s,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._gamma_eps = gamma_eps
         self._constitutive_law = (

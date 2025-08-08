@@ -32,6 +32,7 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
         ] = 'elasticplastic',
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ):
         """Initializes a new instance of Reinforcement for EC2 2023.
 
@@ -56,6 +57,8 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
                 material, default value None.
             initial_stress (float, optional): The initial stress of the
                 material, default value None.
+            strain_compatibility (bool, optional): If False, the strain
+                compatibility is not enforced, default value None.
 
         Raises:
             ValueError: If the constitutive law name is not available for the
@@ -75,6 +78,7 @@ class ReinforcementEC2_2023(Reinforcement):  # noqa: N801
             gamma_s=gamma_s,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._constitutive_law = (
             constitutive_law

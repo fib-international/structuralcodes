@@ -23,6 +23,7 @@ class Concrete(Material):
         existing: t.Optional[bool] = False,
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ) -> None:
         """Initializes an abstract concrete material."""
         name = name if name is not None else 'Concrete'
@@ -30,6 +31,7 @@ class Concrete(Material):
             density=density,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
             name=name,
         )
 

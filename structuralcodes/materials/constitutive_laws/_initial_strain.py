@@ -27,6 +27,7 @@ class InitialStrain(ConstitutiveLaw):
         self,
         constitutive_law: ConstitutiveLaw,
         initial_strain: float,
+        strain_compatibility: bool = True,
         name: t.Optional[str] = None,
     ) -> None:
         """Initialize an Initial Strain Constitutive Law.
@@ -37,6 +38,10 @@ class InitialStrain(ConstitutiveLaw):
         Arguments:
             constitutive_law (ConstitutiveLaw): Wrapped constitutive law.
             initial_strain (float): The initial strain to be applied.
+            strain_compatibility (bool): If True, the strain compatibility is
+                enforced, otherwise the strain compatibility is released. This
+                is helpful for instance for modelling unbonded tendons.
+                Default value True.
         """
         name = name if name is not None else 'InitialStrainLaw'
         super().__init__(name=name)
@@ -48,6 +53,12 @@ class InitialStrain(ConstitutiveLaw):
         self._wrapped_law = constitutive_law
         self._initial_strain = initial_strain
         self._initial_stress = self._wrapped_law.get_stress(initial_strain)
+        self._strain_compatibility = strain_compatibility
+
+    @property
+    def strain_compatibility(self) -> bool:
+        """Return the strain compatibility status."""
+        return self._strain_compatibility
 
     @property
     def wrapped_law(self) -> ConstitutiveLaw:

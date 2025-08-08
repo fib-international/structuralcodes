@@ -17,12 +17,14 @@ class Material(abc.ABC):
     _constitutive_law = None
     _initial_strain: t.Optional[float] = None
     _initial_stress: t.Optional[float] = None
+    _strain_compatibility: t.Optional[bool] = None
 
     def __init__(
         self,
         density: float,
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         name: t.Optional[str] = None,
     ) -> None:
         """Initializes an instance of a new material.
@@ -45,6 +47,7 @@ class Material(abc.ABC):
             )
         self._initial_strain = initial_strain
         self._initial_stress = initial_stress
+        self._strain_compatibility = strain_compatibility
         self._name = name if name is not None else 'Material'
 
     @property
@@ -72,8 +75,25 @@ class Material(abc.ABC):
         """Returns the initial stress of the material."""
         return self._initial_stress
 
+    @property
+    def strain_compatibility(self):
+        """Returns the strain compatibility of the material.
+
+        If true (default), the strain compatibility is enforced
+        haveing the same strain as in all other materials of the
+        section at the same point. If false, the strain compatibility
+        is not enforced and the initial strain is applied to the section
+        independently.
+        """
+        return self._strain_compatibility
+
     def _apply_initial_strain(self):
         """Wraps the current constitutive law to apply initial strain."""
+        strain_compatibility = (
+            self._strain_compatibility
+            if self._strain_compatibility is not None
+            else True
+        )
         if self._initial_stress is not None:
             # Specified a stress, compute the strain from it
             self._initial_strain_from_stress()
@@ -90,7 +110,9 @@ class Material(abc.ABC):
                 )
 
             self._constitutive_law = InitialStrain(
-                self._constitutive_law, self._initial_strain
+                self._constitutive_law,
+                self._initial_strain,
+                strain_compatibility,
             )
 
     def _initial_strain_from_stress(self):

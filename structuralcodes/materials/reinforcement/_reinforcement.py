@@ -26,6 +26,7 @@ class Reinforcement(Material):
         name: t.Optional[str] = None,
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ) -> None:
         """Initializes an abstract reinforcement material."""
         name = name if name is not None else 'Reinforcement'
@@ -33,6 +34,7 @@ class Reinforcement(Material):
             density=density,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
             name=name,
         )
 

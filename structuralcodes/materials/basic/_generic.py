@@ -14,6 +14,7 @@ class GenericMaterial(Material):
         constitutive_law: ConstitutiveLaw,
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         name: t.Optional[str] = None,
     ):
         """Initialize a material with a constitutive law.
@@ -26,13 +27,16 @@ class GenericMaterial(Material):
                 material, default value None.
             initial_stress (float, optional): The initial stress of the
                 material, default value None.
+            strain_compatibility (bool, optional): If False, the strain
+                compatibility is not enforced, default value None.
             name (str, optional): The name of the material, default value None.
         """
         super().__init__(
             density=density,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
-            name=name,
+            strain_compatibility=strain_compatibility,
+            name=name if name else 'GenericMaterial',
         )
         self._constitutive_law = constitutive_law
         self._apply_initial_strain()

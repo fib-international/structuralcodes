@@ -130,10 +130,18 @@ def test_invalid_constitutive_law(reinforcement_type):
 
 
 @pytest.mark.parametrize(
-    'initial_strain, initial_stress',
-    [(None, 300), (0.0015, None), (None, 450), (0.0025, None)],
+    'initial_strain, initial_stress, strain_compatibility',
+    [
+        (None, 300, True),
+        (0.0015, None, None),
+        (None, 450, None),
+        (0.0025, None, True),
+        (0.0025, None, False),
+    ],
 )
-def test_initial_strain_and_stress(initial_strain, initial_stress):
+def test_initial_strain_and_stress(
+    initial_strain, initial_stress, strain_compatibility
+):
     """Test initializing reinforcement with initial strain and stress."""
     # Arrange
     fyk = 500
@@ -149,9 +157,11 @@ def test_initial_strain_and_stress(initial_strain, initial_stress):
         epsuk=epsuk,
         initial_strain=initial_strain,
         initial_stress=initial_stress,
+        strain_compatibility=strain_compatibility,
     )
 
     # Assert
+    assert reinf.strain_compatibility == strain_compatibility
     assert reinf.fyk == fyk
     assert reinf.Es == Es
     assert math.isclose(reinf.fyd(), fyk / 1.15)
@@ -161,6 +171,13 @@ def test_initial_strain_and_stress(initial_strain, initial_stress):
             if initial_strain < reinf.epsyd
             else reinf.constitutive_law.wrapped_law.get_stress(initial_strain)
         )
+        # Check that stra_compatibility is not None and is false
+        if (
+            reinf.strain_compatibility is not None
+            and not reinf._strain_compatibility
+        ):
+            expected_stress *= 0
+            expected_stress += reinf.initial_stress
         assert math.isclose(reinf.initial_strain, initial_strain)
         assert math.isclose(reinf.initial_stress, expected_stress)
     if initial_stress is not None:
@@ -171,6 +188,11 @@ def test_initial_strain_and_stress(initial_strain, initial_stress):
             / reinf.constitutive_law.wrapped_law._Eh
             + reinf.epsyd
         )
+        if (
+            reinf.strain_compatibility is not None
+            and not reinf._strain_compatibility
+        ):
+            expected_stress *= 0
         assert math.isclose(reinf.initial_strain, expected_strain)
         assert math.isclose(reinf.initial_stress, initial_stress)
 
