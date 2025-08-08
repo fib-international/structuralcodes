@@ -506,11 +506,19 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
 
     def __sargin__(self) -> dict:
         """Returns kwargs for creating a Sargin const law."""
+        if self._k_sargin is None:
+            k_sargin_design = ec2_2004.k_sargin(
+                Ecm=self.Ecm,
+                fcm=self.fcd(),
+                eps_c1=self.eps_c1,
+            )
+        else:
+            k_sargin_design = self._k_sargin
         return {
             'fc': self.fcd(),
             'eps_c1': self.eps_c1,
             'eps_cu1': self.eps_cu1,
-            'k': self.k_sargin,
+            'k': k_sargin_design,
         }
 
     def __popovics__(self) -> dict:
