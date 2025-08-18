@@ -51,6 +51,10 @@ def create_reinforcement(
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
+        **kwargs: Other valid keyword arguments that are collected and passed
+            to the specific reinforcement material. Please inspect the
+            documentation of the other reinforcement materials to see valid
+            arguments.
 
     Raises:
         ValueError: If the design code is not valid or does not cover
