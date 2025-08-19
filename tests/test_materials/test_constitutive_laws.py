@@ -570,3 +570,62 @@ def test_initstrain(fy, eps_su, initial_strain):
     tan_computed = law.get_tangent(strain)
 
     assert_allclose(tan_computed, tan_expected)
+
+
+def test_initial_strain_not_constitutive_law():
+    """Test if TypeError is raised if an InitialStrain law is initialized
+    without a ConstitutiveLaw.
+    """
+    with pytest.raises(TypeError):
+        InitialStrain(constitutive_law=None, initial_strain=1e-3)
+
+
+def test_initial_strain_strain_compatibility_property():
+    """Test the strain_compatibility property."""
+    # Arrange
+    constitutive_law = Elastic(E=30000)
+    initial_strain_value = 2e-3
+
+    initial_strain_no_strain_compatibility = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=False,
+    )
+
+    initial_strain_strain_compatibility = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=True,
+    )
+
+    # Act and assert
+    assert not initial_strain_no_strain_compatibility.strain_compatibility
+    assert initial_strain_strain_compatibility.strain_compatibility
+
+
+def test_initial_strain_get_stress_tangent_no_strain_compatibility():
+    """Test the get_stress and get_tangent methods without strain
+    compatibility.
+    """
+    # Arrange
+    constitutive_law = Elastic(E=30000)
+    initial_strain_value = 2e-3
+
+    initial_strain = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=False,
+    )
+
+    initial_stress = constitutive_law.get_stress(initial_strain_value)
+    initial_tangent = constitutive_law.get_tangent(0)
+
+    strains = np.linspace(-2e-3, 2e-3, 10)
+
+    # Act
+    stresses = initial_strain.get_stress(strains)
+    tangents = initial_strain.get_tangent(strains)
+
+    # Assert
+    assert np.allclose(stresses, initial_stress)
+    assert np.allclose(tangents, initial_tangent * 1e-6)
