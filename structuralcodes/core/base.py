@@ -30,11 +30,16 @@ class Material(abc.ABC):
         """Initializes an instance of a new material.
 
         Args:
-            density (float): density of the material in kg/m3
+            density (float): Density of the material in kg/m3.
 
         Keyword Args:
-            initial_strain (Optional[float]): initial strain of the material
-            initial_stress (Optional[float]): initial stress of the material
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             name (Optional[str]): descriptive name of the material
 
         Raise:

@@ -83,12 +83,13 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 law type for concrete. (valid options for string: 'elastic',
                 'parabolarectangle', 'bilinearcompression', 'sargin',
                 'popovics').
-            initial_strain (float, optional): The initial strain of the
-                material, default value None.
-            initial_stress (float, optional): The initial stress of the
-                material, default value None.
-            strain_compatibility (bool, optional): If False, the strain
-                compatibility is not enforced, default value None.
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             fcm (float, optional): The mean compressive strength.
             fctm (float, optional): The mean tensile strength.
             fctk_5 (float, optional): The 5% fractile for the tensile strength.
