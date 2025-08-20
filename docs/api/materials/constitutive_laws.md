@@ -1,6 +1,7 @@
 (api-constitutive-laws)=
 # Constitutive laws
 
+(api-constitutive-law-factory)=
 ## Constitutive law factory
 
 ```{eval-rst}
