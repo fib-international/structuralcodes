@@ -42,6 +42,18 @@ exclude_patterns = [
     'docs',
 ]
 
+# Sphinx-design configuration
+sd_custom_directives = {
+    'dropdown-syntax': {
+        'inherit': 'dropdown',
+        'argument': 'Syntax',
+        'options': {
+            'color': 'primary',
+            'icon': 'code',
+        },
+    }
+}
+
 # Options for HTML output
 html_title = project
 html_theme = 'furo'
