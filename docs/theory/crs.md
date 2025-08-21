@@ -1,7 +1,7 @@
 # Coordinate system and sign convention
 
 ## Coordinate system
-StructuralCodes adopts a coordinate system **GRS** with the following conventions:
+StructuralCodes adopts a global reference system (GRS) with the following conventions:
 
 **$x$-axis**
 : Points out of the screen (toward the observer).
