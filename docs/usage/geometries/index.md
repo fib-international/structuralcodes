@@ -30,6 +30,12 @@ The t-shaped geometry created with the code [above](#code-usage-surface-geometri
 If you work in a Jupyter notebook, and return the geometry object in the final line of a code cell, the shape is visualized in the output below the code cell ✨
 :::
 
+:::{admonition} Creating holes
+:class: tip
+
+If you ever need to create a hole in a geometry, simply create a separate geometry object for the hole, and subtract it from the other. This operation returns a new {class}`CompoundGeometry <structuralcodes.geometry.CompoundGeometry>` with a hole ✅
+:::
+
 ## Rectangular and circular geometries
 
 To simplify creating common geometrical shapes, we can use the {class}`RectangularGeometry <structuralcodes.geometry.RectangularGeometry>` or {class}`CircularGeometry <structuralcodes.geometry.CircularGeometry>` classes. These classes are wrappers for creating surface geometries with either a rectangular or a circular shape.
