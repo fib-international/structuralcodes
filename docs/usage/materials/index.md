@@ -26,6 +26,12 @@ After creating a material object, it's properties are easily accessed, e.g. `con
 All material classes are subclasses of the {class}`Material <structuralcodes.core.base.Material>` base class, and all constitutive laws are subclasses of the {class}`ConstitutiveLaw <structuralcodes.core.base.ConstitutiveLaw>` base class. These base classes define interfaces. This means that we can create our own custom classes as subclasses of these base classes, and as long as we implement the necessary methods defined by the interface, we can swap the builtin classes with our custom ones. This opens for a lot of flexibility inside StructuralCodes.
 :::
 
+(usage-materials-are-immutable)=
+:::{attention}
+
+The material objects in StructuralCodes are immutable. This means that as soon as a material object is created, the attributes of the object cannot be changed.
+:::
+
 (usage-concrete-materials)=
 ## Concrete materials
 
