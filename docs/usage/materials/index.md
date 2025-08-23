@@ -19,7 +19,7 @@ To create concrete and reinforcement objects, we can either directly import spec
 
 Notice how the factory functions accept the same keyword arguments as the constructors of the specific classes. This allows us to pass e.g. `gamma_c` and `alpha_cc` to `create_concrete`. Also notice how we are using {func}`reinforcement_duct_props() <structuralcodes.codes.ec2_2004.reinforcement_duct_props>` to get a dictionary with properties related to the specified ductility class of reinforcement.
 
-After creating a material object, it's properties are easily accessed, e.g. `concrete.Ecm`. Most notably, the `.constitutive_law` attribute reveals the [constitutive law](#usage-constitutive-laws) of the material.
+After creating a material object, its properties are easily accessed, e.g. `concrete.Ecm`. Most notably, the `.constitutive_law` attribute reveals the [constitutive law](#usage-constitutive-laws) of the material.
 
 :::{tip}
 

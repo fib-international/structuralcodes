@@ -7,7 +7,9 @@ Geometry objects are responsible for storing a polygon, a point, or a _compound_
 
 ## Surface geometries
 
-A {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` is initialized by passing a {class}`shapely.Polygon` with an arbitrary shape, and a [material object](#api-materials). See the example below where we create two rectangular surfaces and add them together to form a T-shaped geometry. Note that adding two or more {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` objects results in a {class}`CompoundGeometry <structuralcodes.geometry.CompoundGeometry>` object.
+A {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` is initialized by passing a {class}`shapely.Polygon` with an arbitrary shape, and a [material object](#api-materials). See the example below where we create a T-shaped geometry.
+
+Note that adding two or more {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` objects results in a {class}`CompoundGeometry <structuralcodes.geometry.CompoundGeometry>` object.
 
 (code-usage-surface-geometries)=
 ::::{dropdown-syntax}
@@ -30,10 +32,20 @@ The t-shaped geometry created with the code [above](#code-usage-surface-geometri
 If you work in a Jupyter notebook, and return the geometry object in the final line of a code cell, the shape is visualized in the output below the code cell ✨
 :::
 
+:::{tip}
+
+In the code [above](#code-usage-surface-geometries) we used [Shapely](https://shapely.readthedocs.io) to model the shape of the geometry. We created the t-shaped geometry by taking the union of two polygons, but we could just as well have created one t-shaped polygon directly. You can read more about geometry creation with Shapely [here](https://shapely.readthedocs.io/en/stable/geometry.html).
+
+If the t-shaped geometry was made with two different materials, say one material for the flange and one for the web, we could have created two geometry objects, e.g. one {class}`SurfaceGeometry <structuralcodes.geometries.SurfaceGeometry>` for the flange and one {class}`SurfaceGeometry <structuralcodes.geometries.SurfaceGeometry>` for the web, and added these together (`+`) to create a {class}`CompoundGeometry <structuralcodes.geometries.CompoundGeometry>`.
+
+:::
+
 :::{admonition} Creating holes
 :class: tip
 
 If you ever need to create a hole in a geometry, simply create a separate geometry object for the hole, and subtract it from the other. This operation returns a new {class}`CompoundGeometry <structuralcodes.geometry.CompoundGeometry>` with a hole ✅
+
+If you prefer to do the modelling with Shapely, this is also possible. Simply subtract the polygon of the hole from the polygon of the base geometry, and use the result as input to a {class}`SurfaceGeometry <structuralcodes.geometries.SurfaceGeometry>`.
 :::
 
 ## Rectangular and circular geometries

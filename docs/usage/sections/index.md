@@ -54,7 +54,7 @@ See the {class}`GenericSectionCalculator <structuralcodes.sections.GenericSectio
 :::
 ::::
 
-Notice how for example {py:meth}`.calculate_moment_curvature() <structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature>` returns a custom dataclass of type {class}`MomentCurvatureResults <structuralcodes.core._section_results.MomentCurvatureResults>`. If we inspect this class further, we find among its attributes `chi_y` and `m_y`. These are the curvature and the moment about the selected neutral axis. We also find the curvature and moment about the axis orthogonal to the neutral axis `chi_z` and `m_z`, and the axial strain at the level of the neutral axis `eps_axial`. All these attributes are stored as arrays, ready for visualization or further processing.
+Notice how for example {py:meth}`.calculate_moment_curvature() <structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature>` returns a custom dataclass of type {class}`MomentCurvatureResults <structuralcodes.core._section_results.MomentCurvatureResults>`. If we inspect this class further, we find among its attributes `chi_y` and `m_y`. These are the curvature and the moment about the selected global axis of the section. We also find the curvature and moment about the axis orthogonal to the global axis `chi_z` and `m_z`, and the axial strain at the level of the global axis `eps_axial`. All these attributes are stored as arrays, ready for visualization or further processing.
 
 :::::{tip}
 

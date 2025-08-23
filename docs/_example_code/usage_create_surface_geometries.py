@@ -33,9 +33,8 @@ polygon_flange = Polygon(
     ),
 )
 
-# Create surface geometries
-web_geom = SurfaceGeometry(poly=polygon_web, material=concrete)
-flange_geom = SurfaceGeometry(poly=polygon_flange, material=concrete)
+# Create a T-shaped polygon by taking the union of the two rectangles
+polygon_t = polygon_web.union(polygon_flange)
 
-# Add surface geometries to create a T-shaped geometry
-t_geom = web_geom + flange_geom
+# Create surface geometry
+t_geom = SurfaceGeometry(poly=polygon_t, material=concrete)
