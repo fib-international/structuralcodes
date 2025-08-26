@@ -81,7 +81,7 @@ html_theme_options = {
 
 # Options for intersphinx
 intersphinx_mapping = {
-    'shapely': ('https://shapely.readthedocs.io/en/stable/', None),
+    'shapely': ('https://shapely.readthedocs.io/en/stable', None),
 }
 
 # Autodoc settings
