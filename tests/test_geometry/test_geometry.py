@@ -98,7 +98,7 @@ def test_point_geometry():
     # Create two points with custom label for filtering
     for i in range(2):
         p = PointGeometry(np.array([2, 3]), 12, steel, group_label='Bottom')
-        assert p.name == f'Geometry_{i+2}'
+        assert p.name == f'Geometry_{i + 2}'
         assert p.group_label == 'Bottom'
         assert math.isclose(p.diameter, 12)
         assert math.isclose(p.point.coords[0][0], 2)

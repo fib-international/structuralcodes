@@ -6,7 +6,7 @@ PACKAGE_NAME = structuralcodes
 deps:  ## Install dependencies
 	python -m pip install --upgrade uv
 	python -m uv pip install -r requirements.txt
-	python -m uv pip install ruff==0.6.5
+	python -m uv pip install ruff==0.12.10
 	python -m uv pip install --upgrade flit
 	python -m uv pip install --upgrade pytest pytest-cov
 
