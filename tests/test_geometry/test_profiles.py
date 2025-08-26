@@ -1,4 +1,4 @@
-"""Tests for the Steel Sections."""
+"""Tests for profiles."""
 
 import math
 
@@ -7,6 +7,10 @@ from shapely.testing import assert_geometries_equal
 
 from structuralcodes.core._marin_integration import marin_integration
 from structuralcodes.geometry import (
+    CompoundGeometry,
+    SurfaceGeometry,
+)
+from structuralcodes.geometry.profiles import (
     HE,
     IPE,
     IPN,
@@ -14,8 +18,6 @@ from structuralcodes.geometry import (
     UBP,
     UC,
     UPN,
-    CompoundGeometry,
-    SurfaceGeometry,
 )
 from structuralcodes.materials.basic import (
     ElasticMaterial,
