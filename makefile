@@ -1,9 +1,10 @@
 .DEFAULT_GOAL := deps
-.PHONY: deps form lint test
+.PHONY: deps form lint test tox
 
 deps:  ## Install dependencies
 	python -m pip install --upgrade uv
 	python -m uv pip install -r requirements.txt
+	python -m uv pip install tox tox-uv
 	python -m uv pip install ruff==0.12.10
 	python -m uv pip install --upgrade flit
 	python -m uv pip install --upgrade pytest pytest-cov
@@ -18,3 +19,6 @@ lint:  ## Linting and static type checking
 
 test:  ## Run tests and output reports
 	python -m pytest --junitxml=junit/test-results.xml --cov=structuralcodes --cov-report=term-missing --cov-report=xml
+
+tox:   ## Run tox
+	python -m tox -e py
