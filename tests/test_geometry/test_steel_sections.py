@@ -5,6 +5,7 @@ import math
 import pytest
 from shapely.testing import assert_geometries_equal
 
+from structuralcodes.core._marin_integration import marin_integration
 from structuralcodes.geometry import (
     HE,
     IPE,
@@ -25,9 +26,6 @@ from structuralcodes.materials.constitutive_laws import (
     UserDefined,
 )
 from structuralcodes.sections._generic import GenericSection
-from structuralcodes.sections.section_integrators._marin_integration import (
-    marin_integration,
-)
 
 
 # Test steel I section

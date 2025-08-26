@@ -14,9 +14,7 @@ from shapely.affinity import rotate, scale, translate
 from shapely.geometry.polygon import orient
 from shapely.ops import linemerge, split, unary_union
 
-from structuralcodes.sections.section_integrators._marin_integration import (
-    marin_integration,
-)
+from structuralcodes.core._marin_integration import marin_integration
 
 
 class BaseProfile:

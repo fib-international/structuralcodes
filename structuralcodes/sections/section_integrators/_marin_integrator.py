@@ -10,13 +10,13 @@ from numpy.typing import ArrayLike, NDArray
 from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
 
+from structuralcodes.core._marin_integration import marin_integration
 from structuralcodes.geometry import (
     CompoundGeometry,
     SurfaceGeometry,
     create_line_point_angle,
 )
 
-from ._marin_integration import marin_integration
 from ._section_integrator import SectionIntegrator
 
 
