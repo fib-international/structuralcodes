@@ -1,6 +1,6 @@
 """Example code for listing available steel profiles."""
 
-from structuralcodes.geometry import HE
+from structuralcodes.geometry.profiles import HE
 
 HE.profiles()
 
