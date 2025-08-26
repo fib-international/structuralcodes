@@ -104,7 +104,7 @@ class Material(abc.ABC):
             self._initial_strain_from_stress()
         if self._initial_strain is not None:
             # Lazy import to avoid circular dependency
-            from structuralcodes.materials.constitutive_laws import (
+            from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
                 InitialStrain,
             )
 
@@ -259,7 +259,9 @@ class ConstitutiveLaw(abc.ABC):
 
         eps = np.concatenate((eps_neg, eps_pos))
         sig = self.get_stress(eps)
-        from structuralcodes.materials.constitutive_laws import UserDefined
+        from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
+            UserDefined,
+        )
 
         return UserDefined(eps, sig)
 

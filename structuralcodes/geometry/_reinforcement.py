@@ -78,8 +78,6 @@ def add_reinforcement_line(
         CompoundGeometry: A compound geometry with the original geometry and
         the reinforcement.
     """
-    from math import floor
-
     p1 = np.array(coords_i)
     p2 = np.array(coords_j)
     distance = np.linalg.norm(p2 - p1)
@@ -100,7 +98,7 @@ def add_reinforcement_line(
     elif s > 0:
         # Provided the spacing
         # 1. Compute the number of bars
-        n = floor(distance / s) + 1
+        n = math.floor(distance / s) + 1
         # 2. Distribute the bars centered in the segment
         d = (n - 1) * s
         p1 = p1 + v * (distance - d) / 2.0
