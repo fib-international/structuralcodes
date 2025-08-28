@@ -112,8 +112,8 @@ def _theta(theta: float, cot_min: float = 1.0, cot_max: float = 2.5) -> None:
             'Wrong value for theta is chosen. Theta has '
             f'to be chosen such that 1/tan(theta) lies between '
             f'{cot_min} and {cot_max}. This corresponds to an angle '
-            f'between {round(math.degrees(math.atan(1/cot_min)),2)} '
-            f'and {round(math.degrees(math.atan(1/cot_max)),2)} '
+            f'between {round(math.degrees(math.atan(1 / cot_min)), 2)} '
+            f'and {round(math.degrees(math.atan(1 / cot_max)), 2)} '
             f'degrees, respectively. Current angle is set at {theta}'
             ' degrees.'
         )
@@ -152,7 +152,7 @@ def alpha_cw(Ned: float, Ac: float, fcd: float) -> float:
         value = 2.5 * (1 - sigma_cp / fcd)
     else:
         raise ValueError(
-            f'sigma_cp/fcd={sigma_cp/fcd}. Prestress has to be smaller'
+            f'sigma_cp/fcd={sigma_cp / fcd}. Prestress has to be smaller'
             ' than design compressive strength.'
         )
     return value
@@ -400,6 +400,46 @@ def VRds(
     )
 
 
+# Equation (6.8 & 6.13) -> Reinforcement ratio isolated from the equation.
+def Asw_s_required(
+    Ved: float,
+    z: float,
+    theta: float,
+    fywd: float,
+    alpha: float = 90.0,
+) -> float:
+    """Calculate the required shear reinforcement.
+
+    EN 1992-1-1 (2005). Eq. (6.13)
+
+    Args:
+        Ved (float): The shear force in N.
+        z (float): The inner lever arm of internal forces in mm.
+        theta (float): The angle of the compression strut in degrees.
+        fywd (float): The design strength of the shear reinforcement steel in
+            MPa.
+
+    Keyword Args:
+        alpha (float): The angle of the shear reinforcement with respect to the
+            neutral axis in degrees. Default value = 90 degrees.
+
+    Returns:
+        float: The amount of required shear reinforcement in mm2/mm.
+
+    Raises:
+        ValueError: When theta < 21.8 degrees or theta > 45 degrees.
+    """
+    theta = math.radians(theta)
+    alpha = math.radians(alpha)
+    return (
+        Ved
+        / z
+        / fywd
+        / (1 / math.tan(theta) + 1.0 / math.tan(alpha))
+        / math.sin(alpha)
+    )
+
+
 # Equation (6.9 & 6.14)
 # For alpha == 90 degrees, Equation (6.14) reduces to Equation (6.9).
 def VRdmax(
@@ -480,7 +520,7 @@ def Asw_max(
         bw (float): The smallest width of the cross-section in tension in mm.
         s (float): The centre-to-centre distance of the shear reinforcement in
             mm.
-        fwyd (float): The design strength of the shear reinforcement steel in
+        fywd (float): The design strength of the shear reinforcement steel in
             MPa.
         NEd (float): The normal force in the cross-section due to loading or
             prestress (NEd > 0 for compression) in N.

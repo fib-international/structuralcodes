@@ -88,7 +88,7 @@ class FiberIntegrator(SectionIntegrator):
             max_area = g.area * mesh_size
             # triangulate the geometry getting back the mesh
             mesh = triangle.triangulate(tri, f'pq{30:.1f}Aa{max_area}o1')
-            mat = g.material
+            constitutive_law = g.material.constitutive_law
             # Get x and y coordinates (centroid) and area for each fiber
             x = []
             y = []
@@ -128,7 +128,7 @@ class FiberIntegrator(SectionIntegrator):
 
             # return back the triangulation data
             triangulated_data.append(
-                (np.array(x), np.array(y), np.array(area), mat)
+                (np.array(x), np.array(y), np.array(area), constitutive_law)
             )
         # For the reinforcement
         # Tentative proposal for managing reinforcement (PointGeometry)
@@ -139,19 +139,27 @@ class FiberIntegrator(SectionIntegrator):
             x = x[0]
             y = y[0]
             area = pg.area
-            mat = pg.material
-            if reinf_data.get(mat) is None:
-                reinf_data[mat] = [
+            constitutive_law = pg.material.constitutive_law
+            if reinf_data.get(constitutive_law) is None:
+                reinf_data[constitutive_law] = [
                     np.array(x),
                     np.array(y),
                     np.array(area),
                 ]
             else:
-                reinf_data[mat][0] = np.hstack((reinf_data[mat][0], x))
-                reinf_data[mat][1] = np.hstack((reinf_data[mat][1], y))
-                reinf_data[mat][2] = np.hstack((reinf_data[mat][2], area))
-        for mat, value in reinf_data.items():
-            triangulated_data.append((value[0], value[1], value[2], mat))
+                reinf_data[constitutive_law][0] = np.hstack(
+                    (reinf_data[constitutive_law][0], x)
+                )
+                reinf_data[constitutive_law][1] = np.hstack(
+                    (reinf_data[constitutive_law][1], y)
+                )
+                reinf_data[constitutive_law][2] = np.hstack(
+                    (reinf_data[constitutive_law][2], area)
+                )
+        for constitutive_law, value in reinf_data.items():
+            triangulated_data.append(
+                (value[0], value[1], value[2], constitutive_law)
+            )
 
         return triangulated_data
 
@@ -199,7 +207,7 @@ class FiberIntegrator(SectionIntegrator):
 
         prepared_input = []
 
-        triangulated_data = kwargs.get('tri', None)
+        triangulated_data = kwargs.get('tri')
         if triangulated_data is None:
             # No triangulation is provided, triangulate the section
             # Fiber integrator for generic section uses delaunay triangulation

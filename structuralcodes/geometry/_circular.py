@@ -12,7 +12,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from shapely import Polygon
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.core.base import Material
 
 from ._geometry import SurfaceGeometry
 
@@ -37,9 +37,8 @@ class CircularGeometry(SurfaceGeometry):
     def __init__(
         self,
         diameter: float,
-        material: t.Union[Material, ConstitutiveLaw],
+        material: Material,
         n_points: int = 20,
-        density: t.Optional[float] = None,
         concrete: bool = False,
         origin: t.Optional[ArrayLike] = None,
         name: t.Optional[str] = None,
@@ -49,14 +48,9 @@ class CircularGeometry(SurfaceGeometry):
 
         Arguments:
             diameter (float): The diameter of the geometry.
-            material (Union(Material, ConstitutiveLaw)): A Material or
-                ConsitutiveLaw class applied to the geometry.
+            material (Material): A Material class applied to the geometry.
             n_points (int): The number of points used to discretize the
                 circle as a shapely `Polygon` (default = 20).
-            density (Optional(float)): When a ConstitutiveLaw is passed as
-                material, the density can be provided by this argument. When
-                material is a Material object the density is taken from the
-                material.
             concrete (bool): Flag to indicate if the geometry is concrete.
             origin (Optional(ArrayLike)): The center point of the circle.
                 (0.0, 0.0) is used as default.
@@ -84,7 +78,6 @@ class CircularGeometry(SurfaceGeometry):
         super().__init__(
             poly=polygon,
             material=material,
-            density=density,
             concrete=concrete,
             name=name,
             group_label=group_label,

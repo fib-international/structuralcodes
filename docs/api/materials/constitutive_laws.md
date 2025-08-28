@@ -1,6 +1,7 @@
 (api-constitutive-laws)=
 # Constitutive laws
 
+(api-constitutive-law-factory)=
 ## Constitutive law factory
 
 ```{eval-rst}
@@ -96,5 +97,20 @@
    .. automethod:: get_tangent
    .. automethod:: get_ultimate_strain
    .. automethod:: set_ultimate_strain
+
+```
+
+## Initial strain
+
+```{eval-rst}
+.. autoclass:: structuralcodes.materials.constitutive_laws.InitialStrain
+
+   .. automethod:: __init__
+   .. automethod:: get_stress
+   .. automethod:: get_tangent
+   .. automethod:: get_ultimate_strain
+
+   .. autoproperty:: strain_compatibility
+   .. autoproperty:: wrapped_law
 
 ```

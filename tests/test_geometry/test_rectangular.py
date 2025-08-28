@@ -9,8 +9,8 @@ from structuralcodes.geometry import (
     RectangularGeometry,
     add_reinforcement_line,
 )
+from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import Elastic
 from structuralcodes.materials.reinforcement import ReinforcementMC2010
 
 
@@ -21,7 +21,7 @@ from structuralcodes.materials.reinforcement import ReinforcementMC2010
 )
 def test_create_rectangular_geometry(w, h):
     """Test creating a RectangularGeometry."""
-    mat = Elastic(300000)
+    mat = ElasticMaterial(E=300000, density=2450)
     rect = RectangularGeometry(w, h, mat)
 
     assert math.isclose(rect.width, w)
@@ -47,7 +47,7 @@ def test_create_rectangular_geometry(w, h):
 )
 def test_create_rectangular_geometry_exception(wrong_width, wrong_height):
     """Test raising exception when inputing wrong value."""
-    mat = Elastic(30000)
+    mat = ElasticMaterial(E=30000, density=2450)
     with pytest.raises(ValueError):
         RectangularGeometry(wrong_width, wrong_height, mat)
 
@@ -60,7 +60,7 @@ def test_create_rectangular_geometry_exception(wrong_width, wrong_height):
 def test_rectangle_with_origin(origin):
     """Test creating a rectangle with an origin."""
     # Arrange
-    mat = Elastic(30000)
+    mat = ElasticMaterial(E=30000, density=2450)
     height = 600
     width = 200
 

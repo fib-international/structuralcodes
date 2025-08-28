@@ -55,8 +55,17 @@ from ._concrete_material_properties import (
 )
 from ._concrete_punching import (
     b_0,
+    b_s,
+    b_sr,
+    k_dg,
+    k_psi,
     m_ed,
     psi_punching,
+    psi_punching_level_one,
+    psi_punching_level_three,
+    psi_punching_level_two,
+    r_s,
+    sigma_swd,
     v_rd_max_punching,
     v_rd_punching,
     v_rdc_punching,
@@ -184,6 +193,15 @@ __all__ = [
     's_tau_bu_split',
     'f_stm',
     'tau_yield',
+    'b_s',
+    'b_sr',
+    'k_dg',
+    'k_psi',
+    'r_s',
+    'psi_punching_level_one',
+    'psi_punching_level_two',
+    'psi_punching_level_three',
+    'sigma_swd',
 ]
 
 __title__: str = 'fib Model Code 2010'
