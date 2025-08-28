@@ -17,6 +17,8 @@ class ParabolaRectangle2D(ParabolaRectangle):
     in tension.
     """
 
+    __materials__: t.Tuple[str] = ('concrete',)
+
     def __init__(
         self,
         fc: float,

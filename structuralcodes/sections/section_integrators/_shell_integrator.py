@@ -68,9 +68,9 @@ class ShellFiberIntegrator(SectionIntegrator):
         for z in z_coords:
             fiber_strain = strain[:3] + z * strain[3:]
             if integrate == 'stress':
-                integrand = material.get_stress(fiber_strain)
+                integrand = material.constitutive_law.get_stress(fiber_strain)
             elif integrate == 'modulus':
-                integrand = material.get_secant(fiber_strain)
+                integrand = material.constitutive_law.get_secant(fiber_strain)
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
@@ -86,10 +86,10 @@ class ShellFiberIntegrator(SectionIntegrator):
             eps_sj = r.T @ fiber_strain
 
             if integrate == 'stress':
-                sig_sj = material.get_stress(eps_sj[0])
+                sig_sj = material.constitutive_law.get_stress(eps_sj[0])
                 integrand = As * r.T.T @ np.array([sig_sj, 0, 0])
             elif integrate == 'modulus':
-                mod = material.get_secant(eps_sj[0])
+                mod = material.constitutive_law.get_secant(eps_sj[0])
                 integrand = r.T.T @ np.diag([mod, 0, 0]) @ r.T * As
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
