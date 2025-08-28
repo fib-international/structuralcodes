@@ -32,6 +32,11 @@ class ShellReinforcement(Geometry):
         """Initialize a shell reinforcement."""
         super().__init__(name, group_label)
 
+        if not isinstance(material, Material):
+            raise TypeError(
+                'Material should be a valid structuralcodes.base.Material'
+                f' object. {repr(material)}'
+            )
         self._z = z
         self._n_bars = n_bars
         self._cc_bars = cc_bars
@@ -103,6 +108,12 @@ class ShellGeometry(Geometry):
 
         if thickness <= 0:
             raise ValueError('Shell thickness must be positive.')
+
+        if not isinstance(material, Material):
+            raise TypeError(
+                'Material should be a valid structuralcodes.base.Material'
+                f' object. {repr(material)}'
+            )
 
         self._thickness = thickness
         self._material = material

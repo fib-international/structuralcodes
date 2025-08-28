@@ -9,6 +9,12 @@ from ._elastic import Elastic
 class Elastic2D(Elastic):
     """Class for elastic constitutive law for 2D operations."""
 
+    __materials__: t.Tuple[str] = (
+        'concrete',
+        'steel',
+        'rebars',
+    )
+
     def __init__(
         self,
         E: float,

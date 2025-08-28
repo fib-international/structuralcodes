@@ -71,29 +71,32 @@ class MarinIntegrator(SectionIntegrator):
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
         """Get Marin coefficients."""
         if integrate == 'stress':
-            if hasattr(geo.material, '__marin__'):
-                strains, coeffs = geo.material.__marin__(strain=strain)
+            if hasattr(geo.material.constitutive_law, '__marin__'):
+                strains, coeffs = geo.material.constitutive_law.__marin__(
+                    strain=strain
+                )
             else:
                 raise AttributeError(
-                    f'The material object {geo.material} of geometry {geo} \
-                    does not have implement the __marin__ function. \
-                    Please implement the function or use another integrator,\
-                     like '
-                    'Fibre'
-                    ''
+                    'The constitutive law object '
+                    f'{geo.material.constitutive_law} of geometry {geo} does '
+                    'not have implement the __marin__ function. Please '
+                    'implement the function or use another integrator, like '
+                    'Fiber.'
                 )
         elif integrate == 'modulus':
-            if hasattr(geo.material, '__marin_tangent__'):
-                strains, coeffs = geo.material.__marin_tangent__(strain=strain)
+            if hasattr(geo.material.constitutive_law, '__marin_tangent__'):
+                strains, coeffs = (
+                    geo.material.constitutive_law.__marin_tangent__(
+                        strain=strain
+                    )
+                )
             else:
                 raise AttributeError(
-                    f'The material object {geo.material} of geometry {geo} \
-                    does not have implement the __marin_tangent__ function\
-                    . \
-                    Please implement the function or use another integrato\
-                    r, like '
-                    'Fibre'
-                    ''
+                    'The constitutive law object '
+                    f'{geo.material.constitutive_law} of geometry {geo} does '
+                    'not have implement the __marin_tangent__ function. Please'
+                    ' implement the function or use another integrator, like '
+                    'Fibre.'
                 )
         else:
             raise ValueError(f'Unknown integrate type: {integrate}')
@@ -159,9 +162,11 @@ class MarinIntegrator(SectionIntegrator):
             x.append(xp)
             y.append(yp)
             if integrate == 'stress':
-                IA.append(pg.material.get_stress(strain_) * A)
+                IA.append(pg.material.constitutive_law.get_stress(strain_) * A)
             elif integrate == 'modulus':
-                IA.append(pg.material.get_tangent(strain_) * A)
+                IA.append(
+                    pg.material.constitutive_law.get_tangent(strain_) * A
+                )
         input.append((1, np.array(x), np.array(y), np.array(IA)))
 
     def prepare_input(

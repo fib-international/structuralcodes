@@ -6,7 +6,7 @@ import typing as t
 import numpy as np
 from shapely import Point
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.core.base import Material
 
 from ._geometry import CompoundGeometry, PointGeometry, SurfaceGeometry
 
@@ -15,7 +15,7 @@ def add_reinforcement(
     geo: t.Union[SurfaceGeometry, CompoundGeometry],
     coords: t.Tuple[float, float],
     diameter: float,
-    material: t.Union[Material, ConstitutiveLaw],
+    material: Material,
     group_label: t.Optional[str] = None,
 ) -> CompoundGeometry:
     """Add a single bar given coordinate.
@@ -25,8 +25,7 @@ def add_reinforcement(
             reinforcement.
         coords (Tuple(float, float)): A tuple with cordinates of bar.
         diameter (float): The diameter of the reinforcement.
-        material (Union(Material, ConstitutiveLaw)): A material or a
-            constitutive law for the behavior of the reinforcement.
+        material (Material): A material for the reinforcement.
         group_label (Optional(str)): A label for grouping several objects
             (default is None).
 
@@ -45,7 +44,7 @@ def add_reinforcement_line(
     coords_i: t.Tuple[float, float],
     coords_j: t.Tuple[float, float],
     diameter: float,
-    material: t.Union[Material, ConstitutiveLaw],
+    material: Material,
     n: int = 0,
     s: float = 0.0,
     first: bool = True,
@@ -60,9 +59,8 @@ def add_reinforcement_line(
         coords_i (Tuple(float, float)): Coordinates of the initial point of
             line.
         coords_j (Tuple(float, float)): Coordinates of the final point of line.
-        diamter (float): The diameter of the bars.
-        material (Union(Material, ConstitutiveLaw)): A valid material or
-            constitutive law.
+        diameter (float): The diameter of the bars.
+        material (Material): A material for the reinforcement.
         n (int): The number of bars to be distributed inside the line (default
             = 0).
         s (float): The distance between the bars (default = 0).
@@ -80,8 +78,6 @@ def add_reinforcement_line(
         CompoundGeometry: A compound geometry with the original geometry and
         the reinforcement.
     """
-    from math import floor
-
     p1 = np.array(coords_i)
     p2 = np.array(coords_j)
     distance = np.linalg.norm(p2 - p1)
@@ -102,7 +98,7 @@ def add_reinforcement_line(
     elif s > 0:
         # Provided the spacing
         # 1. Compute the number of bars
-        n = floor(distance / s) + 1
+        n = math.floor(distance / s) + 1
         # 2. Distribute the bars centered in the segment
         d = (n - 1) * s
         p1 = p1 + v * (distance - d) / 2.0
@@ -130,7 +126,7 @@ def add_reinforcement_circle(
     center: t.Tuple[float, float],
     radius: float,
     diameter: float,
-    material: t.Union[Material, ConstitutiveLaw],
+    material: Material,
     n: int = 0,
     s: float = 0.0,
     first: bool = True,
@@ -152,8 +148,7 @@ def add_reinforcement_circle(
         radius (float): Radius of the circle line where reinforcement will be
             added.
         diameter (float): The diameter of the bars.
-        material (Union(Material, ConstitutiveLaw)): A valid material or
-            constitutive law.
+        material (Material): A material for the reinforcement.
         n (int): The number of bars to be distributed inside the line (default
             = 0).
         s (float): The distance between the bars (default = 0).

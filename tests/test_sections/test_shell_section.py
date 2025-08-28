@@ -7,11 +7,14 @@ from structuralcodes.geometry._shell_geometry import (
     ShellGeometry,
     ShellReinforcement,
 )
+from structuralcodes.materials.basic import GenericMaterial
+from structuralcodes.materials.concrete import ConcreteEC2_2004
 from structuralcodes.materials.constitutive_laws import (
     Elastic2D,
     ElasticPlastic,
     ParabolaRectangle2D,
 )
+from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
 from structuralcodes.sections import ShellSection
 
 # Membrane and bending-strain parameter ranges
@@ -37,7 +40,8 @@ def test_integrate_strain_profile(
     Ec, nu, thickness, eps_x, eps_y, eps_xy, chi_x, chi_y, chi_xy
 ):
     """Elastic plate: strains → stress-resultants."""
-    material = Elastic2D(Ec, nu)
+    constitutive_law = Elastic2D(Ec, nu)
+    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
     shell = ShellSection(ShellGeometry(thickness, material))
 
     # Numerically integrated forces/moments
@@ -62,7 +66,9 @@ def test_integrate_strain_profile(
 
 def test_integrate_strain_profile_tangent(E=30000, nu=0.20, t=200):
     """Elastic plate: tangent stiffness matrix."""
-    shell = ShellSection(ShellGeometry(t, Elastic2D(E, nu)))
+    constitutive_law = Elastic2D(E, nu)
+    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
+    shell = ShellSection(ShellGeometry(t, material=material))
     K = shell.section_calculator.integrate_strain_profile(
         np.array([1e-3] * 3 + [1e-6] * 3), integrate='modulus'
     )
@@ -90,7 +96,9 @@ def test_integrate_strain_profile_tangent(E=30000, nu=0.20, t=200):
 
 def test_wrong_integrator():
     """Unknown keyword must raise ValueError."""
-    shell = ShellSection(ShellGeometry(200, Elastic2D(30000, 0.20)))
+    constitutive_law = Elastic2D(30000, 0.20)
+    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
+    shell = ShellSection(ShellGeometry(200, material=material))
     with pytest.raises(ValueError):
         shell.section_calculator.integrate_strain_profile(
             np.zeros(6), integrate='tangent'
@@ -115,7 +123,9 @@ mxy = np.linspace(-1e8, 1e8, 2)
 @pytest.mark.parametrize('Ec, nu, t', [(30000, 0.20, 200), (30000, 0.20, 600)])
 def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     """Loads → strains for an isotropic plate."""
-    shell = ShellSection(ShellGeometry(t, Elastic2D(Ec, nu)))
+    constitutive_law = Elastic2D(Ec, nu)
+    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
+    shell = ShellSection(ShellGeometry(t, material=material))
     eps = shell.section_calculator.calculate_strain_profile(
         nx, ny, nxy, mx, my, mxy
     )
@@ -135,15 +145,16 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     assert np.allclose(eps, expected, rtol=1e-4, atol=1e-3)
 
 
-def test_default_equals_explicit_mesh_size(t=200):
+def test_default_equals_explicit_mesh_size():
     """Default mesh_size (0.01) equals explicit 0.01."""
-    shell_0 = ShellSection(ShellGeometry(t, Elastic2D(30_000, 0.20)))
+    t = 200
+    constitutive_law = Elastic2D(30000, 0.20)
+    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
+    shell_0 = ShellSection(ShellGeometry(t, material=material))
     K0 = shell_0.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )
-    shell_1 = ShellSection(
-        ShellGeometry(t, Elastic2D(30_000, 0.20)), mesh_size=0.01
-    )
+    shell_1 = ShellSection(ShellGeometry(t, material=material), mesh_size=0.01)
     K1 = shell_1.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )
@@ -151,11 +162,12 @@ def test_default_equals_explicit_mesh_size(t=200):
 
 
 @pytest.mark.parametrize('invalid', [-0.2, 0.0, 1.5])
-def test_invalid_mesh_size_raises(invalid, t=200):
+def test_invalid_mesh_size_raises(invalid):
     """mesh_size outside (0,1] → ValueError."""
-    shell = ShellSection(
-        ShellGeometry(t, Elastic2D(30000, 0.20)), mesh_size=invalid
-    )
+    t = 200
+    constitutive_law = Elastic2D(30000, 0.20)
+    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
+    shell = ShellSection(ShellGeometry(t, material), mesh_size=invalid)
     with pytest.raises(ValueError):
         shell.section_calculator.integrate_strain_profile(
             np.zeros(6), integrate='stress'
@@ -164,9 +176,16 @@ def test_invalid_mesh_size_raises(invalid, t=200):
 
 def test_parabola_section():
     """ParabolaRectangle2D with mesh_size 0.5."""
-    concrete = ParabolaRectangle2D(35, nu=0)
-    reinforcement = ElasticPlastic(200000, 500)
-
+    parabola_rectangle = ParabolaRectangle2D(35, nu=0)
+    elastic_plastic = ElasticPlastic(200000, 500)
+    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=500,
+        epsuk=3e-2,
+        constitutive_law=elastic_plastic,
+    )
     Asx1 = ShellReinforcement(-157, 1, 300, 16, reinforcement, 0)
 
     geo = ShellGeometry(400, concrete)
@@ -196,21 +215,29 @@ def test_parabola_section():
         (
             -1000,
             1000,
-            np.array([-6.191136e-05, -1.100878e-22, 1.269841e-04, 0, 0, 0]),
+            np.array([-5.285263e-05, 2.741669e-05, 1.649706e-04, 0, 0, 0]),
             0.001,
         ),
         (
             1000,
             1000,
-            np.array([6.191136e-05, -1.100878e-22, 1.269841e-04, 0, 0, 0]),
+            np.array([1.330415e-04, 2.785210e-05, 2.186547e-04, 0, 0, 0]),
             0.001,
         ),
     ],
 )
 def test_parabola_cracked(nx, nxy, expected, tol):
     """Test parabola rectangle with nu = 0."""
-    concrete = ParabolaRectangle2D(45, nu=0)
-    reinforcement = ElasticPlastic(200000, 500)
+    parabola_rectangle = ParabolaRectangle2D(45, nu=0)
+    elastic_plastic = ElasticPlastic(200000, 500)
+    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=500,
+        epsuk=3e-2,
+        constitutive_law=elastic_plastic,
+    )
     geo = ShellGeometry(350, concrete)
     Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
     Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)
@@ -243,21 +270,29 @@ def test_parabola_cracked(nx, nxy, expected, tol):
         (
             -1000,
             1000,
-            np.array([-6.187717e-05, 1.220713e-05, 1.523810e-04, 0, 0, 0]),
+            np.array([-5.332211e-05, 3.874431e-05, 1.897691e-04, 0, 0, 0]),
             0.001,
         ),
         (
             1000,
             1000,
-            np.array([6.187717e-05, -1.220713e-05, 1.523810e-04, 0, 0, 0]),
+            np.array([1.302065e-04, 1.461867e-05, 2.411031e-04, 0, 0, 0]),
             0.001,
         ),
     ],
 )
 def test_parabola_uncracked(nx, nxy, expected, tol):
     """Test parabola rectangle with nu = 0.2."""
-    concrete = ParabolaRectangle2D(45)
-    reinforcement = ElasticPlastic(200000, 500)
+    parabola_rectangle = ParabolaRectangle2D(45)
+    elastic_plastic = ElasticPlastic(200000, 500)
+    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=500,
+        epsuk=3e-2,
+        constitutive_law=elastic_plastic,
+    )
     geo = ShellGeometry(350, concrete)
     Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
     Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)
@@ -280,8 +315,16 @@ def test_parabola_uncracked(nx, nxy, expected, tol):
 
 def test_exceed_max_iterations():
     """Test that the maximum number of iterations is exceeded."""
-    concrete = ParabolaRectangle2D(45)
-    reinforcement = ElasticPlastic(200000, 500)
+    parabola_rectangle = ParabolaRectangle2D(45)
+    elastic_plastic = ElasticPlastic(200000, 500)
+    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=500,
+        epsuk=3e-2,
+        constitutive_law=elastic_plastic,
+    )
     geo = ShellGeometry(350, concrete)
     Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
     Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)

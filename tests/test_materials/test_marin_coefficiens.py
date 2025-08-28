@@ -9,6 +9,7 @@ from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
     ElasticPlastic,
+    InitialStrain,
     ParabolaRectangle,
     UserDefined,
 )
@@ -280,6 +281,65 @@ def test_marin_elasticplastic_uniform_strain(eps_0, E, fy, Eh, eps_su):
     if abs(eps_0) <= eps_y:
         expected = (None, (E,))
     elif abs(eps_0) <= eps_su_p:
+        expected = (None, (Eh,))
+    else:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin_tangent__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+
+@pytest.mark.parametrize('eps_0', eps0)
+@pytest.mark.parametrize('init_strain', [0.0, 0.001])
+@pytest.mark.parametrize(
+    'E, fy, Eh, eps_su',
+    [
+        (200000, 450, 0.0, 0.0675),
+        (200000, 500, 2000.0, 0.0675),
+        (200000, 500, 0.0, 0.0675),
+    ],
+)
+def test_marin_init_strain_uniform_strain(
+    eps_0, E, fy, Eh, eps_su, init_strain
+):
+    """Test the marin coefficients for a strain plane of pure tension or
+    compression for InitialStrain constitutive law.
+    """
+    base_law = ElasticPlastic(E, fy, Eh, eps_su)
+    law = InitialStrain(base_law, init_strain)
+
+    eps_y = base_law._eps_sy
+    _, eps_su_p = law.get_ultimate_strain()
+
+    delta_sigma = fy * (1 - Eh / E)
+
+    # Check marin coefficients for stress integration
+    sign = 1 if eps_0 >= 0 else -1
+    if abs(eps_0 + init_strain) <= eps_y:
+        expected = (None, (E * (eps_0 + init_strain), 0.0))
+    elif abs(eps_0 + init_strain) <= eps_su_p:
+        expected = (
+            None,
+            (Eh * (eps_0 + init_strain) + sign * delta_sigma, 0.0),
+        )
+    else:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+    # Check marin coefficients for modulus integration
+    if abs(eps_0 + init_strain) <= eps_y:
+        expected = (None, (E,))
+    elif abs(eps_0 + init_strain) <= eps_su_p:
         expected = (None, (Eh,))
     else:
         expected = (None, (0.0,))

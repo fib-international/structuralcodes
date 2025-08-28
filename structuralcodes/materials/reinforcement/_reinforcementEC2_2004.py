@@ -31,6 +31,9 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
                 ConstitutiveLaw,
             ]
         ] = 'elasticplastic',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ):
         """Initializes a new instance of Reinforcement for EC2 2004.
 
@@ -53,6 +56,13 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
                 constitutive law type for reinforcement. (valid options for
                 string: 'elastic', 'elasticplastic', or
                 'elasticperfectlyplastic').
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
 
         Raises:
             ValueError: If the constitutive law name is not available for the
@@ -71,6 +81,9 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._gamma_eps = gamma_eps
         self._constitutive_law = (
@@ -84,6 +97,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
             raise ValueError(
                 'The provided constitutive law is not valid for reinforcement.'
             )
+        self._apply_initial_strain()
 
     def fyd(self) -> float:
         """The design yield strength."""
@@ -129,7 +143,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         """Returns kwargs for ElasticPlastic constitutive law with strain
         hardening.
         """
-        Eh = (self.ftd() - self.fyd()) / (self.epsuk - self.epsyd)
+        Eh = (self.ftd() - self.fyd()) / (self.epsud() - self.epsyd)
         return {
             'E': self.Es,
             'fy': self.fyd(),

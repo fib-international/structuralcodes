@@ -11,7 +11,7 @@ import typing as t
 from numpy.typing import ArrayLike
 from shapely import Polygon
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.core.base import Material
 
 from ._geometry import SurfaceGeometry
 
@@ -28,8 +28,7 @@ class RectangularGeometry(SurfaceGeometry):
         self,
         width: float,
         height: float,
-        material: t.Union[Material, ConstitutiveLaw],
-        density: t.Optional[float] = None,
+        material: Material,
         concrete: bool = False,
         origin: t.Optional[ArrayLike] = None,
         name: t.Optional[str] = None,
@@ -40,12 +39,7 @@ class RectangularGeometry(SurfaceGeometry):
         Arguments:
             width (float): The width of the geometry.
             height (float): The height of the geometry.
-            material (Union(Material, ConstitutiveLaw)): A Material or
-                ConsitutiveLaw class applied to the geometry.
-            density (Optional(float)): When a ConstitutiveLaw is passed as
-                material, the density can be provided by this argument. When
-                material is a Material object the density is taken from the
-                material.
+            material (Material): A Material class applied to the geometry.
             concrete (bool): Flag to indicate if the geometry is concrete. When
                 passing a Material as material, this is automatically inferred.
             origin (Optional(ArrayLike)): The center point of the rectangle.
@@ -84,7 +78,6 @@ class RectangularGeometry(SurfaceGeometry):
         super().__init__(
             poly=polygon,
             material=material,
-            density=density,
             concrete=concrete,
             name=name,
             group_label=group_label,
