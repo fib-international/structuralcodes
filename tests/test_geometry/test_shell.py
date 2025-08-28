@@ -8,34 +8,38 @@ from structuralcodes.geometry import (
     ShellGeometry,
     ShellReinforcement,
 )
+from structuralcodes.materials.basic import GenericMaterial
 from structuralcodes.materials.concrete import ConcreteEC2_2004
 from structuralcodes.materials.constitutive_laws import (
     Elastic2D,
-    ElasticPlastic,
 )
+from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
 
 
 def test_shell_geometry():
     """Test the ShellGeometry class."""
-    # Create a material to use
-    concrete = ConcreteEC2_2004(fck=35)
     # Choose a constitutive law to use
     const = Elastic2D(E=200000, nu=0.2)
 
-    for mat in (concrete, const):
-        shell = ShellGeometry(
-            thickness=200, material=mat, name='Shell', group_label='Group1'
-        )
-        assert shell.thickness == 200
-        assert isinstance(shell.material, (ConcreteEC2_2004, Elastic2D))
-        assert shell.name == 'Shell'
-        assert shell.group_label == 'Group1'
+    # Create a material to use
+    concrete = ConcreteEC2_2004(fck=35, constitutive_law=const)
+
+    shell = ShellGeometry(
+        thickness=200, material=concrete, name='Shell', group_label='Group1'
+    )
+    assert shell.thickness == 200
+    assert isinstance(shell.material, ConcreteEC2_2004)
+    assert shell.name == 'Shell'
+    assert shell.group_label == 'Group1'
 
 
 def test_negative_thickness_raises():
     """Test that a negative thickness raises a ValueError."""
+    material = GenericMaterial(
+        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.2)
+    )
     with pytest.raises(ValueError):
-        ShellGeometry(thickness=-200, material=Elastic2D(E=200000, nu=0.2))
+        ShellGeometry(thickness=-200, material=material)
 
 
 def test_shell_reinforcement():
@@ -44,7 +48,9 @@ def test_shell_reinforcement():
     n_bars = 4
     cc_bars = 500
     d = 16
-    material = Elastic2D(E=200000, nu=0.3)
+    material = GenericMaterial(
+        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.3)
+    )
     phi = np.pi / 4
     shell_reinforcement = ShellReinforcement(
         z=z,
@@ -69,7 +75,13 @@ def test_shell_reinforcement():
 def test_add_reinforcement():
     """Test the add_reinforcement function."""
     # Create a shell geometry
-    shell = ShellGeometry(thickness=200, material=Elastic2D(E=200000, nu=0.2))
+    material = GenericMaterial(
+        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.3)
+    )
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500, Es=200000, ftk=500, epsuk=3e-2
+    )
+    shell = ShellGeometry(thickness=200, material=material)
 
     # Create a reinforcement
     reinf_1 = ShellReinforcement(
@@ -77,7 +89,7 @@ def test_add_reinforcement():
         n_bars=4,
         cc_bars=500,
         diameter_bar=16,
-        material=Elastic2D(E=200000, nu=0.3),
+        material=reinforcement,
         phi=0,
     )
 
@@ -86,7 +98,7 @@ def test_add_reinforcement():
         n_bars=6,
         cc_bars=600,
         diameter_bar=20,
-        material=Elastic2D(E=200000, nu=0.3),
+        material=reinforcement,
         phi=np.pi / 4,
     )
 
@@ -103,12 +115,16 @@ def test_add_reinforcement():
 def test_add_reinforcement_invalid_type():
     """Test that adding a reinforcement of invalid type raises an error."""
     # Create a shell geometry
-    shell = ShellGeometry(thickness=200, material=Elastic2D(E=200000, nu=0.2))
+    material = GenericMaterial(
+        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.2)
+    )
+    shell = ShellGeometry(thickness=200, material=material)
 
     # Create a reinforcement
-    reinf_1 = PointGeometry(
-        np.array([2, 3]), 12, ElasticPlastic(E=200000, fy=500), name='Rebar'
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500, ftk=500, Es=200000, epsuk=3e-2
     )
+    reinf_1 = PointGeometry(np.array([2, 3]), 12, reinforcement, name='Rebar')
     with pytest.raises(TypeError):
         shell.add_reinforcement(reinf_1)
 
@@ -122,13 +138,19 @@ def test_add_reinforcement_invalid_type():
 )
 def test_add_reinforcement_invalid_z_value(invalid_z):
     """Test that adding a reinforcement outside the shell raises an error."""
-    shell = ShellGeometry(thickness=200, material=Elastic2D(E=200000, nu=0.2))
+    material = GenericMaterial(
+        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.2)
+    )
+    shell = ShellGeometry(thickness=200, material=material)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500, ftk=500, Es=200000, epsuk=3e-2
+    )
     reinf = ShellReinforcement(
         z=invalid_z,
         n_bars=1,
         cc_bars=100,
         diameter_bar=12,
-        material=Elastic2D(E=200000, nu=0.3),
+        material=reinforcement,
         phi=0,
     )
     with pytest.raises(ValueError):
@@ -138,15 +160,21 @@ def test_add_reinforcement_invalid_z_value(invalid_z):
 def test_repr_svg():
     """Test the SVG representation of the shell geometry."""
     # Create a shell geometry
-    shell = ShellGeometry(thickness=200, material=Elastic2D(E=200000, nu=0.2))
+    material = GenericMaterial(
+        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.2)
+    )
+    shell = ShellGeometry(thickness=200, material=material)
 
     # Add a reinforcement
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500, ftk=500, Es=200000, epsuk=3e-2
+    )
     reinf = ShellReinforcement(
         z=-60,
         n_bars=4,
         cc_bars=500,
         diameter_bar=16,
-        material=Elastic2D(E=200000, nu=0.3),
+        material=reinforcement,
         phi=0,
     )
     shell.add_reinforcement(reinf)
