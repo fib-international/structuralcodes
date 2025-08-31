@@ -69,22 +69,6 @@ class ParabolaRectangle2D(ParabolaRectangle):
         """
         return self._c_2
 
-    def transform(self, strain: ArrayLike) -> np.ndarray:
-        """Transform the strain vector to principal directions."""
-        eps = np.atleast_1d(strain)
-        # Use arctan2 to obtain the angle in the correct quadrant
-        theta = 0.5 * np.arctan2(eps[2], eps[0] - eps[1])
-        c = np.cos(theta)
-        s = np.sin(theta)
-        T = np.array(
-            [
-                [c * c, s * s, s * c],
-                [s * s, c * c, -s * c],
-                [-2 * s * c, 2 * s * c, c * c - s * s],
-            ]
-        )
-        return T, T @ eps
-
     def poisson_matrix(self, cracked: bool) -> np.ndarray:
         """Return the Poisson matrix."""
         if cracked:
@@ -148,10 +132,11 @@ class ParabolaRectangle2D(ParabolaRectangle):
         """Return a 2D stress vector [sigma_x, sigma_y, tau_xy]
         given a 2D strain vector [eps_x, epx_y, gamma_xy].
         """
-        T, eps_p = self.transform(strain)
+        # Calculate principal strains and principal strain direction
+        eps_p, phi = calculate_principal_strains(strain=strain)
 
-        # Neglect shear strain related to the principal strain direction
-        eps_p = eps_p[:2]
+        # Establish strain transformation matrix
+        T = establish_strain_transformation_matrix(phi=phi)
 
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p)
@@ -170,8 +155,11 @@ class ParabolaRectangle2D(ParabolaRectangle):
 
     def get_secant(self, strain: ArrayLike) -> np.ndarray:
         """Compute the 3x3 secant stiffness matrix C."""
-        T, eps_p = self.transform(strain)
-        eps_p = eps_p[:2]
+        # Calculate principal strains and principal strain direction
+        eps_p, phi = calculate_principal_strains(strain=strain)
+
+        # Establish strain transformation matrix
+        T = establish_strain_transformation_matrix(phi=phi)
 
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p)
@@ -221,3 +209,35 @@ class ParabolaRectangle2D(ParabolaRectangle):
         )
 
         return T.T @ Cp @ T
+
+
+def calculate_principal_strains(
+    strain: ArrayLike,
+) -> t.Tuple[ArrayLike, float]:
+    """Calculate the principal strains in 2D."""
+    eps = np.atleast_1d(strain)
+    # Use arctan2 to obtain the angle in the correct quadrant
+    phi = 0.5 * np.arctan2(eps[2], eps[0] - eps[1])
+    eps_p = np.array(
+        [
+            (eps[0] + eps[1]) / 2
+            + (((eps[0] - eps[1]) / 2) ** 2 + 0.25 * eps[2] ** 2) ** 0.5,
+            (eps[0] + eps[1]) / 2
+            - (((eps[0] - eps[1]) / 2) ** 2 + 0.25 * eps[2] ** 2) ** 0.5,
+        ]
+    )
+
+    return eps_p, phi
+
+
+def establish_strain_transformation_matrix(phi: float) -> ArrayLike:
+    """Establish the strain transformation matrix for a given angle."""
+    c = np.cos(phi)
+    s = np.sin(phi)
+    return np.array(
+        [
+            [c * c, s * s, s * c],
+            [s * s, c * c, -s * c],
+            [-2 * s * c, 2 * s * c, c * c - s * s],
+        ]
+    )
