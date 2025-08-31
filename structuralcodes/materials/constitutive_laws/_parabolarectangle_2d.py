@@ -18,6 +18,8 @@ class ParabolaRectangle2D(ParabolaRectangle):
     """
 
     __materials__: t.Tuple[str] = ('concrete',)
+    _poisson_matrix_cracked: t.Optional[ArrayLike] = None
+    _poisson_matrix_uncracked: t.Optional[ArrayLike] = None
 
     def __init__(
         self,
@@ -83,23 +85,45 @@ class ParabolaRectangle2D(ParabolaRectangle):
         )
         return T, T @ eps
 
-    def poisson_matrix(self, nu: float) -> np.ndarray:
-        """Return the Poisson's ratio matrix."""
-        return (1 / (1 - nu**2)) * np.array(
-            [
-                [1, nu],
-                [nu, 1],
-            ]
-        )
+    def poisson_matrix(self, cracked: bool) -> np.ndarray:
+        """Return the Poisson matrix."""
+        if cracked:
+            return self.poisson_matrix_cracked
+        return self.poisson_matrix_uncracked
 
-    def get_effective_principal_strains(
-        self, eps_p: ArrayLike, nu: float
-    ) -> np.ndarray:
+    def nu(self, cracked: bool) -> float:
+        """Return the Poisson ratio."""
+        if cracked:
+            return 0.0
+        return self._nu
+
+    @property
+    def poisson_matrix_uncracked(self) -> ArrayLike:
+        """Return the uncracked Poisson matrix."""
+        if self._poisson_matrix_uncracked is None:
+            self._poisson_matrix_uncracked = (
+                1 / (1 - self._nu**2)
+            ) * np.array(
+                [
+                    [1, self._nu],
+                    [self._nu, 1],
+                ]
+            )
+        return self._poisson_matrix_uncracked
+
+    @property
+    def poisson_matrix_cracked(self) -> ArrayLike:
+        """Return the cracked Poisson matrix."""
+        if self._poisson_matrix_cracked is None:
+            self._poisson_matrix_cracked = np.eye(2)
+        return self._poisson_matrix_cracked
+
+    def get_effective_principal_strains(self, eps_p: ArrayLike) -> np.ndarray:
         """Compute the effective principal strains to include the influence of
         Poisson's ratio. Taken from 'Nonlinear Analysis of Reinforced-Concrete
         Shells' by M. A. Polak and F. J. Vecchio (1993).
         """
-        return self.poisson_matrix(nu) @ eps_p
+        return self.poisson_matrix(self.check_cracked(eps_p=eps_p)) @ eps_p
 
     def check_cracked(self, eps_p: ArrayLike) -> bool:
         """Check if the concrete is cracked. Returns True if any principal
@@ -129,13 +153,11 @@ class ParabolaRectangle2D(ParabolaRectangle):
         # Neglect shear strain related to the principal strain direction
         eps_p = eps_p[:2]
 
-        nu = 0.0 if self.check_cracked(eps_p) else self._nu
-
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p)
 
         # Include the influence of Poisson's ratio on the principal strains.
-        eps_pf = self.get_effective_principal_strains(eps_p, nu)
+        eps_pf = self.get_effective_principal_strains(eps_p)
 
         # Compute the principal stresses from 1D parabola-rectangle law.
         sig_p = super().get_stress(eps_pf)
@@ -150,14 +172,12 @@ class ParabolaRectangle2D(ParabolaRectangle):
         """Compute the 3x3 secant stiffness matrix C."""
         T, eps_p = self.transform(strain)
         eps_p = eps_p[:2]
-        nu = 0.0 if self.check_cracked(eps_p) else self._nu
 
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking(eps_p)
 
         # Poisson correction
-        P = self.poisson_matrix(nu)
-        eps_pf = self.get_effective_principal_strains(eps_p, nu)
+        eps_pf = self.get_effective_principal_strains(eps_p)
 
         sig_p = super().get_stress(eps_pf)
 
@@ -175,22 +195,28 @@ class ParabolaRectangle2D(ParabolaRectangle):
 
         # Initial 2x2 secant
         D = np.diag([E_11, E_22])
-        C = P @ D
+        C = self.poisson_matrix(self.check_cracked(eps_p=eps_p)) @ D
 
         # Ensure symmetry
         C = 0.5 * (C + C.T)
 
         # Shear modulus
-        G_12 = np.array([[(E_11 + E_22) / (4 * (1 + nu))]])  # Shape (1, 1)
+        G_12 = np.array(
+            [
+                [
+                    (E_11 + E_22)
+                    / (4 * (1 + self.nu(self.check_cracked(eps_p=eps_p))))
+                ]
+            ]
+        )  # Shape (1, 1)
 
         Z_21 = np.zeros((2, 1))  # Shape (2, 1)
-        Z_12 = np.zeros((1, 2))  # Shape (1, 2)
 
         # 3x3 secant stiffness matrix
         Cp = np.block(
             [
                 [C, Z_21],
-                [Z_12, G_12],
+                [Z_21.T, G_12],
             ]
         )
 
