@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from structuralcodes.codes.aashto_2020 import _section_5
+from structuralcodes.codes.aashto_2024 import _shear
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,7 @@ from structuralcodes.codes.aashto_2020 import _section_5
 )
 def test_s_xe(sx, ag, expected):
     """Test the s_xe function."""
-    assert math.isclose(_section_5.s_xe(sx, ag), expected, rel_tol=0.005)
+    assert math.isclose(_shear.s_xe(sx, ag), expected, rel_tol=0.005)
 
 
 @pytest.mark.parametrize(
@@ -31,7 +31,7 @@ def test_s_xe(sx, ag, expected):
 def test_s_xe_raises_errors(sx, ag):
     """Test s_xe errors."""
     with pytest.raises(ValueError):
-        _section_5.s_xe(sx, ag)
+        _shear.s_xe(sx, ag)
 
 
 @pytest.mark.parametrize(
@@ -45,7 +45,7 @@ def test_s_xe_raises_errors(sx, ag):
 def test_eps(VkN, rho_l, bw, dv, expected):
     """Test the eps function."""
     assert math.isclose(
-        _section_5.eps(VkN, rho_l, bw, dv), expected, rel_tol=0.005
+        _shear.eps(VkN, rho_l, bw, dv), expected, rel_tol=0.005
     )
 
 
@@ -56,7 +56,7 @@ def test_eps(VkN, rho_l, bw, dv, expected):
 def test_eps_raises_errors(VkN, rho_l, bw, dv):
     """Test eps errors."""
     with pytest.raises(ValueError):
-        _section_5.eps(VkN, rho_l, bw, dv)
+        _shear.eps(VkN, rho_l, bw, dv)
 
 
 @pytest.mark.parametrize(
@@ -70,7 +70,7 @@ def test_eps_raises_errors(VkN, rho_l, bw, dv):
 def test_beta(s_xe, strain, expected):
     """Test the beta function."""
     assert math.isclose(
-        _section_5.beta_wo_rein(s_xe, strain),
+        _shear.beta_wo_rein(s_xe, strain),
         expected,
         rel_tol=0.005,
     )
@@ -86,7 +86,7 @@ def test_beta(s_xe, strain, expected):
 def test_beta_raise_errors(s_xe, strain):
     """Test beta_wo_rein errors."""
     with pytest.raises(ValueError):
-        _section_5.beta_wo_rein(s_xe, strain)
+        _shear.beta_wo_rein(s_xe, strain)
 
 
 @pytest.mark.parametrize(
@@ -100,7 +100,7 @@ def test_beta_raise_errors(s_xe, strain):
 def test_Vc(beta, fc_prime, bw, d, expected):
     """Test the Vc function."""
     assert math.isclose(
-        _section_5.Vc(beta, fc_prime, bw, d), expected, rel_tol=0.005
+        _shear.Vc(beta, fc_prime, bw, d), expected, rel_tol=0.005
     )
 
 
@@ -150,7 +150,7 @@ def test_converge(
 ):
     """Test the convergence function."""
     assert math.isclose(
-        _section_5._converge(
+        _shear._converge(
             VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa
         ),
         expected,
@@ -167,7 +167,7 @@ def test_converge_errors(
 ):
     """Test converge errors."""
     with pytest.raises(ValueError):
-        _section_5._converge(
+        _shear._converge(
             VkN, bw, dv, rho_l, s_xe, strain, beta, fc_prime, tau_MPa
         )
 
@@ -182,7 +182,7 @@ def test_converge_errors(
 )
 def test_theta(strain, expected):
     """Test the theta function."""
-    assert math.isclose(_section_5.theta(strain), expected, rel_tol=0.005)
+    assert math.isclose(_shear.theta(strain), expected, rel_tol=0.005)
 
 
 @pytest.mark.parametrize(
@@ -196,7 +196,7 @@ def test_theta(strain, expected):
 def test_beta_with_reinforcement(strain, expected):
     """Test the beta_with_reinforcement."""
     assert math.isclose(
-        _section_5.beta_with_reinforcement(strain),
+        _shear.beta_with_reinforcement(strain),
         expected,
         rel_tol=0.005,
     )
@@ -213,7 +213,7 @@ def test_beta_with_reinforcement(strain, expected):
 def test_Vs(Av, fy, dv, bw, cot_theta, s, expected):
     """Test the Vs_s function."""
     assert math.isclose(
-        _section_5.Vs(Av, fy, dv, bw, cot_theta, s),
+        _shear.Vs(Av, fy, dv, bw, cot_theta, s),
         expected,
         rel_tol=0.005,
     )
@@ -230,7 +230,7 @@ def test_Vs(Av, fy, dv, bw, cot_theta, s, expected):
 def test_Vs_errors(Av, fy, dv, bw, cot_theta, s):
     """Test Vs errors."""
     with pytest.raises(ValueError):
-        _section_5.Vs(Av, fy, dv, bw, cot_theta, s)
+        _shear.Vs(Av, fy, dv, bw, cot_theta, s)
 
 
 @pytest.mark.parametrize(
@@ -244,7 +244,7 @@ def test_Vs_errors(Av, fy, dv, bw, cot_theta, s):
 def test_Vn(V_c, V_s, V_p, expected):
     """Test the Vn function."""
     assert math.isclose(
-        _section_5.Vn(V_c, V_s, V_p),
+        _shear.Vn(V_c, V_s, V_p),
         expected,
         rel_tol=0.005,
     )

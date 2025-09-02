@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from structuralcodes.codes.aashto_2020 import _punching
+from structuralcodes.codes.aashto_2024 import _punching
 
 
 @pytest.mark.parametrize(
