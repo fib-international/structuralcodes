@@ -45,7 +45,7 @@ def test_s_xe_raises_errors(sx, ag):
 def test_eps(VkN, rho_l, bw, dv, expected):
     """Test the eps function."""
     assert math.isclose(
-        _shear.eps(VkN, rho_l, bw, dv), expected, rel_tol=0.005
+        _shear.eps_s(VkN, rho_l, bw, dv), expected, rel_tol=0.005
     )
 
 
@@ -56,7 +56,7 @@ def test_eps(VkN, rho_l, bw, dv, expected):
 def test_eps_raises_errors(VkN, rho_l, bw, dv):
     """Test eps errors."""
     with pytest.raises(ValueError):
-        _shear.eps(VkN, rho_l, bw, dv)
+        _shear.eps_s(VkN, rho_l, bw, dv)
 
 
 @pytest.mark.parametrize(
@@ -70,7 +70,7 @@ def test_eps_raises_errors(VkN, rho_l, bw, dv):
 def test_beta(s_xe, strain, expected):
     """Test the beta function."""
     assert math.isclose(
-        _shear.beta_wo_rein(s_xe, strain),
+        _shear.beta(s_xe, strain),
         expected,
         rel_tol=0.005,
     )
@@ -86,7 +86,7 @@ def test_beta(s_xe, strain, expected):
 def test_beta_raise_errors(s_xe, strain):
     """Test beta_wo_rein errors."""
     with pytest.raises(ValueError):
-        _shear.beta_wo_rein(s_xe, strain)
+        _shear.beta(s_xe, strain)
 
 
 @pytest.mark.parametrize(
@@ -196,7 +196,7 @@ def test_theta(strain, expected):
 def test_beta_with_reinforcement(strain, expected):
     """Test the beta_with_reinforcement."""
     assert math.isclose(
-        _shear.beta_with_reinforcement(strain),
+        _shear.beta_reinforcement(strain),
         expected,
         rel_tol=0.005,
     )

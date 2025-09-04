@@ -31,28 +31,28 @@ def s_xe(sx: float, ag: float) -> float:
     return sx * (1.38 / (ag + 0.63))
 
 
-def eps(VkN: float, rho_l: float, bw: float, dv: float) -> float:
+def eps_s(V: float, rho_l: float, bw: float, dv: float) -> float:
     """Determines the longitudinal strain.
 
     AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.4.2-4)
 
     Args:
-        VkN (float): Assumed shear force in kips
+        V (float): Assumed shear force in kips
         rho_l (float): Longitudinal reinforcement ratio
-        bw (float): Width of the web in (mm)
-        dv (float): Effective depth of longitudinal reinforcement in (mm)
+        bw (float): Width of the web in (in)
+        dv (float): Effective depth of longitudinal reinforcement in (in)
 
     Returns:
         The longitudinal strain
 
     Raises:
-        ValueError: If VkN is less than 0
+        ValueError: If V is less than 0
         ValueError: If rho_l is less than 0
         ValueError: If bw is less than 0
         ValueError: If dv is less than 0
     """
-    if VkN < 0:
-        raise ValueError(f'VkN={VkN} cannot be less than 0')
+    if V < 0:
+        raise ValueError(f'V={V} cannot be less than 0')
     if rho_l < 0:
         raise ValueError(f'rho_l={rho_l} cannot be less than 0')
     if bw < 0:
@@ -60,11 +60,11 @@ def eps(VkN: float, rho_l: float, bw: float, dv: float) -> float:
     if dv < 0:
         raise ValueError(f'dv={dv} cannot be less than 0')
 
-    return (3.5 * VkN) / (210000000 * rho_l * (bw * dv * 0.000001))
+    return (3.5 * V) / (29000 * rho_l * (bw * dv))
 
 
 # Calculates the beta factor
-def beta_wo_rein(s_xe: float, strain: float) -> float:
+def beta(s_xe: float, strain: float) -> float:
     """Determines the shear resistance factor.
 
     AASHTO LRFD 2024 10th Edition, Eq. (5.7.3.4.2-2)
@@ -117,7 +117,7 @@ def Vc(beta: float, fc_prime: float, bw: float, d: float) -> float:
 
 # Iterate for convergence
 def _converge(
-    VkN: float,
+    V: float,
     bw: float,
     dv: float,
     rho_l: float,
@@ -131,7 +131,7 @@ def _converge(
     calculation.
 
     Args:
-        VkN (float): The initial assumed value of shear force in kips
+        V (float): The initial assumed value of shear force in kips
         bw (float): The width of the web in (mm)
         dv (float): The effective depth of the longitudinal reinforcement
         in (mm)
@@ -153,8 +153,8 @@ def _converge(
         ValueError: If beta is less than 0
         ValueError: If fc_prime is lsess than 0
     """
-    if VkN < 0:
-        raise ValueError(f'VkN={VkN} cannot be less than 0')
+    if V < 0:
+        raise ValueError(f'VkN={V} cannot be less than 0')
     if bw < 0:
         raise ValueError(f'bw={bw} cannot be less than 0')
     if dv < 0:
@@ -172,7 +172,7 @@ def _converge(
 
     error = 1
     while error > 0.001:
-        tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
+        tau_ref = V / ((bw / 1000) * (dv / 1000) * 1000)
         delta = tau_ref - tau_MPa
 
         """
@@ -183,19 +183,19 @@ def _converge(
         """
 
         if delta < 0:
-            VkN += 0.5
-            strain = eps(VkN, rho_l, bw, dv)
-            beta = beta_wo_rein(s_xe, strain)
+            V += 0.5
+            strain = eps_s(V, rho_l, bw, dv)
+            beta = beta(s_xe, strain)
             tau_MPa = Vc(beta, fc_prime)
-            tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
+            tau_ref = V / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
 
         if delta > 0:
-            VkN -= 0.5
-            strain = eps(VkN, rho_l, bw, dv)
-            beta = beta_wo_rein(s_xe, strain)
+            V -= 0.5
+            strain = eps_s(V, rho_l, bw, dv)
+            beta = beta(s_xe, strain)
             tau_MPa = Vc(beta, fc_prime)
-            tau_ref = VkN / ((bw / 1000) * (dv / 1000) * 1000)
+            tau_ref = V / ((bw / 1000) * (dv / 1000) * 1000)
             error = abs(tau_ref - tau_MPa) / tau_MPa
 
     return tau_MPa
@@ -215,7 +215,7 @@ def theta(strain: float) -> float:
     return 29 + 3500 * strain
 
 
-def beta_with_reinforcement(strain: float) -> float:
+def beta_reinforcement(strain: float) -> float:
     """Determines the shear resistance factor when there is minimum transverse
     reinforcment.
 
