@@ -79,7 +79,6 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         for r in geo.reinforcement:
             z_r = r.z
-            As = r.n_bars * np.pi * (r.diameter_bar / 2) ** 2 / r.cc_bars
             material = r.material
 
             fiber_strain = strain[:3] + z_r * strain[3:]
@@ -87,10 +86,10 @@ class ShellFiberIntegrator(SectionIntegrator):
 
             if integrate == 'stress':
                 sig_sj = material.constitutive_law.get_stress(eps_sj[0])
-                integrand = As * r.T.T @ np.array([sig_sj, 0, 0])
+                integrand = r.local_stress_to_global_force * sig_sj
             elif integrate == 'modulus':
                 mod = material.constitutive_law.get_secant(eps_sj[0])
-                integrand = r.T.T @ np.diag([mod, 0, 0]) @ r.T * As
+                integrand = r.local_modulus_to_global_stiffness * mod
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
