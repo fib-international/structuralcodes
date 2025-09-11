@@ -20,6 +20,8 @@ class ShellReinforcement(Geometry):
     _phi: float
     _area: t.Optional[float]
     _T: t.Optional[ArrayLike]
+    _local_stress_to_global_force: t.Optional[ArrayLike]
+    _local_modulus_to_global_stiffness: t.Optional[ArrayLike]
 
     def __init__(
         self,
@@ -48,6 +50,8 @@ class ShellReinforcement(Geometry):
         self._phi = phi
         self._area = None
         self._T = None
+        self._local_stress_to_global_force = None
+        self._local_modulus_to_global_stiffness = None
 
     @property
     def z(self) -> float:
@@ -92,6 +96,26 @@ class ShellReinforcement(Geometry):
                 ]
             )
         return self._T
+
+    @property
+    def local_stress_to_global_force(self) -> np.ndarray:
+        """Return the array to multiply with a local stress to obtain
+        contribution the global stress resultant.
+        """
+        if self._local_stress_to_global_force is None:
+            self._local_stress_to_global_force = self.area * self.T.T[:, 0]
+        return self._local_stress_to_global_force
+
+    @property
+    def local_modulus_to_global_stiffness(self) -> np.ndarray:
+        """Return the matrix to multiply with the local modulus to obtain the
+        contribution to the global stiffness.
+        """
+        if self._local_modulus_to_global_stiffness is None:
+            self._local_modulus_to_global_stiffness = (
+                self.T.T @ np.diag([1, 0, 0]) @ self.T * self.area
+            )
+        return self._local_modulus_to_global_stiffness
 
     @property
     def area(self) -> float:
