@@ -3,6 +3,7 @@
 import typing as t
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ..core.base import Material
 from ._geometry import Geometry
@@ -17,6 +18,8 @@ class ShellReinforcement(Geometry):
     _diameter_bar: float
     _material: Material
     _phi: float
+    _area: t.Optional[float]
+    _T: t.Optional[ArrayLike]
 
     def __init__(
         self,
@@ -43,6 +46,8 @@ class ShellReinforcement(Geometry):
         self._diameter_bar = diameter_bar
         self._material = material
         self._phi = phi
+        self._area = None
+        self._T = None
 
     @property
     def z(self) -> float:
@@ -77,14 +82,28 @@ class ShellReinforcement(Geometry):
     @property
     def T(self) -> np.ndarray:
         """Return the transformation matrix for the reinforcement."""
-        c, s = np.cos(self.phi), np.sin(self.phi)
-        return np.array(
-            [
-                [c * c, s * s, c * s],
-                [s * s, c * c, -c * s],
-                [-2 * c * s, 2 * c * s, c * c - s * s],
-            ]
-        )
+        if self._T is None:
+            c, s = np.cos(self.phi), np.sin(self.phi)
+            self._T = np.array(
+                [
+                    [c * c, s * s, c * s],
+                    [s * s, c * c, -c * s],
+                    [-2 * c * s, 2 * c * s, c * c - s * s],
+                ]
+            )
+        return self._T
+
+    @property
+    def area(self) -> float:
+        """Return the reinforcement area per unit width."""
+        if self._area is None:
+            self._area = (
+                self.n_bars
+                * np.pi
+                * (self.diameter_bar / 2) ** 2
+                / self.cc_bars
+            )
+        return self._area
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
