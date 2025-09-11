@@ -326,18 +326,34 @@ def test_parabola_rectangle_2d(fc, eps_0, eps_u, strain, stress):
     assert np.allclose(mat.get_stress(strain), stress, atol=1e-3)
 
 
-def test_get_secant_shape():
+@pytest.mark.parametrize('nu', (0.0, 0.2))
+@pytest.mark.parametrize(
+    'strain',
+    (
+        (0.0, 0.0, 0.0),
+        (-1.5e-3, 0.0, 0.0),
+        (-1.5e-3, -1.5e-3, 0.0),
+        (0.0, -1.5e-3, 0.0),
+        (-1.5e-3, 0.0, 0.75e-3),
+        (-1.5e-3, -1.5e-3, 0.75e-3),
+        (0.0, -1.5e-3, 0.75e-3),
+    ),
+)
+def test_get_secant_shape(strain, nu):
     """Test the secant stiffness matrix shape of the parabola-rectangle
     2D material.
     """
     mat = ParabolaRectangle2D(
-        fc=45.0, eps_0=-0.002, eps_u=-0.0035, n=2.0, nu=0.2
+        fc=45.0, eps_0=-0.002, eps_u=-0.0035, n=2.0, nu=nu
     )
-    C = mat.get_secant([0.0, 0.0, 0.0])
+    C = mat.get_secant(strain)
+
     # Shape
     assert C.shape == (3, 3)
+
     # Symmetry
     assert np.allclose(C, C.T)
+
     # Positive diagonal elements
     assert np.all(np.diag(C) > 0)
 

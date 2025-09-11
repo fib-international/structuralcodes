@@ -1,8 +1,14 @@
 """Tests for the Shell Section."""
 
+import math
+
 import numpy as np
 import pytest
 
+from structuralcodes.geometry import (
+    RectangularGeometry,
+    add_reinforcement_line,
+)
 from structuralcodes.geometry._shell_geometry import (
     ShellGeometry,
     ShellReinforcement,
@@ -12,10 +18,11 @@ from structuralcodes.materials.concrete import ConcreteEC2_2004
 from structuralcodes.materials.constitutive_laws import (
     Elastic2D,
     ElasticPlastic,
+    ParabolaRectangle,
     ParabolaRectangle2D,
 )
 from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
-from structuralcodes.sections import ShellSection
+from structuralcodes.sections import GenericSection, ShellSection
 
 # Membrane and bending-strain parameter ranges
 eps_x = np.linspace(0.0, 1.0e-3, 2)
@@ -26,23 +33,31 @@ chi_y = np.linspace(0.0, 1.0e-6, 2)
 chi_xy = np.linspace(0.0, 1.0e-6, 2)
 
 
-@pytest.mark.parametrize('eps_x', eps_x)
-@pytest.mark.parametrize('eps_y', eps_y)
-@pytest.mark.parametrize('eps_xy', eps_xy)
-@pytest.mark.parametrize('chi_x', chi_x)
-@pytest.mark.parametrize('chi_y', chi_y)
 @pytest.mark.parametrize('chi_xy', chi_xy)
+@pytest.mark.parametrize('chi_y', chi_y)
+@pytest.mark.parametrize('chi_x', chi_x)
+@pytest.mark.parametrize('eps_xy', eps_xy)
+@pytest.mark.parametrize('eps_y', eps_y)
+@pytest.mark.parametrize('eps_x', eps_x)
 @pytest.mark.parametrize(
     'Ec, nu, thickness',
     [(30000, 0.20, 200), (30000, 0.20, 600)],
 )
 def test_integrate_strain_profile(
-    Ec, nu, thickness, eps_x, eps_y, eps_xy, chi_x, chi_y, chi_xy
+    Ec,
+    nu,
+    thickness,
+    eps_x,
+    eps_y,
+    eps_xy,
+    chi_x,
+    chi_y,
+    chi_xy,
 ):
     """Elastic plate: strains → stress-resultants."""
     constitutive_law = Elastic2D(Ec, nu)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(thickness, material))
+    shell = ShellSection(ShellGeometry(thickness, material), mesh_size=1e-3)
 
     # Numerically integrated forces/moments
     R = shell.section_calculator.integrate_strain_profile(
@@ -50,25 +65,31 @@ def test_integrate_strain_profile(
     )
 
     # Analytical forces/moments
-    A = Ec * thickness / (1 - nu**2)
-    B = Ec * thickness**3 / 12 / (1 - nu**2)
-    Nx = A * (eps_x + nu * eps_y)
-    Ny = A * (eps_y + nu * eps_x)
-    Nxy = Ec * thickness / (2 * (1 + nu)) * eps_xy
-    Mx = B * (chi_x + nu * chi_y)
-    My = B * (chi_y + nu * chi_x)
-    Mxy = Ec * thickness**3 / 12 / (2 * (1 + nu)) * chi_xy
+    A_membrane = Ec * thickness / (1 - nu**2)  # Coefficient in Hooke's law
+    A_bending = Ec * thickness**3 / 12 / (1 - nu**2)  # Plate bending stiffness
+    A_membrane_shear = A_membrane * (1 - nu) / 2
+    A_bending_shear = A_bending * (1 - nu) / 2
+
+    Nx = A_membrane * (eps_x + nu * eps_y)
+    Ny = A_membrane * (eps_y + nu * eps_x)
+    Nxy = A_membrane_shear * eps_xy
+    Mx = A_bending * (chi_x + nu * chi_y)
+    My = A_bending * (chi_y + nu * chi_x)
+    Mxy = A_bending_shear * chi_xy
 
     expected = np.array([Nx, Ny, Nxy, Mx, My, Mxy])
 
-    assert np.allclose(R, expected, rtol=1e-2, atol=1e-2)
+    assert np.allclose(R, expected)
 
 
-def test_integrate_strain_profile_tangent(E=30000, nu=0.20, t=200):
-    """Elastic plate: tangent stiffness matrix."""
+@pytest.mark.parametrize('nu', ((0, 0.2)))
+def test_integrate_strain_profile_stiffness_matrix(nu):
+    """Elastic plate: stiffness matrix."""
+    E = 30000
+    t = 200
     constitutive_law = Elastic2D(E, nu)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(t, material=material))
+    shell = ShellSection(ShellGeometry(t, material=material), mesh_size=1e-3)
     K = shell.section_calculator.integrate_strain_profile(
         np.array([1e-3] * 3 + [1e-6] * 3), integrate='modulus'
     )
@@ -91,7 +112,7 @@ def test_integrate_strain_profile_tangent(E=30000, nu=0.20, t=200):
         ]
     )
 
-    assert np.allclose(K, A, rtol=1e-2)
+    assert np.allclose(K, A)
 
 
 def test_wrong_integrator():
@@ -114,18 +135,18 @@ my = np.linspace(-1e8, 1e8, 2)
 mxy = np.linspace(-1e8, 1e8, 2)
 
 
-@pytest.mark.parametrize('nx', nx)
-@pytest.mark.parametrize('ny', ny)
-@pytest.mark.parametrize('nxy', nxy)
-@pytest.mark.parametrize('mx', mx)
-@pytest.mark.parametrize('my', my)
 @pytest.mark.parametrize('mxy', mxy)
+@pytest.mark.parametrize('my', my)
+@pytest.mark.parametrize('mx', mx)
+@pytest.mark.parametrize('nxy', nxy)
+@pytest.mark.parametrize('ny', ny)
+@pytest.mark.parametrize('nx', nx)
 @pytest.mark.parametrize('Ec, nu, t', [(30000, 0.20, 200), (30000, 0.20, 600)])
 def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     """Loads → strains for an isotropic plate."""
     constitutive_law = Elastic2D(Ec, nu)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(t, material=material))
+    shell = ShellSection(ShellGeometry(t, material=material), mesh_size=1e-3)
     eps = shell.section_calculator.calculate_strain_profile(
         nx, ny, nxy, mx, my, mxy
     )
@@ -142,7 +163,7 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     chi_xy = 2 * (1 + nu) * mxy / D
     expected = np.array([eps_x, eps_y, eps_xy, chi_x, chi_y, chi_xy])
 
-    assert np.allclose(eps, expected, rtol=1e-4, atol=1e-3)
+    assert np.allclose(eps, expected)
 
 
 def test_default_equals_explicit_mesh_size():
@@ -174,59 +195,27 @@ def test_invalid_mesh_size_raises(invalid):
         )
 
 
-def test_parabola_section():
-    """ParabolaRectangle2D with mesh_size 0.5."""
-    parabola_rectangle = ParabolaRectangle2D(35, nu=0)
-    elastic_plastic = ElasticPlastic(200000, 500)
-    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
-    reinforcement = ReinforcementEC2_2004(
-        fyk=500,
-        Es=200000,
-        ftk=500,
-        epsuk=3e-2,
-        constitutive_law=elastic_plastic,
-    )
-    Asx1 = ShellReinforcement(-157, 1, 300, 16, reinforcement, 0)
-
-    geo = ShellGeometry(400, concrete)
-    geo.add_reinforcement([Asx1])
-
-    section = ShellSection(geo, mesh_size=0.1)
-    calculator = section.section_calculator
-    strain = calculator.calculate_strain_profile(-1000, 0, 0, 0, 0, 0)
-
-    assert np.allclose(
-        strain,
-        np.array([-7.20105642e-05, 0, 0, 1.07581081e-08, 0, 0]),
-        rtol=1e-6,
-        atol=1e-7,
-    )
-
-
 @pytest.mark.parametrize(
-    'nx,nxy,expected,tol',
+    'nx,nxy,expected',
     [
         (
             0,
-            1000,
-            np.array([3.046432e-05, 3.079979e-05, 1.914840e-04, 0, 0, 0]),
-            1e-4,
+            500,
+            np.array([1.43163e-3, 1.919842e-3, 3.466593e-3, 0, 0, 0]),
         ),
         (
-            -1000,
-            1000,
-            np.array([-5.285263e-05, 2.741669e-05, 1.649706e-04, 0, 0, 0]),
-            0.001,
+            -500,
+            500,
+            np.array([0.618194e-3, 1.476430e-3, 2.065709e-3, 0, 0, 0]),
         ),
         (
-            1000,
-            1000,
-            np.array([1.330415e-04, 2.785210e-05, 2.186547e-04, 0, 0, 0]),
-            0.001,
+            500,
+            500,
+            np.array([2.446863e-3, 2.283832e-3, 4.894237e-3, 0, 0, 0]),
         ),
     ],
 )
-def test_parabola_cracked(nx, nxy, expected, tol):
+def test_parabola_zero_initial_nu(nx, nxy, expected):
     """Test parabola rectangle with nu = 0."""
     parabola_rectangle = ParabolaRectangle2D(45, nu=0)
     elastic_plastic = ElasticPlastic(200000, 500)
@@ -244,44 +233,36 @@ def test_parabola_cracked(nx, nxy, expected, tol):
     Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
     Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
     geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
-    section = ShellSection(geo)
+    section = ShellSection(geo, mesh_size=0.5)
     calculator = section.section_calculator
     strain = calculator.calculate_strain_profile(
-        nx, 0, nxy, 0, 0, 0, initial=True, tol=tol
+        nx, 0, nxy, 0, 0, 0, max_iter=150
     )
 
-    assert np.allclose(
-        strain,
-        expected,
-        rtol=1e-6,
-        atol=1e-7,
-    )
+    assert np.allclose(strain, expected)
 
 
 @pytest.mark.parametrize(
-    'nx,nxy,expected,tol',
+    'nx,nxy,expected',
     [
         (
             0,
-            1000,
-            np.array([2.923437e-05, 2.961959e-05, 2.150748e-04, 0, 0, 0]),
-            1e-4,
+            500,
+            np.array([1.431675e-3, 1.919788e-3, 3.466592e-3, 0, 0, 0]),
         ),
         (
-            -1000,
-            1000,
-            np.array([-5.332211e-05, 3.874431e-05, 1.897691e-04, 0, 0, 0]),
-            0.001,
+            -500,
+            500,
+            np.array([0.618204e-3, 1.476423e-3, 2.065719e-3, 0, 0, 0]),
         ),
         (
-            1000,
-            1000,
-            np.array([1.302065e-04, 1.461867e-05, 2.411031e-04, 0, 0, 0]),
-            0.001,
+            500,
+            500,
+            np.array([2.446899e-3, 2.283762e-3, 4.894200e-3, 0, 0, 0]),
         ),
     ],
 )
-def test_parabola_uncracked(nx, nxy, expected, tol):
+def test_parabola_initial_nu(nx, nxy, expected):
     """Test parabola rectangle with nu = 0.2."""
     parabola_rectangle = ParabolaRectangle2D(45)
     elastic_plastic = ElasticPlastic(200000, 500)
@@ -299,18 +280,18 @@ def test_parabola_uncracked(nx, nxy, expected, tol):
     Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
     Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
     geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
-    section = ShellSection(geo)
-    calculator = section.section_calculator
-    strain = calculator.calculate_strain_profile(
-        nx, 0, nxy, 0, 0, 0, initial=True, tol=tol
+    section = ShellSection(geo, mesh_size=0.5)
+    strain = section.section_calculator.calculate_strain_profile(
+        nx,
+        0,
+        nxy,
+        0,
+        0,
+        0,
+        max_iter=200,
     )
 
-    assert np.allclose(
-        strain,
-        expected,
-        rtol=1e-6,
-        atol=1e-7,
-    )
+    assert np.allclose(strain, expected)
 
 
 def test_exceed_max_iterations():
@@ -344,3 +325,198 @@ def test_exceed_max_iterations():
             0,
             0,
         )
+
+
+@pytest.mark.parametrize(
+    'axial_force, with_reinforcement',
+    (
+        (-1e6, False),
+        (-1e6, True),
+        (1e5, True),
+    ),
+)
+def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
+    axial_force: float, with_reinforcement: bool
+):
+    """Compare the uniaxial response of the shell section with the generic
+    section, with reinforcement.
+    """
+    # Arrange
+    # Geometry
+    width = 1000
+    height = 350
+    cover = 35
+    diameter = 16
+    spacing = 200
+
+    # Material parameters
+    fc = 45  # Concrete compressive strength
+    nu = 0.0  # Poisson's ratio
+    fyk = 500  # Steel yield strength
+    Es = 200000  # Steel modulus of elasticity
+
+    # Create a GenericSection
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fyk,
+        Es=Es,
+        epsuk=3e-2,
+        ftk=fyk,
+        constitutive_law='elasticperfectlyplastic',
+    )
+    parabola_rectangle = ParabolaRectangle(fc=fc)
+    concrete_for_generic = ConcreteEC2_2004(
+        fck=fc, constitutive_law=parabola_rectangle
+    )
+    generic_geo = RectangularGeometry(
+        height=height, width=width, material=concrete_for_generic
+    )
+
+    if with_reinforcement:
+        # Bottom reinforcement
+        generic_geo = add_reinforcement_line(
+            generic_geo,
+            (
+                -width / 2 + cover + diameter / 2,
+                -height / 2 + cover + diameter / 2,
+            ),
+            (
+                width / 2 - cover - diameter / 2,
+                -height / 2 + cover + diameter / 2,
+            ),
+            diameter=diameter,
+            material=reinforcement,
+            s=spacing,
+        )
+
+        # Top reinforcement
+        generic_geo = add_reinforcement_line(
+            generic_geo,
+            (
+                -width / 2 + cover + diameter / 2,
+                height / 2 - cover - diameter / 2,
+            ),
+            (
+                width / 2 - cover - diameter / 2,
+                height / 2 - cover - diameter / 2,
+            ),
+            diameter=diameter,
+            material=reinforcement,
+            s=spacing,
+        )
+
+    generic_sec = GenericSection(geometry=generic_geo, integrator='fiber')
+
+    # Create a ShellSection
+    parabola_rectangle_2d = ParabolaRectangle2D(fc=fc, nu=nu)
+    concrete_for_shell = ConcreteEC2_2004(
+        fck=fc, constitutive_law=parabola_rectangle_2d
+    )
+    shell_geo = ShellGeometry(material=concrete_for_shell, thickness=height)
+
+    if with_reinforcement:
+        # Create reinforcement for the shell section
+        z_btm = -height / 2 + cover + diameter / 2  # -132
+        z_top = height / 2 - cover - diameter / 2  # 132
+
+        # Bottom reinforcement
+        shell_rein_btm = ShellReinforcement(
+            z_btm, 1, spacing, diameter, reinforcement, 0
+        )
+
+        # Top reinforcement
+        shell_rein_top = ShellReinforcement(
+            z_top, 1, spacing, diameter, reinforcement, 0
+        )
+
+        # Add reinforcement to the shell geometry
+        shell_geo.add_reinforcement([shell_rein_btm, shell_rein_top])
+
+    shell_sec = ShellSection(geometry=shell_geo, mesh_size=0.5)
+
+    # Calculate "exact" solution
+    if axial_force > 0:
+        exact_longitudinal_strain = axial_force / (
+            generic_sec.gross_properties.area_reinforcement * Es
+        )
+    else:
+        exact_longitudinal_strain = 0
+        num_iter = 0
+        area = width * height
+        while True:
+            num_iter += 1
+            if num_iter >= 40:
+                break
+            exact_longitudinal_strain = axial_force / (
+                area
+                * concrete_for_generic.constitutive_law.get_secant(
+                    exact_longitudinal_strain
+                )
+                + generic_sec.gross_properties.area_reinforcement * Es
+            )
+
+    # Act
+    # Calculate strains
+    generic_strain = generic_sec.section_calculator.calculate_strain_profile(
+        n=axial_force, my=0.0, mz=0.0
+    )
+    shell_strain = shell_sec.section_calculator.calculate_strain_profile(
+        nx=axial_force / width,
+        ny=0.0,
+        nxy=0.0,
+        mx=0.0,
+        my=0.0,
+        mxy=0.0,
+    )
+
+    # Compare with exact solution
+    # Note that the tolerance in isclose is set rather loose because the
+    # iterative solver of the shell section converges slower than the generic
+    # section.
+    assert math.isclose(
+        shell_strain[0],
+        exact_longitudinal_strain,
+        rel_tol=1e-4,
+    )
+
+    # Compare GenericSection and ShellSection
+    assert math.isclose(
+        generic_strain[0],
+        shell_strain[0],
+        rel_tol=1e-4,
+    )
+
+
+@pytest.mark.parametrize('nu', [0.0, 0.2])
+@pytest.mark.parametrize(
+    'strain',
+    [
+        (-2e-3, 0.0, 0.0),
+        (-2e-3, -2e-3, 0.0),
+        (0.0, 0.0, 0.75e-3),
+        (-2e-3, 0.0, 0.75e-3),
+        (-2e-3, -2e-3, 0.75e-3),
+    ],
+)
+def test_compare_constitutive_law_and_section(strain, nu):
+    """Compare the stress calculated with a constitutive law with the stress
+    resultant from the section.
+    """
+    # Arrange
+    fck = 45
+    thickness = 450
+    constitutive_law = ParabolaRectangle2D(fc=fck, nu=nu)
+    concrete = ConcreteEC2_2004(fck=fck, constitutive_law=constitutive_law)
+    shell_geometry = ShellGeometry(thickness=thickness, material=concrete)
+    shell_section = ShellSection(geometry=shell_geometry)
+
+    # Act
+    stress = constitutive_law.get_stress(strain=strain)
+    stress_resultant = (
+        shell_section.section_calculator.integrate_strain_profile(
+            strain=[*strain, 0.0, 0.0, 0.0],
+            integrate='stress',
+        )
+    )
+
+    # Assert
+    assert np.allclose(stress * thickness, stress_resultant[:3])
