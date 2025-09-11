@@ -168,34 +168,25 @@ class ParabolaRectangle2D(ParabolaRectangle):
         eps_pf = self.get_effective_principal_strains(eps_p)
 
         sig_p = super().get_stress(eps_pf)
+        sig_p[sig_p < 0] *= beta
 
-        # Avoid division by zero
-        tol = 1e-12
-        if abs(eps_pf[0]) > tol:
-            E_11 = (sig_p[0] * (beta if sig_p[0] < 0 else 1.0)) / eps_pf[0]
-        else:
-            E_11 = self._fc * self._n / self._eps_0
+        # Establish the diagonal of material stiffness matrix
+        # First set the diagonal terms equal to the initial stiffness
+        # Then calculate the secant stiffness for components with nonzero
+        # strains
+        D = self._fc * self._n / self._eps_0 * np.ones_like(sig_p)
+        nonzero_strains = np.abs(eps_pf) > 0
+        D[nonzero_strains] = sig_p[nonzero_strains] / eps_pf[nonzero_strains]
 
-        if abs(eps_pf[1]) > tol:
-            E_22 = (sig_p[1] * (beta if sig_p[1] < 0 else 1.0)) / eps_pf[1]
-        else:
-            E_22 = self._fc * self._n / self._eps_0
-
-        # Initial 2x2 secant
-        D = np.diag([E_11, E_22])
-        C = self.poisson_matrix(self.check_cracked(eps_p=eps_p)) @ D
+        # Correct for the poisson effect
+        C = self.poisson_matrix(self.check_cracked(eps_p=eps_p)) @ np.diag(D)
 
         # Ensure symmetry
         C = 0.5 * (C + C.T)
 
         # Shear modulus
         G_12 = np.array(
-            [
-                [
-                    (E_11 + E_22)
-                    / (4 * (1 + self.nu(self.check_cracked(eps_p=eps_p))))
-                ]
-            ]
+            [[D.mean() / (2 * (1 + self.nu(self.check_cracked(eps_p=eps_p))))]]
         )  # Shape (1, 1)
 
         Z_21 = np.zeros((2, 1))  # Shape (2, 1)
