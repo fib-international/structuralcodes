@@ -93,27 +93,27 @@ Notice how {func}`add_reinforcement_line() <structuralcodes.geometry.add_reinfor
 The t-shaped geometry with reinforcement created with the code [above](#code-usage-surface-geometries-with-reinforcement).
 :::
 
-## Steel profiles
+## Profiles
 
-StructuralCodes comes with a set of predefined steel profiles. A steel profile class is a wrapper around a {class}`shapely.Polygon` and exposes the most common elastic and plastic section properties.
+StructuralCodes comes with a set of predefined common profiles. A profile class is a wrapper around a {class}`shapely.Polygon` and exposes the most common elastic and plastic section properties.
 
-The following families of steel profiles are available:
+The following families of profiles are available:
 
-- {class}`IPE <structuralcodes.geometry.IPE>`
-- {class}`HE <structuralcodes.geometry.HE>`
-- {class}`UB <structuralcodes.geometry.UB>`
-- {class}`UC <structuralcodes.geometry.UC>`
-- {class}`UBP <structuralcodes.geometry.UBP>`
-- {class}`IPN <structuralcodes.geometry.IPN>`
-- {class}`UPN <structuralcodes.geometry.UPN>`
+- {class}`IPE <structuralcodes.geometry.profiles.IPE>`
+- {class}`HE <structuralcodes.geometry.profiles.HE>`
+- {class}`UB <structuralcodes.geometry.profiles.UB>`
+- {class}`UC <structuralcodes.geometry.profiles.UC>`
+- {class}`UBP <structuralcodes.geometry.profiles.UBP>`
+- {class}`IPN <structuralcodes.geometry.profiles.IPN>`
+- {class}`UPN <structuralcodes.geometry.profiles.UPN>`
 
-The available profiles within each family can be listed by calling the `.profiles` method on the respective class. The code below shows how to list the available profiles in the {class}`HE <structuralcodes.geometry.HE>` family.
+The available profiles within each family can be listed by calling the `.profiles` method on the respective class. The code below shows how to list the available profiles in the {class}`HE <structuralcodes.geometry.profiles.HE>` family.
 
 (code-usage-list-steel-profiles)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_steel_profiles.py
    :lines: 3-5
-   :caption: List the available steel profiles in the HE family.
+   :caption: List the available profiles in the HE family.
 :::
 ::::
 
@@ -123,29 +123,29 @@ To create an HEA100 profile, simply pass the name of the profile to the class as
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_steel_profiles.py
    :lines: 3, 6-7
-   :caption: List the available steel profiles in the HE family.
+   :caption: List the available profiles in the HE family.
 :::
 ::::
 
-The figure [below](#fig-usage-hea100) shows the shape of the steel profile.
+The figure [below](#fig-usage-hea100) shows the shape of the profile.
 
 (fig-usage-hea100)=
 :::{figure} hea100.svg
 
-The shape of the steel profile created with the code [above](#code-usage-create-steel-profile).
+The shape of the profile created with the code [above](#code-usage-create-steel-profile).
 :::
 
-Notice how all the predefined steel profiles expose thicknesses, widths, heights, radii, etc. as properties along with elastic and plastic section properties like {py:attr}`Iy <structuralcodes.geometry.HE.Iy>`, {py:attr}`Wely <structuralcodes.geometry.HE.Wely>`, {py:attr}`Wply <structuralcodes.geometry.HE.Wply>`, and {py:attr}`iy <structuralcodes.geometry.HE.iy>`.
+Notice how all the predefined profiles expose thicknesses, widths, heights, radii, etc. as properties along with elastic and plastic section properties like {py:attr}`Iy <structuralcodes.geometry.HE.Iy>`, {py:attr}`Wely <structuralcodes.geometry.HE.Wely>`, {py:attr}`Wply <structuralcodes.geometry.HE.Wply>`, and {py:attr}`iy <structuralcodes.geometry.HE.iy>`.
 
 :::::{tip}
 
-The steel profiles expose the underlying {class}`shapely.Polygon` as the `.polygon` property. This can be passed to a {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` along with a material for use in further calculations. See for example the following code where calculate the bending strength of an IPE100 profile.
+The profiles expose the underlying {class}`shapely.Polygon` as the `.polygon` property. This can be passed to a {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` along with a material for use in further calculations. See for example the following code where calculate the bending strength of an IPE100 profile.
 
 (code-usage-steel-profile-in-geometry)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_steel_profile_in_geometry.py
    :lines: 3-
-   :caption: Use a steeø profile in a geometry and calculate the bending strength.
+   :caption: Use a profile in a geometry and calculate the bending strength.
 :::
 ::::
 

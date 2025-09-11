@@ -4,9 +4,7 @@ import math
 
 import numpy as np
 
-from structuralcodes.sections.section_integrators._marin_integration import (
-    marin_integration,
-)
+from structuralcodes.core._marin_integration import marin_integration
 
 
 def test_area_moments_rectangular_section():
