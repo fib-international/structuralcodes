@@ -188,22 +188,21 @@ class ShellSectionCalculator(SectionCalculator):
             # LU factorization
             lu, piv = lu_factor(stiffness)
 
+        first_norm = None
+
         # Do Newton loops
         while True:
             # Check if number of iterations exceeds the maximum
             if num_iter > max_iter:
                 raise StopIteration('Maximum number of iterations reached.')
 
+            # Calculate response and residuals
+            response = np.array(self.integrate_strain_profile(strain=strain))
+            residual = loads - response
             if initial:
                 # If the initial stiffness is used, we follow a regular
                 # Newton-Raphson scheme where we calculate the strain increment
                 # from the residual and the initial tangent stiffness matrix
-
-                # Calculate response and residuals
-                response = np.array(
-                    self.integrate_strain_profile(strain=strain)
-                )
-                residual = loads - response
 
                 # Solve using the decomposed matrix
                 delta_strain = lu_solve((lu, piv), residual)
@@ -232,7 +231,13 @@ class ShellSectionCalculator(SectionCalculator):
             num_iter += 1
 
             # Check for convergence:
-            if np.linalg.norm(delta_strain) < tol and num_iter > 1:
+            if first_norm is None:
+                first_norm = np.dot(residual, delta_strain)
+                current_norm = first_norm
+            else:
+                current_norm = np.dot(residual, delta_strain)
+
+            if abs(current_norm / first_norm) < tol and num_iter > 1:
                 break
 
         return strain.tolist()
