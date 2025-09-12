@@ -7,6 +7,7 @@ from ._ub import UB
 from ._ubp import UBP
 from ._uc import UC
 from ._upn import UPN
+from ._w import W
 
 __all__ = [
     'HE',
@@ -16,4 +17,5 @@ __all__ = [
     'UBP',
     'UC',
     'UPN',
+    'W',
 ]

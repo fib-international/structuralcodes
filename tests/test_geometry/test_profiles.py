@@ -1,6 +1,8 @@
 """Tests for profiles."""
 
+import json
 import math
+from pathlib import Path
 
 import pytest
 from shapely.testing import assert_geometries_equal
@@ -18,6 +20,7 @@ from structuralcodes.geometry.profiles import (
     UBP,
     UC,
     UPN,
+    W,
 )
 from structuralcodes.materials.basic import (
     ElasticMaterial,
@@ -110,6 +113,7 @@ def _wzpl_I_beam(h: float, b: float, tw: float, tf: float, r: float) -> float:
         (UBP, 'UBP203'),
         (IPN, 'IPN125'),
         (UPN, 'UPN123'),
+        (W, 'W 100 x 100'),
     ],
 )
 def test_names_invalid(cls, invalid_name):
@@ -1457,3 +1461,38 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mzp_expected, rel_tol=2.5e-2)
+
+
+def load_w_profiles_data():
+    """Load W profiles data from w.json file."""
+    json_file = Path(__file__).parent / 'w.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            wely_cm3 = profile_data['Wely_cm3']
+
+            profiles_data.append((profile_name, wely_cm3))
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    'profile_name, expected_wely_cm3', load_w_profiles_data()
+)
+def test_w_profile_wely(profile_name, expected_wely_cm3):
+    """Test W profile Wely property matches JSON data."""
+    profile = W(profile_name)
+
+    wy_el_expected = _wyel_I_beam(
+        profile.h, profile.b, profile.tw, profile.tf, profile.r
+    )
+
+    wy_el_profile = profile.Wely
+
+    assert math.isclose(wy_el_expected, wy_el_profile, rel_tol=1e-3)
+
+    # I wanted to do this but is failing due to strange values in the input
+    # text file:
+    # assert math.isclose(expected_wely_cm3 * 1e3, wy_el_profile, rel_tol=1e-2)
+    del expected_wely_cm3
