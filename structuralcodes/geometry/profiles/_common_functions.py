@@ -201,3 +201,63 @@ def _create_taper_U_section(
     return orient(
         translate(poly, xoff=-poly.centroid.x, yoff=-poly.centroid.y), 1
     )
+
+
+def _create_parallel_U_section(
+    h: float,
+    b: float,
+    tw: float,
+    tf: float,
+    r: float,
+) -> Polygon:
+    """Returns a shapely polygon representing a Parallel Flange U Section."""
+    # top flange
+    top_flange = Polygon(
+        [
+            (0, h / 2 - tf),
+            (b, h / 2 - tf),
+            (b, h / 2),
+            (0, h / 2),
+        ]
+    )
+    # bottom flange
+    bottom_flange = translate(top_flange, xoff=0, yoff=-h + tf)
+    web = Polygon(
+        [
+            (0, -h / 2 + tf),
+            (tw, -h / 2 + tf),
+            (tw, h / 2 - tf),
+            (0, h / 2 - tf),
+        ]
+    )
+    # fillets
+    p = Point([tw + r, -h / 2 + tf + r]).buffer(r)
+    s = Polygon(
+        [
+            (tw, -h / 2 + tf),
+            (tw + r, -h / 2 + tf),
+            (tw + r, -h / 2 + tf + r),
+            (tw, -h / 2 + tf + r),
+        ]
+    )
+    fillet = s.difference(p)
+    fillet = translate(
+        scale(fillet, 1, -1), xoff=0, yoff=h - 2 * tf - r
+    ).union(fillet)
+    # Estimate grid_size value
+    # Tentative geometry (due to approximations can be a MultiPolygon)
+    geom_trial = unary_union([fillet, top_flange, bottom_flange, web])
+    # minx, miny, maxx, maxy
+    bounds = geom_trial.bounds
+    min_size = min(bounds[2] - bounds[0], bounds[3] - bounds[1])
+    grid_size = 10 ** int(math.floor(math.log10(abs(min_size)))) * 1e-12
+    # Create the geometry
+    geometries = [
+        set_precision(geometry, grid_size=grid_size)
+        for geometry in [fillet, top_flange, bottom_flange, web]
+    ]
+    geometry = orient(unary_union(geometries), 1)
+    # Return the geometry centered at the origin
+    return translate(
+        geometry, xoff=-geometry.centroid.x, yoff=-geometry.centroid.y
+    )
