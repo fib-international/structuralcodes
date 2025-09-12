@@ -1,5 +1,7 @@
 """Common functions for creating profiles."""
 
+import math
+
 import numpy as np
 from shapely import (
     LineString,
@@ -59,9 +61,16 @@ def _create_I_section(h: float, b: float, tw: float, tf: float, r: float):
     fillet = translate(
         scale(fillet, 1, -1), xoff=0, yoff=h - 2 * tf - r
     ).union(fillet)
+    # Estimate grid_size value
+    # Tentative geometry (due to approximations can be a MultiPolygon)
+    geom_trial = unary_union([fillet, top_flange, bottom_flange, web])
+    # minx, miny, maxx, maxy
+    bounds = geom_trial.bounds
+    min_size = min(bounds[2] - bounds[0], bounds[3] - bounds[1])
+    grid_size = 10 ** int(math.floor(math.log10(abs(min_size)))) * 1e-12
     # Create the geometry
     geometries = [
-        set_precision(geometry, grid_size=1e-13)
+        set_precision(geometry, grid_size=grid_size)
         for geometry in [fillet, top_flange, bottom_flange, web]
     ]
     return orient(unary_union(geometries), 1)
