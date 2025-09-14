@@ -3,6 +3,7 @@
 from ._he import HE
 from ._ipe import IPE
 from ._ipn import IPN
+from ._u import U
 from ._ub import UB
 from ._ubp import UBP
 from ._uc import UC
@@ -19,5 +20,6 @@ __all__ = [
     'UC',
     'UPN',
     'UPE',
+    'U',
     'W',
 ]
