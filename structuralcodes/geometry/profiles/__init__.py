@@ -1,5 +1,6 @@
 """Main entry point for profiles."""
 
+from ._hd import HD
 from ._he import HE
 from ._ipe import IPE
 from ._ipn import IPN
@@ -13,6 +14,7 @@ from ._w import W
 
 __all__ = [
     'HE',
+    'HD',
     'IPE',
     'IPN',
     'UB',
