@@ -261,3 +261,46 @@ def _create_parallel_U_section(
     return translate(
         geometry, xoff=-geometry.centroid.x, yoff=-geometry.centroid.y
     )
+
+
+def _create_L_section(
+    h: float, b: float, t1: float, t2: float, r1: float, r2: float
+) -> Polygon:
+    """Returns a shapely polygon representing a L Section."""
+    # Create first part of line
+    ls = [set_precision(LineString([[0, h], [0, 0], [b, 0]]), grid_size=1e-13)]
+    # Create fillet
+    xy = np.array([[b, 0], [b, t1], [b / 2, t1]])
+    ls.append(
+        set_precision(
+            LineString(xy).offset_curve(r2).offset_curve(-r2), grid_size=1e-13
+        )
+    )
+    # Create second fillet
+    xy = np.array([[b / 2, t1], [t2, t1], [t2, h / 2]])
+    ls.append(
+        set_precision(
+            LineString(xy).offset_curve(-r1).offset_curve(r1), grid_size=1e-13
+        )
+    )
+    # Last fillet
+    xy = np.array([[t2, h / 2], [t2, h], [0, h]])
+    ls.append(
+        set_precision(
+            LineString(xy).offset_curve(r2).offset_curve(-r2), grid_size=1e-13
+        )
+    )
+    # Merge filleted
+    merged_ls = linemerge(ls)
+
+    merged_ls
+
+    # Create a polygon
+    poly = polygonize([merged_ls])
+
+    # Return the first and only polygon of this collection
+    poly = get_geometry(poly, 0)
+    # Translate it to the centroid when returning
+    return orient(
+        translate(poly, xoff=-poly.centroid.x, yoff=-poly.centroid.y), 1
+    )
