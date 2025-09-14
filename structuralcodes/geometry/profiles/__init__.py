@@ -2,6 +2,7 @@
 
 from ._hd import HD
 from ._he import HE
+from ._hp import HP
 from ._ipe import IPE
 from ._ipn import IPN
 from ._u import U
@@ -14,6 +15,7 @@ from ._w import W
 
 __all__ = [
     'HE',
+    'HP',
     'HD',
     'IPE',
     'IPN',

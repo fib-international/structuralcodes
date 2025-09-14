@@ -15,6 +15,7 @@ from structuralcodes.geometry import (
 from structuralcodes.geometry.profiles import (
     HD,
     HE,
+    HP,
     IPE,
     IPN,
     UB,
@@ -1673,6 +1674,51 @@ def test_hd_profile(
 ):
     """Test HD profile property matches JSON data."""
     profile = HD(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
+
+
+def load_hp_profiles_data():
+    """Load HP profiles data from ub.json file."""
+    json_file = Path(__file__).parent / 'hp.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_hp_profiles_data(),
+)
+def test_hp_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test HP profile property matches JSON data."""
+    profile = HP(profile_name)
 
     assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
     assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
