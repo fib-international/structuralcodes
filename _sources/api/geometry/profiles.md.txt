@@ -1,8 +1,10 @@
-(api-steel-sections)=
-# Steel sections
+(api-profiles)=
+# Profiles
+
+## IPE
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.geometry.IPE
+.. autoclass:: structuralcodes.geometry.profiles.IPE
 
     .. autoproperty:: h
     .. autoproperty:: b
@@ -32,8 +34,10 @@
 
 ```
 
+## HE
+
 ```{eval-rst}
-.. autoclass:: structuralcodes.geometry.HE
+.. autoclass:: structuralcodes.geometry.profiles.HE
 
     .. autoproperty:: h
     .. autoproperty:: b
@@ -61,67 +65,10 @@
     .. automethod:: profiles
 ```
 
-```{eval-rst}
-.. autoclass:: structuralcodes.geometry.UB
-
-    .. autoproperty:: h
-    .. autoproperty:: b
-    .. autoproperty:: tw
-    .. autoproperty:: tf
-    .. autoproperty:: r
-
-    .. autoproperty:: A
-    .. autoproperty:: Iy
-    .. autoproperty:: Iz
-    .. autoproperty:: Iyz
-    .. autoproperty:: Icsi
-    .. autoproperty:: Ieta
-    .. autoproperty:: theta
-    .. autoproperty:: Wely
-    .. autoproperty:: Welz
-    .. autoproperty:: Wply
-    .. autoproperty:: Wplz
-    .. autoproperty:: iy
-    .. autoproperty:: iz
-
-    .. autoproperty:: polygon
-
-    .. automethod:: get_polygon
-    .. automethod:: profiles
-
-```
+## UB
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.geometry.UC
-
-    .. autoproperty:: h
-    .. autoproperty:: b
-    .. autoproperty:: tw
-    .. autoproperty:: tf
-    .. autoproperty:: r
-
-    .. autoproperty:: A
-    .. autoproperty:: Iy
-    .. autoproperty:: Iz
-    .. autoproperty:: Iyz
-    .. autoproperty:: Icsi
-    .. autoproperty:: Ieta
-    .. autoproperty:: theta
-    .. autoproperty:: Wely
-    .. autoproperty:: Welz
-    .. autoproperty:: Wply
-    .. autoproperty:: Wplz
-    .. autoproperty:: iy
-    .. autoproperty:: iz
-
-    .. autoproperty:: polygon
-
-    .. automethod:: get_polygon
-    .. automethod:: profiles
-```
-
-```{eval-rst}
-.. autoclass:: structuralcodes.geometry.UBP
+.. autoclass:: structuralcodes.geometry.profiles.UB
 
     .. autoproperty:: h
     .. autoproperty:: b
@@ -150,8 +97,73 @@
 
 ```
 
+## UC
+
 ```{eval-rst}
-.. autoclass:: structuralcodes.geometry.IPN
+.. autoclass:: structuralcodes.geometry.profiles.UC
+
+    .. autoproperty:: h
+    .. autoproperty:: b
+    .. autoproperty:: tw
+    .. autoproperty:: tf
+    .. autoproperty:: r
+
+    .. autoproperty:: A
+    .. autoproperty:: Iy
+    .. autoproperty:: Iz
+    .. autoproperty:: Iyz
+    .. autoproperty:: Icsi
+    .. autoproperty:: Ieta
+    .. autoproperty:: theta
+    .. autoproperty:: Wely
+    .. autoproperty:: Welz
+    .. autoproperty:: Wply
+    .. autoproperty:: Wplz
+    .. autoproperty:: iy
+    .. autoproperty:: iz
+
+    .. autoproperty:: polygon
+
+    .. automethod:: get_polygon
+    .. automethod:: profiles
+```
+
+## UBP
+
+```{eval-rst}
+.. autoclass:: structuralcodes.geometry.profiles.UBP
+
+    .. autoproperty:: h
+    .. autoproperty:: b
+    .. autoproperty:: tw
+    .. autoproperty:: tf
+    .. autoproperty:: r
+
+    .. autoproperty:: A
+    .. autoproperty:: Iy
+    .. autoproperty:: Iz
+    .. autoproperty:: Iyz
+    .. autoproperty:: Icsi
+    .. autoproperty:: Ieta
+    .. autoproperty:: theta
+    .. autoproperty:: Wely
+    .. autoproperty:: Welz
+    .. autoproperty:: Wply
+    .. autoproperty:: Wplz
+    .. autoproperty:: iy
+    .. autoproperty:: iz
+
+    .. autoproperty:: polygon
+
+    .. automethod:: get_polygon
+    .. automethod:: profiles
+
+```
+
+## IPN
+
+```{eval-rst}
+.. autoclass:: structuralcodes.geometry.profiles.IPN
 
     .. autoproperty:: h
     .. autoproperty:: b
@@ -180,8 +192,10 @@
     .. automethod:: profiles
 ```
 
+## UPN
+
 ```{eval-rst}
-.. autoclass:: structuralcodes.geometry.UPN
+.. autoclass:: structuralcodes.geometry.profiles.UPN
 
     .. autoproperty:: h
     .. autoproperty:: b
