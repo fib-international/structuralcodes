@@ -61,6 +61,7 @@ def _create_I_section(h: float, b: float, tw: float, tf: float, r: float):
     fillet = translate(
         scale(fillet, 1, -1), xoff=0, yoff=h - 2 * tf - r
     ).union(fillet)
+
     # Estimate grid_size value
     # Tentative geometry (due to approximations can be a MultiPolygon)
     geom_trial = unary_union([fillet, top_flange, bottom_flange, web])
