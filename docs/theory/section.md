@@ -1,0 +1,2 @@
+# Section
+A section object is created starting with a defined `Geometry` (typically a `SurfaceGeometry` or a `CompoundGeometry`). This object contains a `SectionCalculator` that is responsible for doing structural computations on the section. These computations requires an integration across the secion, this integration is performed with the use of a `SectionIntegrator`.
