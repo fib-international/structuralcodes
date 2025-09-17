@@ -638,7 +638,7 @@ def test_initial_strain_get_stress_tangent_no_strain_compatibility():
 def test_get_secant_in_base(eps):
     """Test the get_secant method in the base constitutive law."""
     # Arrange
-    constitutive_law = Elastic(E=30000)
+    constitutive_law = ParabolaRectangle(fc=45)
     if np.isscalar(eps):
         expected_secant = (
             constitutive_law.get_stress(eps) / eps
@@ -653,8 +653,8 @@ def test_get_secant_in_base(eps):
         )
         expected_secant[eps == 0] = constitutive_law.get_tangent(0)
 
-    # Act
-    secant = constitutive_law.get_secant(eps)
+    # Act, note that we force calling the get_secant method on the parent class
+    secant = super(ParabolaRectangle, constitutive_law).get_secant(eps)
 
     # Assert
     assert np.allclose(secant, expected_secant)
