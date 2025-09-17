@@ -629,3 +629,32 @@ def test_initial_strain_get_stress_tangent_no_strain_compatibility():
     # Assert
     assert np.allclose(stresses, initial_stress)
     assert np.allclose(tangents, initial_tangent * 1e-6)
+
+
+@pytest.mark.parametrize(
+    'eps',
+    (-1e-3, 1.5e-3, 0, [-0.5e-3, 0.0e-3, 2.1e-3]),
+)
+def test_get_secant_in_base(eps):
+    """Test the get_secant method in the base constitutive law."""
+    # Arrange
+    constitutive_law = ParabolaRectangle(fc=45)
+    if np.isscalar(eps):
+        expected_secant = (
+            constitutive_law.get_stress(eps) / eps
+            if eps != 0
+            else constitutive_law.get_tangent(0)
+        )
+    else:
+        eps = np.atleast_1d(eps)
+        expected_secant = np.zeros_like(eps)
+        expected_secant[eps != 0] = (
+            constitutive_law.get_stress(eps[eps != 0]) / eps[eps != 0]
+        )
+        expected_secant[eps == 0] = constitutive_law.get_tangent(0)
+
+    # Act, note that we force calling the get_secant method on the parent class
+    secant = super(ParabolaRectangle, constitutive_law).get_secant(eps)
+
+    # Assert
+    assert np.allclose(secant, expected_secant)
