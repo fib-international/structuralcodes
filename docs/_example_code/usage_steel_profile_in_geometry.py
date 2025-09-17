@@ -1,6 +1,7 @@
 """Example code for using a steel profile in a geometry."""
 
-from structuralcodes.geometry import IPE, SurfaceGeometry
+from structuralcodes.geometry import SurfaceGeometry
+from structuralcodes.geometry.profiles import IPE
 from structuralcodes.materials.basic import ElasticPlasticMaterial
 from structuralcodes.sections import GenericSection
 

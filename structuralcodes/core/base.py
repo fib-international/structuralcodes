@@ -287,14 +287,29 @@ class ConstitutiveLaw(abc.ABC):
         piecewise_law = self._discretize_law()
         return piecewise_law.__marin_tangent__(**kwargs)
 
-    def get_secant(self, eps: float) -> float:
-        """Method to return the
-        secant at a given strain level.
-        """
-        if eps != 0:
-            sig = self.get_stress(eps)
-            return sig / eps
-        return self.get_tangent(eps)
+    def get_secant(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
+        """Method to return the secant at a given strain level."""
+        # Adjust eps if it is not scalar
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+
+        # Calculate secant for scalar eps
+        if np.isscalar(eps):
+            if eps != 0:
+                sig = self.get_stress(eps)
+                return sig / eps
+            return self.get_tangent(eps)
+
+        # Calculate secant for array eps
+        secant = np.zeros_like(eps)
+        strain_is_zero = eps == 0
+        strain_is_nonzero = eps != 0
+        secant[strain_is_zero] = self.get_tangent(eps[strain_is_zero])
+        secant[strain_is_nonzero] = (
+            self.get_stress(eps[strain_is_nonzero]) / eps[strain_is_nonzero]
+        )
+        return secant
 
 
 class Section(abc.ABC):
