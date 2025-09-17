@@ -5,10 +5,9 @@ This example shows how to use `structuralcodes` to calculate the response of a r
 
 Import relevant functions and classes:
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 3-9
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 3-9
+:::
 
 :::{seealso}
 {ref}`Library structure <api-structure>`.
@@ -16,10 +15,9 @@ Import relevant functions and classes:
 
 Set the active design code to Eurocode 2, 2004 (`ec2_2004`):
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 11-12
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 11-12
+:::
 
 :::{seealso}
 {func}`set_design_code() <structuralcodes.codes.set_design_code>`
@@ -27,10 +25,9 @@ Set the active design code to Eurocode 2, 2004 (`ec2_2004`):
 
 Create a concrete and a reinforcement material:
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 14-24
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 14-24
+:::
 
 :::{seealso}
 {ref}`Material reference <api-materials>`.
@@ -42,10 +39,9 @@ The reinforcement {func}`create_reinforcement() <structuralcodes.materials.reinf
 
 Create a {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` based on a {class}`shapely.Polygon` and the {class}`Concrete <structuralcodes.materials.concrete.Concrete>` created with {func}`create_concrete() <structuralcodes.materials.concrete.create_concrete>`:
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 26-39
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 26-39
+:::
 
 :::{seealso}
 {class}`shapely.Polygon`
@@ -55,17 +51,15 @@ Create a {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` bas
 
 Add reinforcement to the geometry:
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 41-62
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 41-62
+:::
 
 Create a {class}`GenericSection <structuralcodes.sections.GenericSection>` based on the geometry:
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 64-65
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 64-65
+:::
 
 :::{seealso}
 {ref}`Section reference <api-sections>`
@@ -73,10 +67,9 @@ Create a {class}`GenericSection <structuralcodes.sections.GenericSection>` based
 
 Call the {func}`.calculate_moment_curvature() <structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature>` method on the {class}`GenericSectionCalculator <structuralcodes.sections.GenericSectionCalculator>` to calculate the moment-curvature relation:
 
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :lines: 67-68
-```
+:::{literalinclude} ../_example_code/quickstart_example.py
+:lines: 67-68
+:::
 
 :::{seealso}
 {ref}`Section calculator reference <api-section-calculator>`
@@ -89,7 +82,8 @@ Call the {func}`.calculate_moment_curvature() <structuralcodes.sections.GenericS
 Full example:
 
 (quickstart-full-example)=
-```{eval-rst}
-.. literalinclude:: quickstart_example.py
-   :linenos:
-```
+::::{dropdown-syntax}
+:::{literalinclude} ../_example_code/quickstart_example.py
+:linenos:
+:::
+::::

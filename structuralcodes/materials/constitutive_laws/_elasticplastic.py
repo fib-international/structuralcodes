@@ -34,8 +34,8 @@ class ElasticPlastic(ConstitutiveLaw):
 
         Keyword Arguments:
             Eh (float): The hardening modulus.
-            eps_su (float): The ultimate strain.
-            name (str): A descriptive name for the constitutive law.
+            eps_su (float, optional): The ultimate strain.
+            name (str, optional): A descriptive name for the constitutive law.
         """
         name = name if name is not None else 'ElasticPlasticLaw'
         super().__init__(name=name)

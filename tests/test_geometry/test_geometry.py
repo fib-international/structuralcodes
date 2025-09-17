@@ -17,9 +17,13 @@ from structuralcodes.geometry import (
     add_reinforcement_line,
     create_line_point_angle,
 )
+from structuralcodes.materials.basic import (
+    ElasticMaterial,
+    ElasticPlasticMaterial,
+    GenericMaterial,
+)
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
-    Elastic,
     ElasticPlastic,
     ParabolaRectangle,
 )
@@ -63,7 +67,14 @@ def test_point_geometry():
     """Test creating a PointGeometry object."""
     Geometry.section_counter = 0
     # Create a consitutive law to use
-    steel = ElasticPlastic(210000, 450)
+    constitutive_law_steel = ElasticPlastic(210000, 450)
+    steel = ReinforcementMC2010(
+        fyk=450,
+        Es=210000,
+        ftk=450,
+        epsuk=0.03,
+        constitutive_law=constitutive_law_steel,
+    )
 
     # Create two points with default naming (uses global counter)
     for i in range(2):
@@ -87,7 +98,7 @@ def test_point_geometry():
     # Create two points with custom label for filtering
     for i in range(2):
         p = PointGeometry(np.array([2, 3]), 12, steel, group_label='Bottom')
-        assert p.name == f'Geometry_{i+2}'
+        assert p.name == f'Geometry_{i + 2}'
         assert p.group_label == 'Bottom'
         assert math.isclose(p.diameter, 12)
         assert math.isclose(p.point.coords[0][0], 2)
@@ -122,7 +133,7 @@ def test_point_geometry():
     # Trick for now since we don't hav a steel material
     C25 = ConcreteMC2010(25)
     p = PointGeometry(np.array([2, 3]), 12, C25)
-    assert isinstance(p.material, ParabolaRectangle)
+    assert isinstance(p.material.constitutive_law, ParabolaRectangle)
 
 
 # Test Surface Geometry
@@ -132,18 +143,20 @@ def test_surface_geometry():  # noqa: PLR0915
     C25 = ConcreteMC2010(25)
 
     # Create a constitutive law to use
-    C25_const = ParabolaRectangle(25)
+    C25_const = GenericMaterial(
+        density=C25.density, constitutive_law=ParabolaRectangle(25)
+    )
 
     # Create a rectangular geometry
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
     for mat in (C25, C25_const):
         geo = SurfaceGeometry(poly, mat)
-        assert isinstance(geo.material, ParabolaRectangle)
+        assert isinstance(geo.material.constitutive_law, ParabolaRectangle)
         assert geo.area == 200 * 400
         assert geo.centroid[0] == 100
         assert geo.centroid[1] == 200
         geo_t = geo.translate(-100, -200)
-        assert isinstance(geo_t.material, ParabolaRectangle)
+        assert isinstance(geo_t.material.constitutive_law, ParabolaRectangle)
         assert geo_t.area == 200 * 400
         assert geo_t.centroid[0] == 0
         assert geo_t.centroid[1] == 0
@@ -216,8 +229,7 @@ def test_surface_geometry():  # noqa: PLR0915
         SurfaceGeometry(poly=poly, material=1)
     assert (
         str(excinfo.value)
-        == f'mat should be a valid structuralcodes.base.Material \
-                or structuralcodes.base.ConstitutiveLaw object. \
+        == f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(1)}'
     )
 
@@ -247,7 +259,12 @@ def test_compound_geometry():
     """Test creating a SurfaceGeometry object."""
     # Create a material to use
     C25 = ConcreteMC2010(25)
-    steel = ElasticPlastic(210000, 450)
+    steel = ReinforcementMC2010(
+        fyk=450,
+        Es=210000,
+        ftk=450,
+        epsuk=0.03,
+    )
 
     # Create a rectangular geometry
     poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
@@ -309,8 +326,12 @@ def test_compound_geometry():
     geo = CompoundGeometry(multi_pol, [C25, steel])
     assert_geometries_equal(geo.geometries[0].polygon, web)
     assert_geometries_equal(geo.geometries[1].polygon, flange)
-    assert isinstance(geo.geometries[0].material, ParabolaRectangle)
-    assert isinstance(geo.geometries[1].material, ElasticPlastic)
+    assert isinstance(
+        geo.geometries[0].material.constitutive_law, ParabolaRectangle
+    )
+    assert isinstance(
+        geo.geometries[1].material.constitutive_law, ElasticPlastic
+    )
     # check error is raised when the number of materials is incorrect
     with pytest.raises(ValueError) as excinfo:
         CompoundGeometry(multi_pol, [C25, C25, C25])
@@ -341,7 +362,7 @@ def test_add_geometries():
     polys.append(
         Polygon([(-150, -300), (0, -300), (0, -289.3), (-150, -289.3)])
     )
-    mat = ElasticPlastic(E=206000, fy=300)
+    mat = ElasticPlasticMaterial(E=206000, fy=300, density=7850)
     geo1 = SurfaceGeometry(polys[-1], mat)
 
     polys.append(Polygon([(-150, 289.3), (0, 289.3), (0, 300), (-150, 300)]))
@@ -385,7 +406,7 @@ def test_add_geometries():
 
 def test_sub_geometries():
     """Test subtraction between geometries."""
-    mat = ElasticPlastic(E=206000, fy=300)
+    mat = ElasticPlasticMaterial(E=206000, fy=300, density=7850)
     # Create the exptected polygons
     poly_1 = Polygon(
         shell=[(-100, -200), (100, -200), (100, 200), (-100, 200)],
@@ -451,7 +472,7 @@ def test_sub_geometries():
 )
 def test_extents_calculation(w, h):
     """Test extents calculation for SurfaceGeometry and CompoundGeometry."""
-    mat = Elastic(E=206000)
+    mat = ElasticMaterial(E=206000, density=7850)
     # Create a rectangle
     geo_rect = SurfaceGeometry(
         Polygon(
@@ -496,7 +517,7 @@ def test_extents_calculation(w, h):
 )
 def test_property_reinforced_concrete(w, h, c):
     """Test property reinforced_concrete."""
-    mat = Elastic(E=206000)
+    mat = ElasticMaterial(E=206000, density=7850)
     # Create a rectangle
     geo_rect = SurfaceGeometry(
         Polygon(
@@ -509,7 +530,7 @@ def test_property_reinforced_concrete(w, h, c):
         ),
         mat,
     )
-    steel = Elastic(E=206000)
+    steel = ElasticMaterial(E=206000, density=7850)
     geo_rc = add_reinforcement_line(
         geo_rect,
         (-w / 2 + c, -h / 2 + c),

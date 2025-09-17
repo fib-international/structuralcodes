@@ -15,8 +15,9 @@ from structuralcodes.geometry import (
     add_reinforcement_circle,
     add_reinforcement_line,
 )
+from structuralcodes.materials.basic import ElasticMaterial, GenericMaterial
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import Elastic, Sargin
+from structuralcodes.materials.constitutive_laws import InitialStrain, Sargin
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
@@ -145,7 +146,7 @@ def test_rectangular_section():
 def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     """Test stiffness matrix of elastic rectangular section."""
     # Create materials to use
-    elastic = Elastic(E)
+    elastic = ElasticMaterial(E=E, density=2450)
 
     # The section
     poly = Polygon(
@@ -352,7 +353,7 @@ def test_rectangular_rc_section_tangent_stiffness(
 
     # For comparison, let's compare this with a elastic section of only
     # reacting concrete:
-    elastic = Elastic(Ec)
+    elastic = ElasticMaterial(E=Ec, density=concrete.density)
     geo = SurfaceGeometry(
         Polygon(
             (
@@ -412,7 +413,7 @@ def test_rectangular_rc_section_tangent_stiffness(
 def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
     """Test stiffness matrix of elastic rectangular section."""
     # Create materials to use
-    elastic = Elastic(E)
+    elastic = ElasticMaterial(E=E, density=2450)
 
     # The section
     poly = Polygon(((0, 0), (b, 0), (b, h), (0, h)))
@@ -870,7 +871,7 @@ def test_strain_plane_calculation_elastic_Nmm(n, my, mz, Ec, b, h):
     Elastic materials, test many load combinations.
     """
     # Create materials to use
-    concrete = Elastic(Ec)
+    concrete = ElasticMaterial(E=Ec, density=2450)
 
     # Create the section
     geom = SurfaceGeometry(
@@ -944,7 +945,7 @@ def test_strain_plane_calculation_elastic_kNm(n, my, mz, Ec, b, h):
     Units in kN, m and kPa
     """
     # Create materials to use
-    concrete = Elastic(Ec)
+    concrete = ElasticMaterial(E=Ec, density=2450)
 
     # Create the section
     geom = SurfaceGeometry(
@@ -1383,3 +1384,104 @@ def test_rotate_triangulation_data():
     res2 = section.section_calculator.calculate_bending_strength(theta=np.pi)
 
     assert math.isclose(res2.m_y, res1.m_y, rel_tol=1e-3)
+
+
+@pytest.mark.parametrize('fck', [35, 55, 65])
+@pytest.mark.parametrize('fyk', [450, 550])
+@pytest.mark.parametrize(
+    'ductility_class',
+    ['a', 'b', 'c'],
+)
+def test_rectangular_section_init_strain(fck, fyk, ductility_class):
+    """Test a rectangular section with different concretes and n.
+
+    This checks that with initial strain set to zero, the results
+    are the same for both Marin and Fiber integrators, compared
+    to the default reinforcement material.
+    """
+    # crete the materials to use
+    concrete = ConcreteEC2_2004(fck=fck)
+    props = reinforcement_duct_props(fyk=fyk, ductility_class=ductility_class)
+
+    steel = ReinforcementEC2_2004(
+        fyk=fyk, Es=200000, ftk=props['ftk'], epsuk=props['epsuk']
+    )
+
+    # Create a dummy initStrain material
+    init_strain = InitialStrain(steel.constitutive_law, 0.0)
+    init_strain_material = GenericMaterial(
+        density=7850, constitutive_law=init_strain
+    )
+
+    # The section
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(40, 40),
+        coords_j=(160, 40),
+        diameter=16,
+        material=steel,
+        n=4,
+    )
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(40, 360),
+        coords_j=(160, 360),
+        diameter=16,
+        material=steel,
+        n=4,
+    )
+    geo = geo.translate(-100, -200)
+
+    # Create the section with fiber integrator
+    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.001)
+
+    # Compute bending strength My-
+    res_fiber = sec_fiber.section_calculator.calculate_bending_strength()
+
+    # Create the section with default marin integrator
+    sec_marin = GenericSection(geo)
+
+    # Compute bending strength My-
+    res_marin = sec_marin.section_calculator.calculate_bending_strength()
+
+    assert math.isclose(res_fiber.m_y, res_marin.m_y, rel_tol=1e-3)
+
+    # Section with init_strain_material:
+    geo = SurfaceGeometry(poly, concrete)
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(40, 40),
+        coords_j=(160, 40),
+        diameter=16,
+        material=init_strain_material,
+        n=4,
+    )
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(40, 360),
+        coords_j=(160, 360),
+        diameter=16,
+        material=init_strain_material,
+        n=4,
+    )
+    geo = geo.translate(-100, -200)
+
+    # Create the section with fiber integrator
+    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.001)
+
+    # Compute bending strength My-
+    res_fiber_i = sec_fiber.section_calculator.calculate_bending_strength()
+
+    # Create the section with default marin integrator
+    sec_marin = GenericSection(geo)
+
+    # Compute bending strength My-
+    res_marin_i = sec_marin.section_calculator.calculate_bending_strength()
+
+    assert math.isclose(res_fiber_i.m_y, res_marin_i.m_y, rel_tol=1e-3)
+
+    # Check they are all the same
+    assert math.isclose(res_fiber.m_y, res_fiber_i.m_y, rel_tol=1e-3)
+    assert math.isclose(res_marin.m_y, res_fiber_i.m_y, rel_tol=1e-3)

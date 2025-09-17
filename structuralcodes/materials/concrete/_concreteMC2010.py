@@ -48,6 +48,9 @@ class ConcreteMC2010(Concrete):
                 ConstitutiveLaw,
             ]
         ] = 'parabolarectangle',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         fcm: t.Optional[float] = None,
         fctm: t.Optional[float] = None,
         fctkmin: t.Optional[float] = None,
@@ -77,6 +80,18 @@ class ConcreteMC2010(Concrete):
             alpha_cc (float, optional): A factor for considering long-term
                 effects on the strength, and effects that arise from the way
                 the load is applied.
+            consitutive_law (ConstitutiveLaw | str): A valid ConstitutiveLaw
+                object for concrete or a string defining a valid constitutive
+                law type for concrete. (valid options for string: 'elastic',
+                'parabolarectangle', 'bilinearcompression', 'sargin',
+                'popovics').
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             fcm (float, optional): The mean compressive strength.
             fctm (float, optional): The mean tensile strength.
             fctkmin (float, optional): The minimum tensile strength.
@@ -126,6 +141,9 @@ class ConcreteMC2010(Concrete):
             name=name,
             density=density,
             gamma_c=gamma_c,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._alpha_cc = alpha_cc
         self._fcm = abs(fcm) if fcm is not None else None
@@ -162,6 +180,7 @@ class ConcreteMC2010(Concrete):
             raise ValueError(
                 'The provided constitutive law is not valid for concrete.'
             )
+        self._apply_initial_strain()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
