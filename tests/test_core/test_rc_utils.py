@@ -94,27 +94,27 @@ def test_calculate_elastic_cracked_properties_comparison():
     cracked_prop2 = section2.gross_properties
 
     # Compare specific properties between the two objects
-    assert cracked_prop1.area == pytest.approx(cracked_prop2.area, rel=1e-3), (
-        'Areas do not match'
-    )
-    assert cracked_prop1.cy == pytest.approx(cracked_prop2.cy, rel=1e-3), (
-        'cy do not match'
-    )
-    assert cracked_prop1.cz == pytest.approx(cracked_prop2.cz, rel=1e-3), (
-        'cz do not match'
-    )
+    assert cracked_prop1.area == pytest.approx(
+        cracked_prop2.area, rel=1e-3
+    ), 'Areas do not match'
+    assert cracked_prop1.cy == pytest.approx(
+        cracked_prop2.cy, rel=1e-3
+    ), 'cy do not match'
+    assert cracked_prop1.cz == pytest.approx(
+        cracked_prop2.cz, rel=1e-3
+    ), 'cz do not match'
     assert cracked_prop1.e_i11 == pytest.approx(
         cracked_prop2.e_i11, rel=1e-3
     ), 'cze_i11 do not match'
     assert cracked_prop1.e_i22 == pytest.approx(
         cracked_prop2.e_i22, rel=1e-3
     ), 'e_i22 do not match'
-    assert cracked_prop1.sy == pytest.approx(cracked_prop2.sy, rel=1e-3), (
-        'sy do not match'
-    )
-    assert cracked_prop1.sz == pytest.approx(cracked_prop2.sz, rel=1e-3), (
-        'sz do not match'
-    )
+    assert cracked_prop1.sy == pytest.approx(
+        cracked_prop2.sy, rel=1e-3
+    ), 'sy do not match'
+    assert cracked_prop1.sz == pytest.approx(
+        cracked_prop2.sz, rel=1e-3
+    ), 'sz do not match'
 
     # check if works when geometry is required
     result = calculate_elastic_cracked_properties(

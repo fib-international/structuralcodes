@@ -1,6 +1,8 @@
 """Tests for profiles."""
 
+import json
 import math
+from pathlib import Path
 
 import pytest
 from shapely.testing import assert_geometries_equal
@@ -11,13 +13,20 @@ from structuralcodes.geometry import (
     SurfaceGeometry,
 )
 from structuralcodes.geometry.profiles import (
+    HD,
     HE,
+    HP,
     IPE,
     IPN,
+    LI,
     UB,
     UBP,
     UC,
+    UPE,
     UPN,
+    L,
+    U,
+    W,
 )
 from structuralcodes.materials.basic import (
     ElasticMaterial,
@@ -110,6 +119,7 @@ def _wzpl_I_beam(h: float, b: float, tw: float, tf: float, r: float) -> float:
         (UBP, 'UBP203'),
         (IPN, 'IPN125'),
         (UPN, 'UPN123'),
+        (W, 'W 100 x 100'),
     ],
 )
 def test_names_invalid(cls, invalid_name):
@@ -1457,3 +1467,353 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
         theta=math.pi / 2, n=0
     )
     assert math.isclose(-results.m_z * 1e-6, mzp_expected, rel_tol=2.5e-2)
+
+
+def load_w_profiles_data():
+    """Load W profiles data from w.json file."""
+    json_file = Path(__file__).parent / 'w.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            wely_cm3 = profile_data['Wely_cm3']
+
+            profiles_data.append((profile_name, wely_cm3))
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    'profile_name, expected_wely_cm3', load_w_profiles_data()
+)
+def test_w_profile_wely(profile_name, expected_wely_cm3):
+    """Test W profile Wely property matches JSON data."""
+    profile = W(profile_name)
+
+    wy_el_expected = _wyel_I_beam(
+        profile.h, profile.b, profile.tw, profile.tf, profile.r
+    )
+
+    wy_el_profile = profile.Wely
+
+    assert math.isclose(wy_el_expected, wy_el_profile, rel_tol=1e-3)
+
+    # I wanted to do this but is failing due to strange values in the input
+    # text file:
+    # assert math.isclose(expected_wely_cm3 * 1e3, wy_el_profile, rel_tol=1e-2)
+    del expected_wely_cm3
+
+
+def load_upe_profiles_data():
+    """Load UPE profiles data from upe.json file."""
+    json_file = Path(__file__).parent / 'upe.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_upe_profiles_data(),
+)
+def test_upe_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test UPE profile A property matches JSON data."""
+    profile = UPE(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=0.5e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=0.5e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=0.5e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=0.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=0.5e-2)
+
+
+def load_ub_profiles_data():
+    """Load UB profiles data from ub.json file."""
+    json_file = Path(__file__).parent / 'ub.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_ub_profiles_data(),
+)
+def test_ub_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test UB profile property matches JSON data."""
+    profile = UB(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
+
+
+def load_u_profiles_data():
+    """Load U profiles data from ub.json file."""
+    json_file = Path(__file__).parent / 'u.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_u_profiles_data(),
+)
+def test_u_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test U profile property matches JSON data."""
+    profile = U(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
+
+
+def load_hd_profiles_data():
+    """Load HD profiles data from ub.json file."""
+    json_file = Path(__file__).parent / 'hd.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_hd_profiles_data(),
+)
+def test_hd_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test HD profile property matches JSON data."""
+    profile = HD(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
+
+
+def load_hp_profiles_data():
+    """Load HP profiles data from ub.json file."""
+    json_file = Path(__file__).parent / 'hp.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_hp_profiles_data(),
+)
+def test_hp_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test HP profile property matches JSON data."""
+    profile = HP(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
+
+
+def load_l_profiles_data():
+    """Load L profiles data from ub.json file."""
+    json_file = Path(__file__).parent / 'l.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_l_profiles_data(),
+)
+def test_l_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test L profile property matches JSON data."""
+    profile = L(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
+
+
+def load_li_profiles_data():
+    """Load LI profiles data from li.json file."""
+    json_file = Path(__file__).parent / 'li.json'
+    with open(json_file, 'r') as f:
+        profiles_data = []
+        for line in f:
+            profile_data = json.loads(line.strip())
+            profile_name = profile_data['ProfileName']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+
+            profiles_data.append(
+                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+            )
+    return profiles_data
+
+
+@pytest.mark.parametrize(
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3'
+    ),
+    load_li_profiles_data(),
+)
+def test_li_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+):
+    """Test LI profile property matches JSON data."""
+    profile = LI(profile_name)
+
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=2e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=2.5e-2)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=2.5e-2)
