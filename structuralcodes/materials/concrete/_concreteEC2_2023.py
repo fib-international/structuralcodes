@@ -491,7 +491,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
     def __sargin__(self) -> dict:
         """Returns kwargs for creating a Sargin const law."""
         return {
-            'fc': self.fcd(),
+            'fc': self.fcm,
             'eps_c1': self.eps_c1,
             'eps_cu1': self.eps_cu1,
             'k': self.k_sargin,

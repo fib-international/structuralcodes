@@ -5,6 +5,7 @@ import math
 import pytest
 
 from structuralcodes.materials.concrete import (
+    Concrete,
     ConcreteEC2_2004,
     ConcreteEC2_2023,
     ConcreteMC2010,
@@ -29,95 +30,76 @@ def test_constitutive_law_setter_valid():
     assert isinstance(concrete.constitutive_law, Elastic)
 
 
-def test_constitutive_law_setter_factory():
+@pytest.mark.parametrize(
+    'concrete_type, E_name',
+    [
+        (ConcreteMC2010, 'Eci'),
+        (ConcreteEC2_2004, 'Ecm'),
+        (ConcreteEC2_2023, 'Ecm'),
+    ],
+)
+@pytest.mark.parametrize('fck', [20, 30, 40, 50, 60])
+def test_constitutive_law_setter_factory(
+    concrete_type: Concrete, fck: float, E_name: str
+):
     """Test the constitutive law setter, valid law."""
-    # Arrange
-    concretes = [
-        ConcreteMC2010(45),
-        ConcreteEC2_2004(45),
-        ConcreteEC2_2023(45),
-    ]
-    elastic_modulus_name = ['Eci', 'Ecm', 'Ecm']
+    # Act and assert for elastic law
+    concrete = concrete_type(fck=fck, constitutive_law='elastic')
 
-    for concrete, E_name in zip(concretes, elastic_modulus_name):
-        # Act and assert for elastic constitutive law
-        new_concrete = type(concrete)(
-            fck=concrete.fck, constitutive_law='elastic'
-        )
-        E = getattr(new_concrete, E_name)
-        assert isinstance(new_concrete.constitutive_law, Elastic)
-        assert math.isclose(new_concrete.constitutive_law._E, E)
+    E = getattr(concrete, E_name)
+    assert isinstance(concrete.constitutive_law, Elastic)
+    assert math.isclose(concrete.constitutive_law._E, E)
 
-        # Act and assert for parabolarectangle law
-        new_concrete = type(concrete)(
-            fck=concrete.fck, constitutive_law='parabolarectangle'
-        )
-        assert isinstance(new_concrete.constitutive_law, ParabolaRectangle)
-        assert math.isclose(
-            new_concrete.constitutive_law._fc, -new_concrete.fcd()
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_0, -abs(new_concrete.eps_c2)
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_u, -abs(new_concrete.eps_cu2)
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._n,
-            new_concrete.n_parabolic_rectangular,
-        )
+    # Act and assert for parabolarectangle law
+    concrete = concrete_type(fck=fck, constitutive_law='parabolarectangle')
+    assert isinstance(concrete.constitutive_law, ParabolaRectangle)
+    assert math.isclose(concrete.constitutive_law._fc, -concrete.fcd())
+    assert math.isclose(
+        concrete.constitutive_law._eps_0, -abs(concrete.eps_c2)
+    )
+    assert math.isclose(
+        concrete.constitutive_law._eps_u, -abs(concrete.eps_cu2)
+    )
+    assert math.isclose(
+        concrete.constitutive_law._n,
+        concrete.n_parabolic_rectangular,
+    )
 
-        # Act and assert for Sargin law
-        new_concrete = type(concrete)(
-            fck=concrete.fck, constitutive_law='sargin'
-        )
-        assert isinstance(new_concrete.constitutive_law, Sargin)
-        assert math.isclose(
-            new_concrete.constitutive_law._fc, -new_concrete.fcd()
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_c1, -abs(new_concrete.eps_c1)
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_cu1, -abs(new_concrete.eps_cu1)
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._k, new_concrete.k_sargin
-        )
+    # Act and assert for Sargin law
+    concrete = concrete_type(fck=concrete.fck, constitutive_law='sargin')
+    assert isinstance(concrete.constitutive_law, Sargin)
+    assert math.isclose(concrete.constitutive_law._fc, -concrete.fcm)
+    assert math.isclose(
+        concrete.constitutive_law._eps_c1, -abs(concrete.eps_c1)
+    )
+    assert math.isclose(
+        concrete.constitutive_law._eps_cu1, -abs(concrete.eps_cu1)
+    )
+    assert math.isclose(concrete.constitutive_law._k, concrete.k_sargin)
 
-        # Act and assert for Popovics law
-        new_concrete = type(concrete)(
-            fck=concrete.fck, constitutive_law='popovics'
-        )
-        assert isinstance(new_concrete.constitutive_law, Popovics)
-        assert math.isclose(
-            new_concrete.constitutive_law._fc, -new_concrete.fcd()
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_c, -abs(new_concrete.eps_c1)
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_cu, -abs(new_concrete.eps_cu1)
-        )
+    # Act and assert for Popovics law
+    concrete = concrete_type(fck=concrete.fck, constitutive_law='popovics')
+    assert isinstance(concrete.constitutive_law, Popovics)
+    assert math.isclose(concrete.constitutive_law._fc, -concrete.fcd())
+    assert math.isclose(
+        concrete.constitutive_law._eps_c, -abs(concrete.eps_c1)
+    )
+    assert math.isclose(
+        concrete.constitutive_law._eps_cu, -abs(concrete.eps_cu1)
+    )
 
     # Test bilinear law only for MC2010 and EC2_2004
-    concretes = concretes[:-1]
-    elastic_modulus_name = elastic_modulus_name[:-1]
-
-    # Act and assert
-    for concrete, E_name in zip(concretes, elastic_modulus_name):
-        new_concrete = type(concrete)(
+    if type(concrete) in (ConcreteMC2010, ConcreteEC2_2004):
+        concrete = concrete_type(
             fck=concrete.fck, constitutive_law='bilinearcompression'
         )
-        assert isinstance(new_concrete.constitutive_law, BilinearCompression)
+        assert isinstance(concrete.constitutive_law, BilinearCompression)
+        assert math.isclose(concrete.constitutive_law._fc, -concrete.fcd())
         assert math.isclose(
-            new_concrete.constitutive_law._fc, -new_concrete.fcd()
+            concrete.constitutive_law._eps_cu, -abs(concrete.eps_cu3)
         )
         assert math.isclose(
-            new_concrete.constitutive_law._eps_cu, -abs(new_concrete.eps_cu3)
-        )
-        assert math.isclose(
-            new_concrete.constitutive_law._eps_c, -abs(new_concrete.eps_c3)
+            concrete.constitutive_law._eps_c, -abs(concrete.eps_c3)
         )
 
 
