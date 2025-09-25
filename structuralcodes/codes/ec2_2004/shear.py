@@ -203,14 +203,15 @@ def VRdc(
         float: The concrete shear resistance in MPa.
     """
     CRdc = CRdc or 0.18 / gamma_c
-    return (
+    return max(
         max(
             CRdc * _k(d) * (100 * _rho_L(Asl, bw, d) * fck) ** (1.0 / 3.0)
             + k1 * _sigma_cp(NEd, Ac, fcd),  # VRdc
             vmin(fck, d) + k1 * _sigma_cp(NEd, Ac, fcd),  # VRdcmin
         )
         * bw
-        * d
+        * d,
+        0,
     )
 
 
