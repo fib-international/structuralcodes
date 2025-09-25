@@ -118,6 +118,27 @@ def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
     )
 
 
+@pytest.mark.parametrize('NEd', (500e3, 200e3, 0, -200e3, -500e3))
+def test_VRdc_not_negative(NEd):
+    """Test if VRdc always returns a non-negative number."""
+    fck = 35
+    gamma_c = 1.5
+    assert (
+        shear.VRdc(
+            fck=fck,
+            d=250,
+            Asl=400,
+            bw=100,
+            NEd=NEd,
+            Ac=30000,
+            fcd=fcd(fck=fck, alpha_cc=0.85, gamma_c=gamma_c),
+            k1=0.15,
+            gamma_c=gamma_c,
+        )
+        >= 0
+    )
+
+
 @pytest.mark.parametrize(
     'Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected',
     [
