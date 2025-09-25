@@ -1,11 +1,11 @@
-# Functions for AASHTO LRFD 2020 9th Edition Shear Punching Design
+# Functions for AASHTO LRFD 2024 10th Edition Shear Punching Design
 import math
 
 
 def b0_edge(W: float, L: float, df: float) -> float:
     """Determines the critical perimeter for a bearing on the edge of the beam.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.8.4.4-4)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.8.4.4-4)
 
     Args:
         W (float) = width of the bearing plate or pad (in)

@@ -151,7 +151,7 @@ def _converge(
         ValueError: If rho_l is less than 0
         ValueError: If s_xe is not between 12 and 80 (in)
         ValueError: If beta is less than 0
-        ValueError: If fc_prime is lsess than 0
+        ValueError: If fc_prime is less than 0
     """
     if V < 0:
         raise ValueError(f'VkN={V} cannot be less than 0')

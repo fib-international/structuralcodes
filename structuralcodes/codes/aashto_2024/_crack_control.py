@@ -4,7 +4,7 @@
 def beta_s(h: float, dc) -> float:
     """Determines the flexural strain ratio.
 
-    AASHTO LRFD 2020 9th Edition, Eq (5.6.7-2)
+    AASHTO LRFD 2024 10th Edition, Eq (5.6.7-2)
 
     Args:
         h (float): height of the cross section in (in)
@@ -29,7 +29,7 @@ def beta_s(h: float, dc) -> float:
 def s(fyk: float, beta_s: float, gamma_e: float, dc: float) -> float:
     """Determines the spacing of nonprestressed reinforcement.
 
-    AASHTO LRFD 2020 9th Edition, Eq. (5.6.7-1)
+    AASHTO LRFD 2024 10th Edition, Eq. (5.6.7-1)
 
     Args:
         fyk (float): The steel reinforcement yielding strength in ksi
