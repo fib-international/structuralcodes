@@ -7,6 +7,7 @@ import pytest
 from shapely import Polygon
 
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
+from structuralcodes.core.errors import NoConvergenceWarning
 from structuralcodes.geometry import (
     CircularGeometry,
     RectangularGeometry,
@@ -1109,8 +1110,8 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
 
     # Check that with given loads we don't reach convergence
     section = GenericSection(geo)
-    with pytest.raises(
-        StopIteration, match='Maximum number of iterations reached'
+    with pytest.warns(
+        NoConvergenceWarning, match='Maximum number of iterations reached'
     ):
         section.section_calculator.calculate_strain_profile(
             n, my, mz, tol=1e-7
