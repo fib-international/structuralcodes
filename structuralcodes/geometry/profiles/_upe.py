@@ -1,4 +1,4 @@
-"""UPN profiles."""
+"""UPE profiles."""
 
 from shapely import (
     Polygon,
