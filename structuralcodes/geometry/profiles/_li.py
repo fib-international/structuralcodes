@@ -1,4 +1,4 @@
-"""L profiles."""
+"""LI profiles."""
 
 from shapely import (
     Polygon,
