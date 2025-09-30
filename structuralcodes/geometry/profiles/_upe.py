@@ -53,9 +53,9 @@ class UPE(BaseProfile):
         return list(cls.parameters.keys())
 
     def __init__(self, name: str) -> None:
-        """Creates a new UPN object."""
+        """Creates a new UPE object."""
         if isinstance(name, (float, int)):
-            name = f'UPN{int(name):0d}'
+            name = f'UPE{int(name):0d}'
         parameters = self.parameters.get(name)
         if parameters is None:
             raise ValueError(
@@ -83,51 +83,51 @@ class UPE(BaseProfile):
         """Returns shapely Polygon of section.
 
         Returns:
-            Polygon: The represention of the UPN section.
+            Polygon: The represention of the UPE section.
         """
         return self._polygon
 
     @property
     def h(self) -> float:
-        """Returns height of UPN section.
+        """Returns height of UPE section.
 
         Returns:
-            float: Height h of UPN section.
+            float: Height h of UPE section.
         """
         return self._h
 
     @property
     def b(self) -> float:
-        """Returns width of UPN section.
+        """Returns width of UPE section.
 
         Returns:
-            float: Width b of UPN section.
+            float: Width b of UPE section.
         """
         return self._b
 
     @property
     def tw(self) -> float:
-        """Returns thickness of web of UPN section.
+        """Returns thickness of web of UPE section.
 
         Returns:
-            float: Web thickness tw of UPN section.
+            float: Web thickness tw of UPE section.
         """
         return self._tw
 
     @property
     def tf(self) -> float:
-        """Returns thickness of flange of UPN section.
+        """Returns thickness of flange of UPE section.
 
         Returns:
-            float: Flange thickness tw of UPN section.
+            float: Flange thickness tw of UPE section.
         """
         return self._tf
 
     @property
     def r(self) -> float:
-        """Returns fillet radius of UPN section.
+        """Returns fillet radius of UPE section.
 
         Returns:
-            float: Fillet radius r1 of UPN section.
+            float: Fillet radius r1 of UPE section.
         """
         return self._r
