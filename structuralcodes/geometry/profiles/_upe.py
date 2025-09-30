@@ -35,13 +35,13 @@ class UPE(BaseProfile):
 
     @classmethod
     def get_polygon(cls, name: str) -> Polygon:
-        """Returns a shapely polygon representing an UPN section."""
+        """Returns a shapely polygon representing an UPE section."""
         if isinstance(name, (float, int)):
-            name = f'UPN{int(name):0d}'
+            name = f'UPE{int(name):0d}'
         parameters = cls.parameters.get(name)
         if parameters is None:
             raise ValueError(
-                f"Profile '{name}' not found in UPN sections. "
+                f"Profile '{name}' not found in UPE sections. "
                 "Select a valid profile (available ones: "
                 f"{cls.profiles()})"
             )
@@ -59,7 +59,7 @@ class UPE(BaseProfile):
         parameters = self.parameters.get(name)
         if parameters is None:
             raise ValueError(
-                f"Profile '{name}' not found in UPN sections. "
+                f"Profile '{name}' not found in UPE sections. "
                 "Select a valid profile (available ones: "
                 f"{self.profiles()})"
             )
