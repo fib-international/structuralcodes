@@ -16,10 +16,12 @@ from structuralcodes.geometry._shell_geometry import (
 from structuralcodes.materials.basic import GenericMaterial
 from structuralcodes.materials.concrete import ConcreteEC2_2004
 from structuralcodes.materials.constitutive_laws import (
+    ConcreteSmearedCracking,
+    ConstantPoissonReduction,
     Elastic2D,
     ElasticPlastic,
+    GeneralVecchioCollins,
     ParabolaRectangle,
-    ParabolaRectangle2D,
 )
 from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
 from structuralcodes.sections import GenericSection, ShellSection
@@ -217,9 +219,18 @@ def test_invalid_mesh_size_raises(invalid):
 )
 def test_parabola_zero_initial_nu(nx, nxy, expected):
     """Test parabola rectangle with nu = 0."""
-    parabola_rectangle = ParabolaRectangle2D(45, nu=0)
+    uniaxial_compression = ParabolaRectangle(fc=45)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0)
+    parabola_rectangle = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
     elastic_plastic = ElasticPlastic(200000, 500)
-    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    concrete = GenericMaterial(
+        density=2500, constitutive_law=parabola_rectangle
+    )
     reinforcement = ReinforcementEC2_2004(
         fyk=500,
         Es=200000,
@@ -264,9 +275,18 @@ def test_parabola_zero_initial_nu(nx, nxy, expected):
 )
 def test_parabola_initial_nu(nx, nxy, expected):
     """Test parabola rectangle with nu = 0.2."""
-    parabola_rectangle = ParabolaRectangle2D(45)
+    uniaxial_compression = ParabolaRectangle(fc=45)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
+    parabola_rectangle = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
     elastic_plastic = ElasticPlastic(200000, 500)
-    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    concrete = GenericMaterial(
+        density=2500, constitutive_law=parabola_rectangle
+    )
     reinforcement = ReinforcementEC2_2004(
         fyk=500,
         Es=200000,
@@ -296,9 +316,18 @@ def test_parabola_initial_nu(nx, nxy, expected):
 
 def test_exceed_max_iterations():
     """Test that the maximum number of iterations is exceeded."""
-    parabola_rectangle = ParabolaRectangle2D(45)
+    uniaxial_compression = ParabolaRectangle(fc=45)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0)
+    parabola_rectangle = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
     elastic_plastic = ElasticPlastic(200000, 500)
-    concrete = ConcreteEC2_2004(fck=45, constitutive_law=parabola_rectangle)
+    concrete = GenericMaterial(
+        density=2500, constitutive_law=parabola_rectangle
+    )
     reinforcement = ReinforcementEC2_2004(
         fyk=500,
         Es=200000,
@@ -407,9 +436,16 @@ def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
     generic_sec = GenericSection(geometry=generic_geo, integrator='fiber')
 
     # Create a ShellSection
-    parabola_rectangle_2d = ParabolaRectangle2D(fc=fc, nu=nu)
-    concrete_for_shell = ConcreteEC2_2004(
-        fck=fc, constitutive_law=parabola_rectangle_2d
+    uniaxial_compression = ParabolaRectangle(fc=fc)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    smeared_cracking = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    concrete_for_shell = GenericMaterial(
+        density=2500, constitutive_law=smeared_cracking
     )
     shell_geo = ShellGeometry(material=concrete_for_shell, thickness=height)
 
@@ -504,13 +540,20 @@ def test_compare_constitutive_law_and_section(strain, nu):
     # Arrange
     fck = 45
     thickness = 450
-    constitutive_law = ParabolaRectangle2D(fc=fck, nu=nu)
-    concrete = ConcreteEC2_2004(fck=fck, constitutive_law=constitutive_law)
+    uniaxial_compression = ParabolaRectangle(fc=fck)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    constitutive_law = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    concrete = GenericMaterial(density=2500, constitutive_law=constitutive_law)
     shell_geometry = ShellGeometry(thickness=thickness, material=concrete)
     shell_section = ShellSection(geometry=shell_geometry)
 
     # Act
-    stress = constitutive_law.get_stress(strain=strain)
+    stress = constitutive_law.get_stress(eps=strain)
     stress_resultant = (
         shell_section.section_calculator.integrate_strain_profile(
             strain=[*strain, 0.0, 0.0, 0.0],

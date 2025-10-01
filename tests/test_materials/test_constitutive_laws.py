@@ -8,12 +8,14 @@ from numpy.testing import assert_allclose
 
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
+    ConcreteSmearedCracking,
+    ConstantPoissonReduction,
     Elastic,
     Elastic2D,
     ElasticPlastic,
+    GeneralVecchioCollins,
     InitialStrain,
     ParabolaRectangle,
-    ParabolaRectangle2D,
     Popovics,
     Sargin,
     UserDefined,
@@ -320,9 +322,16 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
         ),
     ],
 )
-def test_parabola_rectangle_2d(fc, eps_0, eps_u, strain, stress):
-    """Test the parabola-rectangle 2D material."""
-    mat = ParabolaRectangle2D(fc, eps_0, eps_u)
+def test_concrete_smeared_cracking(fc, eps_0, eps_u, strain, stress):
+    """Test the concrete smeared cracking material."""
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0, eps_u=eps_u)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
+    mat = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
     assert np.allclose(mat.get_stress(strain), stress, atol=1e-3)
 
 
@@ -340,11 +349,16 @@ def test_parabola_rectangle_2d(fc, eps_0, eps_u, strain, stress):
     ),
 )
 def test_get_secant_shape(strain, nu):
-    """Test the secant stiffness matrix shape of the parabola-rectangle
-    2D material.
+    """Test the secant stiffness matrix shape of the concrete smeared cracking
+    material.
     """
-    mat = ParabolaRectangle2D(
-        fc=45.0, eps_0=-0.002, eps_u=-0.0035, n=2.0, nu=nu
+    uniaxial_compression = ParabolaRectangle(fc=45.0)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    mat = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
     )
     C = mat.get_secant(strain)
 
@@ -392,10 +406,17 @@ def test_get_secant_shape(strain, nu):
     ],
 )
 def test_get_secant(fc, eps_0, eps_u, nu, strain, expected):
-    """Test the secant stiffness matrix of the parabola-rectangle
-    2D material.
+    """Test the secant stiffness matrix of the concrete smeared cracking
+    material.
     """
-    mat = ParabolaRectangle2D(fc, eps_0, eps_u, nu=nu)
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0, eps_u=eps_u)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    mat = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
     assert np.allclose(mat.get_secant(strain), expected)
 
 
