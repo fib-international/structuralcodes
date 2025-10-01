@@ -1476,32 +1476,79 @@ def load_w_profiles_data():
         profiles_data = []
         for line in f:
             profile_data = json.loads(line.strip())
-            profile_name = profile_data['ProfileName']
-            wely_cm3 = profile_data['Wely_cm3']
+            profile_name = profile_data['name_si']
+            A_cm2 = profile_data['A_cm2']
+            Iy_cm4 = profile_data['Iy_cm4']
+            Iz_cm4 = profile_data['Iz_cm4']
+            Wely_cm3 = profile_data['Wely_cm3']
+            Welz_cm3 = profile_data['Welz_cm3']
+            h_mm = profile_data['h_mm']
+            b_mm = profile_data['b_mm']
+            tw_mm = profile_data['tw_mm']
+            tf_mm = profile_data['tf_mm']
+            tr_mm = profile_data['r_mm']
 
-            profiles_data.append((profile_name, wely_cm3))
+            profiles_data.append(
+                (
+                    profile_name,
+                    A_cm2,
+                    Iy_cm4,
+                    Iz_cm4,
+                    Wely_cm3,
+                    Welz_cm3,
+                    h_mm,
+                    b_mm,
+                    tw_mm,
+                    tf_mm,
+                    tr_mm,
+                )
+            )
     return profiles_data
 
 
 @pytest.mark.parametrize(
-    'profile_name, expected_wely_cm3', load_w_profiles_data()
+    (
+        'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
+        'expected_Wely_cm3, expected_Welz_cm3, expected_h_mm, expected_b_mm, '
+        'expected_tw_mm, expected_tf_mm, expected_r_mm'
+    ),
+    load_w_profiles_data(),
 )
-def test_w_profile_wely(profile_name, expected_wely_cm3):
+def test_w_profile(
+    profile_name,
+    expected_A_cm2,
+    expected_Iy_cm4,
+    expected_Iz_cm4,
+    expected_Wely_cm3,
+    expected_Welz_cm3,
+    expected_h_mm,
+    expected_b_mm,
+    expected_tw_mm,
+    expected_tf_mm,
+    expected_r_mm,
+):
     """Test W profile Wely property matches JSON data."""
     profile = W(profile_name)
 
-    wy_el_expected = _wyel_I_beam(
-        profile.h, profile.b, profile.tw, profile.tf, profile.r
-    )
+    # Check geometric properties
+    assert math.isclose(profile.h, expected_h_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.b, expected_b_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.tw, expected_tw_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.tf, expected_tf_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.r, expected_r_mm, rel_tol=0.5e-2)
 
-    wy_el_profile = profile.Wely
+    # Get the polygon from the object
+    poly1 = profile.polygon
+    # Get the polygon from class method passing the full name
+    poly2 = W.get_polygon(profile_name)
+    assert_geometries_equal(poly1, poly2)
 
-    assert math.isclose(wy_el_expected, wy_el_profile, rel_tol=1e-3)
-
-    # I wanted to do this but is failing due to strange values in the input
-    # text file:
-    # assert math.isclose(expected_wely_cm3 * 1e3, wy_el_profile, rel_tol=1e-2)
-    del expected_wely_cm3
+    # Check mass properties
+    assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=2e-2)
+    assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=1e-3)
+    assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=1e-2)
+    assert math.isclose(profile.Wely, expected_Wely_cm3 * 1e3, rel_tol=1e-3)
+    assert math.isclose(profile.Welz, expected_Welz_cm3 * 1e3, rel_tol=1e-2)
 
 
 def load_upe_profiles_data():
@@ -1517,9 +1564,26 @@ def load_upe_profiles_data():
             Iz_cm4 = profile_data['Iz_cm4']
             Wely_cm3 = profile_data['Wely_cm3']
             Welz_cm3 = profile_data['Welz_cm3']
+            h_mm = profile_data['h_mm']
+            b_mm = profile_data['b_mm']
+            tw_mm = profile_data['tw_mm']
+            tf_mm = profile_data['tf_mm']
+            tr_mm = profile_data['r_mm']
 
             profiles_data.append(
-                (profile_name, A_cm2, Iy_cm4, Iz_cm4, Wely_cm3, Welz_cm3)
+                (
+                    profile_name,
+                    A_cm2,
+                    Iy_cm4,
+                    Iz_cm4,
+                    Wely_cm3,
+                    Welz_cm3,
+                    h_mm,
+                    b_mm,
+                    tw_mm,
+                    tf_mm,
+                    tr_mm,
+                )
             )
     return profiles_data
 
@@ -1527,7 +1591,8 @@ def load_upe_profiles_data():
 @pytest.mark.parametrize(
     (
         'profile_name, expected_A_cm2, expected_Iy_cm4, expected_Iz_cm4, '
-        'expected_Wely_cm3, expected_Welz_cm3'
+        'expected_Wely_cm3, expected_Welz_cm3, expected_h_mm, expected_b_mm, '
+        'expected_tw_mm, expected_tf_mm, expected_r_mm'
     ),
     load_upe_profiles_data(),
 )
@@ -1538,10 +1603,32 @@ def test_upe_profile(
     expected_Iz_cm4,
     expected_Wely_cm3,
     expected_Welz_cm3,
+    expected_h_mm,
+    expected_b_mm,
+    expected_tw_mm,
+    expected_tf_mm,
+    expected_r_mm,
 ):
     """Test UPE profile A property matches JSON data."""
     profile = UPE(profile_name)
 
+    # Check geometric properties
+    assert math.isclose(profile.h, expected_h_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.b, expected_b_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.tw, expected_tw_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.tf, expected_tf_mm, rel_tol=0.5e-2)
+    assert math.isclose(profile.r, expected_r_mm, rel_tol=0.5e-2)
+
+    # Get the polygon from the object
+    poly1 = profile.polygon
+    # Get the polygon from class method passing the full name
+    poly2 = UPE.get_polygon(profile_name)
+    # Get the polygon from class method passing only numbers
+    poly3 = UPE.get_polygon(expected_h_mm)
+    assert_geometries_equal(poly1, poly2)
+    assert_geometries_equal(poly2, poly3)
+
+    # Check mass properties
     assert math.isclose(profile.A, expected_A_cm2 * 1e2, rel_tol=0.5e-2)
     assert math.isclose(profile.Iy, expected_Iy_cm4 * 1e4, rel_tol=0.5e-2)
     assert math.isclose(profile.Iz, expected_Iz_cm4 * 1e4, rel_tol=0.5e-2)
