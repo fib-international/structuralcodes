@@ -2086,9 +2086,7 @@ class W(BaseProfile):
         return list(cls.parameters.keys())
 
     def __init__(self, name: str) -> None:
-        """Creates a new IPE object."""
-        if isinstance(name, (float, int)):
-            name = f'IPE{int(name):0d}'
+        """Creates a new W object."""
         parameters = self.parameters.get(name)
         if parameters is None:
             raise ValueError(
