@@ -20,8 +20,8 @@ from structuralcodes.sections._generic import GenericSection
 
 
 def load_U_profiles_data():
-    """Load U profiles data from U.json file."""
-    json_file = Path(__file__).parent / 'U.json'
+    """Load U profiles data from u.json file."""
+    json_file = Path(__file__).parent / 'u.json'
     with open(json_file, 'r') as f:
         profiles_data = []
         for line in f:
