@@ -4,6 +4,7 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import typing as t
 import warnings
+from math import atan2
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -21,6 +22,39 @@ from shapely.ops import split
 from structuralcodes.core.base import Material
 from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import Concrete
+
+
+def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
+    if not isinstance(axis, LineString):
+        raise TypeError('axis should be a shapely LineString object')
+
+    (x1, y1), (x2, y2) = axis.coords
+
+    # angle of the line with respect to the horizontal axis
+    dx, dy = x2 - x1, y2 - y1
+    theta = atan2(dy, dx)
+
+    # Translation matrix T (move line start to origin)
+    T = np.array([[1, 0, -x1], [0, 1, -y1], [0, 0, 1]])
+
+    # Rotation matrix R (align line with x-axis)
+    R = np.array(
+        [
+            [np.cos(theta), np.sin(theta), 0],
+            [-np.sin(theta), np.cos(theta), 0],
+            [0, 0, 1],
+        ]
+    )
+
+    # Mirror across x-axis
+    M = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]])
+
+    # Inverses of T and R
+    T_inv = np.linalg.inv(T)
+    R_inv = np.linalg.inv(R)
+
+    # Final transformation matrix
+    return T_inv @ R_inv @ M @ R @ T
 
 
 class Geometry:
@@ -223,6 +257,31 @@ class PointGeometry(Geometry):
             point=affinity.rotate(
                 self._point, angle, origin=point, use_radians=use_radians
             ),
+            diameter=self._diameter,
+            material=self._material,
+            name=self._name,
+            group_label=self._group_label,
+        )
+
+    def mirror(self, axis: LineString) -> PointGeometry:
+        """Returns a new PointGeometry that is mirrored with respect to the
+        axis.
+
+        Arguments:
+            axis (LineString): The axis to mirror about.
+
+        Returns:
+            PointGeometry: The mirrored PointGeometry.
+        """
+        if not isinstance(axis, LineString):
+            raise TypeError('axis should be a shapely LineString object')
+
+        # Build the transformation matrix
+        A = _mirror_about_axis_matrix(axis)
+        # Apply the transformation to the point
+        params = [A[0, 0], A[0, 1], A[1, 0], A[1, 1], A[0, 2], A[1, 2]]
+        return PointGeometry(
+            point=affinity.affine_transform(self._point, params),
             diameter=self._diameter,
             material=self._material,
             name=self._name,
@@ -552,6 +611,28 @@ class SurfaceGeometry(Geometry):
             concrete=self.concrete,
         )
 
+    def mirror(self, axis: LineString) -> SurfaceGeometry:
+        """Returns a new SurfaceGeometry that is mirrored about the given axis.
+
+        Arguments:
+            axis (LineString): The axis to mirror about.
+
+        Returns:
+            SurfaceGeometry: The mirrored SurfaceGeometry.
+        """
+        if not isinstance(axis, LineString):
+            raise TypeError('axis should be a shapely LineString object')
+        # Build the transformation matrix
+        A = _mirror_about_axis_matrix(axis)
+        # Apply transformation matrix A
+        # Apply the transformation to the polygon
+        params = [A[0, 0], A[0, 1], A[1, 0], A[1, 1], A[0, 2], A[1, 2]]
+        return SurfaceGeometry(
+            poly=affinity.affine_transform(self.polygon, params),
+            material=self.material,
+            concrete=self.concrete,
+        )
+
     @staticmethod
     def from_geometry(
         geo: SurfaceGeometry,
@@ -595,9 +676,6 @@ class SurfaceGeometry(Geometry):
     # from_surface_geometry
     # from_dxf
     # from_ascii
-    # ...
-    # we could also add methods wrapping shapely function, like:
-    # mirror, translation, rotation, etc.
 
 
 def _process_geometries_multipolygon(
@@ -787,6 +865,23 @@ class CompoundGeometry(Geometry):
             processed_geoms.append(g.rotate(angle, point, use_radians))
         for pg in self.point_geometries:
             processed_geoms.append(pg.rotate(angle, point, use_radians))
+        return CompoundGeometry(geometries=processed_geoms)
+
+    def mirror(self, axis: LineString) -> CompoundGeometry:
+        """Returns a new CompoundGeometry that is mirrored about the given
+        axis.
+
+        Arguments:
+            axis (LineString): The axis to mirror about.
+
+        Returns:
+            CompoundGeometry: The mirrored CompoundGeometry.
+        """
+        processed_geoms = []
+        for g in self.geometries:
+            processed_geoms.append(g.mirror(axis))
+        for pg in self.point_geometries:
+            processed_geoms.append(pg.mirror(axis))
         return CompoundGeometry(geometries=processed_geoms)
 
     def __sub__(self, other: Geometry) -> CompoundGeometry:
