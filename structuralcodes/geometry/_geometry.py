@@ -624,7 +624,7 @@ class SurfaceGeometry(Geometry):
         # Build the transformation matrix
         A = _mirror_about_axis_matrix(axis)
         # Apply transformation matrix A
-        # Apply the transformation to the point
+        # Apply the transformation to the polygon
         params = [A[0, 0], A[0, 1], A[1, 0], A[1, 1], A[0, 2], A[1, 2]]
         return SurfaceGeometry(
             poly=affinity.affine_transform(self.polygon, params),
