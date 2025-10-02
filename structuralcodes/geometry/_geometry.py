@@ -264,7 +264,8 @@ class PointGeometry(Geometry):
         )
 
     def mirror(self, axis: LineString) -> PointGeometry:
-        """Returns a new PointGeometry that is mirrored with respect to the axis.
+        """Returns a new PointGeometry that is mirrored with respect to the
+        axis.
 
         Arguments:
             axis (LineString): The axis to mirror about.
