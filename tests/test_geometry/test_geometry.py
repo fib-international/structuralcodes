@@ -12,6 +12,7 @@ from structuralcodes.geometry import (
     CompoundGeometry,
     Geometry,
     PointGeometry,
+    RectangularGeometry,
     SurfaceGeometry,
     add_reinforcement,
     add_reinforcement_line,
@@ -699,3 +700,38 @@ def test_surface_geometry_name_group_label():
     # Assert
     assert geometry.name == name
     assert geometry.group_label == group_label
+
+
+def test_mirror_geometry():
+    """Test mirror transformation of geometries."""
+    width = 100
+    height = 300
+    concrete = ElasticMaterial(E=30_000, density=2400)
+    steel = ElasticMaterial(E=200_000, density=7850)
+
+    geo = RectangularGeometry(width, height, concrete, True)
+    geo = add_reinforcement(geo, (-height / 2 + 40, 0), 16, steel)
+
+    # Apply the mirror about a 45° axis
+    geo_m = geo.mirror(LineString([(0, 0), (1, 1)]))
+
+    # Compare bounds of the two geometries
+    bbox = geo.calculate_extents()
+    bbox_m = geo_m.calculate_extents()
+
+    assert math.isclose(bbox[0], bbox_m[2], rel_tol=1e-5)
+    assert math.isclose(bbox[1], bbox_m[3], rel_tol=1e-5)
+    assert math.isclose(bbox[2], bbox_m[0], rel_tol=1e-5)
+    assert math.isclose(bbox[3], bbox_m[1], rel_tol=1e-5)
+
+    assert math.isclose(
+        geo.point_geometries[0].x,
+        geo_m.point_geometries[0].y,
+        abs_tol=1e-5,
+    )
+
+    assert math.isclose(
+        geo.point_geometries[0].y,
+        geo_m.point_geometries[0].x,
+        abs_tol=1e-5,
+    )
