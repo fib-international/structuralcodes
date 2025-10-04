@@ -146,6 +146,74 @@ class MomentCurvatureResults:
     # The stresses can be recomputed if needed on the fly? Or storing them?
 
 
+class SectionDetailedResultState:
+    """Something."""
+
+    def __init__(self, section, eps_a, chi_y, chi_z, n, m_y, m_z):
+        self.eps_a = eps_a
+        self.chi_y = chi_y
+        self.chi_z = chi_z
+        self.n = n
+        self.m_y = m_y
+        self.m_z = m_z
+        self.section = section
+        self._create_data_structure()
+
+    def _create_data_structure(self):
+        # Data containers
+        surface_data = []
+        point_data = {}
+
+        # SurfaceGeometry random points
+        for surf in self.section.geometry.geometries:
+            # Use surf.random_points_within to get random points
+            y, z = surf.random_points_within(num_points=1000)
+            strain = self.eps_a - self.chi_z * y + self.chi_y * z
+            stress = surf.material.constitutive_law.get_stress(strain)
+            surface_data.append(
+                {
+                    'y': y,
+                    'z': z,
+                    'strain': strain,
+                    'stress': stress,
+                    'name': getattr(surf, 'name', None),
+                    'group_label': getattr(surf, 'group_label', None),
+                }
+            )
+
+        # Collect all group_label values from point_geometries and
+        # find unique ones
+        unique_labels = set(
+            [pg.group_label for pg in self.section.geometry.point_geometries]
+        )
+
+        for label in unique_labels:
+            # There should always be at least one label, which is None
+            coords, mats = self.section.geometry.get_point_geometries(
+                group_label=label
+            )
+            strain = (
+                self.eps_a
+                - self.chi_z * coords[:, 0]
+                + self.chi_y * coords[:, 1]
+            )
+            # Find indices where all mats are the same
+            unique_mats = set(tuple(mat for mat in mats))
+            for mat in unique_mats:
+                mask = [m == mat for m in mats]
+                selected_coords = coords[mask]
+                stress = mat.constitutive_law.get_stress(strain[mask])
+                point_data[label] = {
+                    'coords': selected_coords,
+                    'strain': strain[mask],
+                    'stress': stress,
+                }
+
+        # Store results for later use (e.g., plotting)
+        self.surface_data = surface_data
+        self.point_data = point_data
+
+
 @dataclass
 class UltimateBendingMomentResults:
     """Class for storing the ultimate bending moment computation for a given
@@ -161,6 +229,20 @@ class UltimateBendingMomentResults:
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
 
     section = None
+
+    detailed_result: SectionDetailedResultState = None
+
+    def create_detailed_result(self):
+        """Create the detailed result object."""
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            n=self.n,
+            m_y=self.m_y,
+            m_z=self.m_z,
+        )
 
     def get_fibers_strains(self, idx: int = None) -> ArrayLike:
         """Return a dataset with the strains in each fiber."""

@@ -887,29 +887,30 @@ class CompoundGeometry(Geometry):
             area += geo.area
         return area
 
-    def get_coordinates_point_geometries(
+    def get_point_geometries(
         self, group_label: t.Optional[str] = None
-    ) -> np.ndarray:
-        """Returns the coordinates of the point geometries as an array.
+    ) -> t.Tuple[np.ndarray, t.List[Material]]:
+        """Returns the coordinates and the material of the point geometries.
+         The coordinates are returned as a numpy array.
 
         Arguments:
             group_label (Optional(str)): If provided, only point geometries
                 with the given group_label are returned.
 
         Returns:
-            ndarray: An array of shape (n, 2) with the coordinates of the
-            point geometries.
+            Tuple[ndarray, List[Material]]: Coordinates array of shape (n, 2)
+            and list of materials.
+
         """
-        coords = np.zeros((len(self.point_geometries), 3))
-        for i, pg in enumerate(self.point_geometries):
-            if group_label is not None and pg.group_label != group_label:
-                continue
-            coords[i, 0] = pg.x
-            coords[i, 1] = pg.y
-            coords[i, 2] = 1
-        # Only keep rows where the last column is 1
-        filtered_coords = coords[coords[:, 2] == 1]
-        return filtered_coords[:, 0:2]
+        coords = []
+        materials = []
+
+        for pg in self.point_geometries:
+            if group_label is None or pg.group_label == group_label:
+                coords.append([pg.x, pg.y])
+                materials.append(pg.material)
+
+        return np.array(coords), materials
 
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of CompundGeometry.
