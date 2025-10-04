@@ -28,7 +28,9 @@ from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
     ParabolaRectangle,
 )
-from structuralcodes.materials.reinforcement import ReinforcementMC2010
+from structuralcodes.materials.reinforcement import (
+    ReinforcementMC2010,
+)
 
 
 # Test create line
@@ -834,3 +836,96 @@ def test_random_points_within_reproducibility():
     # Results should be identical
     np.testing.assert_array_equal(xs1, xs2)
     np.testing.assert_array_equal(ys1, ys2)
+
+
+def test_get_coordinates_point_geometries():
+    """Test get_coordinates_point_geometries method with filtering."""
+    # Create materials
+    concrete = ConcreteMC2010(45)
+    reinforcement = ReinforcementMC2010(450, 200000, 450, 0.075)
+    prestress_reinf = ReinforcementMC2010(
+        fyk=1620, Es=200000, ftk=1620, epsuk=0.02, initial_strain=0.0054
+    )
+
+    # Create the polygon
+    poly = Polygon(
+        [
+            (250, 0),
+            (250, 140),
+            (70, 200),
+            (70, 920),
+            (250, 980),
+            (250, 1120),
+            (-250, 1120),
+            (-250, 980),
+            (-70, 920),
+            (-70, 200),
+            (-250, 140),
+            (-250, 0),
+        ]
+    )
+
+    # Create surface geometry
+    geo = SurfaceGeometry(poly=poly, material=concrete)
+
+    # Add reinforcement lines
+    position = [40, 110, 1010, 1080]
+    number = [4, 2, 2, 4]
+    for y, n in zip(position, number):
+        geo = add_reinforcement_line(
+            geo=geo,
+            coords_i=(-210, y),
+            coords_j=(210, y),
+            diameter=10,
+            n=n,
+            material=reinforcement,
+            group_label='reinforcement',
+        )
+
+    # Add prestress reinforcement
+    area = 840
+    d = (area * 4 / np.pi) ** 0.5
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(0, 70),
+        coords_j=(0, 210),
+        diameter=d,
+        n=2,
+        material=prestress_reinf,
+        group_label='prestress_reinforcement',
+    )
+
+    # Test without group_label filter - should return all points
+    all_coords = geo.get_coordinates_point_geometries()
+    total_reinforcement_points = sum(number)  # 12 regular reinforcement
+    total_prestress_points = 2  # 2 prestress reinforcement
+    expected_total = total_reinforcement_points + total_prestress_points
+    assert all_coords.shape[0] == expected_total
+    assert all_coords.shape[1] == 2  # x, y coordinates
+
+    # Test with "reinforcement" filter
+    reinforcement_coords = geo.get_coordinates_point_geometries(
+        group_label='reinforcement'
+    )
+    assert reinforcement_coords.shape[0] == total_reinforcement_points
+    assert reinforcement_coords.shape[1] == 2
+
+    # Test with "prestress_reinforcement" filter
+    prestress_coords = geo.get_coordinates_point_geometries(
+        group_label='prestress_reinforcement'
+    )
+    assert prestress_coords.shape[0] == total_prestress_points
+    assert prestress_coords.shape[1] == 2
+
+    # Test with wrong filter - should return empty array
+    wrong_coords = geo.get_coordinates_point_geometries(
+        group_label='prestress'
+    )
+    assert wrong_coords.shape[0] == 0
+    assert wrong_coords.shape[1] == 2  # Still 2 columns even if empty
+
+    # Verify that the sum of filtered results equals total
+    assert (
+        reinforcement_coords.shape[0] + prestress_coords.shape[0]
+        == all_coords.shape[0]
+    )

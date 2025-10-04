@@ -887,6 +887,30 @@ class CompoundGeometry(Geometry):
             area += geo.area
         return area
 
+    def get_coordinates_point_geometries(
+        self, group_label: t.Optional[str] = None
+    ) -> np.ndarray:
+        """Returns the coordinates of the point geometries as an array.
+
+        Arguments:
+            group_label (Optional(str)): If provided, only point geometries
+                with the given group_label are returned.
+
+        Returns:
+            ndarray: An array of shape (n, 2) with the coordinates of the
+            point geometries.
+        """
+        coords = np.zeros((len(self.point_geometries), 3))
+        for i, pg in enumerate(self.point_geometries):
+            if group_label is not None and pg.group_label != group_label:
+                continue
+            coords[i, 0] = pg.x
+            coords[i, 1] = pg.y
+            coords[i, 2] = 1
+        # Only keep rows where the last column is 1
+        filtered_coords = coords[coords[:, 2] == 1]
+        return filtered_coords[:, 0:2]
+
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of CompundGeometry.
 
