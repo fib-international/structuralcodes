@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 import pytest
-from shapely import LineString, MultiLineString, MultiPolygon, Polygon
+from shapely import LineString, MultiLineString, MultiPolygon, Point, Polygon
 from shapely.affinity import translate
 from shapely.testing import assert_geometries_equal
 
@@ -735,3 +735,102 @@ def test_mirror_geometry():
         geo_m.point_geometries[0].x,
         abs_tol=1e-5,
     )
+
+
+def test_random_points_within():
+    """Test random_points_within method generates points inside geometry."""
+    # Create a simple rectangular geometry
+    width = 100
+    height = 50
+    concrete = ElasticMaterial(E=30_000, density=2400)
+
+    geo = RectangularGeometry(width, height, concrete, True)
+
+    # Test with different numbers of points
+    for num_points in [10, 50, 100]:
+        xs, ys = geo.random_points_within(num_points)
+
+        # Check that we get arrays
+        assert isinstance(xs, np.ndarray)
+        assert isinstance(ys, np.ndarray)
+
+        # Check that arrays have the same length
+        assert len(xs) == len(ys)
+
+        # Check that we got roughly the expected number of points
+        # (allow some variation)
+        assert len(xs) > 0
+        # Allow some overshoot due to triangulation
+        assert len(xs) <= num_points * 1.5
+
+        # Check that all points are within the geometry bounds
+        min_x, max_x, min_y, max_y = geo.calculate_extents()
+
+        assert np.all(xs >= min_x)
+        assert np.all(xs <= max_x)
+        assert np.all(ys >= min_y)
+        assert np.all(ys <= max_y)
+
+        # Check that points are actually inside the polygon using shapely
+        for x, y in zip(xs, ys):
+            point = Point(x, y)
+            assert geo.polygon.contains(point) or geo.polygon.touches(point)
+
+
+def test_random_points_within_complex_geometry():
+    """Test random_points_within with a geometry containing holes."""
+    concrete = ElasticMaterial(E=30_000, density=2400)
+
+    # Create outer rectangle
+    outer_vertices = [(-50, -25), (50, -25), (50, 25), (-50, 25)]
+    outer_polygon = Polygon(outer_vertices)
+
+    # Create inner hole (smaller rectangle)
+    hole_vertices = [(-20, -10), (20, -10), (20, 10), (-20, 10)]
+    hole_polygon = Polygon(hole_vertices)
+
+    # Create polygon with hole
+    polygon_with_hole = Polygon(
+        outer_polygon.exterior, [hole_polygon.exterior]
+    )
+
+    geo = SurfaceGeometry(polygon_with_hole, concrete, True)
+
+    # Generate random points
+    num_points = 100
+    xs, ys = geo.random_points_within(num_points)
+
+    # Check basic properties
+    assert isinstance(xs, np.ndarray)
+    assert isinstance(ys, np.ndarray)
+    assert len(xs) == len(ys)
+    assert len(xs) > 0
+
+    # Check that all points are within the outer boundary but not in the hole
+    for x, y in zip(xs, ys):
+        point = Point(x, y)
+        # Point should be in the geometry (which excludes the hole)
+        assert geo.polygon.contains(point) or geo.polygon.touches(point)
+        # Point should not be inside the hole
+        assert not hole_polygon.contains(point)
+
+
+def test_random_points_within_reproducibility():
+    """Test that random_points_within can be made reproducible with seed."""
+    width = 100
+    height = 50
+    concrete = ElasticMaterial(E=30_000, density=2400)
+
+    geo = RectangularGeometry(width, height, concrete, True)
+
+    # Set seed for reproducibility
+    np.random.seed(42)
+    xs1, ys1 = geo.random_points_within(50)
+
+    # Reset seed to same value
+    np.random.seed(42)
+    xs2, ys2 = geo.random_points_within(50)
+
+    # Results should be identical
+    np.testing.assert_array_equal(xs1, xs2)
+    np.testing.assert_array_equal(ys1, ys2)
