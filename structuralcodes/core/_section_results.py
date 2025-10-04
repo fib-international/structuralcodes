@@ -234,7 +234,7 @@ class UltimateBendingMomentResults:
 
     detailed_result: SectionDetailedResultState = None
 
-    def create_detailed_result(self):
+    def create_detailed_result(self, num_points=1000):
         """Create the detailed result object."""
         self.detailed_result = SectionDetailedResultState(
             section=self.section,
@@ -244,6 +244,7 @@ class UltimateBendingMomentResults:
             n=self.n,
             m_y=self.m_y,
             m_z=self.m_z,
+            num_points=num_points,
         )
 
     def get_fibers_strains(self, idx: int = None) -> ArrayLike:
