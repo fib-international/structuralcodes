@@ -517,7 +517,7 @@ class SurfaceGeometry(Geometry):
             # area of the triangle
             a = Ax * By - Ay * Bx
             a += Bx * Cy - By * Cx
-            a += Cx * Ay - Cy * Cx
+            a += Cx * Ay - Cy * Ax
             a = abs(a) * 0.5
             # number of points in this triangle (at least 1)
             n = max(1, int(num_points * a / self.area))
