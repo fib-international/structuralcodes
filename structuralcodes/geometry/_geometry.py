@@ -7,6 +7,7 @@ import warnings
 from math import atan2
 
 import numpy as np
+import triangle
 from numpy.typing import ArrayLike
 from shapely import affinity
 from shapely.geometry import (
@@ -453,6 +454,92 @@ class SurfaceGeometry(Geometry):
     def polygon(self) -> Polygon:
         """Returns the Shapely Polygon."""
         return self._polygon
+
+    def random_points_within(self, num_points: int = 100) -> np.ndarray:
+        """Returns coordinates of random points within the polygon.
+
+        Arguments:
+            num_points (int): Number of random points to generate.
+
+        Returns:
+            x, y (ndarray, ndarray): Arrays with the x and y coordinates of the
+            random points within the polygon.
+        """
+
+        def _prepare_triangulation_data(poly: Polygon) -> dict[str:ArrayLike]:
+            # Create the tri dictionary
+            tri: dict[str:ArrayLike] = {}
+            # 1. External boundary process
+            # 1a. Get vertices, skipping the last one
+            vertices = np.column_stack(poly.exterior.xy)[:-1, :]
+            n_vertices = vertices.shape[0]
+            # 1b. Create segments
+            node_i = np.arange(n_vertices)
+            node_j = np.roll(node_i, -1)
+            segments = np.column_stack((node_i, node_j))
+
+            # 2. Process holes
+            holes = []
+            for interior in poly.interiors:
+                # 2a. Get vertices, skipping the last one
+                vertices_int = np.column_stack(interior.xy)[:-1, :]
+                n_vertices_int = vertices_int.shape[0]
+                # 2b. Create segments
+                node_i = np.arange(n_vertices_int) + n_vertices
+                node_j = np.roll(node_i, -1)
+                segments_int = np.column_stack((node_i, node_j))
+                c = Polygon(interior)
+                holes.append([c.centroid.x, c.centroid.y])
+                # Append to the global arrays
+                vertices = np.vstack((vertices, vertices_int))
+                segments = np.vstack((segments, segments_int))
+                n_vertices += n_vertices_int
+            # Return the dictionary with data for triangulate
+            tri['vertices'] = vertices
+            tri['segments'] = segments
+            if len(holes) > 0:
+                tri['holes'] = holes
+            return tri
+
+        tri = _prepare_triangulation_data(self.polygon)
+        triangles = triangle.triangulate(tri, 'p')
+
+        xs = np.array([])
+        ys = np.array([])
+        for tr in triangles['triangles']:
+            # Get vertices for the triangle
+            Ax = triangles['vertices'][tr[0]][0]
+            Ay = triangles['vertices'][tr[0]][1]
+            Bx = triangles['vertices'][tr[1]][0]
+            By = triangles['vertices'][tr[1]][1]
+            Cx = triangles['vertices'][tr[2]][0]
+            Cy = triangles['vertices'][tr[2]][1]
+            # area of the triangle
+            a = Ax * By - Ay * Bx
+            a += Bx * Cy - By * Cx
+            a += Cx * Ay - Cy * Cx
+            a = abs(a) * 0.5
+            # number of points in this triangle (at least 1)
+            n = max(1, int(num_points * a / self.area))
+            # generate random points in the triangle
+            r1 = np.random.uniform(0, 1, n)
+            r2 = np.random.uniform(0, 1, n)
+            x = (
+                (1 - np.sqrt(r1)) * Ax
+                + (np.sqrt(r1) * (1 - r2)) * Bx
+                + (r2 * np.sqrt(r1)) * Cx
+            )
+            y = (
+                (1 - np.sqrt(r1)) * Ay
+                + (np.sqrt(r1) * (1 - r2)) * By
+                + (r2 * np.sqrt(r1)) * Cy
+            )
+
+            # Concatenate the new points
+            xs = np.concatenate((xs, x))
+            ys = np.concatenate((ys, y))
+
+        return xs, ys
 
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of SurfaceGeometry.
