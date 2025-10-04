@@ -167,7 +167,9 @@ class MomentCurvatureResults:
 class SectionDetailedResultState:
     """Something."""
 
-    def __init__(self, section, eps_a, chi_y, chi_z, n, m_y, m_z):
+    def __init__(
+        self, section, eps_a, chi_y, chi_z, n, m_y, m_z, num_points=1000
+    ):
         self.eps_a = eps_a
         self.chi_y = chi_y
         self.chi_z = chi_z
@@ -175,9 +177,9 @@ class SectionDetailedResultState:
         self.m_y = m_y
         self.m_z = m_z
         self.section = section
-        self._create_data_structure()
+        self._create_data_structure(num_points=num_points)
 
-    def _create_data_structure(self):
+    def _create_data_structure(self, num_points=1000):
         # Data containers
         surface_data = []
         point_data = {}
@@ -185,7 +187,7 @@ class SectionDetailedResultState:
         # SurfaceGeometry random points
         for surf in self.section.geometry.geometries:
             # Use surf.random_points_within to get random points
-            y, z = surf.random_points_within(num_points=1000)
+            y, z = surf.random_points_within(num_points=num_points)
             strain = self.eps_a - self.chi_z * y + self.chi_y * z
             stress = surf.material.constitutive_law.get_stress(strain)
             surface_data.append(
