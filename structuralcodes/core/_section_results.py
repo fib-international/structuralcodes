@@ -4,6 +4,7 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 from dataclasses import dataclass, field, fields
 
+import numpy as np
 from numpy.typing import ArrayLike
 
 
@@ -158,6 +159,69 @@ class UltimateBendingMomentResults:
     chi_y: float = 0  # the curvature corresponding to the ultimate moment
     chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
+
+    section = None
+
+    def get_fibers_strains(self, idx: int = None) -> ArrayLike:
+        """Return a dataset with the strains in each fiber."""
+        if self.section is None:
+            return None
+
+        strain = [self.eps_a, self.chi_y, self.chi_z]
+
+        y = []
+        z = []
+        A = []
+        eps = []
+        if idx is not None:
+            tr = self.section.section_calculator.triangulated_data[idx]
+            return (
+                tr[0],
+                tr[1],
+                tr[2],
+                strain[0] - strain[2] * tr[0] + strain[1] * tr[1],
+            )
+        for tr in self.section.section_calculator.triangulated_data:
+            # All have the same material
+            y.append(tr[0])
+            z.append(tr[1])
+            A.append(tr[2])
+            strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+            eps.append(strains)
+
+        return np.hstack(y), np.hstack(z), np.hstack(A), np.hstack(eps)
+
+    def get_fibers_stresses(self, idx: int = None) -> ArrayLike:
+        """Return a dataset with the stresses in each fiber."""
+        if self.section is None:
+            return None
+
+        strain = [self.eps_a, self.chi_y, self.chi_z]
+
+        y = []
+        z = []
+        A = []
+        sig = []
+        if idx is not None:
+            tr = self.section.section_calculator.triangulated_data[idx]
+            return (
+                tr[0],
+                tr[1],
+                tr[2],
+                tr[3].get_stress(
+                    strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+                ),
+            )
+        for tr in self.section.section_calculator.triangulated_data:
+            # All have the same material
+            y.append(tr[0])
+            z.append(tr[1])
+            A.append(tr[2])
+            strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+            stresses = tr[3].get_stress(strains)
+            sig.append(stresses)
+
+        return np.hstack(y), np.hstack(z), np.hstack(A), np.hstack(sig)
 
 
 @dataclass

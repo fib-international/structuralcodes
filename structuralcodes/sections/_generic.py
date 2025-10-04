@@ -770,6 +770,7 @@ class GenericSectionCalculator(SectionCalculator):
         res.eps_a = strain[0]
         res.m_y = M[0, 0]
         res.m_z = M[1, 0]
+        res.section = self.section
 
         return res
 
