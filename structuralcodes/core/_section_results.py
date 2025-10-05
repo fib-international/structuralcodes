@@ -142,8 +142,60 @@ class MomentCurvatureResults:
     m_y: ArrayLike = None  # the moment
     m_z: ArrayLike = None  # the moment
 
-    # The strains can be reconstructed at each step from chi and eps_axial
-    # The stresses can be recomputed if needed on the fly? Or storing them?
+    section = None
+
+    detailed_result: SectionDetailedResultState = None
+    current_step: int = None
+    num_points: int = None
+
+    def create_detailed_result(self, num_points=1000):
+        """Create the detailed result object."""
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_axial[0],
+            chi_y=self.chi_y[0],
+            chi_z=self.chi_z[0],
+            n=self.n,
+            m_y=self.m_y[0],
+            m_z=self.m_z[0],
+            num_points=num_points,
+        )
+        self.current_step = 0
+        self.num_points = num_points
+
+    def next_step(self):
+        """Advance to the next step in the detailed result."""
+        if self.detailed_result is None:
+            return
+        if self.current_step < len(self.m_y) - 1:
+            self.current_step += 1
+            self.detailed_result = SectionDetailedResultState(
+                section=self.section,
+                eps_a=self.eps_axial[self.current_step],
+                chi_y=self.chi_y[self.current_step],
+                chi_z=self.chi_z[self.current_step],
+                n=self.n,
+                m_y=self.m_y[self.current_step],
+                m_z=self.m_z[self.current_step],
+                num_points=self.num_points,
+            )
+
+    def previous_step(self):
+        """Go back to the previous step in the detailed result."""
+        if self.detailed_result is None:
+            return
+        if self.current_step > 0:
+            self.current_step -= 1
+            self.detailed_result = SectionDetailedResultState(
+                section=self.section,
+                eps_a=self.eps_axial[self.current_step],
+                chi_y=self.chi_y[self.current_step],
+                chi_z=self.chi_z[self.current_step],
+                n=self.n,
+                m_y=self.m_y[self.current_step],
+                m_z=self.m_z[self.current_step],
+                num_points=self.num_points,
+            )
 
 
 class SectionDetailedResultState:

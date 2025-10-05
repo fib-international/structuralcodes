@@ -813,6 +813,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
+        res.section = self.section
         res.n = n
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
