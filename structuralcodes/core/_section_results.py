@@ -145,11 +145,19 @@ class MomentCurvatureResults:
     section = None
 
     detailed_result: SectionDetailedResultState = None
+    seed: int = None
     current_step: int = None
     num_points: int = None
 
     def create_detailed_result(self, num_points=1000):
-        """Create the detailed result object."""
+        """Create the detailed result object.
+
+        Arguments:
+            num_points (int): Number of random points to sample in each
+                surface geometry (default = 1000).
+        """
+        if self.seed is None:
+            self.seed = np.random.randint(1, 100, 1)[0].item()
         self.detailed_result = SectionDetailedResultState(
             section=self.section,
             eps_a=self.eps_axial[0],
@@ -159,6 +167,7 @@ class MomentCurvatureResults:
             m_y=self.m_y[0],
             m_z=self.m_z[0],
             num_points=num_points,
+            seed=self.seed,
         )
         self.current_step = 0
         self.num_points = num_points
@@ -178,6 +187,7 @@ class MomentCurvatureResults:
                 m_y=self.m_y[self.current_step],
                 m_z=self.m_z[self.current_step],
                 num_points=self.num_points,
+                seed=self.seed,
             )
 
     def previous_step(self):
@@ -195,6 +205,25 @@ class MomentCurvatureResults:
                 m_y=self.m_y[self.current_step],
                 m_z=self.m_z[self.current_step],
                 num_points=self.num_points,
+                seed=self.seed,
+            )
+
+    def set_step(self, step: int):
+        """Set the detailed result to a specific step."""
+        if self.detailed_result is None:
+            return
+        if 0 <= step < len(self.m_y):
+            self.current_step = step
+            self.detailed_result = SectionDetailedResultState(
+                section=self.section,
+                eps_a=self.eps_axial[self.current_step],
+                chi_y=self.chi_y[self.current_step],
+                chi_z=self.chi_z[self.current_step],
+                n=self.n,
+                m_y=self.m_y[self.current_step],
+                m_z=self.m_z[self.current_step],
+                num_points=self.num_points,
+                seed=self.seed,
             )
 
 
@@ -202,8 +231,32 @@ class SectionDetailedResultState:
     """Something."""
 
     def __init__(
-        self, section, eps_a, chi_y, chi_z, n, m_y, m_z, num_points=1000
+        self,
+        section,
+        eps_a,
+        chi_y,
+        chi_z,
+        n,
+        m_y,
+        m_z,
+        num_points=1000,
+        seed=None,
     ):
+        """Create the SectionDetailedResult.
+
+        Arguments:
+            section: The section object.
+            eps_a: The axial strain at the section centroid.
+            chi_y: The curvature about the y-axis.
+            chi_z: The curvature about the z-axis.
+            n: The axial force.
+            m_y: The bending moment about the y-axis.
+            m_z: The bending moment about the z-axis.
+            num_points (int): Number of random points to sample in each surface
+                geometry (default = 1000).
+            seed (int): Seed for random number generator to ensure
+                reproducibility of random points.
+        """
         self.eps_a = eps_a
         self.chi_y = chi_y
         self.chi_z = chi_z
@@ -211,6 +264,7 @@ class SectionDetailedResultState:
         self.m_y = m_y
         self.m_z = m_z
         self.section = section
+        self.seed = seed
         self._create_data_structure(num_points=num_points)
 
     def _create_data_structure(self, num_points=1000):
@@ -221,7 +275,9 @@ class SectionDetailedResultState:
         # SurfaceGeometry random points
         for surf in self.section.geometry.geometries:
             # Use surf.random_points_within to get random points
-            y, z = surf.random_points_within(num_points=num_points)
+            y, z = surf.random_points_within(
+                num_points=num_points, seed=self.seed
+            )
             strain = self.eps_a - self.chi_z * y + self.chi_y * z
             stress = surf.material.constitutive_law.get_stress(strain)
             surface_data.append(

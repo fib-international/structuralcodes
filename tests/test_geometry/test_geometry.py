@@ -826,20 +826,18 @@ def test_random_points_within_reproducibility():
     geo = RectangularGeometry(width, height, concrete, True)
 
     # Set seed for reproducibility
-    np.random.seed(42)
-    xs1, ys1 = geo.random_points_within(50)
+    xs1, ys1 = geo.random_points_within(50, seed=42)
 
     # Reset seed to same value
-    np.random.seed(42)
-    xs2, ys2 = geo.random_points_within(50)
+    xs2, ys2 = geo.random_points_within(50, seed=42)
 
     # Results should be identical
     np.testing.assert_array_equal(xs1, xs2)
     np.testing.assert_array_equal(ys1, ys2)
 
 
-def test_get_coordinates_point_geometries():
-    """Test get_coordinates_point_geometries method with filtering."""
+def test_get_point_geometries():
+    """Test get_point_geometries method with filtering."""
     # Create materials
     concrete = ConcreteMC2010(45)
     reinforcement = ReinforcementMC2010(450, 200000, 450, 0.075)
@@ -896,7 +894,7 @@ def test_get_coordinates_point_geometries():
     )
 
     # Test without group_label filter - should return all points
-    all_coords = geo.get_coordinates_point_geometries()
+    all_coords, _ = geo.get_point_geometries()
     total_reinforcement_points = sum(number)  # 12 regular reinforcement
     total_prestress_points = 2  # 2 prestress reinforcement
     expected_total = total_reinforcement_points + total_prestress_points
@@ -904,25 +902,22 @@ def test_get_coordinates_point_geometries():
     assert all_coords.shape[1] == 2  # x, y coordinates
 
     # Test with "reinforcement" filter
-    reinforcement_coords = geo.get_coordinates_point_geometries(
+    reinforcement_coords, _ = geo.get_point_geometries(
         group_label='reinforcement'
     )
     assert reinforcement_coords.shape[0] == total_reinforcement_points
     assert reinforcement_coords.shape[1] == 2
 
     # Test with "prestress_reinforcement" filter
-    prestress_coords = geo.get_coordinates_point_geometries(
+    prestress_coords, _ = geo.get_point_geometries(
         group_label='prestress_reinforcement'
     )
     assert prestress_coords.shape[0] == total_prestress_points
     assert prestress_coords.shape[1] == 2
 
     # Test with wrong filter - should return empty array
-    wrong_coords = geo.get_coordinates_point_geometries(
-        group_label='prestress'
-    )
-    assert wrong_coords.shape[0] == 0
-    assert wrong_coords.shape[1] == 2  # Still 2 columns even if empty
+    wrong_coords, _ = geo.get_point_geometries(group_label='prestress')
+    assert wrong_coords is None
 
     # Verify that the sum of filtered results equals total
     assert (
