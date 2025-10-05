@@ -455,11 +455,14 @@ class SurfaceGeometry(Geometry):
         """Returns the Shapely Polygon."""
         return self._polygon
 
-    def random_points_within(self, num_points: int = 100) -> np.ndarray:
+    def random_points_within(
+        self, num_points: int = 100, seed: int = None
+    ) -> np.ndarray:
         """Returns coordinates of random points within the polygon.
 
         Arguments:
             num_points (int): Number of random points to generate.
+            seed (int): Seed for the random number generator.
 
         Returns:
             x, y (ndarray, ndarray): Arrays with the x and y coordinates of the
@@ -506,7 +509,12 @@ class SurfaceGeometry(Geometry):
 
         xs = np.array([])
         ys = np.array([])
-        for tr in triangles['triangles']:
+        # Manage reproducibility of random points:
+        # seeds must be random in the triangles loop
+        n_tr = len(triangles['triangles'])
+        rng = np.random.default_rng(seed)
+        seeds = rng.integers(1, 300, n_tr)
+        for tr, s in zip(triangles['triangles'], seeds):
             # Get vertices for the triangle
             Ax = triangles['vertices'][tr[0]][0]
             Ay = triangles['vertices'][tr[0]][1]
@@ -522,8 +530,9 @@ class SurfaceGeometry(Geometry):
             # number of points in this triangle (at least 1)
             n = max(1, int(num_points * a / self.area))
             # generate random points in the triangle
-            r1 = np.random.uniform(0, 1, n)
-            r2 = np.random.uniform(0, 1, n)
+            rng = np.random.default_rng(s)
+            r1 = rng.uniform(0, 1, n)
+            r2 = rng.uniform(0, 1, n)
             x = (
                 (1 - np.sqrt(r1)) * Ax
                 + (np.sqrt(r1) * (1 - r2)) * Bx
@@ -910,6 +919,8 @@ class CompoundGeometry(Geometry):
                 coords.append([pg.x, pg.y])
                 materials.append(pg.material)
 
+        if len(coords) == 0:
+            return None, None
         return np.array(coords), materials
 
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
