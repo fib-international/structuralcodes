@@ -333,7 +333,7 @@ class HD(BaseProfile):
         """Returns Height of HD section.
 
         Returns:
-            float: HHeight h of HD section.
+            float: Height h of HD section.
         """
         return self._h
 

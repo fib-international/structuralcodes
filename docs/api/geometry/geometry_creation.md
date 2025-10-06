@@ -18,11 +18,13 @@
 
     .. automethod:: translate
     .. automethod:: rotate
+    .. automethod:: mirror
+
     .. automethod:: from_geometry
 
 ```
 
-## SurfaceGeometry
+## Surface geometry
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.geometry.SurfaceGeometry
@@ -33,11 +35,13 @@
     .. autoproperty:: centroid
     .. autoproperty:: density
 
+    .. automethod:: translate
+    .. automethod:: rotate
+    .. automethod:: mirror
+
     .. automethod:: calculate_extents
     .. automethod:: split
     .. automethod:: split_two_lines
-    .. automethod:: translate
-    .. automethod:: rotate
 
     .. automethod:: from_geometry
 
@@ -53,9 +57,12 @@
     .. autoproperty:: reinforced_concrete
     .. autoproperty:: area
 
-    .. automethod:: calculate_extents
     .. automethod:: translate
     .. automethod:: rotate
+    .. automethod:: mirror
+
+    .. automethod:: calculate_extents
+
     .. automethod:: from_geometry
 
 
