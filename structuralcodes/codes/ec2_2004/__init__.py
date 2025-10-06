@@ -78,6 +78,7 @@ from ._section_7_3_crack_control import (
 )
 from .shear import (
     Asw_max,
+    Asw_s_required,
     VEdmax_unreinf,
     VRdc,
     VRdc_prin_stress,
@@ -90,6 +91,7 @@ __all__ = [
     'As_min_2',
     'As_min_p',
     'Asw_max',
+    'Asw_s_required',
     'alpha_e',
     'eps_sm_eps_cm',
     'hc_eff',

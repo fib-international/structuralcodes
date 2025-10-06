@@ -10,6 +10,7 @@ from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
     ElasticPlastic,
+    InitialStrain,
     ParabolaRectangle,
     Popovics,
     Sargin,
@@ -489,23 +490,33 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     """Test BilinearCompression material."""
     law = BilinearCompression(fc=fc, eps_c=eps_c, eps_cu=eps_cu)
 
-    eps = np.linspace(0, eps_cu, 20)
+    eps = np.linspace(-2 * eps_cu, eps_c, 20)
 
     # compute expected
     E = fc / eps_c
     sig_expected = E * eps
-    sig_expected[sig_expected > fc] = fc
-    tan_expected = np.zeros_like(sig_expected)
-    tan_expected[sig_expected < fc] = E
-    sig_expected *= -1
+    sig_expected[sig_expected < -fc] = -fc
+    sig_expected[eps > 0] = 0
+    sig_expected[eps < -eps_cu] = 0
+    tan_expected = np.ones_like(eps) * E
+    tan_expected[eps >= 0] = 0
+    tan_expected[eps < -eps_c] = 0
 
     # compute from BilinearCompression
-    sig_computed = law.get_stress(-eps)
-    tan_computed = law.get_tangent(-eps)
+    sig_computed_array = law.get_stress(eps)
+    sig_computed_scalar = np.array(
+        [law.get_stress(eps_scalar) for eps_scalar in eps]
+    )
+    tan_computed_array = law.get_tangent(eps)
+    tan_computed_scalar = np.array(
+        [law.get_tangent(eps_scalar) for eps_scalar in eps]
+    )
 
     # Compare the two
-    assert_allclose(sig_computed, sig_expected)
-    assert_allclose(tan_computed, tan_expected)
+    assert_allclose(sig_computed_array, sig_expected)
+    assert_allclose(sig_computed_scalar, sig_expected)
+    assert_allclose(tan_computed_array, tan_expected)
+    assert_allclose(tan_computed_scalar, tan_expected)
 
     # Test getting ultimate strain
     eps_min, eps_max = law.get_ultimate_strain()
@@ -515,3 +526,135 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
+
+
+@pytest.mark.parametrize(
+    'fy, eps_su',
+    [
+        (350, 0.07),
+        (250, 0.03),
+        (355, 0.002),
+    ],
+)
+@pytest.mark.parametrize(
+    'initial_strain', [0.0, 0.001, 0.005, 0.01, -0.001, -0.005]
+)
+def test_initstrain(fy, eps_su, initial_strain):
+    """Test InitStrain constitutive law."""
+    base_law = ElasticPlastic(fy=fy, E=200000, eps_su=eps_su)
+    law = InitialStrain(
+        constitutive_law=base_law, initial_strain=initial_strain
+    )
+
+    ult_strain_base = base_law.get_ultimate_strain()
+    ult_strain = law.get_ultimate_strain()
+    assert math.isclose(
+        ult_strain_base[0] - initial_strain,
+        ult_strain[0],
+    )
+    assert math.isclose(
+        ult_strain_base[1] - initial_strain,
+        ult_strain[1],
+    )
+
+    strain = np.linspace(-eps_su * 1.1, eps_su * 1.1, 100)
+
+    # Test stresses
+    sig_expected = base_law.get_stress(strain + initial_strain)
+    sig_computed = law.get_stress(strain)
+
+    assert_allclose(sig_computed, sig_expected)
+
+    # Test tangents
+    tan_expected = base_law.get_tangent(strain + initial_strain)
+    tan_computed = law.get_tangent(strain)
+
+    assert_allclose(tan_computed, tan_expected)
+
+
+def test_initial_strain_not_constitutive_law():
+    """Test if TypeError is raised if an InitialStrain law is initialized
+    without a ConstitutiveLaw.
+    """
+    with pytest.raises(TypeError):
+        InitialStrain(constitutive_law=None, initial_strain=1e-3)
+
+
+def test_initial_strain_strain_compatibility_property():
+    """Test the strain_compatibility property."""
+    # Arrange
+    constitutive_law = Elastic(E=30000)
+    initial_strain_value = 2e-3
+
+    initial_strain_no_strain_compatibility = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=False,
+    )
+
+    initial_strain_strain_compatibility = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=True,
+    )
+
+    # Act and assert
+    assert not initial_strain_no_strain_compatibility.strain_compatibility
+    assert initial_strain_strain_compatibility.strain_compatibility
+
+
+def test_initial_strain_get_stress_tangent_no_strain_compatibility():
+    """Test the get_stress and get_tangent methods without strain
+    compatibility.
+    """
+    # Arrange
+    constitutive_law = Elastic(E=30000)
+    initial_strain_value = 2e-3
+
+    initial_strain = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=False,
+    )
+
+    initial_stress = constitutive_law.get_stress(initial_strain_value)
+    initial_tangent = constitutive_law.get_tangent(0)
+
+    strains = np.linspace(-2e-3, 2e-3, 10)
+
+    # Act
+    stresses = initial_strain.get_stress(strains)
+    tangents = initial_strain.get_tangent(strains)
+
+    # Assert
+    assert np.allclose(stresses, initial_stress)
+    assert np.allclose(tangents, initial_tangent * 1e-6)
+
+
+@pytest.mark.parametrize(
+    'eps',
+    (-1e-3, 1.5e-3, 0, [-0.5e-3, 0.0e-3, 2.1e-3]),
+)
+def test_get_secant_in_base(eps):
+    """Test the get_secant method in the base constitutive law."""
+    # Arrange
+    constitutive_law = ParabolaRectangle(fc=45)
+    if np.isscalar(eps):
+        expected_secant = (
+            constitutive_law.get_stress(eps) / eps
+            if eps != 0
+            else constitutive_law.get_tangent(0)
+        )
+    else:
+        eps = np.atleast_1d(eps)
+        expected_secant = np.zeros_like(eps)
+        expected_secant[eps != 0] = (
+            constitutive_law.get_stress(eps[eps != 0]) / eps[eps != 0]
+        )
+        expected_secant[eps == 0] = constitutive_law.get_tangent(0)
+
+    # Act, note that we force calling the get_secant method on the parent class
+    secant = super(ParabolaRectangle, constitutive_law).get_secant(eps)
+
+    # Assert
+    assert np.allclose(secant, expected_secant)

@@ -49,6 +49,9 @@ def create_concrete(
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
+        **kwargs: Other valid keyword arguments that are collected and passed
+            to the specific concrete material. Please inspect the documentation
+            of the other concrete materials to see valid arguments.
 
     Raises:
         ValueError: if the design code is not valid or does not cover concrete

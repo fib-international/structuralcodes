@@ -95,13 +95,13 @@ def _check_initial_stress(sigma: float, fcm: float) -> None:
         raise ValueError(
             'The stress level exceeds the range of application.'
             'Maximum allowable stress is 0.6*fcm. Current stress level '
-            f'is {round(abs(sigma)/fcm, 3)}*fcm.'
+            f'is {round(abs(sigma) / fcm, 3)}*fcm.'
         )
     if abs(sigma) > 0.4 * fcm:
         warnings.warn(
             'Initial stress is too high to consider the '
             'concrete as an aging linear visco-elastic material: '
-            f'sigma = {round(abs(sigma)/fcm,3)}*fcm > 0.4*fcm. Nonlinear'
+            f'sigma = {round(abs(sigma) / fcm, 3)}*fcm > 0.4*fcm. Nonlinear'
             ' creep calculations are performed according to subclause '
             '5.1.9.4.3 (d) of the fib Model Code 2010 to account for '
             'large compressive stresses.'

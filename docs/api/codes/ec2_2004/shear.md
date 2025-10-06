@@ -29,3 +29,7 @@ The following functions are related to calculation of shear capacity with and wi
 ```{eval-rst}
 .. autofunction:: structuralcodes.codes.ec2_2004.Asw_max
 ```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.Asw_s_required
+```

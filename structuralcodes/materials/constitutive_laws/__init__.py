@@ -6,6 +6,7 @@ from ...core.base import ConstitutiveLaw, Material
 from ._bilinearcompression import BilinearCompression
 from ._elastic import Elastic
 from ._elasticplastic import ElasticPlastic
+from ._initial_strain import InitialStrain
 from ._parabolarectangle import ParabolaRectangle
 from ._popovics import Popovics
 from ._sargin import Sargin
@@ -19,6 +20,7 @@ __all__ = [
     'Popovics',
     'Sargin',
     'UserDefined',
+    'InitialStrain',
     'get_constitutive_laws_list',
     'create_constitutive_law',
 ]
@@ -31,6 +33,7 @@ CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'parabolarectangle': ParabolaRectangle,
     'popovics': Popovics,
     'sargin': Sargin,
+    'initialstrain': InitialStrain,
 }
 
 
@@ -61,24 +64,25 @@ def create_constitutive_law(
 
         If the consitutive law selected is not available for the specific
         material, an exception will be raised.
+
+    Raises:
+        ValueError: If the constitutive law is not available for the material.
+        ValueError: If the constitutive law name is unknown.
     """
-    law = None
     const_law = CONSTITUTIVE_LAWS.get(constitutive_law_name.lower())
     if const_law is not None:
         method_name = f'__{constitutive_law_name}__'
         # check if the material object has the special method needed
-        if hasattr(material, method_name):
+        if hasattr(material, method_name) and callable(
+            getattr(material, method_name)
+        ):
             method = getattr(material, method_name)
-            if callable(method):
-                # get the kwargs from the special dunder method
-                kwargs = method()
-                # create the constitutive law
-                law = const_law(**kwargs)
-        else:
-            raise ValueError(
-                f'Constitutive law {constitutive_law_name} not available for'
-                f' material {material.__class__.__name__}'
-            )
-    else:
-        raise ValueError(f'Unknown constitutive law: {constitutive_law_name}')
-    return law
+            # get the kwargs from the special dunder method
+            kwargs = method()
+            # create and return the constitutive law
+            return const_law(**kwargs)
+        raise ValueError(
+            f'Constitutive law {constitutive_law_name} not available for'
+            f' material {material.__class__.__name__}'
+        )
+    raise ValueError(f'Unknown constitutive law: {constitutive_law_name}')

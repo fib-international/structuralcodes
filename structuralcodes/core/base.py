@@ -4,7 +4,6 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import abc
 import typing as t
-import warnings
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -16,41 +15,48 @@ class Material(abc.ABC):
     """Abstract base class for materials."""
 
     _constitutive_law = None
+    _initial_strain: t.Optional[float] = None
+    _initial_stress: t.Optional[float] = None
+    _strain_compatibility: t.Optional[bool] = None
 
-    def __init__(self, density: float, name: t.Optional[str] = None) -> None:
+    def __init__(
+        self,
+        density: float,
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
+        name: t.Optional[str] = None,
+    ) -> None:
         """Initializes an instance of a new material.
 
         Args:
-            density (float): density of the material in kg/m3
+            density (float): Density of the material in kg/m3.
 
         Keyword Args:
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             name (Optional[str]): descriptive name of the material
+
+        Raise:
+            ValueError: if both initial_strain and initial_stress are provided
         """
         self._density = abs(density)
+        if initial_strain is not None and initial_stress is not None:
+            raise ValueError(
+                'Both initial_strain and initial_stress cannot be provided.'
+            )
+        self._initial_strain = initial_strain
+        self._initial_stress = initial_stress
+        self._strain_compatibility = strain_compatibility
         self._name = name if name is not None else 'Material'
 
-    def update_attributes(self, updated_attributes: t.Dict) -> None:
-        """Function for updating the attributes specified in the input
-        dictionary.
-
-        Args:
-            updated_attributes (dict): the dictionary of parameters to be
-                updated (not found parameters are skipped with a warning)
-        """
-        for key, value in updated_attributes.items():
-            if not hasattr(self, '_' + key):
-                str_list_keys = ', '.join(updated_attributes.keys())
-                str_warn = (
-                    f"WARNING: attribute '{key}' not found."
-                    " Ignoring the entry.\n"
-                    f"Used keys in the call: {str_list_keys}"
-                )
-                warnings.warn(str_warn)
-                continue
-            setattr(self, '_' + key, value)
-
     @property
-    def constitutive_law(self):
+    def constitutive_law(self) -> ConstitutiveLaw:
         """Returns the ConstitutiveLaw of the object."""
         return self._constitutive_law
 
@@ -63,6 +69,88 @@ class Material(abc.ABC):
     def density(self):
         """Returns the density of the material in kg/m3."""
         return self._density
+
+    @property
+    def initial_strain(self):
+        """Returns the initial strain of the material."""
+        return self._initial_strain
+
+    @property
+    def initial_stress(self):
+        """Returns the initial stress of the material."""
+        return self._initial_stress
+
+    @property
+    def strain_compatibility(self):
+        """Returns the strain compatibility of the material.
+
+        If true (default), the strain compatibility is enforced
+        haveing the same strain as in all other materials of the
+        section at the same point. If false, the strain compatibility
+        is not enforced and the initial strain is applied to the section
+        independently.
+        """
+        return self._strain_compatibility
+
+    def _apply_initial_strain(self):
+        """Wraps the current constitutive law to apply initial strain."""
+        strain_compatibility = (
+            self._strain_compatibility
+            if self._strain_compatibility is not None
+            else True
+        )
+        if self._initial_stress is not None:
+            # Specified a stress, compute the strain from it
+            self._initial_strain_from_stress()
+        if self._initial_strain is not None:
+            # Lazy import to avoid circular dependency
+            from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
+                InitialStrain,
+            )
+
+            if self._initial_stress is None:
+                # Compute the stress from the strain
+                self._initial_stress = self._constitutive_law.get_stress(
+                    self._initial_strain
+                )
+
+            self._constitutive_law = InitialStrain(
+                self._constitutive_law,
+                self._initial_strain,
+                strain_compatibility,
+            )
+
+    def _initial_strain_from_stress(self):
+        """Computes the initial strain from the initial stress.
+
+        This function is called internally so it assumes that the
+        initial stress is not None
+        """
+        # Iteratively compute the initial strain that gives the desired
+        # initial stress. Note that the wrapped law can be nonlinear
+        tol = 1e-12
+        max_iter = 100
+        target_stress = self._initial_stress
+        strain = 0.0
+        stress = self._constitutive_law.get_stress(strain)
+        d_stress = target_stress - stress
+        num_iter = 0
+        while abs(d_stress) > tol and num_iter < max_iter:
+            tangent = self._constitutive_law.get_tangent(strain)
+            if tangent == 0:
+                raise ValueError(
+                    'Tangent modulus = 0 during initial strain computation.'
+                )
+            d_strain = d_stress / tangent
+            strain += d_strain
+            stress = self._constitutive_law.get_stress(strain)
+            d_stress = target_stress - stress
+            num_iter += 1
+
+        if abs(d_stress) > tol:
+            raise RuntimeError('Failed to converge for given initial stress.')
+
+        self._initial_strain = strain
 
 
 class ConstitutiveLaw(abc.ABC):
@@ -171,7 +259,9 @@ class ConstitutiveLaw(abc.ABC):
 
         eps = np.concatenate((eps_neg, eps_pos))
         sig = self.get_stress(eps)
-        from structuralcodes.materials.constitutive_laws import UserDefined
+        from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
+            UserDefined,
+        )
 
         return UserDefined(eps, sig)
 
@@ -197,14 +287,29 @@ class ConstitutiveLaw(abc.ABC):
         piecewise_law = self._discretize_law()
         return piecewise_law.__marin_tangent__(**kwargs)
 
-    def get_secant(self, eps: float) -> float:
-        """Method to return the
-        secant at a given strain level.
-        """
-        if eps != 0:
-            sig = self.get_stress(eps)
-            return sig / eps
-        return self.get_tangent(eps)
+    def get_secant(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
+        """Method to return the secant at a given strain level."""
+        # Adjust eps if it is not scalar
+        eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+
+        # Calculate secant for scalar eps
+        if np.isscalar(eps):
+            if eps != 0:
+                sig = self.get_stress(eps)
+                return sig / eps
+            return self.get_tangent(eps)
+
+        # Calculate secant for array eps
+        secant = np.zeros_like(eps)
+        strain_is_zero = eps == 0
+        strain_is_nonzero = eps != 0
+        secant[strain_is_zero] = self.get_tangent(eps[strain_is_zero])
+        secant[strain_is_nonzero] = (
+            self.get_stress(eps[strain_is_nonzero]) / eps[strain_is_nonzero]
+        )
+        return secant
 
 
 class Section(abc.ABC):

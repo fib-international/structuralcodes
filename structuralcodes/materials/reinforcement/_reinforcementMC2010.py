@@ -4,6 +4,7 @@ import typing as t
 
 from structuralcodes.codes import mc2010
 
+from ..constitutive_laws import ConstitutiveLaw, create_constitutive_law
 from ._reinforcement import Reinforcement
 
 
@@ -20,6 +21,19 @@ class ReinforcementMC2010(Reinforcement):
         gamma_eps: t.Optional[float] = None,
         name: t.Optional[str] = None,
         density: float = 7850.0,
+        constitutive_law: t.Optional[
+            t.Union[
+                t.Literal[
+                    'elastic',
+                    'elasticperfectlyplastic',
+                    'elasticplastic',
+                ],
+                ConstitutiveLaw,
+            ]
+        ] = 'elasticplastic',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ):
         """Initializes a new instance of Reinforcement for MC2010.
 
@@ -33,12 +47,32 @@ class ReinforcementMC2010(Reinforcement):
                 Default value is 1.15.
 
         Keyword Args:
+            gamma_eps (float): The partial factor for ultimate strain. Default
+                value is 0.9.
             name (str): A descriptive name for the reinforcement.
             density (float): Density of material in kg/m3 (default: 7850).
+            constitutive_law (ConstitutiveLaw | str): A valid ConstitutiveLaw
+                object for reinforcement or a string defining a valid
+                constitutive law type for reinforcement. (valid options for
+                string: 'elastic', 'elasticplastic', or
+                'elasticperfectlyplastic').
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
+
+        Raises:
+            ValueError: If the constitutive law name is not available for the
+                material.
+            ValueError: If the provided constitutive law is not valid for
+                reinforcement.
         """
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
-        self._gamma_eps = gamma_eps
+
         super().__init__(
             fyk=fyk,
             Es=Es,
@@ -47,7 +81,23 @@ class ReinforcementMC2010(Reinforcement):
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
+        self._gamma_eps = gamma_eps
+        self._constitutive_law = (
+            constitutive_law
+            if isinstance(constitutive_law, ConstitutiveLaw)
+            else create_constitutive_law(
+                constitutive_law_name=constitutive_law, material=self
+            )
+        )
+        if 'steel' not in self._constitutive_law.__materials__:
+            raise ValueError(
+                'The provided constitutive law is not valid for reinforcement.'
+            )
+        self._apply_initial_strain()
 
     def fyd(self) -> float:
         """The design yield strength."""
@@ -89,7 +139,7 @@ class ReinforcementMC2010(Reinforcement):
         """Returns kwargs for ElasticPlastic constitutive law with strain
         hardening.
         """
-        Eh = (self.ftd() - self.fyd()) / (self.epsuk - self.epsyd)
+        Eh = (self.ftd() - self.fyd()) / (self.epsud() - self.epsyd)
         return {
             'E': self.Es,
             'fy': self.fyd(),
