@@ -770,6 +770,7 @@ class GenericSectionCalculator(SectionCalculator):
         res.eps_a = strain[0]
         res.m_y = M[0, 0]
         res.m_z = M[1, 0]
+        res.section = self.section
 
         return res
 
@@ -812,6 +813,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Create an empty response object
         res = s_res.MomentCurvatureResults()
+        res.section = self.section
         res.n = n
         # Rotate the section of angle theta
         rotated_geom = self.section.geometry.rotate(-theta)
