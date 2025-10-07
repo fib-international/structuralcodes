@@ -14,6 +14,7 @@ from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
 from structuralcodes.core.base import Section, SectionCalculator
+from structuralcodes.core.errors import NoConvergenceWarning
 from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
@@ -1474,6 +1475,12 @@ class GenericSectionCalculator(SectionCalculator):
                 break
 
         if num_iter >= max_iter:
-            raise StopIteration('Maximum number of iterations reached.')
+            warnings.warn(
+                message=(
+                    'Maximum number of iterations reached. '
+                    'Please review the strain profile carefully.'
+                ),
+                category=NoConvergenceWarning,
+            )
 
         return strain.tolist()
