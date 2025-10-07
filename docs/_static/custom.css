@@ -1,0 +1,13 @@
+/* Custom CSS for StructuralCodes documentation */
+
+/* Style for caption text - make it smaller and italic */
+.caption-text {
+    font-size: 0.85em;
+    font-style: italic;
+    color: #666;
+}
+
+/* Optional: Add some spacing above captions for better visual separation */
+.caption {
+    margin-top: 0.5em;
+}

@@ -59,6 +59,9 @@ sd_custom_directives = {
 html_title = project
 html_theme = 'furo'
 html_static_path = ['_static']
+html_css_files = [
+    'custom.css',
+]
 html_theme_options = {
     'footer_icons': [
         {

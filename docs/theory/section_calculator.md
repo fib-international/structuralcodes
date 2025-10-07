@@ -37,7 +37,7 @@ Rotated Coordinate system to be used for computing uniaxial bending with bottom 
 According to classic RC theory, the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).
 
 (theory-fig-deformation-domain)=
-:::{figure} Figure_DeformationDomain.png
+:::{figure} Figure_DeformationDomain.jpg
 
 Ultimate deformation domains for uniaxial bending with or without axial force.
 :::
