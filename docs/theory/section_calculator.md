@@ -58,7 +58,7 @@ The algorithm developed can be summarized as follows:
 Bisection algorithm for finding the strain plain that is in equilibrium with extenal axial force.
 :::
 
-4. **Final Computation of Bending Strength**: once the equilibrium strain profile is found, the bending strength is calculated by integrating the obtained strain profile. This results in the final bending strength in the rotated coordinate system, which is then transformed back to the original coordinate system.
+4. **Final Computation of Bending Strength**: once the equilibrium strain profile is found, the bending strength is calculated by integrating the obtained strain profile. This results in the final bending strength in the rotated coordinate system described in step 1, which is then transformed back to the original coordinate system.
 
 ## Compute Moment-curvature relation
 
