@@ -81,6 +81,12 @@ html_theme_options = {
     'source_branch': 'main',
     'source_directory': 'docs/',
     'sidebar_hide_name': False,
+    'light_css_variables': {
+        'color-caption-text': '#666666',
+    },
+    'dark_css_variables': {
+        'color-caption-text': '#A1A1A1',
+    },
 }
 
 # Options for intersphinx

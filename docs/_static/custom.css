@@ -4,7 +4,7 @@
 .caption-text {
     font-size: 0.85em;
     font-style: italic;
-    color: #666;
+    color: var(--color-caption-text);
 }
 
 /* Optional: Add some spacing above captions for better visual separation */
