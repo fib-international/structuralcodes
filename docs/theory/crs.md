@@ -1,3 +1,4 @@
+(theory-crs-sign-convention)=
 # Coordinate system and sign convention
 
 ## Coordinate system
