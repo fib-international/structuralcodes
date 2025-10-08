@@ -1,3 +1,4 @@
+(theory-section-calculator)=
 # Section calculator
 
 
