@@ -111,7 +111,7 @@ The function $\Delta N(\varepsilon_0)$ during $i$-th step of moment-curvatura co
 Then, the usual bisection algorithm is adopted to find the value $\varepsilon_0$ for which $\Delta N(\varepsilon_0) = N_{ext} - N_{int}(\varepsilon_0)$ is sufficiently near to 0.
 
 (theory-nm-domain)=
-# Compute NM interaction domain
+## Compute NM interaction domain
 
 With this algorithm, *structuralcodes* computes the two dimensional $N$-$M_y^*$ representing uniaxial bending respect to the rotated reference system *$y^*z^*$*.
 
@@ -137,7 +137,7 @@ Animation of ultimate strain profiles for uniaxial bending and corresponding int
 4. **Rotate back to original $yz$ coordinate system**: the pair of values $(N, M_y^*)$ is rotated back obtaining the triplet $(N, M_y, M_z)$
 
 (theory-nmm-domain)=
-# Compute MNN interaction domain
+## Compute MNN interaction domain
 
 with this algorithm, *structuralcodes* computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
 
@@ -151,7 +151,7 @@ The final result is represented by the data structure collecting for all points 
 Left: ultimate domain NMM. Right: corresponding points in terms of N, $\chi_y$, $\chi_z$.
 :::
 
-# Compute MM interaction domain
+## Compute MM interaction domain
 
 With this algorithm, *structuralcodes* computes the two dimensional $M_y$, $M_z$ interaction domain for a given value of external axial load  $N$.
 
@@ -184,8 +184,7 @@ Ultimate domain NMM obtained as a set of slices computed as MM interaction domai
 :::
 :::::
 
-
-# Compute plane strain for given external forces
+## Compute plane strain for given external forces
 
 With this algorithm, *structuralcodes*  computes the strain profile (represented by the triplet of values $\varepsilon_0$, $\chi_y$, $\chi_z$ that are respectivelly the axial strain corresponding to point $(0,0)$, and the curvatures respect axes $y$ and $z$) for a given set of external forces $N_{ext}$, $M_{y,ext}$, $M_{z,ext}$, with an iterative solution algorithm based on Newton-Rhapson method.
 
