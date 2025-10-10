@@ -489,9 +489,14 @@ M_z &= - \int_A y \sigma(z) \, dA  \approx - \sum_{i=1}^{N_{fibers}} y A_i \sigm
 \end{aligned}
 :::
 
-where $\varepsilon_i$ is determined using equation {eq}`eq:marin-linear-strain`.
+where $\varepsilon_i$ is determined using equation {eq}`eq:marin-linear-strain` for each fiber:
+
+:::{math}
+:laebl: eq:fiber_strain_fibers
+\varepsilon_i (y_i, z_i) = \varepsilon_0 + \chi_y \cdot z_i - \chi_z \dot y_i
+:::
 
 :::{note}
 The triangulation is optimized in order to be executed only the first time a calculation on the section is performed. All fibers information (position $y_i$, $z_i$ and area $A_i$) are stored in numpy arrays. 
-Therefore the application of {eq}`eq:marin-linear-strain` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in *structuralcodes*.
+Therefore the application of {eq}`eq:eq:fiber_strain_fibers` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in *structuralcodes*.
 :::
