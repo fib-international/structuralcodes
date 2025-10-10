@@ -83,7 +83,6 @@ P(y,z) = \sigma(z) = \sum_{n=0}^N a_n z^n = a_0 + a_1 z + a_2 z^2 + \ldots + a_N
 
 In this case the internal forces $N$, $M_y$, $M_z$ can be written as:
 
-<span style="background-color:yellow; color:red">**Note**: check signs! </span>
 :::{math}
 :label: eq:marin_stress_integration
 \begin{aligned}
@@ -110,9 +109,21 @@ Rotation of reference system for having uniaxial bending.
 
 ::::
 
-The coeficcients $a_n$ are dependent on the stress function $\sigma(z)$, therefore they depend on the constitutive law $\sigma(\varepsilon)$. For this reason, each constitutive law that is used with marin integration, must implement a special `__marin__` method that returns the coefficients $a_n$.
+The coeficcients $a_n$ are dependent on the stress function $\sigma(z)$, therefore they depend on the constitutive law $\sigma(\varepsilon)$. For this reason, each constitutive law that is used with Marin integration, must implement a special `__marin__` method that returns the coefficients $a_n$ for each polynomial branch that defines the constitutive law.
+
+In determination of stiffness matrix, we need to integrate the tangent modulus over the cross-section. In this case we are integrating the function $\sigma'$, where $\cdot'$ indicates the derivative (i.e. the tangent modulus).
 
 The determination of the coefficients for the constitutive laws implemented in *structuralcodes* is reported in the following subsections.
+
+:::{note}
+This means that if you write your custom constitutive law you must calculate the Marin coefficients for that law?
+
+Don't worry, we have done some work for you! Every material has a base version of `__marin__` method, so you don't have to implement it mandatorily. Keep in mind that the free `__marin__` method works under a very simple idea: we linearize in several branches your law, obtaining a discretize piecewise constitutive law. For this discretized law we have the coefficients computed for the piece-wise linear law described [below](theory-marin-userdefined-law).
+
+If your law can be represented (At least in branches) as polynomial functions it is way more efficient writing your custom `__marin__` method since the integrator will split the polygon into as few as possible sub-polygons to perform the intergration.
+
+So it is up to you! You can avoid bothering calculating and implementing Marin coefficients for stress and stiffness, but you can (and probably should) do it if you can optimize the calculation speed and if your constitutive law permits it.
+:::
 
 ### Linear elastic material
 
@@ -137,31 +148,350 @@ The stress function is easily obtained substituting {eq}`eq:marin-linear-strain`
 \sigma(z) = E \left( \varepsilon_0 + \chi_y \cdot z \right)
 :::
 
-Therefore the marin coefficients $a_n$ for linear elastic material are:
+Therefore the Marin coefficients $a_n$ for linear elastic material are:
 
 :::{math}
 :label: eq:marin-linear-coefficients
 \begin{aligned}
 a_0 &= E \cdot \varepsilon_0 \\
-a_1 &= E \cdot \chi_z
+a_1 &= E \cdot \chi_y
 \end{aligned}
 :::
 
-### Elastic - plastic material
-
-The constitutive law of an elastic plastic material with hardening can be written as:
+The stiffness is simply $E$. Therefore:
 
 :::{math}
-:label: eq:marin-ep-constitutive
+:label: eq:marin-linear-stiffness-function
+\sigma'(z) = E
 :::
 
-In this case, the constitutive law can be expressed as two polynomial branches (each of degree 1): one for the elastic part and the other for the plastic part.
+And the only Marin coefficient is:
+
+:::{math}
+:label: eq:marin-linear-coefficients-stiffness
+a_0 = E 
+:::
+
+### Elastic-plastic material
+
+The constitutive law of an elastic plastic material with linear hardening is represented as in the figure [below](figure-theory-marin-ep-constitutive). 
+
+(figure-theory-marin-ep-constitutive)=
+:::{figure} Figure_const_ep.png
+
+Elastic plastic with linear hardening law
+:::
+
+In this case, the constitutive law cannot be expressed as a whole with a single polynomial function, but looking at the picture [above](figure-theory-marin-ep-constitutive) we can recognize 5 different portions, each one representing a different polynomial function. The constitutive law can then be written for the four branches as:
+
+:::{math}
+:label: eq:const-law-ep
+
+\sigma(\varepsilon) =
+\begin{cases}
+0 & \text{for } \varepsilon < -\varepsilon_u \\
+E_h \cdot \varepsilon - \Delta \sigma & \text{for } -\varepsilon_u \le \varepsilon < \varepsilon_y \\
+E \cdot \varepsilon & \text{for } -\varepsilon_y \le \varepsilon < \varepsilon_y \\
+E_h \cdot \varepsilon + \Delta \sigma & \text{for } \varepsilon_y \le \varepsilon < \varepsilon_u \\
+0 & \text{for } \varepsilon > \varepsilon_u
+\end{cases} 
+:::
+
+where $E_h$ is the hardening modulus (i.e. the slope of the hardning branch) and $\Delta \sigma = f_y \cdot \left(1 - \dfrac{E_h}{E}\right)$.
+
+Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-ep`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
+
+:::{list-table}
+:header-rows: 1
 
 
+* - Branch name
+  - Strain range
+  - $a_0$
+  - $a_1$
+* - Elastic portion
+  - $-\varepsilon_y < \varepsilon \le \varepsilon_y$
+  - $E \cdot \varepsilon_0$
+  - $E \cdot \chi_y$
+* - Hardening (positive)
+  - $\varepsilon_y < \varepsilon \le \varepsilon_u$
+  - $E_h \cdot \varepsilon_0 + \Delta \sigma$
+  - $E_h \cdot \chi_y$
+* - Hardening (negative)
+  - $-\varepsilon_u < \varepsilon \le -\varepsilon_y$
+  - $E_h \cdot \varepsilon_0 - \Delta \sigma$
+  - $E_h \cdot \chi_y$
+* - Zero
+  - otherwise
+  - 0.0
+  - n.a.
+:::
 
+The `__marin__` method return the coefficients reported in the table above and the strain limits for each portion.
+
+Then the integrator discretizes the polygon cutting it into the portions needed (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed.
+
+The tangent stiffness can be represented by the following equation:
+
+:::{math}
+:label: eq:const-law-ep-stiffness
+
+\sigma'(\varepsilon) =
+\begin{cases}
+0 & \text{for } \varepsilon < -\varepsilon_u \\
+E_h  & \text{for } -\varepsilon_u \le \varepsilon < \varepsilon_y \\
+E  & \text{for } -\varepsilon_y \le \varepsilon < \varepsilon_y \\
+E_h  & \text{for } \varepsilon_y \le \varepsilon < \varepsilon_u \\
+0 & \text{for } \varepsilon > \varepsilon_u
+\end{cases} 
+:::
+
+Therefore the marin coefficients for stiffness function are:
+
+:::{list-table}
+:header-rows: 1
+
+* - Branch name
+  - Strain range
+  - $a_0$
+* - Elastic portion
+  - $-\varepsilon_y < \varepsilon \le \varepsilon_y$
+  - $E$
+* - Hardening (positive)
+  - $\varepsilon_y < \varepsilon \le \varepsilon_u$
+  - $E_h$
+* - Hardening (negative)
+  - $-\varepsilon_u < \varepsilon \le -\varepsilon_y$
+  - $E_h$
+* - Zero
+  - otherwise
+  - 0.0
+:::
+
+### Bilinear compression
+
+The bilinear compression is characterized by no strength in tension and a linear behavior in compression up to $\varepsilon_{c0}$ and then a constant stress equal to $f_c$ (negative). After $\varepsilon_{cu}$, the stress drops to 0.
+
+The constitutive law can be written in the following branches:
+
+:::{math}
+:label: eq:const-law-bilin-compr
+
+\sigma(\varepsilon) =
+\begin{cases}
+0 & \text{for } \varepsilon \ge 0 \\
+E \cdot \varepsilon & \text{for } \varepsilon_{c0} \le \varepsilon < 0 \\
+f_c & \text{for } \varepsilon_{cu} \le \varepsilon < \varepsilon_{c0} \\
+0 & \text{for } \varepsilon < \varepsilon_{cu}
+\end{cases} 
+:::
+
+Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-bilin-compr`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
+
+:::{list-table}
+:header-rows: 1
+
+
+* - Branch name
+  - Strain range
+  - $a_0$
+  - $a_1$
+* - Elastic portion
+  - $\varepsilon_{c0} \le \varepsilon < 0$
+  - $E \cdot \varepsilon_0$
+  - $E \cdot \chi_y$
+* - Constant portion
+  - $\varepsilon_{cu} \le \varepsilon < \varepsilon_{c0}$
+  - $f_c$
+  - n.a.
+* - Zero
+  - otherwise
+  - 0.0
+  - n.a.
+:::
+
+The Marin coefficients for each branch for stiffness function are reported in the following table.
+
+:::{list-table}
+:header-rows: 1
+
+
+* - Branch name
+  - Strain range
+  - $a_0$
+* - Elastic portion
+  - $\varepsilon_{c0} \le \varepsilon < 0$
+  - $E$
+* - Constant portion
+  - $\varepsilon_{cu} \le \varepsilon < \varepsilon_{c0}$
+  - 0.0
+* - Zero
+  - otherwise
+  - 0.0
+:::
+
+### Parabola rectangle
+
+The parabola rectangle law, typically used for concrete, cannot be written as a whole with a polynomial law. Despite that, looking at the constitutive law plotted in the figure [below](figure-theory-marin-paraborect-constitutive), we can recognize a portion for the parabolic branch, a portion for the constant part and finally a portion for zero stress (both in tension and for excessive compression)
+
+
+(figure-theory-marin-paraborect-constitutive)=
+:::{figure} Figure_const_parabolarectangle.png
+
+Parabola rectangle law
+:::
+
+The constitutive law can therefore be written as:
+
+:::{math}
+:label: eq:const-law-paraborect
+
+\sigma(\varepsilon) =
+\begin{cases}
+0 & \text{for } \varepsilon < \varepsilon_{cu} \\
+f_c & \text{for } \varepsilon_{cu} \le \varepsilon < \varepsilon_{c0} \\
+f_c \left[ 1 - \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}} \right) ^2 \right] & \text{for } \varepsilon_{c0} \le \varepsilon < 0 \\
+0, & \text{for } \varepsilon > 0 \\
+\end{cases} 
+:::
+
+Substituting  {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-paraborect` the Marin coefficients for each branch can be determined. They are reported in the following table.
+
+:::{list-table}
+:header-rows: 1
+
+
+* - Branch name
+  - Strain range
+  - $a_0$
+  - $a_1$
+  - $a_2$
+* - Parabolic portion
+  - $\varepsilon_{c0} \le \varepsilon < 0$
+  - $\dfrac{f_c \varepsilon_{0}}{\varepsilon_{c0}}  \left( 2 - \dfrac{\varepsilon_0}{\varepsilon_{c0}} \right)$
+  - $\dfrac{2 f_c \chi_y}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}} \right)$
+  - $- \dfrac{f_c \chi_y^2}{\varepsilon_{c0}}$
+* - Constant portion
+  - $\varepsilon_{cu} \le \varepsilon < \varepsilon_{c0}$
+  - $f_c$
+  - n.a.
+  - n.a.
+* - Zero
+  - otherwise
+  - 0.0
+  - n.a.
+  - n.a.
+:::
+
+The `__marin__` method return the coefficients reported in the table above and the strain limits for each portion.
+
+Then the integrator discretizes the polygon cutting it into the portions needed (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed.
+
+If the function to be integrated over the cross-section is the stiffness, represented by the following function (only corresponding to the parabolic portion, being 0 elsewhere):
+
+:::{math}
+:label: eq:const-law-paraborect-stiffness
+
+\sigma'(\varepsilon) = \dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}}\right)
+:::
+
+one can write the stiffness as a function of $z$:
+
+:::{math}
+:label: eq:const-law-paraborect-stiffness-fun
+
+\sigma'(z) = \dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}}\right) - \dfrac{2 f_c}{\varepsilon_{c0}} \dfrac{\chi_y}{\varepsilon_{c0}} \cdot z
+:::
+
+The marin coefficients for stiffness function integration are therefore:
+
+:::{list-table}
+:header-rows: 1
+
+
+* - Branch name
+  - Strain range
+  - $a_0$
+  - $a_1$
+* - Parabolic portion
+  - $\varepsilon_{c0} \le \varepsilon < 0$
+  - $\dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}}\right)$
+  - $- \dfrac{2 f_c}{\varepsilon_{c0}} \dfrac{\chi_y}{\varepsilon_{c0}}$
+* - Zero
+  - otherwise
+  - 0.0
+  - n.a.
+:::
+
+(theory-marin-userdefined-law)=
+### UserDefined constitutive law
+
+A `UserDefined` constitutive law (see [api documentation]()) permits the user to input any custom law discretizing it in a piecewise linear function.
+
+In this case, for each branch, the `__marin__` function return the coefficients $a_0$, $a_1$ and the strain limits for the branch.
+
+Then the integrator discretizes the polygon cutting it into how many portions needed for the several branches(depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed
+
+For each $i$-th branch, the constitutive law can be written as:
+
+:::{math}
+:label: eq:marin-piecewise-linear-constitutive
+\sigma(\varepsilon) = \sigma_{i-1} + \dfrac{\sigma_i - \sigma_{i-1}}{\varepsilon_i - \varepsilon_{i-1}} {\varepsilon - \varepsilon_{i-1}}
+:::
+
+And substituting {eq}`eq:marin-linear-strain` in {eq}`eq:marin-piecewise-linear-constitutive`, the stress function can be written as:
+
+:::{math}
+:label: eq:marin-piecewise-linear-stress-function
+
+\begin{aligned}
+\sigma(z) &= \sigma_{i-1} + \dfrac{\sigma_i - \sigma_{i-1}}{\varepsilon_i - \varepsilon_{i-1}} {\varepsilon_0 + \chi_y \cdot z - \varepsilon_{i-1}} \\
+&= \sigma_{i-1} + K_i \left( \varepsilon_0 + \chi_y \cdot z - \varepsilon_{i-1} \right)
+\end{aligned}
+:::
+
+Having introduced the symbol $K_i$ for the stiffness of the $i$-th branch.
+
+Therefore the Marin coefficients $a_n$ for each branch of a piecewise-linear elastic material are:
+
+:::{math}
+:label: eq:marin-piecewise-linear-coefficients
+\begin{aligned}
+a_0 &= \sigma_{i-1} + K_i \left( \varepsilon_0 - \varepsilon_i-1 \right) \\
+a_1 &= K_i \cdot \chi_y
+\end{aligned}
+:::
+
+The Marin coefficient for stiffness function integration for each branch of a piecewise-linear elastic material is:
+
+:::{math}
+:label: eq:marin-piecewise-linear-coefficients-stiffness
+a_0 = K_i
+:::
 
 [^marin1984]: Marín, J. Computing columns, footings and gates through moments of area, Computers & Structures, 18(2), 343-349, 1984.
+
 
 (theory-fiber-integrator)=
 ## Fiber integrator
 Uses a discretized approach where the section is divided into fibers, each representing a material point. This discretization is performed by a triangulation of the geometry.
+Each fiber is defined as the centre point of each triangle and is characterized by its competence area.
+
+According to this integration, the integrals over the cross section are simply sums for all fibers. For instance, internal forces are determined as:
+
+
+:::{math}
+:label: eq:fiber_stress_integration
+\begin{aligned}
+N &= \int_A \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} A_i \sigma (\varepsilon_i) \\
+M_y &= \int_A z \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} z A_i \sigma (\varepsilon_i)\\
+M_z &= - \int_A y \sigma(z) \, dA  \approx - \sum_{i=1}^{N_{fibers}} y A_i \sigma (\varepsilon_i)
+\end{aligned}
+:::
+
+where $\varepsilon_i$ is determined using equation {eq}`eq:marin-linear-strain`.
+
+:::{note}
+The triangulation is optimized in order to be executed only the first time a calculation on the section is performed. All fibers information (position $y_i$, $z_i$ and area $A_i$) are stored in numpy arrays. 
+Therefore the application of {eq}`eq:marin-linear-strain` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in *structuralcodes*.
+:::
