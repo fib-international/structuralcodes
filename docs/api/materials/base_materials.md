@@ -1,6 +1,7 @@
 (api-base-materials)=
 # Base material classes
 
+(api-base-material-class)=
 ## Base material class
 
 ```{eval-rst}
