@@ -19,7 +19,12 @@ class Elastic(ConstitutiveLaw):
         'rebars',
     )
 
-    def __init__(self, E: float, name: t.Optional[str] = None) -> None:
+    def __init__(
+        self,
+        E: float,
+        name: t.Optional[str] = None,
+        eps_u: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
+    ) -> None:
         """Initialize an Elastic Material.
 
         Arguments:
@@ -27,11 +32,20 @@ class Elastic(ConstitutiveLaw):
 
         Keyword Arguments:
             name (str): A descriptive name for the constitutive law.
+            eps_u (float or (float, float)): Defining ultimate strain. If a
+                single value is provided the same is adopted for both negative
+                and positive strains. If a tuple is provided, it should be
+                given as (negative, positive). Default value = None.
         """
         name = name if name is not None else 'ElasticLaw'
         super().__init__(name=name)
         self._E = E
-        self._eps_su = None
+        if E <= 0:
+            raise ValueError('Elastic modulus should be greater than 0')
+        if eps_u is not None:
+            self._set_ultimate_strain(eps_u)
+        else:
+            self._eps_u = None
 
     def get_stress(
         self, eps: t.Union[float, ArrayLike]
@@ -91,12 +105,12 @@ class Elastic(ConstitutiveLaw):
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         # There is no real strain limit, so set it to very large values
-        # unlesse specified by the user differently
+        # unless specified by the user differently
         del kwargs
-        return self._eps_su or (-100, 100)
+        return self._eps_u or (-100, 100)
 
-    def set_ultimate_strain(
-        self, eps_su=t.Union[float, t.Tuple[float, float]]
+    def _set_ultimate_strain(
+        self, eps_u=t.Union[float, t.Tuple[float, float]]
     ) -> None:
         """Set ultimate strains for Elastic Material if needed.
 
@@ -106,26 +120,26 @@ class Elastic(ConstitutiveLaw):
                 and positive strains. If a tuple is provided, it should be
                 given as (negative, positive).
         """
-        if isinstance(eps_su, float):
-            self._eps_su = (-abs(eps_su), abs(eps_su))
-        elif isinstance(eps_su, tuple):
-            if len(eps_su) < 2:
+        if isinstance(eps_u, float):
+            self._eps_u = (-abs(eps_u), abs(eps_u))
+        elif isinstance(eps_u, tuple):
+            if len(eps_u) < 2:
                 raise ValueError(
                     'Two values need to be provided when setting the tuple'
                 )
-            eps_su_n = eps_su[0]
-            eps_su_p = eps_su[1]
-            if eps_su_p < eps_su_n:
-                eps_su_p, eps_su_n = eps_su_n, eps_su_p
-            if eps_su_p < 0:
+            eps_u_n = eps_u[0]
+            eps_u_p = eps_u[1]
+            if eps_u_p < eps_u_n:
+                eps_u_p, eps_u_n = eps_u_n, eps_u_p
+            if eps_u_p < 0:
                 raise ValueError(
                     'Positive ultimate strain should be non-negative'
                 )
-            if eps_su_n > 0:
+            if eps_u_n > 0:
                 raise ValueError(
                     'Negative utimate strain should be non-positive'
                 )
-            self._eps_su = (eps_su_n, eps_su_p)
+            self._eps_u = (eps_u_n, eps_u_p)
         else:
             raise ValueError(
                 'set_ultimate_strain requires a single value or a tuple \
