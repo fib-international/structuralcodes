@@ -45,8 +45,7 @@ def test_elastic_floats(E, strain, expected):
 )
 def test_elastic_set_ultimate_strain_float(E, eps_su):
     """Test elastic material set ultimate strain with a float."""
-    material = Elastic(E)
-    material.set_ultimate_strain(eps_su)
+    material = Elastic(E, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
     assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
@@ -61,8 +60,7 @@ def test_elastic_set_ultimate_strain_float(E, eps_su):
 )
 def test_elastic_set_ultimate_strain_tuple(E, eps_su):
     """Test elastic material set ultimate strain with a tuple."""
-    material = Elastic(E)
-    material.set_ultimate_strain(eps_su=eps_su)
+    material = Elastic(E, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
     assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
@@ -79,9 +77,8 @@ def test_elastic_set_ultimate_strain_tuple(E, eps_su):
 )
 def test_elastic_set_ultimate_strain_tuple_error(E, eps_su):
     """Test elastic material set ultimate strain raise error."""
-    material = Elastic(E)
     with pytest.raises(ValueError):
-        material.set_ultimate_strain(eps_su)
+        Elastic(E, eps_u=eps_su)
 
 
 def test_elastic_numpy():
@@ -300,8 +297,7 @@ def test_userdefined_set_ultimate_strain_float(E, fy, eps_su):
     """Test UserDefined material set ultimate strain with a float."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
-    material.set_ultimate_strain(eps_su)
+    material = UserDefined(x=x, y=y, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
     assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
@@ -318,8 +314,7 @@ def test_userdefined_set_ultimate_strain_tuple(E, fy, eps_su):
     """Test UserDefined material set ultimate strain with a tuple."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
-    material.set_ultimate_strain(eps_su=eps_su)
+    material = UserDefined(x=x, y=y, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
     assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
@@ -338,9 +333,8 @@ def test_userdefined_set_ultimate_strain_tuple_error(E, fy, eps_su):
     """Test UserDefined material set ultimate strain raise error."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
     with pytest.raises(ValueError):
-        material.set_ultimate_strain(eps_su)
+        UserDefined(x=x, y=y, eps_u=eps_su)
 
 
 @pytest.mark.parametrize(
