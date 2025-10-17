@@ -370,9 +370,14 @@ class GenericSectionCalculator(SectionCalculator):
         return (y_n, y_p, strain)
 
     def find_equilibrium_fixed_pivot(
-        self, geom: CompoundGeometry, n: float, yielding: bool = False
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        yielding: bool = False,
+        max_iter: int = 100,
+        tol: float = 1e-2,
     ) -> t.List[float]:
-        """Find the equilibrium changing curvature fixed a pivot.
+        r"""Find the equilibrium changing curvature fixed a pivot.
         The algorithm uses bisection algorithm between curvature
         of balanced failure and 0. Selected the pivot point as
         the top or the bottom one, the neutral axis is lowered or
@@ -382,15 +387,19 @@ class GenericSectionCalculator(SectionCalculator):
             geom (CompoundGeometry): A geometry in the rotated reference
                 system.
             n (float): Value of external axial force needed to be equilibrated.
-            yielding (bool): ...
+            yielding (bool): If true, the yielding strain is used as the
+                ultimate one, therefore finding yielding strength and not
+                ultimate strength
+            max_iter (int): the maximum number of iterations in the iterative
+                process (default = 100).
+            tol (float): the tolerance for convergence test in terms of
+                $\deltaN_a - \deltaN_b$ (default = 1e-2).
 
         Returns:
             List(float): 3 floats: Axial strain at (0,0), and curvatures of y*
             and z* axes. Note that being uniaxial bending,
             curvature along z* is 0.0.
         """
-        # Number of maximum iteration for the bisection algorithm
-        ITMAX = 100
         # 1. Start with a balanced failure: this is found from all ultimate
         # strains for all materials, checking the minimum curvature value
         y_n, y_p, strain = self.get_balanced_failure_strain(geom, yielding)
@@ -431,7 +440,7 @@ class GenericSectionCalculator(SectionCalculator):
         )
         dn_b = n_int - n
         it = 0
-        while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
+        while (abs(dn_a - dn_b) > tol) and (it < max_iter):
             chi_c = (chi_a + chi_b) / 2.0
             eps_0 = strain_pivot - chi_c * pivot
             (
@@ -450,9 +459,14 @@ class GenericSectionCalculator(SectionCalculator):
                 chi_a = chi_c
                 dn_a = dn_c
             it += 1
-        if it >= ITMAX:
-            s = f'Last iteration reached a unbalance of {dn_c}'
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+        if it >= max_iter:
+            msg = 'GenericSectionCalculator::find_equilibrium_fixed_pivot\n\t'
+            msg += 'Maximum number of iterations reached.\n\t'
+            msg += f'Last iteration reached a unbalance of {dn_c}'
+            warnings.warn(
+                message=msg,
+                category=NoConvergenceWarning,
+            )
         # Found equilibrium
         # Return the strain distribution
         return [eps_0, chi_c, 0]
@@ -464,6 +478,8 @@ class GenericSectionCalculator(SectionCalculator):
         curv: float,
         eps_0_a: float,
         dn_a: float,
+        max_iter: int = 20,
+        max_restart_attemps: int = 20,
     ):
         """Perfind range where the curvature equilibrium is located.
 
@@ -471,8 +487,6 @@ class GenericSectionCalculator(SectionCalculator):
         existence of at least one zero in the function dn vs. curv in order to
         apply the bisection algorithm.
         """
-        ITMAX = 20
-        MAXRESTATTEMPTS = 20
         sign = -1 if dn_a > 0 else 1
         found = False
         it = 0
@@ -482,7 +496,7 @@ class GenericSectionCalculator(SectionCalculator):
         r = 2.0
         diverging = False
         diverging_steps = 0
-        while not found and it < ITMAX and restarts < MAXRESTATTEMPTS:
+        while not found and it < max_iter and restarts < max_restart_attemps:
             eps_0_b = eps_0_a + sign * delta * r ** (it)
             (
                 n_int,
@@ -511,16 +525,24 @@ class GenericSectionCalculator(SectionCalculator):
                     diverging = False
                     diverging_steps = 0
             it += 1
-        if it >= ITMAX and not found:
+        if it >= max_iter and not found:
             s = f'Last iteration reached a unbalance of: \
                 dn_a = {dn_a} dn_b = {dn_b})'
+            # This should be kept as an exception otherwise afterwards
+            # the bisection will fail
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return (eps_0_b, dn_b)
 
     def find_equilibrium_fixed_curvature(
-        self, geom: CompoundGeometry, n: float, curv: float, eps_0: float
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv: float,
+        eps_0: float,
+        max_iter: int = 100,
+        tol: float = 1e-2,
     ) -> t.Tuple[float, float, float]:
-        """Find strain profile with equilibrium with fixed curvature.
+        r"""Find strain profile with equilibrium with fixed curvature.
 
         Given curvature and external axial force, find the strain profile that
         makes internal and external axial force in equilibrium.
@@ -530,14 +552,16 @@ class GenericSectionCalculator(SectionCalculator):
             n (float): The external axial load.
             curv (float): The value of curvature.
             eps_0 (float): A first attempt for neutral axis position.
+            max_iter (int): the maximum number of iterations in the iterative
+                process (default = 100).
+            tol (float): the tolerance for convergence test in terms of
+                $\deltaN_a - \deltaN_b$. (default = 1e-2)
 
         Returns:
             Tuple(float, float, float): The axial strain and the two
             curvatures.
         """
         # Useful for Moment Curvature Analysis
-        # Number of maximum iteration for the bisection algorithm
-        ITMAX = 100
         # Start from previous position of N.A.
         eps_0_a = eps_0
         # find internal axial force by integration
@@ -561,7 +585,7 @@ class GenericSectionCalculator(SectionCalculator):
         )
         # Found a range within there is the solution, apply bisection
         it = 0
-        while (abs(dn_a - dn_b) > 1e-2) and (it < ITMAX):
+        while (abs(dn_a - dn_b) > tol) and (it < max_iter):
             eps_0_c = (eps_0_a + eps_0_b) / 2
             (
                 n_int,
@@ -579,9 +603,11 @@ class GenericSectionCalculator(SectionCalculator):
                 dn_a = dn_c
                 eps_0_a = eps_0_c
             it += 1
-        if it >= ITMAX:
+        if it >= max_iter:
             s = f'Last iteration reached a unbalance of: \
                 dn_c = {dn_c}'
+            # This is used from moment-curvature anaylsis, so we call an
+            # exception otherwise the next part of the curve could be wrong
             raise ValueError(f'Maximum number of iterations reached.\n{s}')
         return eps_0_c, curv, 0
 
@@ -1371,7 +1397,19 @@ class GenericSectionCalculator(SectionCalculator):
         res.strains = np.zeros((num_theta, 3))
         # Compute strength for given angle of NA
         for i, th in enumerate(res.theta):
-            res_bend_strength = self.calculate_bending_strength(theta=th, n=n)
+            # If for some reason there is the warning of non convergence,
+            # catch it and raise an Exception because the domain is not
+            # correctly computed
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('error', NoConvergenceWarning)
+                    res_bend_strength = self.calculate_bending_strength(
+                        theta=th, n=n
+                    )
+            except NoConvergenceWarning as e:
+                raise RuntimeError(
+                    'Convergence cannot be found, the algorithm is stopped.'
+                ) from e
             # Save forces
             res.forces[i, 0] = n
             res.forces[i, 1] = res_bend_strength.m_y
