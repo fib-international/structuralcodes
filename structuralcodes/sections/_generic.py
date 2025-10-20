@@ -461,8 +461,8 @@ class GenericSectionCalculator(SectionCalculator):
             it += 1
         if it >= max_iter:
             msg = 'GenericSectionCalculator::find_equilibrium_fixed_pivot\n\t'
-            msg += 'Maximum number of iterations reached.\n\t'
-            msg += f'Last iteration reached a unbalance of {dn_c}'
+            msg += 'Maximum number of iterations reached.'
+            msg += f' Last iteration reached a unbalance of {dn_c:.3e}'
             warnings.warn(
                 message=msg,
                 category=NoConvergenceWarning,
@@ -526,11 +526,16 @@ class GenericSectionCalculator(SectionCalculator):
                     diverging_steps = 0
             it += 1
         if it >= max_iter and not found:
-            s = f'Last iteration reached a unbalance of: \
-                dn_a = {dn_a} dn_b = {dn_b})'
-            # This should be kept as an exception otherwise afterwards
-            # the bisection will fail
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+            msg = (
+                'GenericSectionCalculator::'
+                '_prefind_range_curvature_equilibrium\n\t'
+                'Maximum number of iterations reached.'
+                f' Last iteration reached a unbalance of {dn_b:.3e}'
+            )
+            warnings.warn(
+                message=msg,
+                category=NoConvergenceWarning,
+            )
         return (eps_0_b, dn_b)
 
     def find_equilibrium_fixed_curvature(
@@ -604,11 +609,13 @@ class GenericSectionCalculator(SectionCalculator):
                 eps_0_a = eps_0_c
             it += 1
         if it >= max_iter:
-            s = f'Last iteration reached a unbalance of: \
-                dn_c = {dn_c}'
-            # This is used from moment-curvature anaylsis, so we call an
-            # exception otherwise the next part of the curve could be wrong
-            raise ValueError(f'Maximum number of iterations reached.\n{s}')
+            msg = 'GenericSectionCalculator::find_equilibrium_fixed_curvature'
+            msg += '\n\tMaximum number of iterations reached. '
+            msg += f' Last iteration reached a unbalance of {dn_c:.3e}'
+            warnings.warn(
+                message=msg,
+                category=NoConvergenceWarning,
+            )
         return eps_0_c, curv, 0
 
     def calculate_limit_axial_load(self):
@@ -745,9 +752,9 @@ class GenericSectionCalculator(SectionCalculator):
         return result[:-1]
 
     def calculate_bending_strength(
-        self, theta=0, n=0
+        self, theta=0, n=0, max_iter: int = 100, tol: float = 1e-2
     ) -> s_res.UltimateBendingMomentResults:
-        """Calculates the bending strength for given inclination of n.a. and
+        r"""Calculates the bending strength for given inclination of n.a. and
         axial load.
 
         Arguments:
@@ -755,6 +762,10 @@ class GenericSectionCalculator(SectionCalculator):
                 radians, default = 0.
             n (float): Axial load applied to the section (+: tension, -:
                 compression), default = 0.
+            max_iter (int): the maximum number of iterations in the iterative
+                bisection process (default = 100).
+            tol (float): the tolerance for convergence test in terms of
+                $\deltaN_a - \deltaN_b$ (default = 1e-2
 
         Returns:
             UltimateBendingMomentResults: The results from the calculation.
@@ -771,7 +782,9 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Find the strain distribution corresponding to failure and equilibrium
         # with external axial force
-        strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
+        strain = self.find_equilibrium_fixed_pivot(
+            rotated_geom, n, max_iter=max_iter, tol=tol
+        )
         # Compute the internal forces with this strain distribution
         N, My, Mz, _ = self.integrator.integrate_strain_response_on_geometry(
             geo=rotated_geom, strain=strain, tri=self.triangulated_data
@@ -800,6 +813,92 @@ class GenericSectionCalculator(SectionCalculator):
 
         return res
 
+    def _prepare_chi_array(
+        self,
+        rotated_geom,
+        n,
+        num_pre_yield,
+        num_post_yield,
+        chi_first,
+        max_iter,
+        tol,
+    ):
+        # Find ultimate curvature from the strain distribution
+        # corresponding to failure and equilibrium with external axial
+        # force
+        # This coul not converge, let's catch the warning to customize
+        # the message
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always', NoConvergenceWarning)
+            strain = self.find_equilibrium_fixed_pivot(
+                rotated_geom, n, max_iter=max_iter, tol=tol
+            )
+            chi_ultimate = strain[1]
+        if w:
+            # I should expect only one warning of this category
+            warn = w[0]
+            if issubclass(warn.category, NoConvergenceWarning):
+                new_msg = (
+                    f'\nGenericSectionCalculator::calculate_moment_curvature'
+                    f'\n\tNo convergence during computation of ultimate'
+                    f' curvature. Please check results properly.\n'
+                    f'{warn.message}'
+                )
+                warnings.warn(new_msg, NoConvergenceWarning)
+        # Find the yielding curvature
+        # This could not converge, let0's catch the warning to customize
+        # the message
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always', NoConvergenceWarning)
+            strain = self.find_equilibrium_fixed_pivot(
+                rotated_geom, n, yielding=True, max_iter=max_iter, tol=tol
+            )
+            chi_yield = strain[1]
+        if w:
+            # I should expect only one warning of this category
+            warn = w[0]
+            if issubclass(warn.category, NoConvergenceWarning):
+                new_msg = (
+                    f'\nGenericSectionCalculator::calculate_moment_curvature'
+                    f'\n\tNo convergence during computation of yielding'
+                    f' curvature. Please check results properly.\n'
+                    f'{warn.message}'
+                )
+                warnings.warn(new_msg, NoConvergenceWarning)
+
+        if chi_ultimate * chi_yield < 0:
+            # They cannot have opposite signs!
+            raise ValueError(
+                'Curvature at yield and ultimate cannot have opposite signs!'
+            )
+
+        # Make sure the sign of the first curvature matches the sign of the
+        # yield curvature
+        chi_first *= -1.0 if chi_first * chi_yield < 0 else 1.0
+
+        # The first curvature should be less than the yield curvature
+        if abs(chi_first) >= abs(chi_yield):
+            chi_first = chi_yield / num_pre_yield
+
+        # Define the array of curvatures
+        if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
+            # We don't want a plastic branch in the analysis
+            # this is done to speed up analysis
+            chi = np.linspace(chi_first, chi_yield, num_pre_yield)
+        else:
+            chi = np.concatenate(
+                (
+                    np.linspace(
+                        chi_first,
+                        chi_yield,
+                        num_pre_yield - 1,
+                        endpoint=False,
+                    ),
+                    np.linspace(chi_yield, chi_ultimate, num_post_yield + 1),
+                )
+            )
+        return chi
+
     def calculate_moment_curvature(
         self,
         theta: float = 0.0,
@@ -808,8 +907,10 @@ class GenericSectionCalculator(SectionCalculator):
         num_pre_yield: int = 10,
         num_post_yield: int = 10,
         chi: t.Optional[ArrayLike] = None,
+        max_iter: int = 100,
+        tol: float = 1e-2,
     ) -> s_res.MomentCurvatureResults:
-        """Calculates the moment-curvature relation for given inclination of
+        r"""Calculates the moment-curvature relation for given inclination of
         n.a. and axial load.
 
         Arguments:
@@ -830,6 +931,10 @@ class GenericSectionCalculator(SectionCalculator):
                 If chi is not None, chi_first, num_pre_yield and num_post_yield
                 are disregarded, and the provided chi is used directly in the
                 calculations.
+            max_iter (int): the maximum number of iterations in the iterative
+                process (default = 10).
+            tol (float): the tolerance for convergence test in terms of
+                $\deltaN_a - \deltaN_b$ (default = 1e-2).
 
         Returns:
             MomentCurvatureResults: The calculation results.
@@ -847,50 +952,15 @@ class GenericSectionCalculator(SectionCalculator):
             self._rotate_triangulated_data(-theta)
 
         if chi is None:
-            # Find ultimate curvature from the strain distribution
-            # corresponding to failure and equilibrium with external axial
-            # force
-            strain = self.find_equilibrium_fixed_pivot(rotated_geom, n)
-            chi_ultimate = strain[1]
-            # Find the yielding curvature
-            strain = self.find_equilibrium_fixed_pivot(
-                rotated_geom, n, yielding=True
+            chi = self._prepare_chi_array(
+                rotated_geom,
+                n,
+                num_pre_yield,
+                num_post_yield,
+                chi_first,
+                max_iter,
+                tol,
             )
-            chi_yield = strain[1]
-            if chi_ultimate * chi_yield < 0:
-                # They cannot have opposite signs!
-                raise ValueError(
-                    'curvature at yield and ultimate cannot have opposite '
-                    'signs!'
-                )
-
-            # Make sure the sign of the first curvature matches the sign of the
-            # yield curvature
-            chi_first *= -1.0 if chi_first * chi_yield < 0 else 1.0
-
-            # The first curvature should be less than the yield curvature
-            if abs(chi_first) >= abs(chi_yield):
-                chi_first = chi_yield / num_pre_yield
-
-            # Define the array of curvatures
-            if abs(chi_ultimate) <= abs(chi_yield) + 1e-8:
-                # We don't want a plastic branch in the analysis
-                # this is done to speed up analysis
-                chi = np.linspace(chi_first, chi_yield, num_pre_yield)
-            else:
-                chi = np.concatenate(
-                    (
-                        np.linspace(
-                            chi_first,
-                            chi_yield,
-                            num_pre_yield - 1,
-                            endpoint=False,
-                        ),
-                        np.linspace(
-                            chi_yield, chi_ultimate, num_post_yield + 1
-                        ),
-                    )
-                )
 
         # prepare results
         eps_a = np.zeros_like(chi)
@@ -905,31 +975,59 @@ class GenericSectionCalculator(SectionCalculator):
             # find the new position of neutral axis for mantaining equilibrium
             # store the information in the results object for the current
             # value of curvature
-            strain = self.find_equilibrium_fixed_curvature(
-                rotated_geom, n, curv, strain[0]
-            )
-            (
-                _,
-                My,
-                Mz,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geo=rotated_geom, strain=strain, tri=self.triangulated_data
-            )
-            # Rotate back to section CRS
-            T = np.array(
-                [
-                    [np.cos(theta), -np.sin(theta)],
-                    [np.sin(theta), np.cos(theta)],
-                ]
-            )
-            M = T @ np.array([[My], [Mz]])
-            eps_a[i] = strain[0]
-            my[i] = M[0, 0]
-            mz[i] = M[1, 0]
-            chi_mat = T @ np.array([[curv], [0]])
-            chi_y[i] = chi_mat[0, 0]
-            chi_z[i] = chi_mat[1, 0]
+            # DEBUG to remove
+            fact = 100 if i < 10 else 1
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter('always', NoConvergenceWarning)
+                strain = self.find_equilibrium_fixed_curvature(
+                    rotated_geom,
+                    n,
+                    curv,
+                    strain[0],
+                    max_iter=max_iter * fact,
+                    tol=tol,
+                )
+                (
+                    _,
+                    My,
+                    Mz,
+                    _,
+                ) = self.integrator.integrate_strain_response_on_geometry(
+                    geo=rotated_geom,
+                    strain=strain,
+                    tri=self.triangulated_data,
+                )
+                # Rotate back to section CRS
+                T = np.array(
+                    [
+                        [np.cos(theta), -np.sin(theta)],
+                        [np.sin(theta), np.cos(theta)],
+                    ]
+                )
+                M = T @ np.array([[My], [Mz]])
+                eps_a[i] = strain[0]
+                my[i] = M[0, 0]
+                mz[i] = M[1, 0]
+                chi_mat = T @ np.array([[curv], [0]])
+                chi_y[i] = chi_mat[0, 0]
+                chi_z[i] = chi_mat[1, 0]
+            if w:
+                # I should expect only one warning of this category
+                warn = w[0]
+                if issubclass(warn.category, NoConvergenceWarning):
+                    new_msg = (
+                        f'\nGenericSectionCalculator::calculate_moment_curvature\n'
+                        f'\tNo convergence during computation of step {i}.'
+                        f' The computation is stopped at the current step\n'
+                        f'{warn.message}'
+                    )
+                    warnings.warn(new_msg, NoConvergenceWarning)
+                    chi_y = chi_y[:i]
+                    chi_z = chi_z[:i]
+                    eps_a = eps_a[:i]
+                    my = my[:i]
+                    mz = mz[:i]
+                    break
 
         if self.triangulated_data is not None:
             # Rotate back also triangulated data!

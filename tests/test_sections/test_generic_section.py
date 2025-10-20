@@ -1486,3 +1486,91 @@ def test_rectangular_section_init_strain(fck, fyk, ductility_class):
     # Check they are all the same
     assert math.isclose(res_fiber.m_y, res_fiber_i.m_y, rel_tol=1e-3)
     assert math.isclose(res_marin.m_y, res_fiber_i.m_y, rel_tol=1e-3)
+
+
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_strength_warning(b, h, n_bars, diameter, fck, fyk):
+    """Test that a warning for no convergence is raised."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = GenericSection(geo)
+
+    # Compute bending strength without reaching equilibrium
+    # This is fictitiously tested forcing a low max_iter
+    with pytest.warns(NoConvergenceWarning):
+        section.section_calculator.calculate_bending_strength(max_iter=5)
+
+
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_moment_curvature_warning(b, h, n_bars, diameter, fck, fyk):
+    """Test that a warning for no convergence is raised."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = GenericSection(geo)
+    n_u = section.section_calculator.calculate_limit_axial_load()[0]
+    # Compute moment curvature with no warning
+    res_good = section.section_calculator.calculate_moment_curvature(
+        n=n_u * 0.5, max_iter=100
+    )
+    chi = res_good.chi_y.copy()
+
+    # Compute moment curvature without reaching equilibrium
+    # This is fictitiously tested forcing a low max_iter
+    with pytest.warns(NoConvergenceWarning):
+        res = section.section_calculator.calculate_moment_curvature(
+            n=n_u * 0.5, max_iter=8, chi=chi
+        )
+
+    # Check that the curvature arrays are the same up to the last
+    # convergence point
+    assert len(res.chi_y) < len(res_good.chi_y)
+    assert np.allclose(
+        res.chi_y,
+        res_good.chi_y[: len(res.chi_y)],
+        rtol=1e-5,
+        atol=1e-8,
+    )
