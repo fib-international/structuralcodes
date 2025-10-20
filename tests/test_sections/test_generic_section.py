@@ -100,14 +100,6 @@ def test_rectangular_section():
         res_mc_fiber.m_y[-1], res_mc_fiber_same_curvature.m_y[-1]
     )
 
-    # Calculate moment-curvature for a given array of curvatures, but with
-    # significant axial compression. This should raise a ValueError since we
-    # cannot find equilibrium.
-    with pytest.raises(ValueError):
-        sec.section_calculator.calculate_moment_curvature(
-            theta=0, n=0.95 * n_min_fiber, chi=res_mc_fiber.chi_y
-        )
-
     # check if axial limit forces are the same for marin and fiber
     assert math.isclose(n_min_marin, n_min_fiber, rel_tol=2e-2)
     assert math.isclose(n_max_marin, n_max_fiber, rel_tol=2e-2)

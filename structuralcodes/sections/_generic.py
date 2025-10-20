@@ -471,33 +471,34 @@ class GenericSectionCalculator(SectionCalculator):
         # Return the strain distribution
         return [eps_0, chi_c, 0]
 
-    def _prefind_range_curvature_equilibrium(
+    def _quick_exponential_find(
         self,
-        geom: CompoundGeometry,
-        n: float,
-        curv: float,
-        eps_0_a: float,
-        dn_a: float,
-        max_iter: int = 20,
-        max_restart_attemps: int = 20,
+        geom,
+        n,
+        curv,
+        max_iter,
+        max_restart_attempts,
+        eps_0_a,
+        dn_a,
+        sign,
     ):
-        """Perfind range where the curvature equilibrium is located.
-
-        This algorithms quickly finds a position of NA that guaranteed the
-        existence of at least one zero in the function dn vs. curv in order to
-        apply the bisection algorithm.
-        """
-        sign = -1 if dn_a > 0 else 1
+        restarts = 0
         found = False
         it = 0
-        restarts = 0
         delta = 1e-3
         # Use a growth factor for an exponential finding
         r = 2.0
         diverging = False
         diverging_steps = 0
-        while not found and it < max_iter and restarts < max_restart_attemps:
-            eps_0_b = eps_0_a + sign * delta * r ** (it)
+        while not found and it < max_iter and restarts < max_restart_attempts:
+            # If there has been at least 20% of maximum restart attempts,
+            # slow down the exponent growth to linear. This is helpful to
+            # solve cases where the solution is close to the limit axial
+            # load
+            exponent = (
+                it if restarts <= int(0.2 * max_restart_attempts) else 1.0
+            )
+            eps_0_b = eps_0_a + sign * delta * r ** (exponent)
             (
                 n_int,
                 _,
@@ -516,21 +517,148 @@ class GenericSectionCalculator(SectionCalculator):
                 if diverging:
                     # Count for how many steps we are diverging
                     diverging_steps += 1
-                # If we are consistently diverging for more than 10 steps,
-                # Restart the process with a small delta
-                if diverging_steps > 10:
+                # If we are consistently diverging for more than 5 steps,
+                # Restart the process with a smaller delta
+                if diverging_steps > 5:
                     delta /= 2
                     it = 0
                     restarts += 1
                     diverging = False
                     diverging_steps = 0
             it += 1
+        return eps_0_b, dn_b, it, found
+
+    def _slow_linear_find(
+        self,
+        geom,
+        n,
+        curv,
+        max_iter,
+        eps_0_a,
+        dn_a,
+        sign,
+    ):
+        found = False
+        it = 0
+        delta = abs(eps_0_a) / (max_iter * 10)
+        while True:
+            eps_0_b = eps_0_a + sign * delta * (it + 1)
+            (
+                n_int,
+                _,
+                _,
+                _,
+            ) = self.integrator.integrate_strain_response_on_geometry(
+                geom, [eps_0_b, curv, 0], tri=self.triangulated_data
+            )
+            dn_b = n_int - n
+            if dn_a * dn_b < 0:
+                found = True
+                break
+            it += 1
+            if it >= max_iter * 10:
+                break
+        return eps_0_b, dn_b, it, found
+
+    def _brute_force_find_minimum(
+        self,
+        geom,
+        n,
+        curv,
+        eps_0_a,
+        dn_a,
+        sign,
+    ):
+        found = False
+        suffix = ''
+        eps_0_a_attempt = eps_0_a
+        eps_0_b_attempt = eps_0_a + abs(eps_0_a) * sign
+        for i in range(10):
+            eps_0_attempts = np.linspace(eps_0_a_attempt, eps_0_b_attempt, 100)
+            dn_attempts = np.zeros_like(eps_0_attempts)
+            for j in range(len(eps_0_attempts)):
+                (
+                    n_int,
+                    _,
+                    _,
+                    _,
+                ) = self.integrator.integrate_strain_response_on_geometry(
+                    geom,
+                    [eps_0_attempts[j], curv, 0],
+                    tri=self.triangulated_data,
+                )
+                dn_attempts[j] = n_int - n
+            if dn_a > 0:
+                idx_min = np.argmin(dn_attempts)
+            else:
+                idx_min = np.argmax(dn_attempts)
+            eps_0_b = eps_0_attempts[idx_min]
+            dn_b = dn_attempts[idx_min]
+            eps_0_a_attempt = eps_0_attempts[max(idx_min - 2, 0)]
+            eps_0_b_attempt = eps_0_attempts[
+                min(idx_min + 2, len(eps_0_attempts))
+            ]
+            # Check if it is on the opposite side
+            if dn_a * dn_b < 0:
+                found = True
+                break
+
+        if not found:
+            # It is impossibile to find a solution for the given case
+            # The best solution we have is dn_b
+            suffix = (
+                '(No solution can be found because it seems dN never '
+                ' becomes of opposite sign).'
+                '\n\tThe best that we have found is with an unbalance of'
+                f' {dn_b:.3e} for eps_0_b = {eps_0_b:e}.'
+            )
+        return eps_0_b, dn_b, found, suffix
+
+    def _prefind_range_curvature_equilibrium(
+        self,
+        geom: CompoundGeometry,
+        n: float,
+        curv: float,
+        eps_0_a: float,
+        dn_a: float,
+        max_iter: int = 20,
+        max_restart_attemps: int = 20,
+    ):
+        """Perfind range where the curvature equilibrium is located.
+
+        This algorithms quickly finds a position of NA that guaranteed the
+        existence of at least one zero in the function dn vs. curv in order to
+        apply the bisection algorithm.
+        """
+        sign = -1 if dn_a > 0 else 1
+
+        eps_0_b, dn_b, it, found = self._quick_exponential_find(
+            geom, n, curv, max_iter, max_restart_attemps, eps_0_a, dn_a, sign
+        )
+
+        # As a further attempt, try going with small increments/decrements up
+        # to when it changes sign
+
+        if it >= max_iter and not found:
+            eps_0_b, dn_b, it, found = self._slow_linear_find(
+                geom, n, curv, max_iter, eps_0_a, dn_a, sign
+            )
+
+        # As a final attempt, try to compute for a range a certain size
+        # respect eps_0_a and compute dn for each one of them, find the
+        # minimum hoping it is on the opposite side of dn_a.
+
+        if it >= max_iter and not found:
+            eps_0_b, dn_b, found, suffix = self._brute_force_find_minimum(
+                geom, n, curv, eps_0_a, dn_a, sign
+            )
+
         if it >= max_iter and not found:
             msg = (
                 'GenericSectionCalculator::'
                 '_prefind_range_curvature_equilibrium\n\t'
                 'Maximum number of iterations reached.'
-                f' Last iteration reached a unbalance of {dn_b:.3e}'
+                f' Last iteration reached a unbalance of {dn_b:.3e} {suffix}'
             )
             warnings.warn(
                 message=msg,
@@ -975,8 +1103,6 @@ class GenericSectionCalculator(SectionCalculator):
             # find the new position of neutral axis for mantaining equilibrium
             # store the information in the results object for the current
             # value of curvature
-            # DEBUG to remove
-            fact = 100 if i < 10 else 1
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter('always', NoConvergenceWarning)
                 strain = self.find_equilibrium_fixed_curvature(
@@ -984,7 +1110,7 @@ class GenericSectionCalculator(SectionCalculator):
                     n,
                     curv,
                     strain[0],
-                    max_iter=max_iter * fact,
+                    max_iter=max_iter,
                     tol=tol,
                 )
                 (
