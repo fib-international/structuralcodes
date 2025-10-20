@@ -1566,3 +1566,48 @@ def test_section_moment_curvature_warning(b, h, n_bars, diameter, fck, fyk):
         rtol=1e-5,
         atol=1e-8,
     )
+
+
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_mm_domain_warning(b, h, n_bars, diameter, fck, fyk):
+    """Test that a warning for no convergence is raised."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = GenericSection(geo)
+    n_u = section.section_calculator.calculate_limit_axial_load()[0]
+    # Compute moment curvature with no warning
+    res_good = section.section_calculator.calculate_mm_interaction_domain(
+        n=n_u * 0.5, max_iter=100
+    )
+
+    # Compute moment curvature without reaching equilibrium
+    # This is fictitiously tested forcing a low max_iter
+    with pytest.warns(NoConvergenceWarning):
+        res = section.section_calculator.calculate_mm_interaction_domain(
+            n=n_u * 0.5, max_iter=5
+        )
+
+    # Check that the results arrays have the same size
+    assert len(res.m_y) == len(res_good.m_y)

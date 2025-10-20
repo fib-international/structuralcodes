@@ -1060,7 +1060,7 @@ class GenericSectionCalculator(SectionCalculator):
                 are disregarded, and the provided chi is used directly in the
                 calculations.
             max_iter (int): the maximum number of iterations in the iterative
-                process (default = 10).
+                process (default = 100).
             tol (float): the tolerance for convergence test in terms of
                 $\deltaN_a - \deltaN_b$ (default = 1e-2).
 
@@ -1600,13 +1600,21 @@ class GenericSectionCalculator(SectionCalculator):
         return res
 
     def calculate_mm_interaction_domain(
-        self, n: float = 0, num_theta: int = 32
+        self,
+        n: float = 0,
+        num_theta: int = 32,
+        max_iter: int = 100,
+        tol: float = 1e-2,
     ) -> s_res.MMInteractionDomain:
-        """Calculate the My-Mz interaction domain.
+        r"""Calculate the My-Mz interaction domain.
 
         Arguments:
             n (float): Axial force, default = 0.
             n_theta (int): Number of discretization for theta, default = 32.
+            max_iter (int): the maximum number of iterations in the iterative
+                process (default = 10).
+            tol (float): the tolerance for convergence test in terms of
+                $\deltaN_a - \deltaN_b$ (default = 1e-2).
 
         Return:
             MMInteractionDomain: The calculation results.
@@ -1622,18 +1630,23 @@ class GenericSectionCalculator(SectionCalculator):
         # Compute strength for given angle of NA
         for i, th in enumerate(res.theta):
             # If for some reason there is the warning of non convergence,
-            # catch it and raise an Exception because the domain is not
-            # correctly computed
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter('error', NoConvergenceWarning)
-                    res_bend_strength = self.calculate_bending_strength(
-                        theta=th, n=n
+            # catch it and raise it with a custom message
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter('always', NoConvergenceWarning)
+                res_bend_strength = self.calculate_bending_strength(
+                    theta=th, n=n, max_iter=max_iter, tol=tol
+                )
+            if w:
+                # I should expect only one warning of this category
+                warn = w[0]
+                if issubclass(warn.category, NoConvergenceWarning):
+                    new_msg = (
+                        '\nGenericSectionCalculator::'
+                        'calculate_mm_interaction_domain\n'
+                        f'\tNo convergence during computation with theta {th}.'
+                        f'\n{warn.message}'
                     )
-            except NoConvergenceWarning as e:
-                raise RuntimeError(
-                    'Convergence cannot be found, the algorithm is stopped.'
-                ) from e
+                    warnings.warn(new_msg, NoConvergenceWarning)
             # Save forces
             res.forces[i, 0] = n
             res.forces[i, 1] = res_bend_strength.m_y
