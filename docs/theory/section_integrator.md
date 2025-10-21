@@ -39,7 +39,7 @@ Therefore the application of {eq}`eq:fiber_strain_fibers` and of {eq}`eq:fiber_s
 
 (theory-marin-integrator)=
 ## Marin integrator
-Marin integrator implements the idea of prof. Joaquín Marín from University of Venezuala that he published during the '80s [^marin1984].
+Marin integrator implements the idea of prof. Joaquín Marín from University of Venezuela that he published during the '80s [^marin1984].
 
 The method performs an exact numerical solution of double integrals for polynomial functions acting over any plane polygonal surface (with or without holes) and is based on the computation of moments of area.
 
@@ -69,7 +69,7 @@ the integral of the polynomial function over the cross-section, can be written a
 \sum_{m=0}^M \sum_{n=0}^N a_{m,n} \mathcal{M}_{m,n}
 :::
 
-When the cross-section (i.e. the integration domain) is represented by a closed simply connected polygonal contour with $P$ vertices, the moment of area of order $m, n$ defined by {eq}`eq:marin_moment_area` can be shown to be computed by the following simple relation:
+When the cross-section (i.e. the integration domain) is represented by a closed simply connected polygonal contour with $P$ vertices, the moment of area of order $m, n$ defined by {eq}`eq:marin_moment_area` can be shown to be computed by the following relation:
 
 :::{math}
 :label: eq:marin_moment_area_polygon
@@ -94,7 +94,7 @@ w_i = y_i z_{i+1} - y_{i+1} z_i
 \text{for } i = 1, 2, \ldots, P
 :::
 
-:::{hint}
+:::{note}
 As mentioned, the integral is exact for polygonal surfaces and polynomial functions to be integrated over the surface.
 
 If the cross-section is not polynomial, it must be discretized into a polygon (for instance a circular shape must be discretized as a polygon with $P$ vertices) and therefore the integral is not exact anymore.
@@ -102,7 +102,7 @@ If the cross-section is not polynomial, it must be discretized into a polygon (f
 If the function to be integrated over the surface is not polynomial, the function can be discretized in linear branches and the cross section must be discretized in small polygons for each polynomial branch; also in this case the integral is not exact anymore.
 :::
 
-The main application of this algorithm in *structuralcodes* is for integrating the stresses over the cross-section.
+The main application of this algorithm in *structuralcodes* is for integrating the stress or modulus over the cross-section.
 
 In this context, let's consider a case of unixial bending, for which the stress function can be considered variable only with respect to coordinate $z$:
 
@@ -123,7 +123,7 @@ M_z &= - \int_A y \sigma(z) \, dA = - \sum_{n=0}^N a_n \mathcal{M}_{1,n}
 :::
 
 ::::{hint}
-When the bending is not unixial anymore, one can consider the bidimensional normal stress polynomial:
+When the bending is not uniaxial anymore, one can consider the bidimensional normal stress polynomial:
 
 :::{math}
 P(y,z) = \sigma(y,z) = \sum_{m=0}^M \sum_{n=0}^N a_{m,n} y^m z^n 
@@ -139,7 +139,7 @@ Rotation of reference system for having uniaxial bending.
 
 ::::
 
-The coeficcients $a_n$ are dependent on the stress function $\sigma(z)$, therefore they depend on the constitutive law $\sigma(\varepsilon)$. For this reason, each constitutive law that is used with Marin integration, must implement a special `__marin__` method that returns the coefficients $a_n$ for each polynomial branch that defines the constitutive law.
+The coeficients $a_n$ are dependent on the stress function $\sigma(z)$, therefore they depend on the constitutive law $\sigma(\varepsilon)$. For this reason, each constitutive law that is used with Marin integration, must implement a special `__marin__` method that returns the coefficients $a_n$ for each polynomial branch that defines the constitutive law.
 
 In determination of stiffness matrix, we need to integrate the tangent modulus over the cross-section. In this case we are integrating the function $\sigma'$, where $\cdot'$ indicates the derivative (i.e. the tangent modulus).
 
@@ -150,7 +150,7 @@ This means that if you write your custom constitutive law you must calculate the
 
 Don't worry, we have done some work for you! Every material has a base version of `__marin__` method, so you don't have to implement it mandatorily. Keep in mind that the free `__marin__` method works under a very simple idea: we linearize in several branches your law, obtaining a discretize piecewise constitutive law. For this discretized law we have the coefficients computed for the piece-wise linear law described [below](theory-marin-userdefined-law).
 
-If your law can be represented (At least in branches) as polynomial functions it is way more efficient writing your custom `__marin__` method since the integrator will split the polygon into as few as possible sub-polygons to perform the intergration.
+If your law can be represented (at least in branches) as polynomial functions it is way more efficient writing your custom `__marin__` method since the integrator will split the polygon into as few as possible sub-polygons to perform the intergration.
 
 So it is up to you! You can avoid bothering calculating and implementing Marin coefficients for stress and stiffness, but you can (and probably should) do it if you can optimize the calculation speed and if your constitutive law permits it.
 :::
@@ -164,7 +164,7 @@ The constitutive law of a linear elastic material can be written as:
 \sigma(\varepsilon) = E \cdot \varepsilon
 :::
 
-For uniaxial bending the strain $varepsilon$ is equal to:
+For uniaxial bending the strain $\varepsilon$ is equal to:
 
 :::{math}
 :label: eq:marin-linear-strain
@@ -212,7 +212,7 @@ The constitutive law of an elastic plastic material with linear hardening is rep
 Elastic plastic with linear hardening law
 :::
 
-In this case, the constitutive law cannot be expressed as a whole with a single polynomial function, but looking at the picture [above](figure-theory-marin-ep-constitutive) we can recognize 5 different portions, each one representing a different polynomial function. The constitutive law can then be written for the four branches as:
+In this case, the constitutive law cannot be expressed as a whole with a single polynomial function, but looking at the picture [above](figure-theory-marin-ep-constitutive) we can recognize 5 different portions, each one representing a different polynomial function. The constitutive law can then be written for the five branches as:
 
 :::{math}
 :label: eq:const-law-ep
@@ -229,7 +229,7 @@ E_h \cdot \varepsilon + \Delta \sigma & \text{for } \varepsilon_y \le \varepsilo
 
 where $E_h$ is the hardening modulus (i.e. the slope of the hardning branch) and $\Delta \sigma = f_y \cdot \left(1 - \dfrac{E_h}{E}\right)$.
 
-Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-ep`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
+Substituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-ep`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
 
 :::{list-table} Marin coefficients for stress integration for the different branches of elastic-plastic constitutive law
 :header-rows: 1
@@ -257,7 +257,7 @@ Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-ep`, one can comp
   - n.a.
 :::
 
-The `__marin__` method return the coefficients reported in the table above and the strain limits for each portion.
+The `__marin__` method returns the coefficients reported in the table above and the strain limits for each portion.
 
 Then the integrator discretizes the polygon cutting it into the portions needed (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed.
 
@@ -316,7 +316,7 @@ f_c & \text{for } \varepsilon_{cu} \le \varepsilon < \varepsilon_{c0} \\
 \end{cases} 
 :::
 
-Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-bilin-compr`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
+Substituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-bilin-compr`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
 
 :::{list-table} Marin coefficients for stress integration for the different branches of bilinear compression constitutive law
 :header-rows: 1
