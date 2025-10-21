@@ -300,7 +300,13 @@ Therefore the marin coefficients for stiffness function are:
 
 ### Bilinear compression
 
-The bilinear compression is characterized by no strength in tension and a linear behavior in compression up to $\varepsilon_{c0}$ and then a constant stress equal to $f_c$ (negative). After $\varepsilon_{cu}$, the stress drops to 0.
+The bilinear compression is characterized by no strength in tension and a linear behavior in compression up to $\varepsilon_{c0}$ and then a constant stress equal to $f_c$ (negative). After $\varepsilon_{cu}$, the stress drops to 0. The constituive law is depicted the figure [below](figure-theory-marin-bilin-compr-constitutive). 
+
+(figure-theory-marin-bilin-compr-constitutive)=
+:::{figure} Figure_const_bilinearcompression.png
+
+Elastic plastic with linear hardening law
+:::
 
 The constitutive law can be written in the following branches:
 
