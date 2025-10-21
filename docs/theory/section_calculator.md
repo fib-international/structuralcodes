@@ -36,12 +36,12 @@ Rotated Coordinate system to be used for computing uniaxial bending with bottom 
 
 :::
 
-According to classic RC theory, the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).
+According to classic RC theory[^leonhardt1973], the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).
 
 (theory-fig-deformation-domain)=
 :::{figure} Figure_DeformationDomain.jpg
 
-Ultimate deformation domains for uniaxial bending with or without axial force.
+Ultimate deformation domains for uniaxial bending with or without axial force [^leonhardt1973].
 :::
 
 The algorithm developed can be summarized as follows:
@@ -467,3 +467,5 @@ where:
 ::::
 
 The algorithm implemented in *structuralcodes* is basically as above described, with the possibility of using also the modified Newton-Rhapson with initial tangent (setting `initial = True`). Further the user can set the maximum number of iterations (set to 10 by default) and the tolerance (set to 1e-6 by default).
+
+[^leonhardt1973]: Leonhardt, F., Mönning, E. Vorlesungen über Massivbau, Springer, Verlag, Berlin/Heidelberg, 1973.
