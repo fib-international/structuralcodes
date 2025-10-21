@@ -2,7 +2,7 @@
 # Section integrators
 The algorithms described in [Section calculators](theory-section-calculator) require integration of stress or stiffness over the cross-section. This operation is performed using proper `SectionIntegrator` objects. 
 
-In *structuralcodes* we have currently two distinct integrators: *fiber integrator* that discretize the cross section in a bunch of fibers (whose behavior is uniaxial), and *marin integrator* that is based on the computation of moments of area.
+In StructuralCodes we have currently two distinct integrators: *fiber integrator* that discretize the cross section in a bunch of fibers (whose behavior is uniaxial), and *marin integrator* that is based on the computation of moments of area.
 
 ## General concept
 Section integrators compute properties such as stiffness, stress distribution, or strain compatibility over a section. They operate on the geometry and material definitions to derive these results.
@@ -34,7 +34,7 @@ where $\varepsilon_i$ is determined using equation {eq}`eq:marin-linear-strain` 
 
 :::{note}
 The triangulation is optimized in order to be executed only the first time a calculation on the section is performed. All fibers information (position $y_i$, $z_i$ and area $A_i$) are stored in numpy arrays. 
-Therefore the application of {eq}`eq:fiber_strain_fibers` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in *structuralcodes*.
+Therefore the application of {eq}`eq:fiber_strain_fibers` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in StructuralCodes.
 :::
 
 (theory-marin-integrator)=
@@ -102,7 +102,7 @@ If the cross-section is not polynomial, it must be discretized into a polygon (f
 If the function to be integrated over the surface is not polynomial, the function can be discretized in linear branches and the cross section must be discretized in small polygons for each polynomial branch; also in this case the integral is not exact anymore.
 :::
 
-The main application of this algorithm in *structuralcodes* is for integrating the stress or modulus over the cross-section.
+The main application of this algorithm in StructuralCodes is for integrating the stress or modulus over the cross-section.
 
 In this context, let's consider a case of unixial bending, for which the stress function can be considered variable only with respect to coordinate $z$:
 
@@ -129,7 +129,7 @@ When the bending is not uniaxial anymore, one can consider the bidimensional nor
 P(y,z) = \sigma(y,z) = \sum_{m=0}^M \sum_{n=0}^N a_{m,n} y^m z^n 
 :::
 
-An alternative approach is to rotate the section in order to have uniaxial bending in the new reference system **$y^*z^*$**, see figure [below](theory-fig-marin-rotation). In *structuralcodes* we are adopting the latter approach.
+An alternative approach is to rotate the section in order to have uniaxial bending in the new reference system **$y^*z^*$**, see figure [below](theory-fig-marin-rotation). In StructuralCodes we are adopting the latter approach.
 
 (theory-fig-marin-rotation)=
 :::{figure} FigureBendingRotated.png
@@ -143,7 +143,7 @@ The coeficients $a_n$ are dependent on the stress function $\sigma(z)$, therefor
 
 In determination of stiffness matrix, we need to integrate the tangent modulus over the cross-section. In this case we are integrating the function $\sigma'$, where $\cdot'$ indicates the derivative (i.e. the tangent modulus).
 
-The determination of the coefficients for the constitutive laws implemented in *structuralcodes* is reported in the following subsections.
+The determination of the coefficients for the constitutive laws implemented in StructuralCodes is reported in the following subsections.
 
 :::{note}
 This means that if you write your custom constitutive law you must calculate the Marin coefficients for that law?

@@ -14,7 +14,7 @@ Pay attention that default-defined constitutive laws by material classes work wi
 
 (thery-compute-bending-strength)=
 ## Compute bending strength
-With this algorithm, *structuralcodes* computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis. 
+With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis. 
 
 (theory-fig-bending-calc-rotated-system)=
 :::{figure} FigureBendingRotated.png
@@ -73,7 +73,7 @@ Bisection algorithm for finding the strain plain that is in equilibrium with ext
 
 ## Compute Moment-curvature relation
 
-With this algorithm, *Structuralcodes* computes the moment-curvature of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis (see figure [above](theory-fig-bending-calc-rotated-system)). 
+With this algorithm, StructuralCodes computes the moment-curvature of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis (see figure [above](theory-fig-bending-calc-rotated-system)). 
 
 The algorithm works with the following steps:
 
@@ -111,7 +111,7 @@ Then, the usual bisection algorithm is adopted to find the value $\varepsilon_0$
 (theory-nm-domain)=
 ## Compute NM interaction domain
 
-With this algorithm, *structuralcodes* computes the two dimensional $N$-$M_y^*$ representing uniaxial bending respect to the rotated reference system *$y^*z^*$*.
+With this algorithm, StructuralCodes computes the two dimensional $N$-$M_y^*$ representing uniaxial bending respect to the rotated reference system *$y^*z^*$*.
 
 The algorithm works with the following steps:
 
@@ -137,7 +137,7 @@ Animation of ultimate strain profiles for uniaxial bending and corresponding int
 (theory-nmm-domain)=
 ## Compute MNN interaction domain
 
-With this algorithm, *structuralcodes* computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
+With this algorithm, StructuralCodes computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
 
 To do so, the algorithm loops different values of angle $\theta_i$ of neutral axes respect axis $y$, going from $0$ to $2\pi$ (the number of discretizations can be customized with the parameter `num_theta` whose default value is equal to 32).
 For each value of the angle $\theta_i$, the algorithm proceeds as the case of unixial bending ([here](theory-nm-domain)).
@@ -151,7 +151,7 @@ Left: ultimate domain NMM. Right: corresponding points in terms of N, $\chi_y$, 
 
 ## Compute MM interaction domain
 
-With this algorithm, *structuralcodes* computes the two dimensional $M_y$, $M_z$ interaction domain for a given value of external axial load  $N$.
+With this algorithm, StructuralCodes computes the two dimensional $M_y$, $M_z$ interaction domain for a given value of external axial load  $N$.
 
 The algorithm works with the following steps:
 1. **Create an array of angles**: the algorithm creates an array of linearly spaced values of angle $\theta$ of neutral axis respect to axis $y$. 
@@ -184,7 +184,7 @@ Ultimate domain NMM obtained as a set of slices computed as MM interaction domai
 
 ## Compute strain profile for given external forces
 
-With this algorithm, *structuralcodes*  computes the strain profile (represented by the triplet of values $\varepsilon_0$, $\chi_y$, $\chi_z$ that are respectively the axial strain corresponding to point $(0,0)$, and the curvatures with respect to axes $y$ and $z$) for a given set of external forces $N_{\mathrm{ext}}$, $M_{\mathrm{y,ext}}$, $M_{\mathrm{z,ext}}$, with an iterative solution algorithm based on Newton-Rhapson method.
+With this algorithm, StructuralCodes  computes the strain profile (represented by the triplet of values $\varepsilon_0$, $\chi_y$, $\chi_z$ that are respectively the axial strain corresponding to point $(0,0)$, and the curvatures with respect to axes $y$ and $z$) for a given set of external forces $N_{\mathrm{ext}}$, $M_{\mathrm{y,ext}}$, $M_{\mathrm{z,ext}}$, with an iterative solution algorithm based on Newton-Rhapson method.
 
 The vector containing the internal force $N$, $M_{\mathrm{y}}$, $M_{\mathrm{z}}$ is obtained by integrating the stresses over the cross-section area. These quantities can be expressed as follows:
 
@@ -466,6 +466,6 @@ where:
 
 ::::
 
-The algorithm implemented in *structuralcodes* is basically as above described, with the possibility of using also the modified Newton-Rhapson with initial tangent (setting `initial = True`). Further the user can set the maximum number of iterations (set to 10 by default) and the tolerance (set to 1e-6 by default).
+The algorithm implemented in StructuralCodes is basically as above described, with the possibility of using also the modified Newton-Rhapson with initial tangent (setting `initial = True`). Further the user can set the maximum number of iterations (set to 10 by default) and the tolerance (set to 1e-6 by default).
 
 [^leonhardt1973]: Leonhardt, F., Mönning, E. Vorlesungen über Massivbau, Springer, Verlag, Berlin/Heidelberg, 1973.

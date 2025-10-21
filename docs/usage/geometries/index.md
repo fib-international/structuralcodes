@@ -28,6 +28,10 @@ The t-shaped geometry created with the code [above](#code-usage-surface-geometri
 :::
 
 :::{tip}
+See the theory reference for a guide on the [coordinate system](#theory-grs) that is used in StructuralCodes.
+:::
+
+:::{tip}
 
 If you work in a Jupyter notebook, and return the geometry object in the final line of a code cell, the shape is visualized in the output below the code cell ✨
 :::
