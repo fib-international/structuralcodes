@@ -4,7 +4,7 @@ import math
 from typing import List, Literal
 
 
-def tao_Ed(VEd: float, bw: float, d: float) -> float:
+def tau_Ed(VEd: float, bw: float, d: float) -> float:
     """Calculate the average shear stress over the cross-section for linear
     members.
 
@@ -29,7 +29,7 @@ def tao_Ed(VEd: float, bw: float, d: float) -> float:
     return VEd * 1000 / (bw * z)
 
 
-def tao_Ed_planar(vEd: float, d: float) -> float:
+def tau_Ed_planar(vEd: float, d: float) -> float:
     """Calculate the average shear stress over the cross-section for planar
     members.
 
@@ -51,12 +51,41 @@ def tao_Ed_planar(vEd: float, d: float) -> float:
     return vEd / z
 
 
+def d_dg(f_ck: float, d_lower: float) -> float:
+    """Calculate the size parameter describing the failure zone roughness.
+
+    EN1992-1-1:2023 Note 2 for Eq. (8.20).
+
+    Args:
+        f_ck (float): Characteristic compressive strength of concrete in MPa
+            (must be positive).
+        d_lower (float): Smallest value of the upper sieve size D in an
+            aggregate for the coarsest fraction of aggregates in mm (must be
+            positive).
+
+    Returns:
+        float: Size parameter ddg in mm.
+
+    Raises:
+        ValueError: If any input value is non-positive.
+    """
+    if f_ck < 0:
+        raise ValueError(f'f_ck must not be negative. Got {f_ck}')
+    if d_lower < 0:
+        raise ValueError(f'd_lower must not be negative. Got {d_lower}')
+
+    if f_ck <= 60:
+        return min(16 + d_lower, 40)
+
+    return min(16 + d_lower * (60 / f_ck) ** 2, 40)
+
+
 def tau_rdc_min(
     gamma_v: float,
     f_ck: float,
     f_yd: float,
     d: float,
-    d_lower: float,
+    d_dg: float,
 ) -> float:
     """Calculate the minimum shear stress resistance.
 
@@ -70,9 +99,8 @@ def tau_rdc_min(
             positive).
         d (float): Effective depth of the flexural reinforcement in mm (must be
             positive).
-        d_lower (float): Smallest value of the upper sieve size D in an
-            aggregate for the coarsest fraction of aggregates in mm (must be
-            positive).
+        d_dg (float): Size parameter describing the failure zone roughness in
+            mm (must be positive).
 
     Returns:
         float: Minimum shear stress resistance in MPa.
@@ -88,13 +116,8 @@ def tau_rdc_min(
         raise ValueError(f'f_yd must not be negative. Got {f_yd}')
     if d < 0:
         raise ValueError(f'd must not be negative. Got {d}')
-    if d_lower < 0:
-        raise ValueError(f'd_lower must not be negative. Got {d_lower}')
-
-    if f_ck <= 60:
-        d_dg = min(16 + d_lower, 40)
-    else:
-        d_dg = min(16 + d_lower * (60 / f_ck) ** 2, 40)
+    if d_dg < 0:
+        raise ValueError(f'd_dg must not be negative. Got {d_dg}')
 
     return 11 / gamma_v * math.sqrt(f_ck / f_yd * d_dg / d)
 
@@ -110,15 +133,7 @@ def v_Ed(vEd_x: float, vEd_y: float) -> float:
 
     Returns:
         float: Design shear force per unit width (vEd) kN/m.
-
-    Raises:
-        ValueError: If vEd_x or vEd_y is negative.
     """
-    if vEd_x < 0:
-        raise ValueError(f'vEd_x must not be negative. Got {vEd_x}')
-    if vEd_y < 0:
-        raise ValueError(f'vEd_y must not be negative. Got {vEd_y}')
-
     return math.sqrt(vEd_x**2 + vEd_y**2)
 
 
@@ -128,8 +143,8 @@ def d_eff(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
     EN1992-1-1:2023 Eq. (8.22), (8.23), (8.24).
 
     Args:
-        dx (float): Effective depth in x-direction in mm.
-        dy (float): Effective depth in y-direction in mm.
+        dx (float): Effective depth in x-direction in mm (must be positive).
+        dy (float): Effective depth in y-direction in mm (must be positive).
         vEd_x (float): Shear force in x-direction in kN/m.
         vEd_y (float): Shear force in y-direction in kN/m.
 
@@ -137,7 +152,7 @@ def d_eff(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
         float: Effective depth (d) in mm.
 
     Raises:
-        ValueError: If dx, dy, vEd_x, or vEd_y is negative.
+        ValueError: If dx or dy is negative.
     """
     if dx < 0:
         raise ValueError(f'dx must not be negative. Got {dx}')
@@ -156,9 +171,7 @@ def d_eff(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
     return dy
 
 
-def d_eff_with_angle(
-    dx: float, dy: float, vEd_x: float, vEd_y: float
-) -> float:
+def d_eff_angle(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
     """Calculate the effective depth (d) based on the angle alpha_v.
 
     EN1992-1-1:2023 Eq. (8.25), (8.26).
@@ -173,7 +186,7 @@ def d_eff_with_angle(
         float: Effective depth (d) mm.
 
     Raises:
-        ValueError: If dx, dy, vEd_x, or vEd_y is negative.
+        ValueError: If dx or dy is negative.
     """
     if dx < 0:
         raise ValueError(f'dx must not be negative. Got {dx}')
@@ -193,7 +206,7 @@ def tau_Rdc(
     rho_l: float,
     f_ck: float,
     d: float,
-    d_g: float,
+    d_dg: float,
     tau_rdc_min: float,
 ) -> float:
     """Calculate the design value of the shear stress resistance.
@@ -205,23 +218,26 @@ def tau_Rdc(
         rho_l (float): Reinforcement ratio (unitless).
         f_ck (float): Characteristic compressive strength of concrete in MPa.
         d (float): Effective depth in mm.
-        d_g (float): Maximum aggregate size in mm.
+        d_dg (float): Size parameter describing the failure zone roughness in
+            mm.
         tau_rdc_min (float): Minimum resistance neede in MPa.
 
     Returns:
         float: The design value of the shear stress resistance MPa.
 
     Raises:
-        ValueError: If any of the input values are negative.
+        ValueError: If any input values are negative
+            or if gamma_v or d are non-positive.
     """
-    if gamma_v <= 0 or rho_l <= 0 or f_ck <= 0 or d <= 0 or d_g <= 0:
+    if gamma_v <= 0 or rho_l < 0 or f_ck < 0 or d <= 0 or d_dg < 0:
         raise ValueError(
-            f'All input values must be positive. Got gamma_v={gamma_v}, '
-            + f'rho_l={rho_l}, f_ck={f_ck}, d={d}, d_g={d_g}'
+            'gamma_v and d must be positive other values must be non-negative.'
+            + f'Got gamma_v={gamma_v}, rho_l={rho_l}, '
+            + f' f_ck={f_ck}, d={d}, d_dg={d_dg}'
         )
 
     return max(
-        0.66 / gamma_v * (100 * rho_l * f_ck * d_g / d) ** (1 / 3),
+        0.66 / gamma_v * (100 * rho_l * f_ck * d_dg / d) ** (1 / 3),
         abs(tau_rdc_min),
     )
 
@@ -252,20 +268,19 @@ def rho_l(A_sl: float, b_w: float, d: float) -> float:
 
 
 def a_v(a_cs: float, d: float) -> float:
-    """Calculate the effective shear span.
+    """Calculate the mechanical shear span.
 
-    EN1992-1-1:2023 Eq. (8.30).
+    EN1992-1-1:2023 Eq. (8.29).
 
     Args:
-        M_Ed (float): Bending moment kN·m.
-        V_Ed (float): Shear force kN.
-        d (float): Effective depth mm.
+        a_cs (float): Effective shear span in mm.
+        d (float): Effective depth in mm.
 
     Returns:
-        float: The effective shear span in mm.
+        float: The mechanical shear span av in mm.
 
     Raises:
-        ValueError: If any of the input values are negative.
+        ValueError: If any of the input values are non-positive.
     """
     if a_cs <= 0 or d <= 0:
         raise ValueError(
@@ -302,7 +317,8 @@ def k_vp(N_Ed: float, V_Ed: float, d: float, a_cs: float) -> float:
     EN1992-1-1:2023 Eq. (8.31).
 
     Args:
-        N_Ed (float): Axial force in kN.
+        N_Ed (float): Axial force in kN
+            (compression negative, tension positive).
         V_Ed (float): Shear force in kN.
         d (float): Effective depth in mm.
         a_cs (float): Effective shear span in mm.
@@ -311,13 +327,12 @@ def k_vp(N_Ed: float, V_Ed: float, d: float, a_cs: float) -> float:
         float: The coefficient k_vp (unitless).
 
     Raises:
-        ValueError: If any of the input values are negative.
+        ValueError: If d or a_cs are non-positive.
 
     """
     if d <= 0 or a_cs <= 0:
         raise ValueError(
-            'All input values must be positive. '
-            + f'Got N_Ed={N_Ed}, V_Ed={V_Ed}, d={d}, a_cs={a_cs}'
+            'd and a_cs must be positive. ' + f'Got d={d}, a_cs={a_cs}'
         )
 
     k_vp = 1 + (N_Ed / abs(V_Ed)) * (d / (3 * a_cs))
@@ -325,7 +340,7 @@ def k_vp(N_Ed: float, V_Ed: float, d: float, a_cs: float) -> float:
 
 
 def tau_Rdc_0(
-    gamma_v: float, rho_l: float, f_ck: float, d: float, d_g: float
+    gamma_v: float, rho_l: float, f_ck: float, d: float, d_dg: float
 ) -> float:
     """Calculate the design value of the shear stress resistance without axial
     force effects.
@@ -337,7 +352,8 @@ def tau_Rdc_0(
         rho_l (float): Reinforcement ratio (unitless).
         f_ck (float): Characteristic compressive strength of concrete in MPa.
         d (float): Effective depth in mm.
-        d_g (float): Maximum aggregate size in mm.
+        d_dg (float): Size parameter describing the failure zone roughness in
+            mm.
 
     Returns:
         float: The design value of the shear stress resistance in MPa.
@@ -345,18 +361,22 @@ def tau_Rdc_0(
     Raises:
         ValueError: If any of the input values are negative.
     """
-    if gamma_v <= 0 or rho_l <= 0 or f_ck <= 0 or d <= 0 or d_g <= 0:
+    if gamma_v <= 0 or rho_l <= 0 or f_ck <= 0 or d <= 0 or d_dg <= 0:
         raise ValueError(
             'All input values must be positive. '
             + f'Got gamma_v={gamma_v}, rho_l={rho_l}, '
-            + f'f_ck={f_ck}, d={d}, d_g={d_g}'
+            + f'f_ck={f_ck}, d={d}, d_dg={d_dg}'
         )
 
-    return 0.66 / gamma_v * (100 * rho_l * f_ck * d_g / d) ** (1 / 3)
+    return 0.66 / gamma_v * (100 * rho_l * f_ck * d_dg / d) ** (1 / 3)
 
 
 def tau_Rdc_comp(
-    tau_Rdc_0: float, k1: float, sigma_cp: float, tau_Rdc_max: float
+    tau_Rdc_0: float,
+    k1: float,
+    sigma_cp: float,
+    tau_Rdc_max: float,
+    tau_rdc_min: float,
 ) -> float:
     """Calculate the design value of the shear stress resistance considering
     compressive normal forces.
@@ -371,6 +391,8 @@ def tau_Rdc_comp(
         sigma_cp (float): Compressive stress due to axial force in MPa.
         tau_Rdc_max (float): Maximum design value of the shear stress
             resistance in MPa.
+        tau_rdc_min (float): Minimum design value of the shear stress
+            resistance in MPa.
 
     Returns:
         float: The design value of the shear stress resistance in MPa.
@@ -378,15 +400,22 @@ def tau_Rdc_comp(
     Raises:
         ValueError: If any of the input values are negative.
     """
-    if tau_Rdc_0 <= 0 or k1 <= 0 or sigma_cp < 0 or tau_Rdc_max <= 0:
+    if (
+        tau_Rdc_0 <= 0
+        or k1 <= 0
+        or sigma_cp < 0
+        or tau_Rdc_max <= 0
+        or tau_rdc_min <= 0
+    ):
         raise ValueError(
             'All input values must be positive. '
             + f'Got tau_Rdc_0={tau_Rdc_0}, k1={k1}, '
-            + f'sigma_cp={sigma_cp}, tau_Rdc_max={tau_Rdc_max}'
+            + f'sigma_cp={sigma_cp}, tau_Rdc_max={tau_Rdc_max}, '
+            + f'tau_rdc_min={tau_rdc_min}'
         )
 
     tau_Rdc = tau_Rdc_0 - k1 * sigma_cp
-    return min(tau_Rdc, tau_Rdc_max)
+    return max(min(tau_Rdc, tau_Rdc_max), tau_rdc_min)
 
 
 def k1(
@@ -418,13 +447,14 @@ def k1(
     Raises:
         ValueError: If any of the input values are negative.
     """
-    if a_cs_0 <= 0 or e_p < 0 or A_c <= 0 or b_w <= 0 or z <= 0:
+    if a_cs_0 <= 0 or e_p < 0 or A_c <= 0 or b_w <= 0 or z <= 0 or d <= 0:
         raise ValueError(
             'All input values must be positive.'
-            + f' Got a_cs_0={a_cs_0}, e_p={e_p}, A_c={A_c}, b_w={b_w}, z={z}'
+            + f' Got a_cs_0={a_cs_0}, e_p={e_p}, A_c={A_c}, '
+            + f'b_w={b_w}, z={z}, d={d}'
         )
 
-    k1 = 0.5 * a_cs_0 / (e_p + d / 3) * (A_c / (b_w * z))
+    k1 = 0.5 / a_cs_0 / (e_p + d / 3) * (A_c / (b_w * z))
     return min(k1, A_c * 0.18 / (b_w * z))
 
 
@@ -472,7 +502,8 @@ def d_eff_p(ds: float, As: float, dp: float, Ap: float) -> float:
         float: Effective depth in mm.
 
     Raises:
-        ValueError: If any of the input values are negative.
+        ValueError: If any of the input values are negative or if
+            ds*As + dp*Ap equals zero (division by zero).
     """
     if ds < 0:
         raise ValueError(f'ds must not be negative. Got {ds}')
@@ -483,7 +514,14 @@ def d_eff_p(ds: float, As: float, dp: float, Ap: float) -> float:
     if Ap < 0:
         raise ValueError(f'Ap must not be negative. Got {Ap}')
 
-    return (ds**2 * As + dp**2 * Ap) / (ds * As + dp * Ap)
+    denominator = ds * As + dp * Ap
+    if denominator == 0:
+        raise ValueError(
+            'Division by zero: ds*As + dp*Ap cannot be zero. '
+            + f'Got ds={ds}, As={As}, dp={dp}, Ap={Ap}'
+        )
+
+    return (ds**2 * As + dp**2 * Ap) / denominator
 
 
 def rho_l_p(
@@ -506,7 +544,8 @@ def rho_l_p(
         float: Reinforcement ratio.
 
     Raises:
-        ValueError: If any of the input values are negative.
+        ValueError: If any of the input values are negative or if bw is not
+            positive.
     """
     if ds < 0:
         raise ValueError(f'ds must not be negative. Got {ds}')
@@ -516,8 +555,8 @@ def rho_l_p(
         raise ValueError(f'dp must not be negative. Got {dp}')
     if Ap < 0:
         raise ValueError(f'Ap must not be negative. Got {Ap}')
-    if bw < 0:
-        raise ValueError(f'bw must not be negative. Got {bw}')
+    if bw <= 0:
+        raise ValueError(f'bw must be positive. Got {bw}')
     if d < 0:
         raise ValueError(f'd must not be negative. Got {d}')
 
@@ -534,7 +573,7 @@ def rho_l_planar(
 
     Args:
         vEd_y (float): Shear force in y-direction (kN).
-        vEd_x (float): Shear force in x-direction (kN).
+        vEd_x (float): Shear force in x-direction (kN) (cannot be zero).
         rho_l_x (float): Reinforcement ratio in x-direction.
         rho_l_y (float): Reinforcement ratio in y-direction.
 
@@ -542,8 +581,8 @@ def rho_l_planar(
         float: Reinforcement ratio.
 
     Raises:
-        ValueError: If any of the input values are negative or if the shear
-            force ratio is not in the valid range.
+        ValueError: If any of the input values are negative or if vEd_x is zero
+            (division by zero).
     """
     if vEd_y < 0:
         raise ValueError(f'vEd_y must not be negative. Got {vEd_y}')
@@ -553,6 +592,12 @@ def rho_l_planar(
         raise ValueError(f'rho_l_x must not be negative. Got {rho_l_x}')
     if rho_l_y < 0:
         raise ValueError(f'rho_l_y must not be negative. Got {rho_l_y}')
+
+    if vEd_x == 0:
+        raise ValueError(
+            'Division by zero: vEd_x cannot be zero for ratio calculation. '
+            + f'Got vEd_x={vEd_x}'
+        )
 
     ratio = vEd_y / vEd_x
 

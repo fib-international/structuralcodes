@@ -16,7 +16,7 @@ from structuralcodes.codes.ec2_2023 import _section_8_2_shear
 )
 def test_tao_Ed(VEd, bw, d, expected):
     """Test shear_stress_linear_members."""
-    assert _section_8_2_shear.tao_Ed(VEd, bw, d) == pytest.approx(expected)
+    assert _section_8_2_shear.tau_Ed(VEd, bw, d) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
@@ -27,10 +27,10 @@ def test_tao_Ed(VEd, bw, d, expected):
         (100.0, -0.3, -0.5),
     ],
 )
-def test_tao_Ed_value_errors(VEd, bw, d):
+def test_tau_Ed_value_errors(VEd, bw, d):
     """Test tao_Ed raises ValueError for negative bw or d."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tao_Ed(VEd, bw, d)
+        _section_8_2_shear.tau_Ed(VEd, bw, d)
 
 
 @pytest.mark.parametrize(
@@ -44,7 +44,7 @@ def test_tao_Ed_value_errors(VEd, bw, d):
 )
 def test_tao_Ed_planar_valid(vEd, d, expected):
     """Test tao_Ed_planar with valid inputs."""
-    assert _section_8_2_shear.tao_Ed_planar(vEd, d) == pytest.approx(
+    assert _section_8_2_shear.tau_Ed_planar(vEd, d) == pytest.approx(
         expected, rel=1e-9
     )
 
@@ -60,7 +60,22 @@ def test_tao_Ed_planar_valid(vEd, d, expected):
 def test_tao_Ed_planar_invalid_depth(vEd, d):
     """Test tao_Ed_planar raises ValueError for negative d."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tao_Ed_planar(vEd, d)
+        _section_8_2_shear.tau_Ed_planar(vEd, d)
+
+
+@pytest.mark.parametrize(
+    'f_ck, d_lower, expected',
+    [
+        (30, 20, 36),  # f_ck <= 60: min(16 + 20, 40) = 36
+        (40, 25, 40),  # f_ck <= 60: min(16 + 25, 40) = 40
+        (70, 30, 38.0204),  # f_ck > 60: min(16 + 30 * (60/70)^2, 40) = 38.0204
+        (80, 20, 27.25),  # f_ck > 60: min(16 + 20 * (60/80)^2, 40) = 27.25
+    ],
+)
+def test_d_dg(f_ck, d_lower, expected):
+    """Test the d_dg function with example values."""
+    result = _section_8_2_shear.d_dg(f_ck, d_lower)
+    assert result == pytest.approx(expected, rel=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -73,7 +88,8 @@ def test_tao_Ed_planar_invalid_depth(vEd, d):
 )
 def test_tau_rdc_min(gamma_v, f_ck, f_yd, d, d_lower, expected):
     """Test the calculate_tau_rdc_min function with example values."""
-    result = _section_8_2_shear.tau_rdc_min(gamma_v, f_ck, f_yd, d, d_lower)
+    d_dg = _section_8_2_shear.d_dg(f_ck, d_lower)
+    result = _section_8_2_shear.tau_rdc_min(gamma_v, f_ck, f_yd, d, d_dg)
     assert result == pytest.approx(expected, rel=1e-4)
 
 
@@ -120,7 +136,7 @@ def test_d_eff(dx, dy, vEd_x, vEd_y, expected):
 def test_ed_eff_with_angle(dx, dy, vEd_x, vEd_y, expected):
     """Test calculation of effective depth based on angle alpha_v."""
     assert math.isclose(
-        _section_8_2_shear.d_eff_with_angle(dx, dy, vEd_x, vEd_y),
+        _section_8_2_shear.d_eff_angle(dx, dy, vEd_x, vEd_y),
         expected,
         rel_tol=1e-9,
     )
@@ -137,11 +153,11 @@ def test_ed_eff_with_angle(dx, dy, vEd_x, vEd_y, expected):
 def test_d_eff_with_angle_value_errors(dx, dy, vEd_x, vEd_y):
     """Test d_eff_with_angle raises ValueError for negative dx or dy."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.d_eff_with_angle(dx, dy, vEd_x, vEd_y)
+        _section_8_2_shear.d_eff_angle(dx, dy, vEd_x, vEd_y)
 
 
 @pytest.mark.parametrize(
-    'gamma_v, rho_l, f_ck, d, d_g, tau_rdc_min, expected',
+    'gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min, expected',
     [
         (1.5, 0.02, 30, 500, 16, 0.3, 0.5468),
         (1.4, 0.03, 40, 450, 20, 0.5, 0.82366),
@@ -149,11 +165,11 @@ def test_d_eff_with_angle_value_errors(dx, dy, vEd_x, vEd_y):
     ],
 )
 def test_calculate_tau_Rdc(
-    gamma_v, rho_l, f_ck, d, d_g, tau_rdc_min, expected
+    gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min, expected
 ):
     """Test the calculation of the shear stress resistance."""
     result = _section_8_2_shear.tau_Rdc(
-        gamma_v, rho_l, f_ck, d, d_g, tau_rdc_min
+        gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min
     )
     assert math.isclose(
         result,
@@ -163,19 +179,32 @@ def test_calculate_tau_Rdc(
 
 
 @pytest.mark.parametrize(
-    'gamma_v, f_ck, f_yd, d, d_lower',
+    'f_ck, d_lower',
     [
-        (-1.0, 30, 500, 500, 20),
-        (1.4, -30, 500, 500, 20),
-        (1.4, 30, -500, 500, 20),
-        (1.4, 30, 500, -500, 20),
-        (1.4, 30, 500, 500, -20),
+        (-30, 20),
+        (30, -20),
     ],
 )
-def test_tau_rdc_min_value_errors(gamma_v, f_ck, f_yd, d, d_lower):
+def test_d_dg_value_errors(f_ck, d_lower):
+    """Test d_dg raises ValueError for negative arguments."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.d_dg(f_ck, d_lower)
+
+
+@pytest.mark.parametrize(
+    'gamma_v, f_ck, f_yd, d, d_dg',
+    [
+        (-1.0, 30, 500, 500, 36),
+        (1.4, -30, 500, 500, 36),
+        (1.4, 30, -500, 500, 36),
+        (1.4, 30, 500, -500, 36),
+        (1.4, 30, 500, 500, -36),
+    ],
+)
+def test_tau_rdc_min_value_errors(gamma_v, f_ck, f_yd, d, d_dg):
     """Test tau_rdc_min raises ValueError for negative arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_rdc_min(gamma_v, f_ck, f_yd, d, d_lower)
+        _section_8_2_shear.tau_rdc_min(gamma_v, f_ck, f_yd, d, d_dg)
 
 
 @pytest.mark.parametrize(
@@ -211,38 +240,63 @@ def test_rho_l_value_errors(A_sl, b_w, d):
 
 
 @pytest.mark.parametrize(
-    'vEd_x, vEd_y',
-    [
-        (-1.0, 4.0),  # Negative x-direction
-        (3.0, -2.0),  # Negative y-direction
-        (-5.0, -6.0),  # Both negative
-    ],
-)
-def test_v_Ed_value_errors(vEd_x, vEd_y):
-    """Test v_Ed raises ValueError for negative vEd_x or vEd_y."""
-    with pytest.raises(ValueError):
-        _section_8_2_shear.v_Ed(vEd_x, vEd_y)
-
-
-@pytest.mark.parametrize(
-    'gamma_v, rho_l, f_ck, d, d_g, tau_rdc_min',
+    'gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min',
     [
         (-1.0, 0.02, 30, 500, 16, 0.3),  # Negative gamma_v
         (1.5, -0.02, 30, 500, 16, 0.3),  # Negative rho_l
         (1.5, 0.02, -30, 500, 16, 0.3),  # Negative f_ck
         (1.5, 0.02, 30, -500, 16, 0.3),  # Negative d
-        (1.5, 0.02, 30, 500, -16, 0.3),  # Negative d_g
+        (1.5, 0.02, 30, 500, -16, 0.3),  # Negative d_dg
         (0.0, 0.02, 30, 500, 16, 0.3),  # Zero gamma_v
-        (1.5, 0.0, 30, 500, 16, 0.3),  # Zero rho_l
-        (1.5, 0.02, 0.0, 500, 16, 0.3),  # Zero f_ck
         (1.5, 0.02, 30, 0.0, 16, 0.3),  # Zero d
-        (1.5, 0.02, 30, 500, 0.0, 0.3),  # Zero d_g
     ],
 )
-def test_tau_Rdc_value_errors(gamma_v, rho_l, f_ck, d, d_g, tau_rdc_min):
-    """Test tau_Rdc raises ValueError for non-positive arguments."""
+def test_tau_Rdc_value_errors(gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min):
+    """Test tau_Rdc raises ValueError for negative values or zero gamma_v/d."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_Rdc(gamma_v, rho_l, f_ck, d, d_g, tau_rdc_min)
+        _section_8_2_shear.tau_Rdc(gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min)
+
+
+@pytest.mark.parametrize(
+    'gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min, expected',
+    [
+        (
+            1.5,
+            0.0,
+            30,
+            500,
+            16,
+            0.3,
+            0.3,
+        ),  # Zero rho_l - should return tau_rdc_min
+        (
+            1.5,
+            0.02,
+            0.0,
+            500,
+            16,
+            0.3,
+            0.3,
+        ),  # Zero f_ck - should return tau_rdc_min
+        (
+            1.5,
+            0.02,
+            30,
+            500,
+            0.0,
+            0.3,
+            0.3,
+        ),  # Zero d_dg - should return tau_rdc_min
+    ],
+)
+def test_tau_Rdc_zero_values(
+    gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min, expected
+):
+    """Test tau_Rdc handles zero values correctly (should not raise errors)."""
+    result = _section_8_2_shear.tau_Rdc(
+        gamma_v, rho_l, f_ck, d, d_dg, tau_rdc_min
+    )
+    assert result == pytest.approx(expected, rel=1e-3)
 
 
 @pytest.mark.parametrize(
@@ -349,16 +403,16 @@ def test_k_vp_value_errors(N_Ed, V_Ed, d, a_cs):
 
 
 @pytest.mark.parametrize(
-    'gamma_v, rho_l, f_ck, d, d_g, expected',
+    'gamma_v, rho_l, f_ck, d, d_dg, expected',
     [
         (1.5, 0.02, 30, 500, 16, 0.5468),
         (1.4, 0.03, 40, 450, 20, 0.8236),
         (1.6, 0.025, 35, 600, 18, 0.5690),
     ],
 )
-def test_calculate_tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_g, expected):
+def test_calculate_tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_dg, expected):
     """Test the sh stress resistance wo/ axial force effects."""
-    result = _section_8_2_shear.tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_g)
+    result = _section_8_2_shear.tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_dg)
     assert math.isclose(
         result,
         expected,
@@ -367,7 +421,7 @@ def test_calculate_tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_g, expected):
 
 
 @pytest.mark.parametrize(
-    'gamma_v, rho_l, f_ck, d, d_g',
+    'gamma_v, rho_l, f_ck, d, d_dg',
     [
         (0, 0.02, 30, 500, 16),  # gamma_v zero
         (-1, 0.02, 30, 500, 16),  # gamma_v negative
@@ -377,59 +431,69 @@ def test_calculate_tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_g, expected):
         (1.5, 0.02, -30, 500, 16),  # f_ck negative
         (1.5, 0.02, 30, 0, 16),  # d zero
         (1.5, 0.02, 30, -500, 16),  # d negative
-        (1.5, 0.02, 30, 500, 0),  # d_g zero
-        (1.5, 0.02, 30, 500, -16),  # d_g negative
+        (1.5, 0.02, 30, 500, 0),  # d_dg zero
+        (1.5, 0.02, 30, 500, -16),  # d_dg negative
     ],
 )
-def test_tau_Rdc_0_value_errors(gamma_v, rho_l, f_ck, d, d_g):
+def test_tau_Rdc_0_value_errors(gamma_v, rho_l, f_ck, d, d_dg):
     """Test tau_Rdc_0 raises ValueError for non-positive arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_g)
+        _section_8_2_shear.tau_Rdc_0(gamma_v, rho_l, f_ck, d, d_dg)
 
 
 @pytest.mark.parametrize(
-    'tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, expected',
+    'tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, tau_rdc_min, expected',
     [
-        (1, 0.5, 0.1, 2, 0.95),
-        (1, 0.6, 0.2, 2, 0.88),
-        (1, 0.4, 0.3, 2, 0.88),
+        (1, 0.5, 0.1, 2, 0.3, 0.95),
+        (1, 0.6, 0.2, 2, 0.3, 0.88),
+        (1, 0.4, 0.3, 2, 0.3, 0.88),
+        (1, 0.5, 0.1, 0.8, 0.3, 0.8),  # Limited by tau_Rdc_max
+        (1, 0.5, 0.5, 2, 0.8, 0.8),  # Limited by tau_rdc_min
     ],
 )
 def test_calculate_tau_Rdc_comp(
-    tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, expected
+    tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, tau_rdc_min, expected
 ):
     """Test the calculation of the shear considering comp normal forces."""
     assert math.isclose(
-        _section_8_2_shear.tau_Rdc_comp(tau_Rdc_0, k1, sigma_cp, tau_Rdc_max),
+        _section_8_2_shear.tau_Rdc_comp(
+            tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, tau_rdc_min
+        ),
         expected,
         rel_tol=1e-5,
     )
 
 
 @pytest.mark.parametrize(
-    'tau_Rdc_0, k1, sigma_cp, tau_Rdc_max',
+    'tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, tau_rdc_min',
     [
-        (0, 0.5, 0.1, 2),  # tau_Rdc_0 zero
-        (-1, 0.5, 0.1, 2),  # tau_Rdc_0 negative
-        (1, 0, 0.1, 2),  # k1 zero
-        (1, -0.5, 0.1, 2),  # k1 negative
-        (1, 0.5, -0.1, 2),  # sigma_cp negative
-        (1, 0.5, 0.1, 0),  # tau_Rdc_max zero
-        (1, 0.5, 0.1, -2),  # tau_Rdc_max negative
+        (0, 0.5, 0.1, 2, 0.3),  # tau_Rdc_0 zero
+        (-1, 0.5, 0.1, 2, 0.3),  # tau_Rdc_0 negative
+        (1, 0, 0.1, 2, 0.3),  # k1 zero
+        (1, -0.5, 0.1, 2, 0.3),  # k1 negative
+        (1, 0.5, -0.1, 2, 0.3),  # sigma_cp negative
+        (1, 0.5, 0.1, 0, 0.3),  # tau_Rdc_max zero
+        (1, 0.5, 0.1, -2, 0.3),  # tau_Rdc_max negative
+        (1, 0.5, 0.1, 2, 0),  # tau_rdc_min zero
+        (1, 0.5, 0.1, 2, -0.3),  # tau_rdc_min negative
     ],
 )
-def test_tau_Rdc_comp_value_errors(tau_Rdc_0, k1, sigma_cp, tau_Rdc_max):
+def test_tau_Rdc_comp_value_errors(
+    tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, tau_rdc_min
+):
     """Test tau_Rdc_comp raises ValueError."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_Rdc_comp(tau_Rdc_0, k1, sigma_cp, tau_Rdc_max)
+        _section_8_2_shear.tau_Rdc_comp(
+            tau_Rdc_0, k1, sigma_cp, tau_Rdc_max, tau_rdc_min
+        )
 
 
 @pytest.mark.parametrize(
     'a_cs_0, e_p, A_c, b_w, z, d, expected',
     [
-        (1000, 50, 10000, 200, 500, 200, 0.018),
-        (1200, 60, 12000, 250, 600, 200, 0.0144),
-        (1100, 55, 11000, 220, 550, 200, 0.01636),
+        (1000, 50, 10000, 200, 500, 200, 0.000000429),
+        (1200, 60, 12000, 250, 600, 200, 0.000000263),
+        (1100, 55, 11000, 220, 550, 200, 0.0000003396),
     ],
 )
 def test_calculate_k1(a_cs_0, e_p, A_c, b_w, z, d, expected):
@@ -450,6 +514,8 @@ def test_calculate_k1(a_cs_0, e_p, A_c, b_w, z, d, expected):
         (1000, 50, 10000, -200, 500, 200),  # b_w negative
         (1000, 50, 10000, 200, 0, 200),  # z zero
         (1000, 50, 10000, 200, -500, 200),  # z negative
+        (1000, 50, 10000, 200, 500, 0),  # d zero
+        (1000, 50, 10000, 200, 500, -200),  # d negative
     ],
 )
 def test_k1_value_errors(a_cs_0, e_p, A_c, b_w, z, d):
@@ -520,10 +586,15 @@ def test_d_eff_p(ds, As, dp, Ap, expected):
         (500, 2000, -600, 1500),  # Negative dp
         (500, 2000, 600, -1500),  # Negative Ap
         (-1, -2000, -600, -1500),  # All negative
+        (0, 0, 0, 0),  # All zero (division by zero)
+        (500, 0, 600, 0),  # As and Ap zero (division by zero)
+        (0, 2000, 0, 1500),  # ds and dp zero (division by zero)
     ],
 )
 def test_d_eff_p_value_errors(ds, As, dp, Ap):
-    """Test that d_eff_p raises ValueError for negative arguments."""
+    """Test that d_eff_p raises ValueError for negative arguments or
+    division by zero.
+    """
     with pytest.raises(ValueError):
         _section_8_2_shear.d_eff_p(ds, As, dp, Ap)
 
@@ -553,11 +624,12 @@ def test_calculate_reinforcement_ratio(ds, As, dp, Ap, bw, d, expected):
         (500, 2000, -600, 1500, 300, 545.45),  # Negative dp
         (500, 2000, 600, -1500, 300, 545.45),  # Negative Ap
         (500, 2000, 600, 1500, -300, 545.45),  # Negative bw
+        (500, 2000, 600, 1500, 0, 545.45),  # Zero bw
         (500, 2000, 600, 1500, 300, -545.45),  # Negative d
     ],
 )
 def test_rho_l_p_value_errors(ds, As, dp, Ap, bw, d):
-    """Test that rho_l_p raises ValueError for negative arguments."""
+    """Test that rho_l_p raises ValueError for neg arguments or zero bw."""
     with pytest.raises(ValueError):
         _section_8_2_shear.rho_l_p(ds, As, dp, Ap, bw, d)
 
@@ -587,10 +659,11 @@ def test_rho_l_planar(vEd_y, vEd_x, rho_l_x, rho_l_y, expected):
         (20, -40, 0.005, 0.008),  # Negative vEd_x
         (20, 40, -0.005, 0.008),  # Negative rho_l_x
         (20, 40, 0.005, -0.008),  # Negative rho_l_y
+        (20, 0, 0.005, 0.008),  # vEd_x zero (division by zero)
     ],
 )
 def test_rho_l_planar_value_errors(vEd_y, vEd_x, rho_l_x, rho_l_y):
-    """Test that rho_l_planar raises ValueError for negative arguments."""
+    """Test that rho_l_planar raises ValueError for invalid inputs."""
     with pytest.raises(ValueError):
         _section_8_2_shear.rho_l_planar(vEd_y, vEd_x, rho_l_x, rho_l_y)
 
