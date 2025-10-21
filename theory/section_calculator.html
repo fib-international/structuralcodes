@@ -1,0 +1,942 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Section integrators" href="section_integrator.html" /><link rel="prev" title="Coordinate system and sign convention" href="crs.html" />
+
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+        <title>Section calculator - StructuralCodes documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=eda8dd78" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-caption-text: #666666;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-caption-text: #A1A1A1;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-caption-text: #A1A1A1;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">StructuralCodes documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/structuralcodeslogo-300.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/structuralcodeslogo-300.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">StructuralCodes documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/index.html">Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../usage/index.html">Usage guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Usage guide</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usage/materials/index.html">Materials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/geometries/index.html">Geometries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/sections/index.html">Sections</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/library_structure.html">Library structure</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/codes/index.html">Design codes</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Design codes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/codes/general.html">General functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/codes/ec2_2004/index.html">Eurocode 2 (2004)</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2004)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/shear.html">Shear capacity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/codes/ec2_2023/index.html">Eurocode 2 (2023)</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2023)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/deflections.html">Deflection calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/codes/mc2010/index.html">fib Model Code 2010</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of fib Model Code 2010</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/shear.html">Shear, punching and torsion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/creep_shrinkage.html">Creep and shrinkage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/bond_reinforcement.html">Bond of embedded steel reinforcement</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/materials/index.html">Materials</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Materials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/basic_materials.html">Basic materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/concretes.html">Concrete materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/reinforcement_steels.html">Reinforcement steel materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/constitutive_laws.html">Constitutive laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/base_materials.html">Base material classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/geometry/profiles.html">Profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/section_calculator.html">Section calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/misc_functions.html">Miscellaneous functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Theory reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Theory reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="crs.html">Coordinate system and sign convention</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Section calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="section_integrator.html">Section integrators</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../versioning/index.html">Versioning</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/theory/section_calculator.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/theory/section_calculator.md" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="section-calculator">
+<span id="theory-section-calculator"></span><h1>Section calculator<a class="headerlink" href="#section-calculator" title="Link to this heading">¶</a></h1>
+<section id="general-concept">
+<h2>General concept<a class="headerlink" href="#general-concept" title="Link to this heading">¶</a></h2>
+<p>Section calculators evaluate the structural response based on section properties and applied loads. They integrate results from the geometry and material models to provide insights into section performance by using a specific <a class="reference internal" href="section_integrator.html#theory-section-integrators"><span class="std std-ref"><em>section integrator</em></span></a>.</p>
+<p>The section calculator contains the methods that permits to handle a structual analysis for a cross section. For instance it is possible to compute the bending strength given the axial force, or to compute the moment curvature, or to compute the strength domain. The outputs of those methods are represented as <em>ad-hoc</em> defined results objects which contains the data and the methods to further process them.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Note that in the current implementation both material constitutive laws and section are <em>unitless</em>. It means that user should choose a consistent set of units, like N for forces and mm for lengths; in this way the stresses will be in MPa and the moments in Nmm.
+Pay attention that default-defined constitutive laws by material classes work with the units defined by the considered code, e.g. MPa for EC2 or MC2010.</p>
+</div>
+</section>
+<section id="compute-bending-strength">
+<span id="thery-compute-bending-strength"></span><h2>Compute bending strength<a class="headerlink" href="#compute-bending-strength" title="Link to this heading">¶</a></h2>
+<p>With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis.</p>
+<figure class="align-default" id="id3">
+<span id="theory-fig-bending-calc-rotated-system"></span><img alt="../_images/FigureBendingRotated.png" src="../_images/FigureBendingRotated.png" />
+<figcaption>
+<p><span class="caption-text">The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In the rotated reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, the bending strength in terms of positive <span class="math notranslate nohighlight">\(M_{y^*}\)</span> is computed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be equal to <span class="math notranslate nohighlight">\(\pi\)</span>.</p>
+<figure class="align-default" id="id4">
+<span id="theory-fig-system-uniaxial-bending"></span><img alt="../_images/FigureBendingTopCompression.png" src="../_images/FigureBendingTopCompression.png" />
+<figcaption>
+<p><span class="caption-text">Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</div>
+<div class="docutils">
+<p>According to classic RC theory<a class="footnote-reference brackets" href="#leonhardt1973" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).</p>
+<figure class="align-default" id="id5">
+<span id="theory-fig-deformation-domain"></span><img alt="../_images/Figure_DeformationDomain.png" src="../_images/Figure_DeformationDomain.png" />
+<figcaption>
+<p><span class="caption-text">Ultimate deformation domains for uniaxial bending with or without axial force <a class="footnote-reference brackets" href="#leonhardt1973" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</div>
+<p>The algorithm developed can be summarized as follows:</p>
+<ol class="arabic">
+<li><p><strong>Rotate the section</strong>: the section is rotated by the given angle theta. In this new CRS <em><span class="math notranslate nohighlight">\(y^*z^*\)</span></em>, the problem becomes uniaxial bending about the <em><span class="math notranslate nohighlight">\(y^*\)</span></em> axis</p></li>
+<li><p><strong>Axial load check</strong>: verify if axial load is within the admissible range of axial loads (in tension and compression). This ensures the section can withstand the applied aixal load without failure.</p></li>
+<li><p><strong>Ultimate strain profile</strong>: find a strain profile that reaches the utimate strain for at least one of the materials. The found strain profile must guarantee equilibrium with external axial load. This is computed with an iterative algorithm based on bisection method.</p>
+<p>a. The internal axial load, defined by the balanced failure condition (i.e., the simultaneous reaching of ultimate strain in both the stretched and compressed materials), is evaluated by integrating the strain profile.</p>
+<p>b. If the internal axial load is greater than the external axial load, the neutral axis needs to be lowered, indicating excessive tension in the section. If the internal axial load is lower, the neutral axis should be raised to reduce compression.</p>
+<p>c. The strain profile is then adjusted by changing the curvature, pivoting on either the top or bottom chord. The goal is to balance the axial load and reach a solution that satisfies equilibrium. This is done solving the equation <span class="math notranslate nohighlight">\(\Delta N(\chi_{y^*})=0\)</span> where <span class="math notranslate nohighlight">\(\Delta N(\chi_{y^*})=N_{ext}-N_{int}(\chi_{y^*})\)</span>. For instance the function could be something like depicted in the following picture.</p>
+<figure class="align-default" id="id6">
+<span id="theory-fig-dn-chi"></span><img alt="../_images/FiguredN_chi.png" src="../_images/FiguredN_chi.png" />
+<figcaption>
+<p><span class="caption-text">The function <span class="math notranslate nohighlight">\(\Delta N(\chi_y^*)\)</span> the searched curvature is the intersection with the horizontal axis (i.e. when <span class="math notranslate nohighlight">\(\Delta N(\chi_y^*) = 0\)</span>).</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Bisection algorithm permits to find the zero of the function within some iterations.</p>
+</li>
+</ol>
+<figure class="align-default" id="id7">
+<span id="theory-fig-bisection-dem"></span><img alt="../_images/bisection_demo.gif" src="../_images/bisection_demo.gif" />
+<figcaption>
+<p><span class="caption-text">Bisection algorithm for finding the strain plain that is in equilibrium with extenal axial force.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ol class="arabic simple" start="4">
+<li><p><strong>Final Computation of Bending Strength</strong>: once the equilibrium strain profile is found, the bending strength is calculated by integrating the obtained strain profile. This results in the final bending strength in the rotated coordinate system described in step 1, which is then transformed back to the original coordinate system.</p></li>
+</ol>
+</section>
+<section id="compute-moment-curvature-relation">
+<h2>Compute Moment-curvature relation<a class="headerlink" href="#compute-moment-curvature-relation" title="Link to this heading">¶</a></h2>
+<p>With this algorithm, StructuralCodes computes the moment-curvature of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis (see figure <a class="reference internal" href="#theory-fig-bending-calc-rotated-system"><span class="std std-ref">above</span></a>).</p>
+<p>The algorithm works with the following steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Rotate the section</strong>: the section is rotated by the given angle theta. In this new CRS <em><span class="math notranslate nohighlight">\(y^*z^*\)</span></em>, the problem becomes uniaxial bending about the <em><span class="math notranslate nohighlight">\(y^*\)</span></em> axis.</p></li>
+<li><p><strong>Axial load check</strong>: verify if axial load is within the admissible range of axial loads (in tension and compression). This ensures the section can withstand the applied aixal load without failure.</p></li>
+<li><p><strong>If not provided, compute array of curvatures</strong>: if curvatures are not provided, the array of curvatures is computed. First the yield and ultimate curvatures are computed and the array of curvatures is computed with some points before yielding, and other points from yielding to ultimate condition. Ultimate curvature represents the last value computed automatically. If the user wants to go beyond that point, he should provide a custom curvatures array. For more information, refert to the <a class="reference internal" href="../api/sections/section_calculator.html#api-section-calculator"><span class="std std-ref">api</span></a>.</p></li>
+<li><p><strong>For each curvature value compute moment</strong>: for each value of the curvature, the algorithms finds the strain profile that is in equlibrium with external axial force and computes the corresponding value of moment.
+To do so, the algorithm proceeds iterativelly, for a fixed value of curvature, solving the equation <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)=0\)</span> where <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)=N_{ext}-N_{int}(\varepsilon_0)\)</span> and <span class="math notranslate nohighlight">\(\varepsilon_0\)</span> is the axial strain at coordinates <span class="math notranslate nohighlight">\((0, 0)\)</span> of the section. The iterative solution is performed with a bisection algorithm applied to the range <span class="math notranslate nohighlight">\([\varepsilon_{0,A}, \varepsilon_{0,B}]\)</span> where <span class="math notranslate nohighlight">\(\varepsilon_{0,A}\)</span> is the axial strain from the last step and <span class="math notranslate nohighlight">\(\varepsilon_{0,B}\)</span> is found by a quick <a class="reference internal" href="#theory-pre-find-range"><span class="std std-ref">pre-computation algorithm</span></a> whose aim is finding the range where there is one solution. The bisection algorithm is then applied and the variable <span class="math notranslate nohighlight">\(\varepsilon_0\)</span> is detemined within a fixed tolerance.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p class="rubric" id="find-the-range-to-which-apply-bisection"><span id="theory-pre-find-range"></span>Find the range to which apply bisection</p>
+<p>Starting with <span class="math notranslate nohighlight">\(\varepsilon_{0,A}\)</span> and the corresponding value of <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_{0,A})\)</span>, the value <span class="math notranslate nohighlight">\(\varepsilon_{0,B}'\)</span> is found using a fast pre-find algorithm. This algorithm uses the following exponential law for evaluating the tentative value of <span class="math notranslate nohighlight">\(\varepsilon_{0,B,i}\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\varepsilon_{0,B,i} = \varepsilon_{0,B,i-1} + \delta \cdot r^i\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\delta = 1e-3\)</span> and <span class="math notranslate nohighlight">\(r = 2\)</span>.</p>
+<p>In this way, <span class="math notranslate nohighlight">\(\varepsilon_{0,B}\)</span> increases in fast way within very few iterations (generally 2-3 iterations are enough).</p>
+<p>The value of <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_{0,B,i})\)</span> is computed and whenever <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_{0,A}) \cdot \Delta N(\varepsilon_{0,B,i}) &lt; 0\)</span> the algorithm stops having found the range <span class="math notranslate nohighlight">\([\varepsilon_{0,A}, \varepsilon_{0,B}]\)</span> where the bisection algorithm is applied. The use of this algorithm permits to find a good range where bisection algorithm is applied in an efficient way without too many iterations.</p>
+<p>Graphically this can be seen in the figure <a class="reference internal" href="#theory-fig-dn-eps0"><span class="std std-ref">below</span></a>, where the function <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)\)</span> is plotted indicating the value <span class="math notranslate nohighlight">\(\varepsilon_{0,A}\)</span> from the previous step and the two iterations needed to find <span class="math notranslate nohighlight">\(\varepsilon_{0,B}'\)</span>.</p>
+<figure class="align-default" id="id8">
+<span id="theory-fig-dn-eps0"></span><img alt="../_images/FiguredN_eps_0.png" src="../_images/FiguredN_eps_0.png" />
+<figcaption>
+<p><span class="caption-text">The function <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)\)</span> during <span class="math notranslate nohighlight">\(i\)</span>-th step of moment-curvature computation: application of the pre-find algorithm to select the range where bisection is applied.</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Then, the usual bisection algorithm is adopted to find the value <span class="math notranslate nohighlight">\(\varepsilon_0\)</span> for which <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0) = N_{ext} - N_{int}(\varepsilon_0)\)</span> is sufficiently near to 0.</p>
+</div>
+</section>
+<section id="compute-nm-interaction-domain">
+<span id="theory-nm-domain"></span><h2>Compute NM interaction domain<a class="headerlink" href="#compute-nm-interaction-domain" title="Link to this heading">¶</a></h2>
+<p>With this algorithm, StructuralCodes computes the two dimensional <span class="math notranslate nohighlight">\(N\)</span>-<span class="math notranslate nohighlight">\(M_y^*\)</span> representing uniaxial bending respect to the rotated reference system <em><span class="math notranslate nohighlight">\(y^*z^*\)</span></em>.</p>
+<p>The algorithm works with the following steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Rotate the section</strong>: the section is rotated by the given angle theta. In this new CRS <em><span class="math notranslate nohighlight">\(y^*z^*\)</span></em>, the problem becomes uniaxial bending about the <em><span class="math notranslate nohighlight">\(y^*\)</span></em> axis.</p></li>
+<li><p><strong>Compute the list of ultimate strain profiles</strong>: according to classic RC theory, the failure domain can be grouped into 6 differen domain, from 1 to 6, moving respectivelly from pure tension to pure compression. (see figure <a class="reference internal" href="#theory-fig-deformation-domain"><span class="std std-ref">here</span></a>). The algorithm created a list of all possible failure strain profiles within the six domains. User can customatize the discretization used (see <a class="reference internal" href="../api/sections/section_calculator.html#api-section-calculator"><span class="std std-ref">api</span></a>).</p></li>
+<li><p><strong>Integrate stresses for all computed ultimate strain profiles</strong>: for all the strain profiles determined in step 2, the stresses are integrated computing the pair <span class="math notranslate nohighlight">\((N, M_y^*)\)</span> that represent a point in the ultimate domain profile.
+This is represented by the following image that shows for a rectangular RC section the ultimate strain profiles computed and the corresponding MN interaction domain. The different colors correspond to different domains. The same is visible in the animation <a class="reference internal" href="#theory-anim-domain-nm"><span class="std std-ref">here</span></a></p></li>
+</ol>
+<figure class="align-default" id="id9">
+<span id="theory-fig-domain-nm"></span><img alt="../_images/Figure_domain_mn.png" src="../_images/Figure_domain_mn.png" />
+<figcaption>
+<p><span class="caption-text">Ultimate strain profiles for uniaxial bending and corresponding interaction domain.</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id10">
+<span id="theory-anim-domain-nm"></span><img alt="../_images/Figure_domain_mn.gif" src="../_images/Figure_domain_mn.gif" />
+<figcaption>
+<p><span class="caption-text">Animation of ultimate strain profiles for uniaxial bending and corresponding interaction domain.</span><a class="headerlink" href="#id10" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<ol class="arabic simple" start="4">
+<li><p><strong>Rotate back to original <span class="math notranslate nohighlight">\(yz\)</span> coordinate system</strong>: the pair of values <span class="math notranslate nohighlight">\((N, M_y^*)\)</span> is rotated back obtaining the triplet <span class="math notranslate nohighlight">\((N, M_y, M_z)\)</span></p></li>
+</ol>
+</section>
+<section id="compute-mnn-interaction-domain">
+<span id="theory-nmm-domain"></span><h2>Compute MNN interaction domain<a class="headerlink" href="#compute-mnn-interaction-domain" title="Link to this heading">¶</a></h2>
+<p>With this algorithm, StructuralCodes computes the full three dimensional <span class="math notranslate nohighlight">\(N\)</span>-<span class="math notranslate nohighlight">\(M_y\)</span>-<span class="math notranslate nohighlight">\(M_z\)</span> interaction domain.</p>
+<p>To do so, the algorithm loops different values of angle <span class="math notranslate nohighlight">\(\theta_i\)</span> of neutral axes respect axis <span class="math notranslate nohighlight">\(y\)</span>, going from <span class="math notranslate nohighlight">\(0\)</span> to <span class="math notranslate nohighlight">\(2\pi\)</span> (the number of discretizations can be customized with the parameter <code class="docutils literal notranslate"><span class="pre">num_theta</span></code> whose default value is equal to 32).
+For each value of the angle <span class="math notranslate nohighlight">\(\theta_i\)</span>, the algorithm proceeds as the case of unixial bending (<a class="reference internal" href="#theory-nm-domain"><span class="std std-ref">here</span></a>).
+The final result is represented by the data structure collecting for all points the triplet <span class="math notranslate nohighlight">\((N, M_y, M_z)\)</span> and the corresponding ultimate strain profile.</p>
+<figure class="align-default" id="id11">
+<span id="theory-figure-nmm"></span><img alt="../_images/Figure_domain_nmm.png" src="../_images/Figure_domain_nmm.png" />
+<figcaption>
+<p><span class="caption-text">Left: ultimate domain NMM. Right: corresponding points in terms of N, <span class="math notranslate nohighlight">\(\chi_y\)</span>, <span class="math notranslate nohighlight">\(\chi_z\)</span>.</span><a class="headerlink" href="#id11" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="compute-mm-interaction-domain">
+<h2>Compute MM interaction domain<a class="headerlink" href="#compute-mm-interaction-domain" title="Link to this heading">¶</a></h2>
+<p>With this algorithm, StructuralCodes computes the two dimensional <span class="math notranslate nohighlight">\(M_y\)</span>, <span class="math notranslate nohighlight">\(M_z\)</span> interaction domain for a given value of external axial load  <span class="math notranslate nohighlight">\(N\)</span>.</p>
+<p>The algorithm works with the following steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Create an array of angles</strong>: the algorithm creates an array of linearly spaced values of angle <span class="math notranslate nohighlight">\(\theta\)</span> of neutral axis respect to axis <span class="math notranslate nohighlight">\(y\)</span>.</p></li>
+<li><p><strong>Compute bending strength</strong>: for each value of the angle <span class="math notranslate nohighlight">\(\theta_i\)</span>, the bending strength (with the iterative algorithm described <a class="reference internal" href="#thery-compute-bending-strength"><span class="std std-ref">here</span></a>) for the given value of external axial load <span class="math notranslate nohighlight">\(N\)</span> is computed obtaining a pair <span class="math notranslate nohighlight">\((M_{y,i}, M_{z,i})\)</span> that represent the point in the failure domain. Doing this for all values, the entire <span class="math notranslate nohighlight">\(M_yM_z\)</span> failure domain is created.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the previous cases (i.e. <a class="reference internal" href="#theory-nm-domain"><span class="std std-ref">NM domain</span></a> and <a class="reference internal" href="#theory-nmm-domain"><span class="std std-ref">NMM domain</span></a>) we simply integrate a bunch of strain profiles obtaining a set of points in the interaction domain. This is a very fast and no iterative solutions are needed. A side effect of this choice is that the obtained domain points are not controlled in terms of a constant external axial forces, see e.g. <a class="reference internal" href="#theory-figure-nmm"><span class="std std-ref">this figure</span></a>.</p>
+<p>For this reason the computation of MM interaction domain for a given value of axial load <span class="math notranslate nohighlight">\(N\)</span> does not work in the same way. The side effect of this algorithm is that it is significantly slower since each point of the failure domain is determined with an iterative process.</p>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Using this method it is possible to loop from minimum to maximum axial load that the section is able to carry and construct a nice structured version of the failure domain. Of course this operation is pretty slow compared to the direct computation of <a class="reference internal" href="#theory-nmm-domain"><span class="std std-ref">NMM domain</span></a>.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header sd-bg-primary sd-bg-text-primary">
+<span class="sd-summary-icon"><svg version="1.1" width="1.0em" height="1.0em" class="sd-octicon sd-octicon-code" viewBox="0 0 16 16" aria-hidden="true"><path d="m11.28 3.22 4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L13.94 8l-3.72-3.72a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215Zm-6.56 0a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L2.06 8l3.72 3.72a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L.47 8.53a.75.75 0 0 1 0-1.06Z"></path></svg></span><span class="sd-summary-text">Syntax</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">Create many slices of MM interaction domains to have a full NMM domain.</span><a class="headerlink" href="#id12" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">structuralcodes.codes</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_design_code</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">structuralcodes.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RectangularGeometry</span><span class="p">,</span>
+    <span class="n">add_reinforcement_line</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">structuralcodes.materials.concrete</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_concrete</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">structuralcodes.materials.reinforcement</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_reinforcement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">structuralcodes.sections</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericSection</span>
+
+<span class="c1"># Set parameters</span>
+<span class="n">height</span> <span class="o">=</span> <span class="mi">625</span>
+<span class="n">width</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">cover</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">diameter_rebars</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">n_bars</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">fcd</span> <span class="o">=</span> <span class="mf">0.85</span> <span class="o">*</span> <span class="mi">35</span>
+<span class="n">fyd_rebars</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">ftd_rebars</span> <span class="o">=</span> <span class="n">fyd_rebars</span>  <span class="c1"># 520 / 1.15</span>
+<span class="n">Es</span> <span class="o">=</span> <span class="mi">200000</span>
+<span class="n">eps_ud</span> <span class="o">=</span> <span class="mf">3e-2</span> <span class="o">/</span> <span class="mf">0.9</span>
+<span class="n">d1</span> <span class="o">=</span> <span class="n">cover</span> <span class="o">+</span> <span class="n">diameter_rebars</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="c1"># Materials</span>
+<span class="n">set_design_code</span><span class="p">(</span><span class="s1">&#39;ec2_2004&#39;</span><span class="p">)</span>
+<span class="n">concrete</span> <span class="o">=</span> <span class="n">create_concrete</span><span class="p">(</span><span class="n">fcd</span><span class="p">)</span>
+<span class="n">reinforcement</span> <span class="o">=</span> <span class="n">create_reinforcement</span><span class="p">(</span>
+    <span class="n">fyk</span><span class="o">=</span><span class="n">fyd_rebars</span><span class="p">,</span> <span class="n">Es</span><span class="o">=</span><span class="n">Es</span><span class="p">,</span> <span class="n">ftk</span><span class="o">=</span><span class="n">ftd_rebars</span><span class="p">,</span> <span class="n">epsuk</span><span class="o">=</span><span class="n">eps_ud</span>
+<span class="p">)</span>
+
+<span class="c1"># Assemble section</span>
+<span class="n">concrete_geometry</span> <span class="o">=</span> <span class="n">RectangularGeometry</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">concrete</span><span class="p">)</span>
+
+<span class="n">z_value</span> <span class="o">=</span> <span class="o">-</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d1</span>
+
+<span class="k">for</span> <span class="n">z_value</span> <span class="ow">in</span> <span class="p">(</span>
+    <span class="o">-</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d1</span><span class="p">,</span>
+    <span class="n">height</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">d1</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">concrete_geometry</span> <span class="o">=</span> <span class="n">add_reinforcement_line</span><span class="p">(</span>
+        <span class="n">geo</span><span class="o">=</span><span class="n">concrete_geometry</span><span class="p">,</span>
+        <span class="n">coords_i</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d1</span><span class="p">,</span> <span class="n">z_value</span><span class="p">),</span>
+        <span class="n">coords_j</span><span class="o">=</span><span class="p">(</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">d1</span><span class="p">,</span> <span class="n">z_value</span><span class="p">),</span>
+        <span class="n">diameter</span><span class="o">=</span><span class="n">diameter_rebars</span><span class="p">,</span>
+        <span class="n">material</span><span class="o">=</span><span class="n">reinforcement</span><span class="p">,</span>
+        <span class="n">n</span><span class="o">=</span><span class="n">n_bars</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="n">section</span> <span class="o">=</span> <span class="n">GenericSection</span><span class="p">(</span>
+    <span class="n">concrete_geometry</span><span class="p">,</span> <span class="n">integrator</span><span class="o">=</span><span class="s1">&#39;fiber&#39;</span><span class="p">,</span> <span class="n">mesh_size</span><span class="o">=</span><span class="mf">0.001</span>
+<span class="p">)</span>
+
+<span class="c1"># Perform the analyses and create the plot</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+    <span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">n_min</span><span class="p">,</span> <span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">n_max</span><span class="p">,</span> <span class="mi">25</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">n_i</span> <span class="ow">in</span> <span class="n">n</span><span class="p">:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">calculate_mm_interaction_domain</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n_i</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">m_y</span><span class="p">)</span> <span class="o">*</span> <span class="n">res</span><span class="o">.</span><span class="n">n</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">m_y</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">m_z</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span>
+    <span class="n">xmin</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">n_min</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
+    <span class="n">xmax</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">n_max</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=-</span><span class="mi">600</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_zlim</span><span class="p">(</span><span class="n">zmin</span><span class="o">=-</span><span class="mi">600</span><span class="p">,</span> <span class="n">zmax</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;N [kN]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;My [kNm]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Mz [kNm]&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</details><p>The obtain figure is shown in the figure <a class="reference internal" href="#theory-figure-many-mm">below</a>.</p>
+<figure class="align-default" id="id13">
+<span id="theory-figure-many-mm"></span><img alt="../_images/Figure-many-mm-3d.png" src="../_images/Figure-many-mm-3d.png" />
+<figcaption>
+<p><span class="caption-text">Ultimate domain NMM obtained as a set of slices computed as MM interaction domains.</span><a class="headerlink" href="#id13" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="compute-strain-profile-for-given-external-forces">
+<h2>Compute strain profile for given external forces<a class="headerlink" href="#compute-strain-profile-for-given-external-forces" title="Link to this heading">¶</a></h2>
+<p>With this algorithm, StructuralCodes  computes the strain profile (represented by the triplet of values <span class="math notranslate nohighlight">\(\varepsilon_0\)</span>, <span class="math notranslate nohighlight">\(\chi_y\)</span>, <span class="math notranslate nohighlight">\(\chi_z\)</span> that are respectively the axial strain corresponding to point <span class="math notranslate nohighlight">\((0,0)\)</span>, and the curvatures with respect to axes <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span>) for a given set of external forces <span class="math notranslate nohighlight">\(N_{\mathrm{ext}}\)</span>, <span class="math notranslate nohighlight">\(M_{\mathrm{y,ext}}\)</span>, <span class="math notranslate nohighlight">\(M_{\mathrm{z,ext}}\)</span>, with an iterative solution algorithm based on Newton-Rhapson method.</p>
+<p>The vector containing the internal force <span class="math notranslate nohighlight">\(N\)</span>, <span class="math notranslate nohighlight">\(M_{\mathrm{y}}\)</span>, <span class="math notranslate nohighlight">\(M_{\mathrm{z}}\)</span> is obtained by integrating the stresses over the cross-section area. These quantities can be expressed as follows:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+N  &amp;= \int_A \sigma(y,z) \, dA \\
+M_y &amp;= \int_A \sigma(y,z) \, z \, dA \\
+M_z &amp;= -\int_A \sigma(y,z) \, y \, dA
+\end{aligned}\end{split}\]</div>
+</div>
+<p>or, in vector form, as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-section-forces">
+<div class="math notranslate nohighlight" id="equation-eq-section-forces">
+<span class="eqno">(1)<a class="headerlink" href="#equation-eq-section-forces" title="Link to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}
+N \\
+M_y \\
+M_z
+\end{bmatrix}
+=
+\int_A
+\begin{bmatrix}
+1 \\
+z \\
+-y
+\end{bmatrix}
+\sigma(y,z)\, dA\end{split}\]</div>
+</div>
+<p>The strain <span class="math notranslate nohighlight">\(\varepsilon(y,z)\)</span> can be expressed as a function of the axial deformation <span class="math notranslate nohighlight">\(\varepsilon_0\)</span> and the curvatures <span class="math notranslate nohighlight">\(\chi_y\)</span> and <span class="math notranslate nohighlight">\(\chi_z\)</span> as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-strains-determination">
+<div class="math notranslate nohighlight" id="equation-eq-strains-determination">
+<span class="eqno">(2)<a class="headerlink" href="#equation-eq-strains-determination" title="Link to this equation">¶</a></span>\[\varepsilon(y,z) = \varepsilon_0 + \chi_y \cdot z - \chi_z \cdot y\]</div>
+</div>
+<p>or, in vector form, as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-strains-determination-vector">
+<div class="math notranslate nohighlight" id="equation-eq-strains-determination-vector">
+<span class="eqno">(3)<a class="headerlink" href="#equation-eq-strains-determination-vector" title="Link to this equation">¶</a></span>\[\begin{split}\varepsilon(y,z) =
+\begin{bmatrix} 1 &amp; z &amp; -y \end{bmatrix} \cdot 
+\begin{bmatrix}
+\varepsilon_0 \\
+\chi_y \\
+\chi_z
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>The row vector
+<span class="math notranslate nohighlight">\(\mathbf{B}(y,z) = \begin{bmatrix} 1 &amp; z &amp; -y \end{bmatrix}\)</span>
+is the <strong>strain-displacement vector</strong> that maps the generalized strain vector
+<span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_g = \begin{bmatrix} \varepsilon_0 &amp; \chi_y &amp; \chi_z \end{bmatrix}^T\)</span>
+to the pointwise axial strain according to <a class="reference internal" href="#equation-eq-strains-determination-vector">(3)</a>.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The sign appearing in equation <a class="reference internal" href="#equation-eq-strains-determination">(2)</a> are explained considering the sign convention shown <a class="reference internal" href="crs.html#theory-crs-sign-convention"><span class="std std-ref">here</span></a>.</p>
+<p>According to such convention a positive <span class="math notranslate nohighlight">\(\chi_y\)</span> stretches top fibers and compresses bottom fibers (i.e. hogging), so when multiplying positive <span class="math notranslate nohighlight">\(z\)</span> coordinates (points towars top edge) the final strain is positive. A negative <span class="math notranslate nohighlight">\(\chi_y\)</span> stretches instead bottom fibers (i.e. sagging), so when multiplying positive <span class="math notranslate nohighlight">\(z\)</span> coordinates (points towards top edge) the final strain is negative.</p>
+<p>A similar consideration can be made for the other curvature <span class="math notranslate nohighlight">\(\chi_z\)</span></p>
+</div>
+<p>The stress <span class="math notranslate nohighlight">\(\sigma(y,z)\)</span> can be related to the strain <span class="math notranslate nohighlight">\(\varepsilon(y,z)\)</span> through the consitutive law (in general non-linear), according to:</p>
+<div class="math-wrapper docutils container" id="equation-eq-stress-strain">
+<div class="math notranslate nohighlight" id="equation-eq-stress-strain">
+<span class="eqno">(4)<a class="headerlink" href="#equation-eq-stress-strain" title="Link to this equation">¶</a></span>\[\sigma(y,z) = f[\varepsilon(y,z)] = f[\varepsilon_0 + \chi_y \cdot z - \chi_z \cdot y]\]</div>
+</div>
+<p>or, in vector form, as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-stress-strain-vector">
+<div class="math notranslate nohighlight" id="equation-eq-stress-strain-vector">
+<span class="eqno">(5)<a class="headerlink" href="#equation-eq-stress-strain-vector" title="Link to this equation">¶</a></span>\[\begin{split}\sigma(y,z)
+=
+f\left(
+\begin{bmatrix} 1 &amp; z &amp; -y \end{bmatrix} \cdot 
+\begin{bmatrix}
+\varepsilon_0 \\
+\chi_y \\
+\chi_z
+\end{bmatrix} 
+\right)\end{split}\]</div>
+</div>
+<p>Substituting <a class="reference internal" href="#equation-eq-stress-strain">(4)</a> into <a class="reference internal" href="#equation-eq-section-forces">(1)</a>, the internal forces vector can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-forces-strains">
+<div class="math notranslate nohighlight" id="equation-eq-forces-strains">
+<span class="eqno">(6)<a class="headerlink" href="#equation-eq-forces-strains" title="Link to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}
+N \\
+M_y \\
+M_z
+\end{bmatrix}
+=
+\int_A
+\begin{bmatrix}
+1 \\
+z \\
+-y
+\end{bmatrix}
+f[\varepsilon_0 + \chi_y \cdot z - \chi_z \cdot y]
+\, dA\end{split}\]</div>
+</div>
+<p>or, in vector form, as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-forces-strains-vector">
+<div class="math notranslate nohighlight" id="equation-eq-forces-strains-vector">
+<span class="eqno">(7)<a class="headerlink" href="#equation-eq-forces-strains-vector" title="Link to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}
+N \\
+M_y \\
+M_z
+\end{bmatrix}
+=
+\int_A
+\begin{bmatrix}
+1 \\
+z \\
+-y
+\end{bmatrix}
+f\left(
+\begin{bmatrix} 1 &amp; z &amp; -y \end{bmatrix} \cdot 
+\begin{bmatrix}
+\varepsilon_0 \\
+\chi_y \\
+\chi_z
+\end{bmatrix} 
+\right)
+\, dA\end{split}\]</div>
+</div>
+<p>In compact matrix notation, <a class="reference internal" href="#equation-eq-forces-strains-vector">(7)</a> can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-forces-strains-matrix">
+<div class="math notranslate nohighlight" id="equation-eq-forces-strains-matrix">
+<span class="eqno">(8)<a class="headerlink" href="#equation-eq-forces-strains-matrix" title="Link to this equation">¶</a></span>\[\mathbf{f}^{int}
+=
+\int_A
+\mathbf{B}^T
+\cdot
+f\left(
+\mathbf{B} \cdot \boldsymbol{\varepsilon}_g
+\right)\]</div>
+</div>
+<p>The vector <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_g\)</span> represent the unknown strain profile that we want to find for the given external forces <span class="math notranslate nohighlight">\(\mathbf{f}^{ext}\)</span>. To do so, a numeric method like Newton-Raphson can be used.</p>
+<p>To this aim, the residual vector can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-residuals">
+<div class="math notranslate nohighlight" id="equation-eq-residuals">
+<span class="eqno">(9)<a class="headerlink" href="#equation-eq-residuals" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+\mathbf{R}(\boldsymbol{\varepsilon}_g) &amp;= \mathbf{f}^{ext} - \mathbf{f}^{int} \\
+  &amp;= \mathbf{f}^{ext} - \int_A
+\mathbf{B}^T
+\cdot
+f\left(
+\mathbf{B} \cdot \boldsymbol{\varepsilon}_g
+\right)
+\end{aligned} \end{split}\]</div>
+</div>
+<p>and linearizing it:</p>
+<div class="math-wrapper docutils container" id="equation-eq-residuals-linearized">
+<div class="math notranslate nohighlight" id="equation-eq-residuals-linearized">
+<span class="eqno">(10)<a class="headerlink" href="#equation-eq-residuals-linearized" title="Link to this equation">¶</a></span>\[\mathbf{R}(\boldsymbol{\varepsilon}_g^{k+1}) = \mathbf{R}(\boldsymbol{\varepsilon}_g^k) + \mathbf{J}(\boldsymbol{\varepsilon}_g^k) \Delta \boldsymbol{\varepsilon}_g\]</div>
+</div>
+<p>It is possible then to solve the current step:</p>
+<div class="math-wrapper docutils container" id="equation-eq-nr-solve-current-step">
+<div class="math notranslate nohighlight" id="equation-eq-nr-solve-current-step">
+<span class="eqno">(11)<a class="headerlink" href="#equation-eq-nr-solve-current-step" title="Link to this equation">¶</a></span>\[\Delta \boldsymbol{\varepsilon}_g
+= - \mathbf{J}^{-1}(\boldsymbol{\varepsilon}_g^k) 
+\cdot
+\mathbf{R}(\boldsymbol{\varepsilon}_g^k)\]</div>
+</div>
+<p>and therefore obtaining the new iteration of <span class="math notranslate nohighlight">\(\boldsymbol{\varepsilon}_g\)</span>:</p>
+<div class="math-wrapper docutils container" id="equation-eq-nr-new-step">
+<div class="math notranslate nohighlight" id="equation-eq-nr-new-step">
+<span class="eqno">(12)<a class="headerlink" href="#equation-eq-nr-new-step" title="Link to this equation">¶</a></span>\[\boldsymbol{\varepsilon}_g^{k+1}
+=
+\boldsymbol{\varepsilon}_g^k +
+\Delta \boldsymbol{\varepsilon}_g\]</div>
+</div>
+<p>The iterative process can continue up to a certain convergence criterion is met, like for instance up to when the norm of the residual vector <span class="math notranslate nohighlight">\(\|\mathbf{R}(\boldsymbol{\varepsilon}_g^{k+1})\|\)</span> is smaller then a selected tolerance.</p>
+<p>The Jacobian matrix <span class="math notranslate nohighlight">\(\mathbf{J}\)</span> is basically the tanget stiffness of the section and is a 3x3 matrix given by:</p>
+<div class="math-wrapper docutils container" id="equation-eq-jacobian">
+<div class="math notranslate nohighlight" id="equation-eq-jacobian">
+<span class="eqno">(13)<a class="headerlink" href="#equation-eq-jacobian" title="Link to this equation">¶</a></span>\[\begin{split}\mathbf{J} = \int_A
+\dfrac{d \sigma}{d \boldsymbol{\varepsilon}_g}
+\cdot
+\begin{bmatrix}
+1 \\
+z \\
+-y
+\end{bmatrix}
+\, dA
+=
+\int_A
+\dfrac{d \sigma}{d \boldsymbol{\varepsilon}_g}
+\cdot
+\mathbf{B}^T
+\, dA\end{split}\]</div>
+</div>
+<p>where:</p>
+<div class="math-wrapper docutils container" id="equation-eq-derivative-sigma-epsilon-g">
+<div class="math notranslate nohighlight" id="equation-eq-derivative-sigma-epsilon-g">
+<span class="eqno">(14)<a class="headerlink" href="#equation-eq-derivative-sigma-epsilon-g" title="Link to this equation">¶</a></span>\[\dfrac{d \sigma}{d \boldsymbol{\varepsilon}_g} =
+\dfrac{d \sigma}{d \varepsilon} \cdot
+\dfrac{d \varepsilon}{d \boldsymbol{\varepsilon}_g}\]</div>
+</div>
+<p>Therefore the Jacobian matrix can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-jacobian-full">
+<div class="math notranslate nohighlight" id="equation-eq-jacobian-full">
+<span class="eqno">(15)<a class="headerlink" href="#equation-eq-jacobian-full" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+\mathbf{J} 
+&amp;=
+\int_A
+\dfrac{d \sigma}{d \varepsilon} 
+\begin{bmatrix}
+1 \\
+z \\
+-y
+\end{bmatrix} \cdot
+\begin{bmatrix} 1 &amp;&amp; z &amp;&amp; -y \end{bmatrix}
+\, dA =
+\\
+&amp;=
+\int_A
+\dfrac{d \sigma}{d \varepsilon}
+\begin{bmatrix}
+1 &amp; z &amp; -y \\
+z &amp; z^2 &amp; -y z \\
+-y &amp; -y z &amp; y^2
+\end{bmatrix}
+\, dA
+\end{aligned}\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\dfrac{d \sigma}{d \varepsilon}\)</span> represents the tangent modulus of the constitutive law.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>For a linear elastic material, <span class="math notranslate nohighlight">\(\dfrac{d \sigma}{d \varepsilon}\)</span> is constant and equal to <span class="math notranslate nohighlight">\(E\)</span>, therefore the tangent stiffness matrix of the section can be written as the usual stiffness matrix:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{K} = E
+\begin{bmatrix}
+A &amp; S_z &amp; S_y \\
+S_z &amp; I_{yy} &amp; I_{yz} \\
+S_y &amp; I_{yz} &amp; I_{zz}
+\end{bmatrix}\end{split}\]</div>
+</div>
+<p>where:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symbol</p></th>
+<th class="head"><p>Definition</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(A\)</span></p></td>
+<td><p>Cross-sectional area: <span class="math notranslate nohighlight">\(A = \int_A dA \)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(S_y\)</span></p></td>
+<td><p>First moment about z-axis: <span class="math notranslate nohighlight">\(S_y = \int_A y \, dA\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(S_z\)</span></p></td>
+<td><p>First moment about y-axis: <span class="math notranslate nohighlight">\(S_z = \int_A z \, dA\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(I_{yy}\)</span></p></td>
+<td><p>Moment of inertia about y-axis: <span class="math notranslate nohighlight">\(I_{yy} = \int_A z^2 \, dA\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(I_{zz}\)</span></p></td>
+<td><p>Moment of inertia about z-axis: <span class="math notranslate nohighlight">\(I_{zz} = \int_A y^2 \, dA\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(I_{yz}\)</span></p></td>
+<td><p>Product of inertia: <span class="math notranslate nohighlight">\(I_{yz} = \int_A y z \, dA\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(E\)</span></p></td>
+<td><p>Young’s modulus (constant for linear elastic material)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The algorithm implemented in StructuralCodes is basically as above described, with the possibility of using also the modified Newton-Rhapson with initial tangent (setting <code class="docutils literal notranslate"><span class="pre">initial</span> <span class="pre">=</span> <span class="pre">True</span></code>). Further the user can set the maximum number of iterations (set to 10 by default) and the tolerance (set to 1e-6 by default).</p>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="leonhardt1973" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
+<p>Leonhardt, F., Mönning, E. Vorlesungen über Massivbau, Springer, Verlag, Berlin/Heidelberg, 1973.</p>
+</aside>
+</aside>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="section_integrator.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Section integrators</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="crs.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Coordinate system and sign convention</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, fib International
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/fib-international/structuralcodes" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Section calculator</a><ul>
+<li><a class="reference internal" href="#general-concept">General concept</a></li>
+<li><a class="reference internal" href="#compute-bending-strength">Compute bending strength</a></li>
+<li><a class="reference internal" href="#compute-moment-curvature-relation">Compute Moment-curvature relation</a></li>
+<li><a class="reference internal" href="#compute-nm-interaction-domain">Compute NM interaction domain</a></li>
+<li><a class="reference internal" href="#compute-mnn-interaction-domain">Compute MNN interaction domain</a></li>
+<li><a class="reference internal" href="#compute-mm-interaction-domain">Compute MM interaction domain</a></li>
+<li><a class="reference internal" href="#compute-strain-profile-for-given-external-forces">Compute strain profile for given external forces</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

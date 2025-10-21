@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=eda8dd78" />
     
     
 
@@ -20,18 +21,21 @@
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
+  --color-caption-text: #666666;
   
   }
   @media not print {
     body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
+  --color-caption-text: #A1A1A1;
   
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
         --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
+  --color-caption-text: #A1A1A1;
   
       }
     }
@@ -266,7 +270,12 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../theory/index.html">Theory reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory reference</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Theory reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/crs.html">Coordinate system and sign convention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/section_calculator.html">Section calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/section_integrator.html">Section integrators</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing/index.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../versioning/index.html">Versioning</a></li>
 </ul>
@@ -313,13 +322,21 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="sections">
+          <section class="tex2jax_ignore mathjax_ignore" id="sections">
 <span id="usage-sections"></span><h1>Sections<a class="headerlink" href="#sections" title="Link to this heading">¶</a></h1>
 <section id="general">
 <h2>General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h2>
 <p>In StructuralCodes, a <em>Section</em> is responsible for connecting a <a class="reference internal" href="../geometries/index.html#usage-geometries"><span class="std std-ref">geometry</span></a> object with an API for performing calculations on the geometry.</p>
 <p>The section contains a <em>SectionCalculator</em> which contains the API for doing calculations on the geometry, including for example lower level methods for integrating a strain profile to stress resultants, or calculating a strain profile based on stress resultants, or higher level methods like calculating a moment-curvature relation, or an interaction diagram between moments and axial force.</p>
 <p>The SectionCalculator uses a <em>SectionIntegrator</em> to integrate the strain response on a geometry.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>See the theory reference for a guide on the <a class="reference internal" href="../../theory/crs.html#theory-sign-convention"><span class="std std-ref">sign convention</span></a> used in StructuralCodes.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The theory reference provides an overview of the theory behind the <a class="reference internal" href="../../theory/section_calculator.html#theory-section-calculator"><span class="std std-ref">section calculator</span></a> and the <a class="reference internal" href="../../theory/section_integrator.html#theory-section-integrators"><span class="std std-ref">section integrators</span></a>.</p>
+</div>
 </section>
 <section id="the-generic-beam-section">
 <h2>The generic beam section<a class="headerlink" href="#the-generic-beam-section" title="Link to this heading">¶</a></h2>

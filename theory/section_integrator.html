@@ -1,0 +1,891 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Contributing" href="../contributing/index.html" /><link rel="prev" title="Section calculator" href="section_calculator.html" />
+
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+        <title>Section integrators - StructuralCodes documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=eda8dd78" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-caption-text: #666666;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-caption-text: #A1A1A1;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-caption-text: #A1A1A1;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">StructuralCodes documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/structuralcodeslogo-300.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/structuralcodeslogo-300.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">StructuralCodes documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Content</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart/index.html">Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../usage/index.html">Usage guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Usage guide</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usage/materials/index.html">Materials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/geometries/index.html">Geometries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/sections/index.html">Sections</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/library_structure.html">Library structure</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/codes/index.html">Design codes</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Design codes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/codes/general.html">General functions</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/codes/ec2_2004/index.html">Eurocode 2 (2004)</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2004)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/shear.html">Shear capacity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2004/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/codes/ec2_2023/index.html">Eurocode 2 (2023)</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Eurocode 2 (2023)</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/cracks.html">Crack width calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/deflections.html">Deflection calculation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/ec2_2023/creep_shrinkage.html">Creep and shrinkage</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/codes/mc2010/index.html">fib Model Code 2010</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of fib Model Code 2010</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/material_concrete.html">Material properties for concrete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/material_reinforcement.html">Material properties for reinforcement steel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/shear.html">Shear, punching and torsion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/creep_shrinkage.html">Creep and shrinkage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/codes/mc2010/bond_reinforcement.html">Bond of embedded steel reinforcement</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/materials/index.html">Materials</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Materials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/basic_materials.html">Basic materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/concretes.html">Concrete materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/reinforcement_steels.html">Reinforcement steel materials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/constitutive_laws.html">Constitutive laws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/materials/base_materials.html">Base material classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/geometry/index.html">Geometry</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Geometry</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/geometry/geometry_creation.html">Geometry creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/geometry/profiles.html">Profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/sections/index.html">Sections</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sections</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/section_creation.html">Section creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/section_integrator.html">Section integrator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/section_calculator.html">Section calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/sections/misc_functions.html">Miscellaneous functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Theory reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Theory reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="crs.html">Coordinate system and sign convention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="section_calculator.html">Section calculator</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Section integrators</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../versioning/index.html">Versioning</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/blob/main/docs/theory/section_integrator.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/fib-international/structuralcodes/edit/main/docs/theory/section_integrator.md" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="section-integrators">
+<span id="theory-section-integrators"></span><h1>Section integrators<a class="headerlink" href="#section-integrators" title="Link to this heading">¶</a></h1>
+<p>The algorithms described in <a class="reference internal" href="section_calculator.html#theory-section-calculator"><span class="std std-ref">Section calculators</span></a> require integration of stress or stiffness over the cross-section. This operation is performed using proper <code class="docutils literal notranslate"><span class="pre">SectionIntegrator</span></code> objects.</p>
+<p>In StructuralCodes we have currently two distinct integrators: <em>fiber integrator</em> that discretize the cross section in a bunch of fibers (whose behavior is uniaxial), and <em>marin integrator</em> that is based on the computation of moments of area.</p>
+<section id="general-concept">
+<h2>General concept<a class="headerlink" href="#general-concept" title="Link to this heading">¶</a></h2>
+<p>Section integrators compute properties such as stiffness, stress distribution, or strain compatibility over a section. They operate on the geometry and material definitions to derive these results.</p>
+</section>
+<section id="fiber-integrator">
+<span id="theory-fiber-integrator"></span><h2>Fiber integrator<a class="headerlink" href="#fiber-integrator" title="Link to this heading">¶</a></h2>
+<p>This integrator uses a discretized approach where the section is divided into fibers, each representing a material point. This discretization is performed by a triangulation of the geometry.
+Each fiber is defined as the centre point of each triangle and is characterized by its competence area.</p>
+<p>According to this integration, the integrals over the cross section are simply sums for all fibers. For instance, internal forces are determined as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-fiber-stress-integration">
+<div class="math notranslate nohighlight" id="equation-eq-fiber-stress-integration">
+<span class="eqno">(1)<a class="headerlink" href="#equation-eq-fiber-stress-integration" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+N &amp;= \int_A \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} A_i \sigma (\varepsilon_i) \\
+M_y &amp;= \int_A z \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} z A_i \sigma (\varepsilon_i)\\
+M_z &amp;= - \int_A y \sigma(z) \, dA  \approx - \sum_{i=1}^{N_{fibers}} y A_i \sigma (\varepsilon_i)
+\end{aligned}\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\varepsilon_i\)</span> is determined using equation <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> for each fiber:</p>
+<div class="math-wrapper docutils container" id="equation-eq-fiber-strain-fibers">
+<div class="math notranslate nohighlight" id="equation-eq-fiber-strain-fibers">
+<span class="eqno">(2)<a class="headerlink" href="#equation-eq-fiber-strain-fibers" title="Link to this equation">¶</a></span>\[\varepsilon_i (y_i, z_i) = \varepsilon_0 + \chi_y \cdot z_i - \chi_z \cdot y_i\]</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The triangulation is optimized in order to be executed only the first time a calculation on the section is performed. All fibers information (position <span class="math notranslate nohighlight">\(y_i\)</span>, <span class="math notranslate nohighlight">\(z_i\)</span> and area <span class="math notranslate nohighlight">\(A_i\)</span>) are stored in numpy arrays.
+Therefore the application of <a class="reference internal" href="#equation-eq-fiber-strain-fibers">(2)</a> and of <a class="reference internal" href="#equation-eq-fiber-stress-integration">(1)</a> is extremely fast making Fiber integrator the fastest integrator in StructuralCodes.</p>
+</div>
+</section>
+<section id="marin-integrator">
+<span id="theory-marin-integrator"></span><h2>Marin integrator<a class="headerlink" href="#marin-integrator" title="Link to this heading">¶</a></h2>
+<p>Marin integrator implements the idea of prof. Joaquín Marín from University of Venezuela that he published during the ’80s <a class="footnote-reference brackets" href="#marin1984" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>The method performs an exact numerical solution of double integrals for polynomial functions acting over any plane polygonal surface (with or without holes) and is based on the computation of moments of area.</p>
+<p>Within this context the moment of area of order <span class="math notranslate nohighlight">\(m, n\)</span> is described by the basic double integral:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-moment-area">
+<div class="math notranslate nohighlight" id="equation-eq-marin-moment-area">
+<span class="eqno">(3)<a class="headerlink" href="#equation-eq-marin-moment-area" title="Link to this equation">¶</a></span>\[\mathcal{M}_{m,n} = \int_A y^m z^n \, dA\]</div>
+</div>
+<p>where it is implicitly understood that <span class="math notranslate nohighlight">\(\int_A ... \, dA\)</span> represents a double integral.</p>
+<p>If we consider a polynomial function with maximum exponents <span class="math notranslate nohighlight">\(M\)</span> and <span class="math notranslate nohighlight">\(N\)</span> respectivelly for <span class="math notranslate nohighlight">\(y\)</span> and <span class="math notranslate nohighlight">\(z\)</span>, expressed in the following form, having indicated <span class="math notranslate nohighlight">\(a_{m,n}\)</span> any real coefficient for the term <span class="math notranslate nohighlight">\(y^m z^n\)</span>:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-polynomial">
+<div class="math notranslate nohighlight" id="equation-eq-marin-polynomial">
+<span class="eqno">(4)<a class="headerlink" href="#equation-eq-marin-polynomial" title="Link to this equation">¶</a></span>\[P(y,z) = 
+\sum_{m=0}^M \sum_{n=0}^N a_{m,n} y^m z^n\]</div>
+</div>
+<p>the integral of the polynomial function over the cross-section, can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-integral-polyniamo">
+<div class="math notranslate nohighlight" id="equation-eq-marin-integral-polyniamo">
+<span class="eqno">(5)<a class="headerlink" href="#equation-eq-marin-integral-polyniamo" title="Link to this equation">¶</a></span>\[\int_A P(y,z) \, dA
+=
+\sum_{m=0}^M \sum_{n=0}^N a_{m,n} \mathcal{M}_{m,n}\]</div>
+</div>
+<p>When the cross-section (i.e. the integration domain) is represented by a closed simply connected polygonal contour with <span class="math notranslate nohighlight">\(P\)</span> vertices, the moment of area of order <span class="math notranslate nohighlight">\(m, n\)</span> defined by <a class="reference internal" href="#equation-eq-marin-moment-area">(3)</a> can be shown to be computed by the following relation:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-moment-area-polygon">
+<div class="math notranslate nohighlight" id="equation-eq-marin-moment-area-polygon">
+<span class="eqno">(6)<a class="headerlink" href="#equation-eq-marin-moment-area-polygon" title="Link to this equation">¶</a></span>\[\mathcal{M}_{m,n} = \dfrac{m! n!}{\left(m+n+2\right)!}
+\sum_{i=1}^P w_i \sum_{j=0}^m \sum_{k=0}^n 
+\binom{j+k}{k} \cdot \binom{m+n-j-k}{n-k}
+y_i^{m-j} y_{i+1}^j z_i^{n-k} y_{i+1}^k\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\binom{n}{k}\)</span> indicates the usual binomial coefficients:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\binom{n}{k} = 
+\dfrac{n!}{k!(n-k)!}\]</div>
+</div>
+<p>and (note that here we assume that <span class="math notranslate nohighlight">\(P+1\)</span> restarts from <span class="math notranslate nohighlight">\(1\)</span>):</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[w_i = y_i z_{i+1} - y_{i+1} z_i
+\qquad
+\text{for } i = 1, 2, \ldots, P\]</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As mentioned, the integral is exact for polygonal surfaces and polynomial functions to be integrated over the surface.</p>
+<p>If the cross-section is not polynomial, it must be discretized into a polygon (for instance a circular shape must be discretized as a polygon with <span class="math notranslate nohighlight">\(P\)</span> vertices) and therefore the integral is not exact anymore.</p>
+<p>If the function to be integrated over the surface is not polynomial, the function can be discretized in linear branches and the cross section must be discretized in small polygons for each polynomial branch; also in this case the integral is not exact anymore.</p>
+</div>
+<p>The main application of this algorithm in StructuralCodes is for integrating the stress or modulus over the cross-section.</p>
+<p>In this context, let’s consider a case of unixial bending, for which the stress function can be considered variable only with respect to coordinate <span class="math notranslate nohighlight">\(z\)</span>:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-polynom-stress-unixial-bend">
+<div class="math notranslate nohighlight" id="equation-eq-marin-polynom-stress-unixial-bend">
+<span class="eqno">(7)<a class="headerlink" href="#equation-eq-marin-polynom-stress-unixial-bend" title="Link to this equation">¶</a></span>\[P(y,z) = \sigma(z) = \sum_{n=0}^N a_n z^n = a_0 + a_1 z + a_2 z^2 + \ldots + a_N z^N\]</div>
+</div>
+<p>In this case the internal forces <span class="math notranslate nohighlight">\(N\)</span>, <span class="math notranslate nohighlight">\(M_y\)</span>, <span class="math notranslate nohighlight">\(M_z\)</span> can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-stress-integration">
+<div class="math notranslate nohighlight" id="equation-eq-marin-stress-integration">
+<span class="eqno">(8)<a class="headerlink" href="#equation-eq-marin-stress-integration" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+N &amp;= \int_A \sigma(z) \, dA = \sum_{n=0}^N a_n \mathcal{M}_{0,n}\\
+M_y &amp;= \int_A z \sigma(z) \, dA = \sum_{n=0}^N a_n \mathcal{M}_{0,n+1}\\
+M_z &amp;= - \int_A y \sigma(z) \, dA = - \sum_{n=0}^N a_n \mathcal{M}_{1,n}
+\end{aligned}\end{split}\]</div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>When the bending is not uniaxial anymore, one can consider the bidimensional normal stress polynomial:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[P(y,z) = \sigma(y,z) = \sum_{m=0}^M \sum_{n=0}^N a_{m,n} y^m z^n \]</div>
+</div>
+<p>An alternative approach is to rotate the section in order to have uniaxial bending in the new reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, see figure <a class="reference internal" href="#theory-fig-marin-rotation"><span class="std std-ref">below</span></a>. In StructuralCodes we are adopting the latter approach.</p>
+<figure class="align-default" id="id2">
+<span id="theory-fig-marin-rotation"></span><img alt="../_images/FigureBendingRotated.png" src="../_images/FigureBendingRotated.png" />
+<figcaption>
+<p><span class="caption-text">Rotation of reference system for having uniaxial bending.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</div>
+<p>The coeficients <span class="math notranslate nohighlight">\(a_n\)</span> are dependent on the stress function <span class="math notranslate nohighlight">\(\sigma(z)\)</span>, therefore they depend on the constitutive law <span class="math notranslate nohighlight">\(\sigma(\varepsilon)\)</span>. For this reason, each constitutive law that is used with Marin integration, must implement a special <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method that returns the coefficients <span class="math notranslate nohighlight">\(a_n\)</span> for each polynomial branch that defines the constitutive law.</p>
+<p>In determination of stiffness matrix, we need to integrate the tangent modulus over the cross-section. In this case we are integrating the function <span class="math notranslate nohighlight">\(\sigma'\)</span>, where <span class="math notranslate nohighlight">\(\cdot'\)</span> indicates the derivative (i.e. the tangent modulus).</p>
+<p>The determination of the coefficients for the constitutive laws implemented in StructuralCodes is reported in the following subsections.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This means that if you write your custom constitutive law you must calculate the Marin coefficients for that law?</p>
+<p>Don’t worry, we have done some work for you! Every material has a base version of <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method, so you don’t have to implement it mandatorily. Keep in mind that the free <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method works under a very simple idea: we linearize in several branches your law, obtaining a discretize piecewise constitutive law. For this discretized law we have the coefficients computed for the piece-wise linear law described <a class="reference internal" href="#theory-marin-userdefined-law"><span class="std std-ref">below</span></a>.</p>
+<p>If your law can be represented (at least in branches) as polynomial functions it is way more efficient writing your custom <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method since the integrator will split the polygon into as few as possible sub-polygons to perform the intergration.</p>
+<p>So it is up to you! You can avoid bothering calculating and implementing Marin coefficients for stress and stiffness, but you can (and probably should) do it if you can optimize the calculation speed and if your constitutive law permits it.</p>
+</div>
+<section id="linear-elastic-material">
+<h3>Linear elastic material<a class="headerlink" href="#linear-elastic-material" title="Link to this heading">¶</a></h3>
+<p>The constitutive law of a linear elastic material can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-linear-constitutive">
+<div class="math notranslate nohighlight" id="equation-eq-marin-linear-constitutive">
+<span class="eqno">(9)<a class="headerlink" href="#equation-eq-marin-linear-constitutive" title="Link to this equation">¶</a></span>\[\sigma(\varepsilon) = E \cdot \varepsilon\]</div>
+</div>
+<p>For uniaxial bending the strain <span class="math notranslate nohighlight">\(\varepsilon\)</span> is equal to:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-linear-strain">
+<div class="math notranslate nohighlight" id="equation-eq-marin-linear-strain">
+<span class="eqno">(10)<a class="headerlink" href="#equation-eq-marin-linear-strain" title="Link to this equation">¶</a></span>\[\varepsilon(z) = \varepsilon_0 + \chi_y \cdot z\]</div>
+</div>
+<p>The stress function is easily obtained substituting <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-marin-linear-constitutive">(9)</a>:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-linear-stress-function">
+<div class="math notranslate nohighlight" id="equation-eq-marin-linear-stress-function">
+<span class="eqno">(11)<a class="headerlink" href="#equation-eq-marin-linear-stress-function" title="Link to this equation">¶</a></span>\[\sigma(z) = E \left( \varepsilon_0 + \chi_y \cdot z \right)\]</div>
+</div>
+<p>Therefore the Marin coefficients <span class="math notranslate nohighlight">\(a_n\)</span> for linear elastic material are:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-linear-coefficients">
+<div class="math notranslate nohighlight" id="equation-eq-marin-linear-coefficients">
+<span class="eqno">(12)<a class="headerlink" href="#equation-eq-marin-linear-coefficients" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+a_0 &amp;= E \cdot \varepsilon_0 \\
+a_1 &amp;= E \cdot \chi_y
+\end{aligned}\end{split}\]</div>
+</div>
+<p>The stiffness is simply <span class="math notranslate nohighlight">\(E\)</span>. Therefore:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-linear-stiffness-function">
+<div class="math notranslate nohighlight" id="equation-eq-marin-linear-stiffness-function">
+<span class="eqno">(13)<a class="headerlink" href="#equation-eq-marin-linear-stiffness-function" title="Link to this equation">¶</a></span>\[\sigma'(z) = E\]</div>
+</div>
+<p>And the only Marin coefficient is:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-linear-coefficients-stiffness">
+<div class="math notranslate nohighlight" id="equation-eq-marin-linear-coefficients-stiffness">
+<span class="eqno">(14)<a class="headerlink" href="#equation-eq-marin-linear-coefficients-stiffness" title="Link to this equation">¶</a></span>\[a_0 = E \]</div>
+</div>
+</section>
+<section id="elastic-plastic-material">
+<h3>Elastic-plastic material<a class="headerlink" href="#elastic-plastic-material" title="Link to this heading">¶</a></h3>
+<p>The constitutive law of an elastic plastic material with linear hardening is represented as in the figure <a class="reference internal" href="#figure-theory-marin-ep-constitutive"><span class="std std-ref">below</span></a>.</p>
+<figure class="align-default" id="id3">
+<span id="figure-theory-marin-ep-constitutive"></span><img alt="../_images/Figure_const_ep.png" src="../_images/Figure_const_ep.png" />
+<figcaption>
+<p><span class="caption-text">Elastic plastic with linear hardening law</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In this case, the constitutive law cannot be expressed as a whole with a single polynomial function, but looking at the picture <a class="reference internal" href="#figure-theory-marin-ep-constitutive"><span class="std std-ref">above</span></a> we can recognize 5 different portions, each one representing a different polynomial function. The constitutive law can then be written for the five branches as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-const-law-ep">
+<div class="math notranslate nohighlight" id="equation-eq-const-law-ep">
+<span class="eqno">(15)<a class="headerlink" href="#equation-eq-const-law-ep" title="Link to this equation">¶</a></span>\[\begin{split}\sigma(\varepsilon) =
+\begin{cases}
+0 &amp; \text{for } \varepsilon &lt; -\varepsilon_u \\
+E_h \cdot \varepsilon - \Delta \sigma &amp; \text{for } -\varepsilon_u \le \varepsilon &lt; \varepsilon_y \\
+E \cdot \varepsilon &amp; \text{for } -\varepsilon_y \le \varepsilon &lt; \varepsilon_y \\
+E_h \cdot \varepsilon + \Delta \sigma &amp; \text{for } \varepsilon_y \le \varepsilon &lt; \varepsilon_u \\
+0 &amp; \text{for } \varepsilon &gt; \varepsilon_u
+\end{cases} \end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(E_h\)</span> is the hardening modulus (i.e. the slope of the hardning branch) and <span class="math notranslate nohighlight">\(\Delta \sigma = f_y \cdot \left(1 - \dfrac{E_h}{E}\right)\)</span>.</p>
+<p>Substituting <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-const-law-ep">(15)</a>, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.</p>
+<div class="table-wrapper docutils container" id="id4">
+<table class="docutils align-default" id="id4">
+<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of elastic-plastic constitutive law</span><a class="headerlink" href="#id4" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch name</p></th>
+<th class="head"><p>Strain range</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_0\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_1\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Elastic portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\varepsilon_y &lt; \varepsilon \le \varepsilon_y\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E \cdot \varepsilon_0\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E \cdot \chi_y\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Hardening (positive)</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_y &lt; \varepsilon \le \varepsilon_u\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E_h \cdot \varepsilon_0 + \Delta \sigma\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E_h \cdot \chi_y\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Hardening (negative)</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\varepsilon_u &lt; \varepsilon \le -\varepsilon_y\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E_h \cdot \varepsilon_0 - \Delta \sigma\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E_h \cdot \chi_y\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero</p></td>
+<td><p>otherwise</p></td>
+<td><p>0.0</p></td>
+<td><p>n.a.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method returns the coefficients reported in the table above and the strain limits for each portion.</p>
+<p>Then the integrator discretizes the polygon cutting it into the portions needed (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed.</p>
+<p>The tangent stiffness can be represented by the following equation:</p>
+<div class="math-wrapper docutils container" id="equation-eq-const-law-ep-stiffness">
+<div class="math notranslate nohighlight" id="equation-eq-const-law-ep-stiffness">
+<span class="eqno">(16)<a class="headerlink" href="#equation-eq-const-law-ep-stiffness" title="Link to this equation">¶</a></span>\[\begin{split}\sigma'(\varepsilon) =
+\begin{cases}
+0 &amp; \text{for } \varepsilon &lt; -\varepsilon_u \\
+E_h  &amp; \text{for } -\varepsilon_u \le \varepsilon &lt; \varepsilon_y \\
+E  &amp; \text{for } -\varepsilon_y \le \varepsilon &lt; \varepsilon_y \\
+E_h  &amp; \text{for } \varepsilon_y \le \varepsilon &lt; \varepsilon_u \\
+0 &amp; \text{for } \varepsilon &gt; \varepsilon_u
+\end{cases} \end{split}\]</div>
+</div>
+<p>Therefore the marin coefficients for stiffness function are:</p>
+<div class="table-wrapper docutils container" id="id5">
+<table class="docutils align-default" id="id5">
+<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of elastic-plastic constitutive law</span><a class="headerlink" href="#id5" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch name</p></th>
+<th class="head"><p>Strain range</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_0\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Elastic portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\varepsilon_y &lt; \varepsilon \le \varepsilon_y\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Hardening (positive)</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_y &lt; \varepsilon \le \varepsilon_u\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E_h\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Hardening (negative)</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\varepsilon_u &lt; \varepsilon \le -\varepsilon_y\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E_h\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero</p></td>
+<td><p>otherwise</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="bilinear-compression">
+<h3>Bilinear compression<a class="headerlink" href="#bilinear-compression" title="Link to this heading">¶</a></h3>
+<p>The bilinear compression is characterized by no strength in tension and a linear behavior in compression up to <span class="math notranslate nohighlight">\(\varepsilon_{c0}\)</span> and then a constant stress equal to <span class="math notranslate nohighlight">\(f_c\)</span> (negative). After <span class="math notranslate nohighlight">\(\varepsilon_{cu}\)</span>, the stress drops to 0. The constituive law is depicted the figure <a class="reference internal" href="#figure-theory-marin-bilin-compr-constitutive"><span class="std std-ref">below</span></a>.</p>
+<figure class="align-default" id="id6">
+<span id="figure-theory-marin-bilin-compr-constitutive"></span><img alt="../_images/Figure_const_bilinearcompression.png" src="../_images/Figure_const_bilinearcompression.png" />
+<figcaption>
+<p><span class="caption-text">Elastic plastic with linear hardening law</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The constitutive law can be written in the following branches:</p>
+<div class="math-wrapper docutils container" id="equation-eq-const-law-bilin-compr">
+<div class="math notranslate nohighlight" id="equation-eq-const-law-bilin-compr">
+<span class="eqno">(17)<a class="headerlink" href="#equation-eq-const-law-bilin-compr" title="Link to this equation">¶</a></span>\[\begin{split}\sigma(\varepsilon) =
+\begin{cases}
+0 &amp; \text{for } \varepsilon \ge 0 \\
+E \cdot \varepsilon &amp; \text{for } \varepsilon_{c0} \le \varepsilon &lt; 0 \\
+f_c &amp; \text{for } \varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0} \\
+0 &amp; \text{for } \varepsilon &lt; \varepsilon_{cu}
+\end{cases} \end{split}\]</div>
+</div>
+<p>Substituting <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-const-law-bilin-compr">(17)</a>, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.</p>
+<div class="table-wrapper docutils container" id="id7">
+<table class="docutils align-default" id="id7">
+<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of bilinear compression constitutive law</span><a class="headerlink" href="#id7" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch name</p></th>
+<th class="head"><p>Strain range</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_0\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_1\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Elastic portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{c0} \le \varepsilon &lt; 0\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E \cdot \varepsilon_0\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E \cdot \chi_y\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Constant portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(f_c\)</span></p></td>
+<td><p>n.a.</p></td>
+</tr>
+<tr class="row-even"><td><p>Zero</p></td>
+<td><p>otherwise</p></td>
+<td><p>0.0</p></td>
+<td><p>n.a.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The Marin coefficients for each branch for stiffness function are reported in the following table.</p>
+<div class="table-wrapper docutils container" id="id8">
+<table class="docutils align-default" id="id8">
+<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of bilinear compression constitutive law</span><a class="headerlink" href="#id8" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch name</p></th>
+<th class="head"><p>Strain range</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_0\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Elastic portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{c0} \le \varepsilon &lt; 0\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(E\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Constant portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0}\)</span></p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p>Zero</p></td>
+<td><p>otherwise</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="parabola-rectangle">
+<h3>Parabola rectangle<a class="headerlink" href="#parabola-rectangle" title="Link to this heading">¶</a></h3>
+<p>The parabola rectangle law, typically used for concrete, cannot be written as a whole with a polynomial law. Despite that, looking at the constitutive law plotted in the figure <a class="reference internal" href="#figure-theory-marin-paraborect-constitutive"><span class="std std-ref">below</span></a>, we can recognize a portion for the parabolic branch, a portion for the constant part and finally a portion for zero stress (both in tension and for excessive compression)</p>
+<figure class="align-default" id="id9">
+<span id="figure-theory-marin-paraborect-constitutive"></span><img alt="../_images/Figure_const_parabolarectangle.png" src="../_images/Figure_const_parabolarectangle.png" />
+<figcaption>
+<p><span class="caption-text">Parabola rectangle law</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The constitutive law can therefore be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-const-law-paraborect">
+<div class="math notranslate nohighlight" id="equation-eq-const-law-paraborect">
+<span class="eqno">(18)<a class="headerlink" href="#equation-eq-const-law-paraborect" title="Link to this equation">¶</a></span>\[\begin{split}\sigma(\varepsilon) =
+\begin{cases}
+0 &amp; \text{for } \varepsilon &lt; \varepsilon_{cu} \\
+f_c &amp; \text{for } \varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0} \\
+f_c \left[ 1 - \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}} \right) ^2 \right] &amp; \text{for } \varepsilon_{c0} \le \varepsilon &lt; 0 \\
+0, &amp; \text{for } \varepsilon &gt; 0 \\
+\end{cases} \end{split}\]</div>
+</div>
+<p>Substituting  <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-const-law-paraborect">(18)</a> the Marin coefficients for each branch can be determined. They are reported in the following table.</p>
+<div class="table-wrapper docutils container" id="id10">
+<table class="docutils align-default" id="id10">
+<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of parabola rectangle constitutive law</span><a class="headerlink" href="#id10" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch name</p></th>
+<th class="head"><p>Strain range</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_0\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_1\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_2\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Parabolic portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{c0} \le \varepsilon &lt; 0\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\dfrac{f_c \varepsilon_{0}}{\varepsilon_{c0}}  \left( 2 - \dfrac{\varepsilon_0}{\varepsilon_{c0}} \right)\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\dfrac{2 f_c \chi_y}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}} \right)\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(- \dfrac{f_c \chi_y^2}{\varepsilon_{c0}}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Constant portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(f_c\)</span></p></td>
+<td><p>n.a.</p></td>
+<td><p>n.a.</p></td>
+</tr>
+<tr class="row-even"><td><p>Zero</p></td>
+<td><p>otherwise</p></td>
+<td><p>0.0</p></td>
+<td><p>n.a.</p></td>
+<td><p>n.a.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method return the coefficients reported in the table above and the strain limits for each portion.</p>
+<p>Then the integrator discretizes the polygon cutting it into the portions needed (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed.</p>
+<p>If the function to be integrated over the cross-section is the stiffness, represented by the following function (only corresponding to the parabolic portion, being 0 elsewhere):</p>
+<div class="math-wrapper docutils container" id="equation-eq-const-law-paraborect-stiffness">
+<div class="math notranslate nohighlight" id="equation-eq-const-law-paraborect-stiffness">
+<span class="eqno">(19)<a class="headerlink" href="#equation-eq-const-law-paraborect-stiffness" title="Link to this equation">¶</a></span>\[\sigma'(\varepsilon) = \dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}}\right)\]</div>
+</div>
+<p>one can write the stiffness as a function of <span class="math notranslate nohighlight">\(z\)</span>:</p>
+<div class="math-wrapper docutils container" id="equation-eq-const-law-paraborect-stiffness-fun">
+<div class="math notranslate nohighlight" id="equation-eq-const-law-paraborect-stiffness-fun">
+<span class="eqno">(20)<a class="headerlink" href="#equation-eq-const-law-paraborect-stiffness-fun" title="Link to this equation">¶</a></span>\[\sigma'(z) = \dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}}\right) - \dfrac{2 f_c}{\varepsilon_{c0}} \dfrac{\chi_y}{\varepsilon_{c0}} \cdot z\]</div>
+</div>
+<p>The marin coefficients for stiffness function integration are therefore:</p>
+<div class="table-wrapper docutils container" id="id11">
+<table class="docutils align-default" id="id11">
+<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of parabola rectangle constitutive law</span><a class="headerlink" href="#id11" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch name</p></th>
+<th class="head"><p>Strain range</p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_0\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(a_1\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Parabolic portion</p></td>
+<td><p><span class="math notranslate nohighlight">\(\varepsilon_{c0} \le \varepsilon &lt; 0\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}}\right)\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(- \dfrac{2 f_c}{\varepsilon_{c0}} \dfrac{\chi_y}{\varepsilon_{c0}}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Zero</p></td>
+<td><p>otherwise</p></td>
+<td><p>0.0</p></td>
+<td><p>n.a.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="userdefined-constitutive-law">
+<span id="theory-marin-userdefined-law"></span><h3>UserDefined constitutive law<a class="headerlink" href="#userdefined-constitutive-law" title="Link to this heading">¶</a></h3>
+<p>A <code class="docutils literal notranslate"><span class="pre">UserDefined</span></code> constitutive law (see <a class="reference internal" href="../api/materials/constitutive_laws.html#api-userdefined-law"><span class="std std-ref">api documentation</span></a>) permits the user to input any custom law discretizing it in a piecewise linear function.</p>
+<p>In this case, for each branch, the <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> function return the coefficients <span class="math notranslate nohighlight">\(a_0\)</span>, <span class="math notranslate nohighlight">\(a_1\)</span> and the strain limits for the branch.</p>
+<p>Then the integrator discretizes the polygon cutting it into how many portions needed for the several branches (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed</p>
+<p>For each <span class="math notranslate nohighlight">\(i\)</span>-th branch, the constitutive law can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-piecewise-linear-constitutive">
+<div class="math notranslate nohighlight" id="equation-eq-marin-piecewise-linear-constitutive">
+<span class="eqno">(21)<a class="headerlink" href="#equation-eq-marin-piecewise-linear-constitutive" title="Link to this equation">¶</a></span>\[\sigma(\varepsilon) = \sigma_{i-1} + \dfrac{\sigma_i - \sigma_{i-1}}{\varepsilon_i - \varepsilon_{i-1}} {\varepsilon - \varepsilon_{i-1}}\]</div>
+</div>
+<p>And substituting <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-marin-piecewise-linear-constitutive">(21)</a>, the stress function can be written as:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-piecewise-linear-stress-function">
+<div class="math notranslate nohighlight" id="equation-eq-marin-piecewise-linear-stress-function">
+<span class="eqno">(22)<a class="headerlink" href="#equation-eq-marin-piecewise-linear-stress-function" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+\sigma(z) &amp;= \sigma_{i-1} + \dfrac{\sigma_i - \sigma_{i-1}}{\varepsilon_i - \varepsilon_{i-1}} {\varepsilon_0 + \chi_y \cdot z - \varepsilon_{i-1}} \\
+&amp;= \sigma_{i-1} + K_i \left( \varepsilon_0 + \chi_y \cdot z - \varepsilon_{i-1} \right)
+\end{aligned}\end{split}\]</div>
+</div>
+<p>Having introduced the symbol <span class="math notranslate nohighlight">\(K_i\)</span> for the stiffness of the <span class="math notranslate nohighlight">\(i\)</span>-th branch.</p>
+<p>Therefore the Marin coefficients <span class="math notranslate nohighlight">\(a_n\)</span> for each branch of a piecewise-linear elastic material are:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-piecewise-linear-coefficients">
+<div class="math notranslate nohighlight" id="equation-eq-marin-piecewise-linear-coefficients">
+<span class="eqno">(23)<a class="headerlink" href="#equation-eq-marin-piecewise-linear-coefficients" title="Link to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+a_0 &amp;= \sigma_{i-1} + K_i \left( \varepsilon_0 - \varepsilon_i-1 \right) \\
+a_1 &amp;= K_i \cdot \chi_y
+\end{aligned}\end{split}\]</div>
+</div>
+<p>The Marin coefficient for stiffness function integration for each branch of a piecewise-linear elastic material is:</p>
+<div class="math-wrapper docutils container" id="equation-eq-marin-piecewise-linear-coefficients-stiffness">
+<div class="math notranslate nohighlight" id="equation-eq-marin-piecewise-linear-coefficients-stiffness">
+<span class="eqno">(24)<a class="headerlink" href="#equation-eq-marin-piecewise-linear-coefficients-stiffness" title="Link to this equation">¶</a></span>\[a_0 = K_i\]</div>
+</div>
+</section>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="marin1984" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Marín, J. Computing columns, footings and gates through moments of area, Computers &amp; Structures, 18(2), 343-349, 1984.</p>
+</aside>
+</aside>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../contributing/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Contributing</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="section_calculator.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Section calculator</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, fib International
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/fib-international/structuralcodes" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Section integrators</a><ul>
+<li><a class="reference internal" href="#general-concept">General concept</a></li>
+<li><a class="reference internal" href="#fiber-integrator">Fiber integrator</a></li>
+<li><a class="reference internal" href="#marin-integrator">Marin integrator</a><ul>
+<li><a class="reference internal" href="#linear-elastic-material">Linear elastic material</a></li>
+<li><a class="reference internal" href="#elastic-plastic-material">Elastic-plastic material</a></li>
+<li><a class="reference internal" href="#bilinear-compression">Bilinear compression</a></li>
+<li><a class="reference internal" href="#parabola-rectangle">Parabola rectangle</a></li>
+<li><a class="reference internal" href="#userdefined-constitutive-law">UserDefined constitutive law</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

@@ -87,6 +87,7 @@
 
 ```
 
+(api-userdefined-law)=
 ## Userdefined
 
 ```{eval-rst}
