@@ -1,6 +1,7 @@
 (theory-crs-sign-convention)=
 # Coordinate system and sign convention
 
+(theory-grs)=
 ## Coordinate system
 StructuralCodes adopts a global reference system (GRS) with the following conventions:
 
@@ -23,6 +24,7 @@ The figure [below](#theory-fig-coordinate-system) illustrates the coordinate sys
 The coordinate system adopted in StructuralCodes shown on a rectangular geometry.
 :::
 
+(theory-sign-convention)=
 ## Sign conventions
 
 The following sign conventions apply.
