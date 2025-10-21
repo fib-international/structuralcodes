@@ -9,7 +9,7 @@ Section integrators compute properties such as stiffness, stress distribution, o
 
 (theory-fiber-integrator)=
 ## Fiber integrator
-Uses a discretized approach where the section is divided into fibers, each representing a material point. This discretization is performed by a triangulation of the geometry.
+This integrator uses a discretized approach where the section is divided into fibers, each representing a material point. This discretization is performed by a triangulation of the geometry.
 Each fiber is defined as the centre point of each triangle and is characterized by its competence area.
 
 According to this integration, the integrals over the cross section are simply sums for all fibers. For instance, internal forces are determined as:
@@ -460,7 +460,7 @@ A `UserDefined` constitutive law (see [api documentation]()) permits the user to
 
 In this case, for each branch, the `__marin__` function return the coefficients $a_0$, $a_1$ and the strain limits for the branch.
 
-Then the integrator discretizes the polygon cutting it into how many portions needed for the several branches(depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed
+Then the integrator discretizes the polygon cutting it into how many portions needed for the several branches (depending on the strain distribution in the polygon) and for each subpolygon the exact Marin integration is performed
 
 For each $i$-th branch, the constitutive law can be written as:
 
