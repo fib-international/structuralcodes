@@ -462,7 +462,7 @@ The marin coefficients for stiffness function integration are therefore:
 (theory-marin-userdefined-law)=
 ### UserDefined constitutive law
 
-A `UserDefined` constitutive law (see [api documentation]()) permits the user to input any custom law discretizing it in a piecewise linear function.
+A `UserDefined` constitutive law (see [api documentation](api-userdefined-law)) permits the user to input any custom law discretizing it in a piecewise linear function.
 
 In this case, for each branch, the `__marin__` function return the coefficients $a_0$, $a_1$ and the strain limits for the branch.
 
