@@ -7,6 +7,36 @@ In *structuralcodes* we have currently two distinct integrators: *fiber integrat
 ## General concept
 Section integrators compute properties such as stiffness, stress distribution, or strain compatibility over a section. They operate on the geometry and material definitions to derive these results.
 
+(theory-fiber-integrator)=
+## Fiber integrator
+Uses a discretized approach where the section is divided into fibers, each representing a material point. This discretization is performed by a triangulation of the geometry.
+Each fiber is defined as the centre point of each triangle and is characterized by its competence area.
+
+According to this integration, the integrals over the cross section are simply sums for all fibers. For instance, internal forces are determined as:
+
+
+:::{math}
+:label: eq:fiber_stress_integration
+\begin{aligned}
+N &= \int_A \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} A_i \sigma (\varepsilon_i) \\
+M_y &= \int_A z \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} z A_i \sigma (\varepsilon_i)\\
+M_z &= - \int_A y \sigma(z) \, dA  \approx - \sum_{i=1}^{N_{fibers}} y A_i \sigma (\varepsilon_i)
+\end{aligned}
+:::
+
+where $\varepsilon_i$ is determined using equation {eq}`eq:marin-linear-strain` for each fiber:
+
+:::{math}
+:label: eq:fiber_strain_fibers
+
+\varepsilon_i (y_i, z_i) = \varepsilon_0 + \chi_y \cdot z_i - \chi_z \cdot y_i
+:::
+
+:::{note}
+The triangulation is optimized in order to be executed only the first time a calculation on the section is performed. All fibers information (position $y_i$, $z_i$ and area $A_i$) are stored in numpy arrays. 
+Therefore the application of {eq}`eq:fiber_strain_fibers` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in *structuralcodes*.
+:::
+
 (theory-marin-integrator)=
 ## Marin integrator
 Marin integrator implements the idea of prof. Joaquín Marín from University of Venezuala that he published during the '80s [^marin1984].
@@ -201,7 +231,7 @@ where $E_h$ is the hardening modulus (i.e. the slope of the hardning branch) and
 
 Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-ep`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
 
-:::{list-table}
+:::{list-table} Marin coefficients for stress integration for the different branches of elastic-plastic constitutive law
 :header-rows: 1
 
 
@@ -248,7 +278,7 @@ E_h  & \text{for } \varepsilon_y \le \varepsilon < \varepsilon_u \\
 
 Therefore the marin coefficients for stiffness function are:
 
-:::{list-table}
+:::{list-table} Marin coefficients for stiffness integration for the different branches of elastic-plastic constitutive law
 :header-rows: 1
 
 * - Branch name
@@ -288,7 +318,7 @@ f_c & \text{for } \varepsilon_{cu} \le \varepsilon < \varepsilon_{c0} \\
 
 Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-bilin-compr`, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.
 
-:::{list-table}
+:::{list-table} Marin coefficients for stress integration for the different branches of bilinear compression constitutive law
 :header-rows: 1
 
 
@@ -312,7 +342,7 @@ Sobstituting {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-bilin-compr`, one
 
 The Marin coefficients for each branch for stiffness function are reported in the following table.
 
-:::{list-table}
+:::{list-table} Marin coefficients for stiffness integration for the different branches of bilinear compression constitutive law
 :header-rows: 1
 
 
@@ -357,7 +387,7 @@ f_c \left[ 1 - \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}} \right) ^2 \righ
 
 Substituting  {eq}`eq:marin-linear-strain` in {eq}`eq:const-law-paraborect` the Marin coefficients for each branch can be determined. They are reported in the following table.
 
-:::{list-table}
+:::{list-table} Marin coefficients for stress integration for the different branches of parabola rectangle constitutive law
 :header-rows: 1
 
 
@@ -405,7 +435,7 @@ one can write the stiffness as a function of $z$:
 
 The marin coefficients for stiffness function integration are therefore:
 
-:::{list-table}
+:::{list-table} Marin coefficients for stiffness integration for the different branches of parabola rectangle constitutive law
 :header-rows: 1
 
 
@@ -472,32 +502,3 @@ a_0 = K_i
 [^marin1984]: Marín, J. Computing columns, footings and gates through moments of area, Computers & Structures, 18(2), 343-349, 1984.
 
 
-(theory-fiber-integrator)=
-## Fiber integrator
-Uses a discretized approach where the section is divided into fibers, each representing a material point. This discretization is performed by a triangulation of the geometry.
-Each fiber is defined as the centre point of each triangle and is characterized by its competence area.
-
-According to this integration, the integrals over the cross section are simply sums for all fibers. For instance, internal forces are determined as:
-
-
-:::{math}
-:label: eq:fiber_stress_integration
-\begin{aligned}
-N &= \int_A \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} A_i \sigma (\varepsilon_i) \\
-M_y &= \int_A z \sigma(z) \, dA  \approx \sum_{i=1}^{N_{fibers}} z A_i \sigma (\varepsilon_i)\\
-M_z &= - \int_A y \sigma(z) \, dA  \approx - \sum_{i=1}^{N_{fibers}} y A_i \sigma (\varepsilon_i)
-\end{aligned}
-:::
-
-where $\varepsilon_i$ is determined using equation {eq}`eq:marin-linear-strain` for each fiber:
-
-:::{math}
-:label: eq:fiber_strain_fibers
-
-\varepsilon_i (y_i, z_i) = \varepsilon_0 + \chi_y \cdot z_i - \chi_z \cdot y_i
-:::
-
-:::{note}
-The triangulation is optimized in order to be executed only the first time a calculation on the section is performed. All fibers information (position $y_i$, $z_i$ and area $A_i$) are stored in numpy arrays. 
-Therefore the application of {eq}`eq:fiber_strain_fibers` and of {eq}`eq:fiber_stress_integration` is extremely fast making Fiber integrator the fastest integrator in *structuralcodes*.
-:::
