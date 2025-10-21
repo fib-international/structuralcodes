@@ -173,7 +173,7 @@ Using this method it is possible to loop from minimum to maximum axial load that
 :::
 ::::
 
-The obtain figure is shown in the figure [below]
+The obtain figure is shown in the figure [below](#theory-figure-many-mm).
 
 (theory-figure-many-mm)=
 :::{figure} Figure-many-mm-3d.png
@@ -182,17 +182,17 @@ Ultimate domain NMM obtained as a set of slices computed as MM interaction domai
 :::
 :::::
 
-## Compute plane strain for given external forces
+## Compute strain profile for given external forces
 
-With this algorithm, *structuralcodes*  computes the strain profile (represented by the triplet of values $\varepsilon_0$, $\chi_y$, $\chi_z$ that are respectivelly the axial strain corresponding to point $(0,0)$, and the curvatures respect axes $y$ and $z$) for a given set of external forces $N_{ext}$, $M_{y,ext}$, $M_{z,ext}$, with an iterative solution algorithm based on Newton-Rhapson method.
+With this algorithm, *structuralcodes*  computes the strain profile (represented by the triplet of values $\varepsilon_0$, $\chi_y$, $\chi_z$ that are respectively the axial strain corresponding to point $(0,0)$, and the curvatures with respect to axes $y$ and $z$) for a given set of external forces $N_{\mathrm{ext}}$, $M_{\mathrm{y,ext}}$, $M_{\mathrm{z,ext}}$, with an iterative solution algorithm based on Newton-Rhapson method.
 
-The vector containing the internal force $N$, $M_y$, $M_z$ is obtained by integrating the stresses over the corr-section area of the structural element. These quantities can be expressed as follows:
+The vector containing the internal force $N$, $M_{\mathrm{y}}$, $M_{\mathrm{z}}$ is obtained by integrating the stresses over the cross-section area. These quantities can be expressed as follows:
 
 :::{math}
 \begin{aligned}
 N  &= \int_A \sigma(y,z) \, dA \\
 M_y &= \int_A \sigma(y,z) \, z \, dA \\
-M_z &= \int_A \sigma(y,z) \, y \, dA
+M_z &= -\int_A \sigma(y,z) \, y \, dA
 \end{aligned}
 :::
 
@@ -239,7 +239,7 @@ The row vector
 $\mathbf{B}(y,z) = \begin{bmatrix} 1 & z & -y \end{bmatrix}$
 is the **strain-displacement vector** that maps the generalized strain vector 
 $\boldsymbol{\varepsilon}_g = \begin{bmatrix} \varepsilon_0 & \chi_y & \chi_z \end{bmatrix}^T$
-to the pointwise axial strain according to {eq}`eq:strains_determination_vector`
+to the pointwise axial strain according to {eq}`eq:strains_determination_vector`.
 
 :::{hint}
 The sign appearing in equation {eq}`eq:strains_determination` are explained considering the sign convention shown [here](theory-crs-sign-convention). 
@@ -272,7 +272,7 @@ f\left(
 \right)
 :::
 
-Substituting {eq}`eq:stress-strain` into {eq}`eq:section_forces`, the internal forces vecotr can be written as:
+Substituting {eq}`eq:stress-strain` into {eq}`eq:section_forces`, the internal forces vector can be written as:
 
 :::{math}
 :label: eq:forces-strains
@@ -319,7 +319,7 @@ f\left(
 \, dA
 :::
 
-In compact matrix notation {eq}`eq:forces-strains-vector`, calling the  can be written as:
+In compact matrix notation, {eq}`eq:forces-strains-vector` can be written as:
 
 :::{math}
 :label: eq:forces-strains-matrix
@@ -333,7 +333,7 @@ f\left(
 \right)
 :::
 
-The vector $\boldsymbol{\varepsilon}_g$ represent the unkwon strain profile that we want to find for the given external forces $\mathbf{f}^{ext}$. To do so, a numeric method like Newton-Raphson can be used.
+The vector $\boldsymbol{\varepsilon}_g$ represent the unknown strain profile that we want to find for the given external forces $\mathbf{f}^{ext}$. To do so, a numeric method like Newton-Raphson can be used.
 
 To this aim, the residual vector can be written as:
 
@@ -367,7 +367,7 @@ It is possible then to solve the current step:
 \mathbf{R}(\boldsymbol{\varepsilon}_g^k)
 :::
 
-and therefore obtaning the new iteration of $\boldsymbol{\varepsilon}_g$:
+and therefore obtaining the new iteration of $\boldsymbol{\varepsilon}_g$:
 
 :::{math}
 :label: eq:nr_new_step
@@ -466,4 +466,4 @@ where:
 
 ::::
 
-The algorithm implemented in *structuralcodes* is basically as above described, with the possibility of using also the modified Newton-Rhapson with initial tangent (setting `initial = True`). Further the user can set the maximum number of iterations (set to 10 by default) and the tolerance (set to 1e-6 by default).e
+The algorithm implemented in *structuralcodes* is basically as above described, with the possibility of using also the modified Newton-Rhapson with initial tangent (setting `initial = True`). Further the user can set the maximum number of iterations (set to 10 by default) and the tolerance (set to 1e-6 by default).
