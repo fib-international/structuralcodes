@@ -137,7 +137,7 @@ Animation of ultimate strain profiles for uniaxial bending and corresponding int
 (theory-nmm-domain)=
 ## Compute MNN interaction domain
 
-with this algorithm, *structuralcodes* computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
+With this algorithm, *structuralcodes* computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
 
 To do so, the algorithm loops different values of angle $\theta_i$ of neutral axes respect axis $y$, going from $0$ to $2\pi$ (the number of discretizations can be customized with the parameter `num_theta` whose default value is equal to 32).
 For each value of the angle $\theta_i$, the algorithm proceeds as the case of unixial bending ([here](theory-nm-domain)).
