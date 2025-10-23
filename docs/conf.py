@@ -26,6 +26,7 @@ extensions = [
 myst_enable_extensions = [
     'colon_fence',
     'deflist',
+    'dollarmath',
 ]
 
 templates_path = ['_templates']
@@ -42,10 +43,25 @@ exclude_patterns = [
     'docs',
 ]
 
+# Sphinx-design configuration
+sd_custom_directives = {
+    'dropdown-syntax': {
+        'inherit': 'dropdown',
+        'argument': 'Syntax',
+        'options': {
+            'color': 'primary',
+            'icon': 'code',
+        },
+    }
+}
+
 # Options for HTML output
 html_title = project
 html_theme = 'furo'
 html_static_path = ['_static']
+html_css_files = [
+    'custom.css',
+]
 html_theme_options = {
     'footer_icons': [
         {
@@ -65,11 +81,17 @@ html_theme_options = {
     'source_branch': 'main',
     'source_directory': 'docs/',
     'sidebar_hide_name': False,
+    'light_css_variables': {
+        'color-caption-text': '#666666',
+    },
+    'dark_css_variables': {
+        'color-caption-text': '#A1A1A1',
+    },
 }
 
 # Options for intersphinx
 intersphinx_mapping = {
-    'shapely': ('https://shapely.readthedocs.io/en/stable/', None),
+    'shapely': ('https://shapely.readthedocs.io/en/stable', None),
 }
 
 # Autodoc settings

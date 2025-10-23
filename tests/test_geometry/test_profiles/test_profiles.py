@@ -1,11 +1,16 @@
-"""Tests for the Steel Sections."""
+"""Tests for profiles."""
 
 import math
 
 import pytest
 from shapely.testing import assert_geometries_equal
 
+from structuralcodes.core._marin_integration import marin_integration
 from structuralcodes.geometry import (
+    CompoundGeometry,
+    SurfaceGeometry,
+)
+from structuralcodes.geometry.profiles import (
     HE,
     IPE,
     IPN,
@@ -13,18 +18,16 @@ from structuralcodes.geometry import (
     UBP,
     UC,
     UPN,
-    CompoundGeometry,
-    SurfaceGeometry,
+)
+from structuralcodes.materials.basic import (
+    ElasticMaterial,
+    ElasticPlasticMaterial,
+    GenericMaterial,
 )
 from structuralcodes.materials.constitutive_laws import (
-    Elastic,
-    ElasticPlastic,
     UserDefined,
 )
 from structuralcodes.sections._generic import GenericSection
-from structuralcodes.sections.section_integrators._marin_integration import (
-    marin_integration,
-)
 
 
 # Test steel I section
@@ -249,7 +252,7 @@ def test_section_get_polygon(cls, name):
     Es = 206000
     fy = 355
     eps_su = fy / Es
-    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+    steel = ElasticPlasticMaterial(E=Es, fy=fy, density=7850, eps_su=eps_su)
 
     # Create geometry
     geo = SurfaceGeometry(cls.get_polygon(name), steel)
@@ -957,7 +960,7 @@ def test_Isection_elastic_fiber(cls, name):
     Es = 206000
     fy = 355
     eps_su = fy / Es
-    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+    steel = ElasticPlasticMaterial(E=Es, fy=fy, density=7850, eps_su=eps_su)
 
     # Create geometry
     i_beam = cls(name)
@@ -1018,7 +1021,7 @@ def test_Isection_elastic_marin(cls, name):
     Es = 206000
     fy = 355
     eps_su = fy / Es
-    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+    steel = ElasticPlasticMaterial(E=Es, fy=fy, density=7850, eps_su=eps_su)
 
     # Create geometry
     i_beam = cls(name)
@@ -1079,7 +1082,7 @@ def test_Isection_plastic_fiber(cls, name):
     Es = 206000
     fy = 355
     eps_su = 0.15
-    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+    steel = ElasticPlasticMaterial(E=Es, fy=fy, density=7850, eps_su=eps_su)
 
     # Create geometry
     i_beam = cls(name)
@@ -1140,7 +1143,7 @@ def test_Isection_plastic_marin(cls, name):
     Es = 206000
     fy = 355
     eps_su = 0.15
-    steel = ElasticPlastic(E=Es, fy=fy, eps_su=eps_su)
+    steel = ElasticPlasticMaterial(E=Es, fy=fy, density=7850, eps_su=eps_su)
 
     # Create geometry
     i_beam = cls(name)
@@ -1200,8 +1203,8 @@ def test_Isection_elastic_material_marin(cls, name):
     """Test Steel I section elastic strength."""
     Es = 206000
     fy = 355
-    steel = Elastic(E=Es)
-    steel.set_ultimate_strain(fy / Es)
+    steel = ElasticMaterial(E=Es, density=7850)
+    steel.constitutive_law.set_ultimate_strain(fy / Es)
     # Create geometry
     i_beam = cls(name)
     geo = CompoundGeometry([SurfaceGeometry(i_beam.polygon, steel)])
@@ -1261,9 +1264,10 @@ def test_Isection_user_material_marin(cls, name):
     Es = 206000
     fy = 355
     eps_su = 7e-2
-    steel = UserDefined(
+    steel_law = UserDefined(
         x=[-eps_su, -fy / Es, 0, fy / Es, eps_su], y=[-fy, -fy, 0, fy, fy]
     )
+    steel = GenericMaterial(density=7850, constitutive_law=steel_law)
     # Create geometry
     i_beam = cls(name)
     geo = CompoundGeometry([SurfaceGeometry(i_beam.polygon, steel)])
@@ -1421,9 +1425,10 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     Es = 206000
     fy = 355
     eps_su = 7e-2
-    steel = UserDefined(
+    steel_law = UserDefined(
         x=[-eps_su, -fy / Es, 0, fy / Es, eps_su], y=[-fy, -fy, 0, fy, fy]
     )
+    steel = GenericMaterial(density=7850, constitutive_law=steel_law)
     # Create geometry
     beam = cls(name)
 
@@ -1437,7 +1442,7 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     # Create the section with fiber
     sec = GenericSection(geo)
     # Elastic strength
-    steel.set_ultimate_strain(fy / Es)
+    steel_law.set_ultimate_strain(fy / Es)
     results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, mye_expected, rel_tol=2.5e-2)
     results = sec.section_calculator.calculate_bending_strength(
@@ -1445,7 +1450,7 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     )
     assert math.isclose(-results.m_z * 1e-6, mze_expected, rel_tol=2.5e-2)
     # Plastic strength
-    steel.set_ultimate_strain(0.07)
+    steel_law.set_ultimate_strain(0.07)
     results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, myp_expected, rel_tol=2.5e-2)
     results = sec.section_calculator.calculate_bending_strength(

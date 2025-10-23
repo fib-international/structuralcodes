@@ -48,6 +48,9 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 ConstitutiveLaw,
             ]
         ] = 'parabolarectangle',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         fcm: t.Optional[float] = None,
         fctm: t.Optional[float] = None,
         fctk_5: t.Optional[float] = None,
@@ -80,6 +83,13 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
                 law type for concrete. (valid options for string: 'elastic',
                 'parabolarectangle', 'bilinearcompression', 'sargin',
                 'popovics').
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             fcm (float, optional): The mean compressive strength.
             fctm (float, optional): The mean tensile strength.
             fctk_5 (float, optional): The 5% fractile for the tensile strength.
@@ -124,6 +134,9 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             density=density,
             existing=False,
             gamma_c=gamma_c,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._kE = kE
         self._strength_dev_class = strength_dev_class.strip().lower()
@@ -158,6 +171,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
             raise ValueError(
                 'The provided constitutive law is not valid for concrete.'
             )
+        self._apply_initial_strain()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
@@ -477,7 +491,7 @@ class ConcreteEC2_2023(Concrete):  # noqa: N801
     def __sargin__(self) -> dict:
         """Returns kwargs for creating a Sargin const law."""
         return {
-            'fc': self.fcd(),
+            'fc': self.fcm,
             'eps_c1': self.eps_c1,
             'eps_cu1': self.eps_cu1,
             'k': self.k_sargin,

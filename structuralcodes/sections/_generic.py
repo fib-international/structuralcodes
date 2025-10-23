@@ -19,7 +19,7 @@ from structuralcodes.geometry import (
     PointGeometry,
     SurfaceGeometry,
 )
-from structuralcodes.materials.constitutive_laws import Elastic
+from structuralcodes.materials.basic import ElasticMaterial
 
 from .section_integrators import SectionIntegrator, integrator_factory
 
@@ -158,13 +158,17 @@ class GenericSectionCalculator(SectionCalculator):
         # Computation of surface area, reinforcement area, EA (axial rigidity)
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)
+            gp.ea += geo.area * geo.material.constitutive_law.get_tangent(
+                eps=0
+            )
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
 
         for geo in self.section.geometry.point_geometries:
-            gp.ea += geo.area * geo.material.get_tangent(eps=0)
+            gp.ea += geo.area * geo.material.constitutive_law.get_tangent(
+                eps=0
+            )
             gp.area_reinforcement += geo.area
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
@@ -240,7 +244,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Create a dummy material for integration of area moments
         # This is used for J, S etc, not for E_J E_S etc
-        dummy_mat = Elastic(E=1)
+        dummy_mat = ElasticMaterial(E=1, density=1)
         # Computation of moments of area (material-independet)
         # Note: this could be un-meaningfull when many materials
         # are combined
@@ -315,7 +319,9 @@ class GenericSectionCalculator(SectionCalculator):
                 # This is left on purpose: even if tempted we should not do
                 # this check:
                 # if g != other_g:
-                eps_p = g.material.get_ultimate_strain(yielding=yielding)[1]
+                eps_p = g.material.constitutive_law.get_ultimate_strain(
+                    yielding=yielding
+                )[1]
                 if isinstance(g, SurfaceGeometry):
                     y_p = g.polygon.bounds[1]
                 elif isinstance(g, PointGeometry):
@@ -340,7 +346,7 @@ class GenericSectionCalculator(SectionCalculator):
                     else False
                 )
 
-                eps_n = other_g.material.get_ultimate_strain(
+                eps_n = other_g.material.constitutive_law.get_ultimate_strain(
                     yielding=use_yielding
                 )[0]
 
@@ -609,14 +615,20 @@ class GenericSectionCalculator(SectionCalculator):
 
     @property
     def n_min(self) -> float:
-        """Return minimum axial load."""
+        """Return minimum axial load.
+
+        In most situations, this is the capacity in compression.
+        """
         if self._n_min is None:
             self._n_min, self._n_max = self.calculate_limit_axial_load()
         return self._n_min
 
     @property
     def n_max(self) -> float:
-        """Return maximum axial load."""
+        """Return maximum axial load.
+
+        In most situations, this is the capacity in tension.
+        """
         if self._n_max is None:
             self._n_min, self._n_max = self.calculate_limit_axial_load()
         return self._n_max

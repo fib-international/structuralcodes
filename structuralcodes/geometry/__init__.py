@@ -1,5 +1,6 @@
 """Main entry point for geometry."""
 
+from . import profiles
 from ._circular import CircularGeometry
 from ._geometry import (
     CompoundGeometry,
@@ -14,7 +15,6 @@ from ._reinforcement import (
     add_reinforcement_circle,
     add_reinforcement_line,
 )
-from ._steel_sections import HE, IPE, IPN, UB, UBP, UC, UPN
 
 __all__ = [
     'Geometry',
@@ -22,13 +22,7 @@ __all__ = [
     'SurfaceGeometry',
     'CompoundGeometry',
     'create_line_point_angle',
-    'IPE',
-    'HE',
-    'UB',
-    'UC',
-    'UBP',
-    'IPN',
-    'UPN',
+    'profiles',
     'add_reinforcement',
     'add_reinforcement_line',
     'CircularGeometry',

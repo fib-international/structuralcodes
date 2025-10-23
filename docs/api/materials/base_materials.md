@@ -1,6 +1,7 @@
 (api-base-materials)=
 # Base material classes
 
+(api-base-material-class)=
 ## Base material class
 
 ```{eval-rst}
@@ -41,6 +42,8 @@
 .. autoclass:: structuralcodes.core.base.ConstitutiveLaw
 
    .. autoproperty:: name
-   .. automethod:: preprocess_strains_with_limits
+   .. automethod:: get_stress
+   .. automethod:: get_tangent
    .. automethod:: get_secant
+   .. automethod:: get_ultimate_strain
 ```
