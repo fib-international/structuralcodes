@@ -1,7 +1,10 @@
 """A Python package that contains models from structural design codes."""
 
+import warnings
+
 from . import codes, core, geometry, materials, sections
 from .codes import get_design_codes, set_design_code, set_national_annex
+from .core.errors import StructuralCodesWarning
 
 __version__ = '0.6.1'
 
@@ -15,3 +18,5 @@ __all__ = [
     'geometry',
     'sections',
 ]
+
+warnings.filterwarnings(action='always', category=StructuralCodesWarning)
