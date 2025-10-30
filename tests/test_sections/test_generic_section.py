@@ -1532,3 +1532,8 @@ def test_issue_cracked_properties():
     cracked_properties_after = calculate_elastic_cracked_properties(
         pile_section
     )
+
+    # Check that the result is the same
+    assert cracked_properties_before.isclose(
+        cracked_properties_after, rtol=1e-3, atol=1e-6
+    )
