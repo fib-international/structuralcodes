@@ -4,6 +4,7 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 from dataclasses import dataclass, field, fields
 
+import numpy as np
 from numpy.typing import ArrayLike
 
 
@@ -124,6 +125,24 @@ class SectionProperties:
         properties.
         """
         return f'{self}'
+
+    def isclose(self, other, rtol=1e-5, atol=1e-8):
+        """Check if two SectionProperties are close to each other.
+
+        Arguments:
+            other (SectionProperties): The other SectionProperties to compare.
+            rtol (float): The relative tolerance.
+            atol (float): The absolute tolerance.
+
+        Returns:
+            bool: True if the two SectionProperties are close, False otherwise.
+        """
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        a = np.array(list(vars(self).values()))
+        b = np.array(list(vars(other).values()))
+        return np.allclose(a, b, rtol=rtol, atol=atol)
 
 
 @dataclass
