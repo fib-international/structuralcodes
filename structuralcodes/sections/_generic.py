@@ -205,10 +205,11 @@ class GenericSectionCalculator(SectionCalculator):
                 sy,
                 iyy,
                 iyz,
-                tri,
+                integration_data,
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 1, 0],
+                integration_data=self.integration_data,
                 mesh_size=self.mesh_size,
             )
             # Change sign due to moment sign convention
@@ -223,7 +224,7 @@ class GenericSectionCalculator(SectionCalculator):
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 0, -1],
-                integration_data=tri,
+                integration_data=integration_data,
                 mesh_size=self.mesh_size,
             )
             # Change sign due to moment sign convention
@@ -400,7 +401,7 @@ class GenericSectionCalculator(SectionCalculator):
             n_int,
             _,
             _,
-            tri,
+            integration_data,
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom,
             strain,
@@ -408,8 +409,8 @@ class GenericSectionCalculator(SectionCalculator):
             mesh_size=self.mesh_size,
         )
         # save the triangulation data
-        if self.integration_data is None and tri is not None:
-            self.integration_data = tri
+        if self.integration_data is None and integration_data is not None:
+            self.integration_data = integration_data
 
         # Check if there is equilibrium with this strain distribution
         chi_a = strain[1]
@@ -549,12 +550,12 @@ class GenericSectionCalculator(SectionCalculator):
             n_int,
             _,
             _,
-            tri,
+            integration_data,
         ) = self.integrator.integrate_strain_response_on_geometry(
             geom, [eps_0, curv, 0], integration_data=self.integration_data
         )
-        if self.integration_data is None and tri is not None:
-            self.integration_data = tri
+        if self.integration_data is None and integration_data is not None:
+            self.integration_data = integration_data
         dn_a = n_int - n
         # It may occur that dn_a is already almost zero (in eqiulibrium)
         if abs(dn_a) <= 1e-2:
@@ -604,7 +605,7 @@ class GenericSectionCalculator(SectionCalculator):
         eps_p = strain[0] + strain[1] * y_p
         eps_n = strain[0] + strain[1] * y_n
 
-        n_min, _, _, tri = (
+        n_min, _, _, integration_data = (
             self.integrator.integrate_strain_response_on_geometry(
                 self.section.geometry,
                 [eps_n, 0, 0],
@@ -613,11 +614,13 @@ class GenericSectionCalculator(SectionCalculator):
             )
         )
         n_max, _, _, _ = self.integrator.integrate_strain_response_on_geometry(
-            self.section.geometry, [eps_p, 0, 0], integration_data=tri
+            self.section.geometry,
+            [eps_p, 0, 0],
+            integration_data=integration_data,
         )
 
-        if self.integration_data is None and tri is not None:
-            self.integration_data = tri
+        if self.integration_data is None and integration_data is not None:
+            self.integration_data = integration_data
         return n_min, n_max
 
     @property
@@ -716,8 +719,10 @@ class GenericSectionCalculator(SectionCalculator):
 
         # manage the returning from integrate_strain_response_on_geometry:
         # this function returns one of the two:
-        # a. float, float, float, tri (i.e. N, My, Mz, tri)
-        # b. (NDArray, tri) (i.e. section stiff matrix, tri)
+        # a. float, float, float, integration_data
+        #       (i.e. N, My, Mz, integration_data)
+        # b. (NDArray, integration_data)
+        #       (i.e. section stiff matrix, integration_data)
         # We need to return only forces or stifness
         # (without triangultion data)
         if len(result) == 2:
@@ -1068,7 +1073,7 @@ class GenericSectionCalculator(SectionCalculator):
         # integrate all strain profiles
         forces = np.zeros_like(strains)
         for i, strain in enumerate(strains):
-            N, My, Mz, tri = (
+            N, My, Mz, integration_data = (
                 self.integrator.integrate_strain_response_on_geometry(
                     geo=self.section.geometry,
                     strain=strain,
@@ -1076,8 +1081,8 @@ class GenericSectionCalculator(SectionCalculator):
                     mesh_size=self.mesh_size,
                 )
             )
-            if self.integration_data is None and tri is not None:
-                self.integration_data = tri
+            if self.integration_data is None and integration_data is not None:
+                self.integration_data = integration_data
             forces[i, 0] = N
             forces[i, 1] = My
             forces[i, 2] = Mz
@@ -1339,15 +1344,15 @@ class GenericSectionCalculator(SectionCalculator):
         # integrate all strain profiles
         forces = np.zeros_like(strains)
         for i, strain in enumerate(strains):
-            N, My, Mz, tri = (
+            N, My, Mz, integration_data = (
                 self.integrator.integrate_strain_response_on_geometry(
                     geo=self.section.geometry,
                     strain=strain,
                     integration_data=self.integration_data,
                 )
             )
-            if self.integration_data is None and tri is not None:
-                self.integration_data = tri
+            if self.integration_data is None and integration_data is not None:
+                self.integration_data = integration_data
             forces[i, 0] = N
             forces[i, 1] = My
             forces[i, 2] = Mz
@@ -1426,7 +1431,7 @@ class GenericSectionCalculator(SectionCalculator):
         loads = np.array([n, my, mz])
 
         # Compute initial tangent stiffness matrix
-        stiffness_tangent, tri = (
+        stiffness_tangent, integration_data = (
             self.integrator.integrate_strain_response_on_geometry(
                 geom,
                 [0, 0, 0],
@@ -1435,8 +1440,8 @@ class GenericSectionCalculator(SectionCalculator):
             )
         )
         # eventually save the triangulation data
-        if self.integration_data is None and tri is not None:
-            self.integration_data = tri
+        if self.integration_data is None and integration_data is not None:
+            self.integration_data = integration_data
 
         # Calculate strain plane with Newton Rhapson Iterative method
         num_iter = 0
