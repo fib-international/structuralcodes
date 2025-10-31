@@ -17,32 +17,73 @@ Pay attention that default-defined constitutive laws by material classes work wi
 With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis. 
 
 (theory-fig-bending-calc-rotated-system)=
-:::{figure} FigureBendingRotated.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
 
-The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.
+:::{image} FigureBendingRotated_light.png
+:align: center
+:class: only-light
 :::
 
+:::{image} FigureBendingRotated_dark.png
+:align: center
+:class: only-dark
+:::
+
+The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.
+
+::::
+:::::
 
 In the rotated reference system **$y^*z^*$**, the bending strength in terms of positive $M_{y^*}$ is computed.
 
-:::{Note}
+::::::{Note}
 According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be equal to $\pi$.
 
 (theory-fig-system-uniaxial-bending)=
-:::{figure} FigureBendingTopCompression.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureBendingTopCompression_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureBendingTopCompression_dark.png
+:align: center
+:class: only-dark
+:::
 
 Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.
-:::
 
-:::
+::::
+:::::
+
+::::::
 
 According to classic RC theory[^leonhardt1973], the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).
 
 (theory-fig-deformation-domain)=
-:::{figure} Figure_DeformationDomain.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureDeformationDomain_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureDeformationDomain_dark.png
+:align: center
+:class: only-dark
+:::
 
 Ultimate deformation domains for uniaxial bending with or without axial force [^leonhardt1973].
-:::
+
+::::
+:::::
 
 The algorithm developed can be summarized as follows:
 1. **Rotate the section**: the section is rotated by the given angle theta. In this new CRS *$y^*z^*$*, the problem becomes uniaxial bending about the *$y^*$* axis
