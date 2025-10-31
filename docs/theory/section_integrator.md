@@ -132,10 +132,21 @@ P(y,z) = \sigma(y,z) = \sum_{m=0}^M \sum_{n=0}^N a_{m,n} y^m z^n
 An alternative approach is to rotate the section in order to have uniaxial bending in the new reference system **$y^*z^*$**, see figure [below](theory-fig-marin-rotation). In StructuralCodes we are adopting the latter approach.
 
 (theory-fig-marin-rotation)=
-:::{figure} FigureBendingRotated.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureBendingRotated_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureBendingRotated_dark.png
+:align: center
+:class: only-dark
+:::
 
 Rotation of reference system for having uniaxial bending.
-:::
 
 ::::
 
