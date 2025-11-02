@@ -23,7 +23,6 @@
    .. automethod:: get_stress
    .. automethod:: get_tangent
    .. automethod:: get_ultimate_strain
-   .. automethod:: set_ultimate_strain
 
 ```
 
@@ -87,6 +86,7 @@
 
 ```
 
+(api-userdefined-law)=
 ## Userdefined
 
 ```{eval-rst}
@@ -96,7 +96,6 @@
    .. automethod:: get_stress
    .. automethod:: get_tangent
    .. automethod:: get_ultimate_strain
-   .. automethod:: set_ultimate_strain
 
 ```
 

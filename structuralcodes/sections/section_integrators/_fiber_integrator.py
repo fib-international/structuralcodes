@@ -207,19 +207,19 @@ class FiberIntegrator(SectionIntegrator):
 
         prepared_input = []
 
-        triangulated_data = kwargs.get('tri')
-        if triangulated_data is None:
+        integration_data = kwargs.get('integration_data')
+        if integration_data is None:
             # No triangulation is provided, triangulate the section
             # Fiber integrator for generic section uses delaunay triangulation
             # for discretizing in fibers
 
             mesh_size = kwargs.get('mesh_size', 0.01)
-            triangulated_data = self.triangulate(geo, mesh_size)
+            integration_data = self.triangulate(geo, mesh_size)
 
         y = []
         z = []
         IA = []  # integrand (stress or tangent) * area
-        for tr in triangulated_data:
+        for tr in integration_data:
             # All have the same material
             strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
             # compute stresses in all materials
@@ -234,7 +234,7 @@ class FiberIntegrator(SectionIntegrator):
             IA.append(integrand * tr[2])
         prepared_input = [(np.hstack(y), np.hstack(z), np.hstack(IA))]
 
-        return prepared_input, triangulated_data
+        return prepared_input, integration_data
 
     def integrate_stress(
         self,
@@ -328,13 +328,13 @@ class FiberIntegrator(SectionIntegrator):
             parameter.
         """
         # Prepare the general input based on the geometry and the input strains
-        prepared_input, triangulated_data = self.prepare_input(
+        prepared_input, integration_data = self.prepare_input(
             geo, strain, integrate, **kwargs
         )
 
         # Return the calculated response
         if integrate == 'stress':
-            return *self.integrate_stress(prepared_input), triangulated_data
+            return *self.integrate_stress(prepared_input), integration_data
         if integrate == 'modulus':
-            return self.integrate_modulus(prepared_input), triangulated_data
+            return self.integrate_modulus(prepared_input), integration_data
         raise ValueError(f'Unknown integrate type: {integrate}')
