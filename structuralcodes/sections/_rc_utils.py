@@ -10,6 +10,21 @@ from structuralcodes.sections import GenericSection
 from structuralcodes.sections.section_integrators import FiberIntegrator
 
 
+def _create_surface_geometries(polygons_list, material):
+    """Process shapely polygons to SurfaceGeometries."""
+    # Create an empty list to store SurfaceGeometry objects
+    surface_geometries = []
+
+    # Iterate over the list of polygons and create SurfaceGeometry for each
+    for polygon in polygons_list:
+        # Create a new SurfaceGeometry for the current polygon
+        surface_geometry = SurfaceGeometry(polygon, material)
+        # Add the new SurfaceGeometry to the list
+        surface_geometries.append(surface_geometry)
+
+    return CompoundGeometry(surface_geometries)
+
+
 def calculate_elastic_cracked_properties(
     section: GenericSection,
     theta: float = 0,
@@ -37,21 +52,6 @@ def calculate_elastic_cracked_properties(
         properties) and (if return_cracked_section is True) the cracked
         section.
     """
-
-    def create_surface_geometries(polygons_list, material):
-        """Process shapely polygons to SurfaceGeometries."""
-        # Create an empty list to store SurfaceGeometry objects
-        surface_geometries = []
-
-        # Iterate over the list of polygons and create SurfaceGeometry for each
-        for polygon in polygons_list:
-            # Create a new SurfaceGeometry for the current polygon
-            surface_geometry = SurfaceGeometry(polygon, material)
-            # Add the new SurfaceGeometry to the list
-            surface_geometries.append(surface_geometry)
-
-        return CompoundGeometry(surface_geometries)
-
     if not section.geometry.reinforced_concrete:
         return None
 
@@ -103,7 +103,7 @@ def calculate_elastic_cracked_properties(
     elastic_section = GenericSection(
         geo, integrator=integrator, mesh_size=mesh_size
     )
-    rotated_geometry = section.geometry
+    rotated_geometry = elastic_section.geometry
 
     curv = -1e-5  # Any curvature should return the same mechanical properties.
     # Find the equilibrium with fixed curvature
@@ -117,7 +117,7 @@ def calculate_elastic_cracked_properties(
     for part in rotated_geometry.geometries:
         upper_div, lower_div = part.split(((0, z_na), 0))
         # Convert to SurfaceGeometry
-        subpart = create_surface_geometries(upper_div, part.material)
+        subpart = _create_surface_geometries(upper_div, part.material)
         if cut_geom is None:
             cut_geom = subpart
         else:
@@ -131,23 +131,14 @@ def calculate_elastic_cracked_properties(
     cracked_geom = cut_geom.rotate(theta)
 
     # Define the cracked section
-    if isinstance(section.section_calculator.integrator, FiberIntegrator):
-        mesh_size = getattr(
-            section.section_calculator.integrator, 'mesh_size', 0.01
-        )
-        cracked_sec = GenericSection(
-            cracked_geom,
-            integrator='fiber',
-            mesh_size=mesh_size,
-        )
-    else:
-        cracked_sec = GenericSection(cracked_geom, integrator='marin')
+    cracked_sec = GenericSection(
+        cracked_geom, integrator=integrator, mesh_size=mesh_size
+    )
 
     cracked_prop = cracked_sec.gross_properties
 
-    if return_cracked_section:
-        result = (cracked_prop, cracked_geom)
-    else:
-        result = cracked_prop
-
-    return result
+    return (
+        (cracked_prop, cracked_geom)
+        if return_cracked_section
+        else cracked_prop
+    )
