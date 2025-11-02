@@ -26,6 +26,7 @@ class UserDefined(ConstitutiveLaw):
         x: ArrayLike,
         y: ArrayLike,
         name: t.Optional[str] = None,
+        eps_u: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
         flag: int = 0,
     ) -> None:
         """Initialize a UserDefined constitutive law.
@@ -36,6 +37,10 @@ class UserDefined(ConstitutiveLaw):
 
         Keyword Arguments:
             name (Optional, str): A name for the constitutive law.
+            eps_u (float or (float, float), optional): Ultimate strain.
+                If a single value is provided the same is adopted for both
+                negative and positive strains. If a tuple is provided, it
+                should be given as (negative, positive). Default value = None.
             flag (Optional): A flag specifying the behavior after the last
                 point. Admissible values: 0 (default): stress drops to zero
                 after ultimate strain, 1: stress is mantained constant, 2:
@@ -89,6 +94,10 @@ class UserDefined(ConstitutiveLaw):
 
         # Compute slope of each segment
         self._slopes = np.diff(self._y) / np.diff(self._x)
+
+        # Set ultimate strains if needed
+        if eps_u is not None:
+            self._set_ultimate_strain(eps_u=eps_u)
 
     def get_stress(
         self, eps: t.Union[float, ArrayLike]
@@ -222,39 +231,39 @@ class UserDefined(ConstitutiveLaw):
         del kwargs
         return (self._ultimate_strain_n, self._ultimate_strain_p)
 
-    def set_ultimate_strain(
-        self, eps_su=t.Union[float, t.Tuple[float, float]]
+    def _set_ultimate_strain(
+        self, eps_u=t.Union[float, t.Tuple[float, float]]
     ) -> None:
         """Set ultimate strains for Elastic Material if needed.
 
         Arguments:
-            eps_su (float or (float, float)): Defining ultimate strain. If a
+            eps_u (float or (float, float)): Defining ultimate strain. If a
                 single value is provided the same is adopted for both negative
                 and positive strains. If a tuple is provided, it should be
                 given as (negative, positive).
         """
-        if isinstance(eps_su, float):
-            self._ultimate_strain_p = abs(eps_su)
-            self._ultimate_strain_n = -abs(eps_su)
-        elif isinstance(eps_su, tuple):
-            if len(eps_su) < 2:
+        if isinstance(eps_u, float):
+            self._ultimate_strain_p = abs(eps_u)
+            self._ultimate_strain_n = -abs(eps_u)
+        elif isinstance(eps_u, tuple):
+            if len(eps_u) < 2:
                 raise ValueError(
                     'Two values need to be provided when setting the tuple'
                 )
-            eps_su_n = eps_su[0]
-            eps_su_p = eps_su[1]
-            if eps_su_p < eps_su_n:
-                eps_su_p, eps_su_n = eps_su_n, eps_su_p
-            if eps_su_p < 0:
+            eps_u_n = eps_u[0]
+            eps_u_p = eps_u[1]
+            if eps_u_p < eps_u_n:
+                eps_u_p, eps_u_n = eps_u_n, eps_u_p
+            if eps_u_p < 0:
                 raise ValueError(
                     'Positive ultimate strain should be non-negative'
                 )
-            if eps_su_n > 0:
+            if eps_u_n > 0:
                 raise ValueError(
                     'Negative utimate strain should be non-positive'
                 )
-            self._ultimate_strain_p = eps_su_p
-            self._ultimate_strain_n = eps_su_n
+            self._ultimate_strain_p = eps_u_p
+            self._ultimate_strain_n = eps_u_n
         else:
             raise ValueError(
                 'set_ultimate_strain requires a single value or a tuple \

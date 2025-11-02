@@ -15,6 +15,9 @@ class ElasticMaterial(Material):
         self,
         E: float,
         density: float,
+        ultimate_strain: t.Optional[
+            t.Union[float, t.Tuple[float, float]]
+        ] = None,
         initial_strain: t.Optional[float] = None,
         initial_stress: t.Optional[float] = None,
         strain_compatibility: t.Optional[float] = None,
@@ -25,6 +28,13 @@ class ElasticMaterial(Material):
         Arguments:
             E (float): The Young's modulus.
             density (float): The density.
+            ultimate_strain (Optional[float, Tuple[float, float]]): The
+                ultimate strain of the material. If a single float is given,
+                it is used for both the positive and negative directions. If a
+                tuple of two floats is given, the first value is used for the
+                negative direction and the second value is used for the
+                positive direction. If None, the material has no ultimate
+                strain. Default value is None.
             initial_strain (Optional[float]): Initial strain of the material.
             initial_stress (Optional[float]): Initial stress of the material.
             strain_compatibility (Optional[bool]): Only relevant if
@@ -42,6 +52,7 @@ class ElasticMaterial(Material):
             name=name if name else 'ElasticMaterial',
         )
         self._E = E
+        self._ultimate_strain = ultimate_strain
         self._constitutive_law = create_constitutive_law('elastic', self)
         self._apply_initial_strain()
 
@@ -52,7 +63,7 @@ class ElasticMaterial(Material):
 
     def __elastic__(self) -> dict:
         """Returns kwargs for creating an elastic constitutive law."""
-        return {'E': self.E}
+        return {'E': self.E, 'eps_u': self._ultimate_strain}
 
     @classmethod
     def from_material(cls, other_material: Material):
