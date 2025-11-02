@@ -11,6 +11,7 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
 
 from structuralcodes.core._marin_integration import marin_integration
+from structuralcodes.core.base import ConstitutiveLaw
 from structuralcodes.geometry import (
     CompoundGeometry,
     SurfaceGeometry,
@@ -24,7 +25,7 @@ class MarinIntegrator(SectionIntegrator):
     """Section integrator based on the Marin algorithm."""
 
     def _rotate_geometry(
-        self, geo: CompoundGeometry, strain: ArrayLike
+        self, geo: CompoundGeometry, strain: ArrayLike, **kwargs
     ) -> t.Tuple[float, CompoundGeometry, ArrayLike]:
         """This function returns the geometry, strain and angle in a rotated
         CRS for which bending is uniaxial.
@@ -33,10 +34,33 @@ class MarinIntegrator(SectionIntegrator):
         angle = -atan2(strain[2], strain[1])
 
         rotated_geom = geo.rotate(angle)
+        # If integration_data is present, rotate it too
+        integration_data = kwargs.get('integration_data')
+        if integration_data is not None:
+            rotated_integration_data = []
+            for reinf_data in integration_data:
+                T = np.array(
+                    [
+                        [np.cos(angle), -np.sin(angle)],
+                        [np.sin(angle), np.cos(angle)],
+                    ]
+                )
+                coords = np.vstack((reinf_data[0], reinf_data[1]))
+                rotated_coords = T @ coords
+                rotated_integration_data.append(
+                    (
+                        rotated_coords[0, :],
+                        rotated_coords[1, :],
+                        reinf_data[2],
+                        reinf_data[3],
+                    )
+                )
+        else:
+            rotated_integration_data = None
         # Determine strain in this rotated CRS
         strain_rotated = [strain[0], (strain[2] ** 2 + strain[1] ** 2) ** 0.5]
 
-        return angle, rotated_geom, strain_rotated
+        return angle, rotated_geom, strain_rotated, rotated_integration_data
 
     def _get_input_polygon(
         self, polygon: Polygon, coeffs: ArrayLike, input: list
@@ -141,39 +165,90 @@ class MarinIntegrator(SectionIntegrator):
                         for polygon in result.geoms:
                             self._get_input_polygon(polygon, coeffs[p], input)
 
+    def _create_integration_data_point_geometries(
+        self, geo: CompoundGeometry
+    ) -> t.List[t.Tuple[np.ndarray, np.ndarray, np.ndarray, ConstitutiveLaw]]:
+        """Return integration data structure for storing point geometries
+        in numpy arrays.
+        """
+        # Initialize data structure
+        integration_data = []
+        # Map reinf_data to group point geometries by constitutive law
+        reinf_data = {}
+        # Preprocess geometries having the same material
+        for pg in geo.point_geometries:
+            x, y = pg._point.coords.xy
+            x = x[0]
+            y = y[0]
+            area = pg.area
+            constitutive_law = pg.material.constitutive_law
+            if reinf_data.get(constitutive_law) is None:
+                reinf_data[constitutive_law] = [
+                    np.array(x),
+                    np.array(y),
+                    np.array(area),
+                ]
+            else:
+                reinf_data[constitutive_law][0] = np.hstack(
+                    (reinf_data[constitutive_law][0], x)
+                )
+                reinf_data[constitutive_law][1] = np.hstack(
+                    (reinf_data[constitutive_law][1], y)
+                )
+                reinf_data[constitutive_law][2] = np.hstack(
+                    (reinf_data[constitutive_law][2], area)
+                )
+        for constitutive_law, value in reinf_data.items():
+            integration_data.append(
+                (value[0], value[1], value[2], constitutive_law)
+            )
+        return integration_data
+
     def _process_point_geometries(
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
         input: t.List,
         integrate: t.Literal['stress', 'modulus'] = 'stress',
+        **kwargs,
     ):
         """Process Point geometries filling the input data."""
-        # Tentative proposal for managing reinforcement (PointGeometry)
-        x = []
+        # See if there is a integration_data stored
+        integration_data = kwargs.get('integration_data')
+        if integration_data is None:
+            # No integration data is present, process it now and store it
+            # for future use
+            integration_data = self._create_integration_data_point_geometries(
+                geo=geo
+            )
+        # Now use the integration data (either just created or passed as
+        # argument) to fill the input
         y = []
+        z = []
         IA = []
-        for pg in geo.point_geometries:
-            xp, yp = pg._point.coords.xy
-            xp = xp[0]
-            yp = yp[0]
-            A = pg.area
-            strain_ = strain[0] + strain[1] * yp
-            x.append(xp)
-            y.append(yp)
+        for reinf_data in integration_data:
+            # All have the same constitutive law
+            strains = strain[0] + strain[1] * reinf_data[1]
+            # Compute integration quantity (stress or modulus)
             if integrate == 'stress':
-                IA.append(pg.material.constitutive_law.get_stress(strain_) * A)
+                integrand = reinf_data[3].get_stress(strains)
             elif integrate == 'modulus':
-                IA.append(
-                    pg.material.constitutive_law.get_tangent(strain_) * A
-                )
-        input.append((1, np.array(x), np.array(y), np.array(IA)))
+                integrand = reinf_data[3].get_tangent(strains)
+            else:
+                raise ValueError(f'Unknown integrate type: {integrate}')
+            y.append(reinf_data[0])
+            z.append(reinf_data[1])
+            IA.append(integrand * reinf_data[2])
+
+        input.append((1, np.array(y), np.array(z), np.array(IA)))
+        return integration_data
 
     def prepare_input(
         self,
         geo: CompoundGeometry,
         strain: ArrayLike,
         integrate: t.Literal['stress', 'modulus'] = 'stress',
+        **kwargs,
     ) -> t.Tuple[float, t.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Prepare general input to the integration of stress or material
         modulus in the section.
@@ -202,12 +277,16 @@ class MarinIntegrator(SectionIntegrator):
             ValueError: If a unkown value is passed to the `integrate`
             parameter.
         """
+        # Get the integration data if passed
+        integration_data = kwargs.get('integration_data')
         # The method should therefore return a tuple that collects the y, z,
         # and stress coefficients for each part.
         prepared_input = []
         # Rotate section in order to have neutral axis horizontal
-        angle, rotated_geom, strain_rotated = self._rotate_geometry(
-            geo, strain
+        angle, rotated_geom, strain_rotated, rotated_integration_data = (
+            self._rotate_geometry(
+                geo, strain, integration_data=integration_data
+            )
         )
 
         # Process all the surface geometries splitting them and appending
@@ -218,11 +297,15 @@ class MarinIntegrator(SectionIntegrator):
 
         # Process all the point geometries (i.e. reinforcement) splitting them
         # and appending coefficients and strain limits to prepared_input
-        self._process_point_geometries(
-            rotated_geom, strain_rotated, prepared_input, integrate
+        integration_data = self._process_point_geometries(
+            rotated_geom,
+            strain_rotated,
+            prepared_input,
+            integrate,
+            integration_data=rotated_integration_data,
         )
 
-        return angle, prepared_input
+        return angle, prepared_input, integration_data
 
     def integrate_stress(
         self,
@@ -230,6 +313,7 @@ class MarinIntegrator(SectionIntegrator):
         prepared_input: t.List[
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
+        **kwargs,
     ) -> t.Tuple[float, float, float]:
         """Integrate stresses over the geometry.
 
@@ -265,15 +349,33 @@ class MarinIntegrator(SectionIntegrator):
                 Mz -= sum(stress_coeff * area_moments_Mz)
             elif i == 1:
                 # Reinforcement
-                N += sum(stress_coeff)
-                My += sum(stress_coeff * z)
-                Mz -= sum(stress_coeff * y)
+                N += np.sum(stress_coeff)
+                My += np.sum(stress_coeff * z)
+                Mz -= np.sum(stress_coeff * y)
 
         # Rotate back to section CRS
         T = np.array([[cos(-angle), -sin(-angle)], [sin(-angle), cos(-angle)]])
         M = T @ np.array([[My], [Mz]])
 
-        return N, M[0, 0], M[1, 0]
+        # Rotate back the integration_data
+        integration_data = kwargs.get('integration_data')
+        if integration_data is not None:
+            rotated_integration_data = []
+            for reinf_data in integration_data:
+                coords = np.vstack((reinf_data[0], reinf_data[1]))
+                rotated_coords = T @ coords
+                rotated_integration_data.append(
+                    (
+                        rotated_coords[0, :],
+                        rotated_coords[1, :],
+                        reinf_data[2],
+                        reinf_data[3],
+                    )
+                )
+        else:
+            rotated_integration_data = None
+
+        return N, M[0, 0], M[1, 0], rotated_integration_data
 
     def integrate_modulus(
         self,
@@ -281,6 +383,7 @@ class MarinIntegrator(SectionIntegrator):
         prepared_input: t.List[
             t.Tuple[int, np.ndarray, np.ndarray, np.ndarray]
         ],
+        **kwargs,
     ) -> NDArray[np.float64]:
         """Integrate material modulus over the geometry.
 
@@ -321,12 +424,12 @@ class MarinIntegrator(SectionIntegrator):
                     stiffness[i, j] += sign * sum(modulus_coeff * area_moments)
             elif id == 1:
                 # Reinforcement
-                stiffness[0, 0] += sum(modulus_coeff)
-                stiffness[0, 1] += sum(modulus_coeff * z)
-                stiffness[0, 2] -= sum(modulus_coeff * y)
-                stiffness[1, 1] += sum(modulus_coeff * z * z)
-                stiffness[1, 2] -= sum(modulus_coeff * y * z)
-                stiffness[2, 2] += sum(modulus_coeff * y * y)
+                stiffness[0, 0] += np.sum(modulus_coeff)
+                stiffness[0, 1] += np.sum(modulus_coeff * z)
+                stiffness[0, 2] -= np.sum(modulus_coeff * y)
+                stiffness[1, 1] += np.sum(modulus_coeff * z * z)
+                stiffness[1, 2] -= np.sum(modulus_coeff * y * z)
+                stiffness[2, 2] += np.sum(modulus_coeff * y * y)
 
         # Apply for simmetry
         stiffness[1, 0] = stiffness[0, 1]
@@ -335,7 +438,26 @@ class MarinIntegrator(SectionIntegrator):
 
         # Rotate back to section CRS
         T = np.array([[cos(-angle), -sin(-angle)], [sin(-angle), cos(-angle)]])
-        T = T @ np.array([[100], [-100]])
+        # Rotate back the integration_data if present
+        integration_data = kwargs.get('integration_data')
+        if integration_data is not None:
+            T = np.array(
+                [[cos(-angle), -sin(-angle)], [sin(-angle), cos(-angle)]]
+            )
+            rotated_integration_data = []
+            for reinf_data in integration_data:
+                coords = np.vstack((reinf_data[0], reinf_data[1]))
+                rotated_coords = T @ coords
+                rotated_integration_data.append(
+                    (
+                        rotated_coords[0, :],
+                        rotated_coords[1, :],
+                        reinf_data[2],
+                        reinf_data[3],
+                    )
+                )
+        else:
+            rotated_integration_data = None
 
         T = np.array(
             [
@@ -345,7 +467,7 @@ class MarinIntegrator(SectionIntegrator):
             ]
         )
 
-        return T.T @ stiffness @ T
+        return T.T @ stiffness @ T, rotated_integration_data
 
     def integrate_strain_response_on_geometry(
         self,
@@ -386,13 +508,18 @@ class MarinIntegrator(SectionIntegrator):
             ValueError: If a unkown value is passed to the `integrate`
             parameter.
         """
-        del kwargs
         # Prepare the general input based on the geometry and the input strains
-        angle, prepared_input = self.prepare_input(geo, strain, integrate)
+        angle, prepared_input, integration_data = self.prepare_input(
+            geo, strain, integrate, **kwargs
+        )
 
         # Return the calculated response
         if integrate == 'stress':
-            return *self.integrate_stress(angle, prepared_input), None
+            return self.integrate_stress(
+                angle, prepared_input, integration_data=integration_data
+            )
         if integrate == 'modulus':
-            return self.integrate_modulus(angle, prepared_input), None
+            return self.integrate_modulus(
+                angle, prepared_input, integration_data=integration_data
+            )
         raise ValueError(f'Unknown integrate type: {integrate}')

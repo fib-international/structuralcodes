@@ -15,7 +15,11 @@ from structuralcodes.geometry import (
     add_reinforcement_circle,
     add_reinforcement_line,
 )
-from structuralcodes.materials.basic import ElasticMaterial, GenericMaterial
+from structuralcodes.materials.basic import (
+    ElasticMaterial,
+    ElasticPlasticMaterial,
+    GenericMaterial,
+)
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
     Elastic,
@@ -30,7 +34,10 @@ from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
 )
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import (
+    GenericSection,
+    calculate_elastic_cracked_properties,
+)
 
 
 # Test rectangular section
@@ -1606,3 +1613,48 @@ def test_section_parallel_marin_concrete_tension():
 
     # Check they are the same
     assert math.isclose(M_f, M_m, rel_tol=1e-3)
+
+
+def test_issue_cracked_properties():
+    """Test for issue #297: Bug in Cracked Properties.
+
+    This test shows that when computing the cracked properties before
+    moment curvature the algorithm fails, while it works when calculating it
+    afterwards.
+    """
+    # Define geometry parameters
+    diameter = 610
+    thickness = 10
+
+    # Create materials
+    concrete = ConcreteEC2_2004(fck=45, alpha_cc=0.85, gamma_c=1.5)
+    steel = ElasticPlasticMaterial(E=210000, fy=355 / 1.05, density=7850)
+
+    # Create geometry
+    pile_gross = CircularGeometry(
+        diameter=diameter, material=steel, n_points=1000
+    )
+    pile_concrete = CircularGeometry(
+        diameter=diameter - 2 * thickness, material=concrete, n_points=1000
+    )
+    pile_steel = pile_gross - pile_concrete
+    pile_geometry = pile_steel + pile_concrete
+    pile_section = GenericSection(geometry=pile_geometry, integrator='fiber')
+
+    # Calculate cracked properties before
+    cracked_properties_before = calculate_elastic_cracked_properties(
+        pile_section
+    )
+
+    # Compute moment curvature
+    pile_section.section_calculator.calculate_moment_curvature()
+
+    # Calculate cracked properties after
+    cracked_properties_after = calculate_elastic_cracked_properties(
+        pile_section
+    )
+
+    # Check that the result is the same
+    assert cracked_properties_before.isclose(
+        cracked_properties_after, rtol=1e-3, atol=1e-6
+    )
