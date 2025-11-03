@@ -217,11 +217,27 @@ a_0 = E
 
 The constitutive law of an elastic plastic material with linear hardening is represented as in the figure [below](figure-theory-marin-ep-constitutive). 
 
-(figure-theory-marin-ep-constitutive)=
-:::{figure} Figure_const_ep.png
 
-Elastic plastic with linear hardening law
+(figure-theory-marin-ep-constitutive)=
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_const_ep_light.png
+:align: center
+:class: only-light
 :::
+
+:::{image} Figure_const_ep_dark.png
+:align: center
+:class: only-dark
+:::
+
+Elastic plastic with linear hardening law.
+
+::::
+:::::
+
 
 In this case, the constitutive law cannot be expressed as a whole with a single polynomial function, but looking at the picture [above](figure-theory-marin-ep-constitutive) we can recognize 5 different portions, each one representing a different polynomial function. The constitutive law can then be written for the five branches as:
 
@@ -314,10 +330,24 @@ Therefore the marin coefficients for stiffness function are:
 The bilinear compression is characterized by no strength in tension and a linear behavior in compression up to $\varepsilon_{c0}$ and then a constant stress equal to $f_c$ (negative). After $\varepsilon_{cu}$, the stress drops to 0. The constituive law is depicted the figure [below](figure-theory-marin-bilin-compr-constitutive). 
 
 (figure-theory-marin-bilin-compr-constitutive)=
-:::{figure} Figure_const_bilinearcompression.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
 
-Elastic plastic with linear hardening law
+:::{image} Figure_const_bilinearcompression_light.png
+:align: center
+:class: only-light
 :::
+
+:::{image} Figure_const_bilinearcompression_dark.png
+:align: center
+:class: only-dark
+:::
+
+Bilinear compression constitutive law.
+
+::::
+:::::
 
 The constitutive law can be written in the following branches:
 
@@ -381,12 +411,25 @@ The Marin coefficients for each branch for stiffness function are reported in th
 
 The parabola rectangle law, typically used for concrete, cannot be written as a whole with a polynomial law. Despite that, looking at the constitutive law plotted in the figure [below](figure-theory-marin-paraborect-constitutive), we can recognize a portion for the parabolic branch, a portion for the constant part and finally a portion for zero stress (both in tension and for excessive compression)
 
-
 (figure-theory-marin-paraborect-constitutive)=
-:::{figure} Figure_const_parabolarectangle.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
 
-Parabola rectangle law
+:::{image} Figure_const_parabolarectangle_light.png
+:align: center
+:class: only-light
 :::
+
+:::{image} Figure_const_parabolarectangle_dark.png
+:align: center
+:class: only-dark
+:::
+
+Parabola rectangle law.
+
+::::
+:::::
 
 The constitutive law can therefore be written as:
 
