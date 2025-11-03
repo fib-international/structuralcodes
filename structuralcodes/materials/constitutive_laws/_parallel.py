@@ -13,8 +13,6 @@ from ...core.base import ConstitutiveLaw
 class Parallel(ConstitutiveLaw):
     """Class for a Parallel Constitutive Law."""
 
-    _strain_compatibility: bool = True
-
     __materials__: t.Tuple[str] = (
         'steel',
         'rebars',
