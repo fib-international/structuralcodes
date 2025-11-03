@@ -17,32 +17,73 @@ Pay attention that default-defined constitutive laws by material classes work wi
 With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis. 
 
 (theory-fig-bending-calc-rotated-system)=
-:::{figure} FigureBendingRotated.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
 
-The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.
+:::{image} FigureBendingRotated_light.png
+:align: center
+:class: only-light
 :::
 
+:::{image} FigureBendingRotated_dark.png
+:align: center
+:class: only-dark
+:::
+
+The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.
+
+::::
+:::::
 
 In the rotated reference system **$y^*z^*$**, the bending strength in terms of positive $M_{y^*}$ is computed.
 
-:::{Note}
+::::::{Note}
 According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be equal to $\pi$.
 
 (theory-fig-system-uniaxial-bending)=
-:::{figure} FigureBendingTopCompression.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureBendingTopCompression_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureBendingTopCompression_dark.png
+:align: center
+:class: only-dark
+:::
 
 Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.
-:::
 
-:::
+::::
+:::::
+
+::::::
 
 According to classic RC theory[^leonhardt1973], the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).
 
 (theory-fig-deformation-domain)=
-:::{figure} Figure_DeformationDomain.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureDeformationDomain_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureDeformationDomain_dark.png
+:align: center
+:class: only-dark
+:::
 
 Ultimate deformation domains for uniaxial bending with or without axial force [^leonhardt1973].
-:::
+
+::::
+:::::
 
 The algorithm developed can be summarized as follows:
 1. **Rotate the section**: the section is rotated by the given angle theta. In this new CRS *$y^*z^*$*, the problem becomes uniaxial bending about the *$y^*$* axis
@@ -56,18 +97,47 @@ The algorithm developed can be summarized as follows:
     c. The strain profile is then adjusted by changing the curvature, pivoting on either the top or bottom chord. The goal is to balance the axial load and reach a solution that satisfies equilibrium. This is done solving the equation $\Delta N(\chi_{y^*})=0$ where $\Delta N(\chi_{y^*})=N_{ext}-N_{int}(\chi_{y^*})$. For instance the function could be something like depicted in the following picture.
 
     (theory-fig-dN_chi)=
-    :::{figure} FiguredN_chi.png
+    :::::{grid}
+    ::::{grid-item}
+    :class: caption-text, sd-text-center
+
+    :::{image} FiguredN_chi_light.png
+    :align: center
+    :class: only-light
+    :::
+
+    :::{image} FiguredN_chi_dark.png
+    :align: center
+    :class: only-dark
+    :::
 
     The function $\Delta N(\chi_y^*)$ the searched curvature is the intersection with the horizontal axis (i.e. when $\Delta N(\chi_y^*) = 0$).
-    :::
+
+    ::::
+    :::::
 
     Bisection algorithm permits to find the zero of the function within some iterations.
 
 (theory-fig-bisection-dem)=
-:::{figure} bisection_demo.gif
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} bisection_demo_light.gif
+:align: center
+:class: only-light
+:::
+
+:::{image} bisection_demo_dark.gif
+:align: center
+:class: only-dark
+:::
 
 Bisection algorithm for finding the strain plain that is in equilibrium with extenal axial force.
-:::
+
+::::
+:::::
+
 
 4. **Final Computation of Bending Strength**: once the equilibrium strain profile is found, the bending strength is calculated by integrating the obtained strain profile. This results in the final bending strength in the rotated coordinate system described in step 1, which is then transformed back to the original coordinate system.
 
@@ -83,7 +153,7 @@ The algorithm works with the following steps:
 4. **For each curvature value compute moment**: for each value of the curvature, the algorithms finds the strain profile that is in equlibrium with external axial force and computes the corresponding value of moment. 
 To do so, the algorithm proceeds iterativelly, for a fixed value of curvature, solving the equation $\Delta N(\varepsilon_0)=0$ where $\Delta N(\varepsilon_0)=N_{ext}-N_{int}(\varepsilon_0)$ and $\varepsilon_0$ is the axial strain at coordinates $(0, 0)$ of the section. The iterative solution is performed with a bisection algorithm applied to the range $[\varepsilon_{0,A}, \varepsilon_{0,B}]$ where $\varepsilon_{0,A}$ is the axial strain from the last step and $\varepsilon_{0,B}$ is found by a quick [pre-computation algorithm](theory-pre-find-range) whose aim is finding the range where there is one solution. The bisection algorithm is then applied and the variable $\varepsilon_0$ is detemined within a fixed tolerance.
 
-::::{note}
+::::::{note}
 (theory-pre-find-range)=
 ### Find the range to which apply bisection
 Starting with $\varepsilon_{0,A}$ and the corresponding value of $\Delta N(\varepsilon_{0,A})$, the value $\varepsilon_{0,B}'$ is found using a fast pre-find algorithm. This algorithm uses the following exponential law for evaluating the tentative value of $\varepsilon_{0,B,i}$:
@@ -99,14 +169,28 @@ The value of $\Delta N(\varepsilon_{0,B,i})$ is computed and whenever $\Delta N(
 Graphically this can be seen in the figure [below](#theory-fig-dN_eps0), where the function $\Delta N(\varepsilon_0)$ is plotted indicating the value $\varepsilon_{0,A}$ from the previous step and the two iterations needed to find $\varepsilon_{0,B}'$. 
 
 (theory-fig-dN_eps0)=
-:::{figure} FiguredN_eps_0.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FiguredN_eps_0_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FiguredN_eps_0_dark.png
+:align: center
+:class: only-dark
+:::
 
 The function $\Delta N(\varepsilon_0)$ during $i$-th step of moment-curvature computation: application of the pre-find algorithm to select the range where bisection is applied.
-:::
+
+::::
+:::::
 
 Then, the usual bisection algorithm is adopted to find the value $\varepsilon_0$ for which $\Delta N(\varepsilon_0) = N_{ext} - N_{int}(\varepsilon_0)$ is sufficiently near to 0.
 
-::::
+::::::
 
 (theory-nm-domain)=
 ## Compute NM interaction domain
@@ -120,17 +204,47 @@ The algorithm works with the following steps:
 3. **Integrate stresses for all computed ultimate strain profiles**: for all the strain profiles determined in step 2, the stresses are integrated computing the pair $(N, M_y^*)$ that represent a point in the ultimate domain profile.
 This is represented by the following image that shows for a rectangular RC section the ultimate strain profiles computed and the corresponding MN interaction domain. The different colors correspond to different domains. The same is visible in the animation [here](theory-anim-domain_nm)
 
+
 (theory-fig-domain_nm)=
-:::{figure} Figure_domain_mn.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_domain_mn_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} Figure_domain_mn_dark.png
+:align: center
+:class: only-dark
+:::
 
 Ultimate strain profiles for uniaxial bending and corresponding interaction domain.
-:::
+
+::::
+:::::
+
 
 (theory-anim-domain_nm)=
-:::{figure} Figure_domain_mn.gif
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_domain_mn_light.gif
+:align: center
+:class: only-light
+:::
+
+:::{image} Figure_domain_mn_dark.gif
+:align: center
+:class: only-dark
+:::
 
 Animation of ultimate strain profiles for uniaxial bending and corresponding interaction domain.
-:::
+
+::::
+:::::
 
 4. **Rotate back to original $yz$ coordinate system**: the pair of values $(N, M_y^*)$ is rotated back obtaining the triplet $(N, M_y, M_z)$
 
@@ -144,10 +258,24 @@ For each value of the angle $\theta_i$, the algorithm proceeds as the case of un
 The final result is represented by the data structure collecting for all points the triplet $(N, M_y, M_z)$ and the corresponding ultimate strain profile.
 
 (theory-figure-nmm)=
-:::{figure} Figure_domain_nmm.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_domain_nmm_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} Figure_domain_nmm_dark.png
+:align: center
+:class: only-dark
+:::
 
 Left: ultimate domain NMM. Right: corresponding points in terms of N, $\chi_y$, $\chi_z$.
-:::
+
+::::
+:::::
 
 ## Compute MM interaction domain
 
@@ -163,7 +291,7 @@ In the previous cases (i.e. [NM domain](theory-nm-domain) and [NMM domain](theor
 For this reason the computation of MM interaction domain for a given value of axial load $N$ does not work in the same way. The side effect of this algorithm is that it is significantly slower since each point of the failure domain is determined with an iterative process.
 ::: 
 
-:::::{hint}
+::::::{hint}
 Using this method it is possible to loop from minimum to maximum axial load that the section is able to carry and construct a nice structured version of the failure domain. Of course this operation is pretty slow compared to the direct computation of [NMM domain](theory-nmm-domain).
 
 ::::{dropdown-syntax}
@@ -176,11 +304,28 @@ Using this method it is possible to loop from minimum to maximum axial load that
 The obtain figure is shown in the figure [below](#theory-figure-many-mm).
 
 (theory-figure-many-mm)=
-:::{figure} Figure-many-mm-3d.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure-many-mm-3d_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} Figure-many-mm-3d_dark.png
+:align: center
+:class: only-dark
+:::
 
 Ultimate domain NMM obtained as a set of slices computed as MM interaction domains.
-:::
+
+::::
 :::::
+
+
+
+::::::
 
 ## Compute strain profile for given external forces
 
