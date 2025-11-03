@@ -727,3 +727,72 @@ def test_parallel_marin_elasticplastic():
 
     assert math.isclose(coeffs[3][0], coeffs_1[1][0] + coeffs_2[1][0])
     assert math.isclose(coeffs[3][1], coeffs_1[1][1] + coeffs_2[1][1])
+
+
+def test_parallel_marin_elastic_tangent():
+    """Test marin coefficients for Parallel constitutive law."""
+    law = Elastic(200000)
+
+    law1 = Elastic(150000)
+    law2 = Elastic(50000)
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = law.__marin_tangent__([0, 1e-5])
+
+    strainsP, coeffsP = lawP.__marin_tangent__([0, 1e-5])
+
+    assert strains == strainsP
+    assert coeffs == coeffsP
+
+    # Test with different weights
+    lawP = Parallel([law, law], weights=[0.25, 0.75])
+    strainsP, coeffsP = lawP.__marin_tangent__([0, 1e-5])
+
+    assert strains == strainsP
+    assert coeffs == coeffsP
+
+
+def test_parallel_marin_elasticplastic_tangent():
+    """Test marin coefficients for Parallel constitutive law."""
+    law1 = ElasticPlastic(E=1, fy=1, Eh=0, eps_su=2.0)
+    law2 = ElasticPlastic(E=0.5, fy=0.7, Eh=0, eps_su=3.0)
+
+    strains_1, coeffs_1 = law1.__marin_tangent__([0, 1e-5])
+    strains_2, coeffs_2 = law2.__marin_tangent__([0, 1e-5])
+
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = lawP.__marin_tangent__([0, 1e-5])
+
+    # We should have 7 ranges
+    assert len(strains) == 7
+    assert len(coeffs) == 7
+
+    # Check the central range
+    assert math.isclose(strains[3][0], -1.0)
+
+    assert math.isclose(coeffs[3][0], coeffs_1[1][0] + coeffs_2[1][0])
+
+
+def test_parallel_marin_elastic_elasticplastic():
+    """Test marin coefficients for Parallel constitutive law."""
+    law1 = Elastic(E=1)
+    law2 = ElasticPlastic(E=0.5, fy=0.7, Eh=0, eps_su=3.0)
+
+    strains_1, coeffs_1 = law1.__marin__([0, 1e-5])
+    strains_2, coeffs_2 = law2.__marin__([0, 1e-5])
+
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = lawP.__marin__([0, 1e-5])
+
+    # We should have 3 ranges
+    assert len(strains) == 3
+    assert len(coeffs) == 3
+
+    # Check the central range
+    assert math.isclose(strains[1][0], -1.4)
+    assert math.isclose(strains[1][1], 1.4)
+
+    assert math.isclose(coeffs[1][0], coeffs_1[0][0] + coeffs_2[1][0])
+    assert math.isclose(coeffs[1][1], coeffs_1[0][1] + coeffs_2[1][1])
