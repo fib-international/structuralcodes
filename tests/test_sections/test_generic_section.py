@@ -21,7 +21,15 @@ from structuralcodes.materials.basic import (
     GenericMaterial,
 )
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import InitialStrain, Sargin
+from structuralcodes.materials.constitutive_laws import (
+    Elastic,
+    ElasticPlastic,
+    InitialStrain,
+    ParabolaRectangle,
+    Parallel,
+    Sargin,
+    UserDefined,
+)
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
@@ -1492,6 +1500,119 @@ def test_rectangular_section_init_strain(fck, fyk, ductility_class):
     # Check they are all the same
     assert math.isclose(res_fiber.m_y, res_fiber_i.m_y, rel_tol=1e-3)
     assert math.isclose(res_marin.m_y, res_fiber_i.m_y, rel_tol=1e-3)
+
+
+def test_section_parallel_material_elastic():
+    """Test section with parallel material."""
+    # Create a section with elastic material (reference)
+    geo = RectangularGeometry(
+        width=100, height=100, material=ElasticMaterial(E=30000, density=2500)
+    )
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 1e-5, 0))
+    M = res[1]
+
+    # The same with a GenericMaterial with two parallel materials
+    const_law_1 = Elastic(E=10000)
+    const_law_2 = Elastic(E=20000)
+    const_law = Parallel([const_law_1, const_law_2])
+
+    geo = RectangularGeometry(
+        width=100, height=100, material=GenericMaterial(2500, const_law)
+    )
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 1e-5, 0))
+    M_p = res[1]
+
+    # Check they are the same
+    assert math.isclose(M, M_p, rel_tol=1e-6)
+
+    # Use different weights
+    const_law_1 = Elastic(E=10000)
+    const_law = Parallel(
+        constitutive_laws=[const_law_1, const_law_1], weights=[1.0, 2.0]
+    )
+    geo = RectangularGeometry(
+        width=100, height=100, material=GenericMaterial(2500, const_law)
+    )
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 1e-5, 0))
+    M_p = res[1]
+
+    # Check they are the same
+    assert math.isclose(M, M_p, rel_tol=1e-6)
+
+
+def test_section_parallel_material_elasticplastic():
+    """Test section with parallel material."""
+    # Create a section with elastic plastic (reference)
+    const_law = ElasticPlastic(E=10000, fy=10, Eh=0, eps_su=2e-3)
+    mat = GenericMaterial(constitutive_law=const_law, density=600)
+    geo = RectangularGeometry(width=100, height=100, material=mat)
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 3e-5, 0))
+    M = res[1]
+
+    # The same with a GenericMaterial with two parallel materials
+    const_law_1 = ElasticPlastic(E=5000, fy=5, Eh=0, eps_su=2e-3)
+    const_law_2 = ElasticPlastic(E=5000, fy=5, Eh=0, eps_su=2e-3)
+    const_law = Parallel([const_law_1, const_law_2])
+    mat = GenericMaterial(constitutive_law=const_law, density=600)
+    geo = RectangularGeometry(width=100, height=100, material=mat)
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 3e-5, 0))
+    M_p = res[1]
+
+    # Check they are the same
+    assert math.isclose(M, M_p, rel_tol=1e-6)
+
+    # Use different weights
+    const_law_1 = ElasticPlastic(E=1000, fy=5, Eh=0, eps_su=2e-3)
+    const_law_2 = ElasticPlastic(E=1000, fy=5, Eh=0, eps_su=2e-3)
+    const_law = Parallel(
+        constitutive_laws=[const_law_1, const_law_2], weights=[7.0, 3.0]
+    )
+    geo = RectangularGeometry(width=100, height=100, material=mat)
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 3e-5, 0))
+    M_p = res[1]
+
+    # Check they are the same
+    assert math.isclose(M, M_p, rel_tol=1e-6)
+
+
+def test_section_parallel_marin_concrete_tension():
+    """Test a section reacting in tension with Marin integrator."""
+    compression = ParabolaRectangle(-20)
+    tension = UserDefined([-0.01, 0, 0.0002], [0, 0, 3])
+    const_law = Parallel([compression, tension])
+
+    mat = ConcreteMC2010(fck=30, constitutive_law=const_law)
+
+    geo = RectangularGeometry(width=100, height=100, material=mat)
+
+    # Use fiber integrator
+    section = GenericSection(
+        geometry=geo, integrator='fiber', mesh_size=0.0001
+    )
+
+    res = section.section_calculator.integrate_strain_profile((0, 4e-5, 0))
+    M_f = res[1]
+
+    # Use marin integrator
+    section = GenericSection(geometry=geo)
+
+    res = section.section_calculator.integrate_strain_profile((0, 4e-5, 0))
+    M_m = res[1]
+
+    # Check they are the same
+    assert math.isclose(M_f, M_m, rel_tol=1e-3)
 
 
 def test_issue_cracked_properties():
