@@ -2,6 +2,7 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import typing as t
 from dataclasses import dataclass, field, fields
 
 import numpy as np
@@ -264,3 +265,25 @@ class MMInteractionDomain(InteractionDomain):
 
     num_theta: float = 0  # number of discretizations along the angle
     theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA
+
+
+@dataclass
+class PointStressResult:
+    """Class for storing stress results at a specific point in a section.
+
+    Attributes:
+        y (float): Y-coordinate of the point.
+        z (float): Z-coordinate of the point.
+        strain (float): Strain at the point.
+        stress (float): Stress at the point.
+        geometry_name (str, optional): Name of the geometry containing the
+            point.
+        geometry_group_label (str, optional): Group label of the geometry
+    """
+
+    y: float = 0.0
+    z: float = 0.0
+    strain: float = 0.0
+    stress: float = 0.0
+    geometry_name: t.Optional[str] = None
+    geometry_group_label: t.Optional[str] = None

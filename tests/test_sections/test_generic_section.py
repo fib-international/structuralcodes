@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from shapely import Polygon
 
+from structuralcodes import set_design_code
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
 from structuralcodes.geometry import (
     CircularGeometry,
@@ -20,7 +21,11 @@ from structuralcodes.materials.basic import (
     ElasticPlasticMaterial,
     GenericMaterial,
 )
-from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
+from structuralcodes.materials.concrete import (
+    ConcreteEC2_2004,
+    ConcreteMC2010,
+    create_concrete,
+)
 from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
@@ -33,6 +38,7 @@ from structuralcodes.materials.constitutive_laws import (
 from structuralcodes.materials.reinforcement import (
     ReinforcementEC2_2004,
     ReinforcementMC2010,
+    create_reinforcement,
 )
 from structuralcodes.sections import (
     GenericSection,
@@ -1657,4 +1663,113 @@ def test_issue_cracked_properties():
     # Check that the result is the same
     assert cracked_properties_before.isclose(
         cracked_properties_after, rtol=1e-3, atol=1e-6
+    )
+
+
+def test_get_stress_point():
+    """Test get_stress_point method using validated results from notebook."""
+    # Set the active design code
+    set_design_code('ec2_2004')
+    # Create materials
+    concrete = create_concrete(fck=45)
+    reinforcement = create_reinforcement(
+        fyk=500, Es=200000, ftk=550, epsuk=0.07
+    )
+
+    # Create rectangular geometry
+    width = 250
+    height = 500
+    polygon = Polygon(
+        [
+            (-width / 2, -height / 2),
+            (width / 2, -height / 2),
+            (width / 2, height / 2),
+            (-width / 2, height / 2),
+        ]
+    )
+    geometry = SurfaceGeometry(
+        poly=polygon, material=concrete, group_label='concrete'
+    )
+
+    # Add reinforcement
+    diameter_reinf = 25
+    cover = 50
+    geometry = add_reinforcement(
+        geometry,
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+        group_label='bar 1',
+    )
+    geometry = add_reinforcement(
+        geometry,
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+        group_label='bar 2',
+    )
+
+    # Create section
+    section = GenericSection(geometry)
+
+    # Calculate strain profile
+    strain = section.section_calculator.calculate_strain_profile(
+        n=-200.0 * 1e3,
+        my=-200.0 * 1e6,
+        mz=0.0 * 1e6,
+    )
+
+    # Test point at reinforcement location (validated results)
+    y_bar = width / 2 - cover - diameter_reinf / 2  # 62.5
+    z_bar = -height / 2 + cover + diameter_reinf / 2  # -187.5
+
+    results = section.section_calculator.get_stress_point(
+        y=y_bar,
+        z=z_bar,
+        eps_a=strain[0],
+        chi_y=strain[1],
+        chi_z=strain[2],
+        where=0,
+    )
+
+    # Find bar and concrete results
+    bar_result = next(
+        (r for r in results if r.geometry_group_label == 'bar 2'), None
+    )
+    concrete_result = next(
+        (r for r in results if r.geometry_group_label == 'concrete'), None
+    )
+
+    # Validate against notebook results
+    assert bar_result is not None
+    assert math.isclose(bar_result.stress, 434.4545058908614, rel_tol=1e-3)
+    assert math.isclose(bar_result.strain, 0.002172272529454307, rel_tol=1e-6)
+
+    assert concrete_result is not None
+    assert math.isclose(concrete_result.stress, 0.0, abs_tol=1e-6)
+    assert math.isclose(
+        concrete_result.strain, 0.002172272529454307, rel_tol=1e-6
+    )
+
+    # Test point at top of section (validated results)
+    results_top = section.section_calculator.get_stress_point(
+        y=0,
+        z=height / 2,  # 250.0
+        eps_a=strain[0],
+        chi_y=strain[1],
+        chi_z=strain[2],
+        where=0,
+    )
+
+    concrete_top = results_top[0]
+    assert concrete_top.geometry_group_label == 'concrete'
+    assert math.isclose(concrete_top.stress, -26.341523317880416, rel_tol=1e-3)
+    assert math.isclose(
+        concrete_top.strain, -0.0013015754221469022, rel_tol=1e-6
     )
