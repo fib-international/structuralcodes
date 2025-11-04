@@ -12,6 +12,7 @@ from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
     InitialStrain,
     ParabolaRectangle,
+    Parallel,
     Popovics,
     Sargin,
     UserDefined,
@@ -45,8 +46,7 @@ def test_elastic_floats(E, strain, expected):
 )
 def test_elastic_set_ultimate_strain_float(E, eps_su):
     """Test elastic material set ultimate strain with a float."""
-    material = Elastic(E)
-    material.set_ultimate_strain(eps_su)
+    material = Elastic(E, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
     assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
@@ -61,8 +61,7 @@ def test_elastic_set_ultimate_strain_float(E, eps_su):
 )
 def test_elastic_set_ultimate_strain_tuple(E, eps_su):
     """Test elastic material set ultimate strain with a tuple."""
-    material = Elastic(E)
-    material.set_ultimate_strain(eps_su=eps_su)
+    material = Elastic(E, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
     assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
@@ -79,9 +78,8 @@ def test_elastic_set_ultimate_strain_tuple(E, eps_su):
 )
 def test_elastic_set_ultimate_strain_tuple_error(E, eps_su):
     """Test elastic material set ultimate strain raise error."""
-    material = Elastic(E)
     with pytest.raises(ValueError):
-        material.set_ultimate_strain(eps_su)
+        Elastic(E, eps_u=eps_su)
 
 
 def test_elastic_numpy():
@@ -300,8 +298,7 @@ def test_userdefined_set_ultimate_strain_float(E, fy, eps_su):
     """Test UserDefined material set ultimate strain with a float."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
-    material.set_ultimate_strain(eps_su)
+    material = UserDefined(x=x, y=y, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
     assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
@@ -318,8 +315,7 @@ def test_userdefined_set_ultimate_strain_tuple(E, fy, eps_su):
     """Test UserDefined material set ultimate strain with a tuple."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
-    material.set_ultimate_strain(eps_su=eps_su)
+    material = UserDefined(x=x, y=y, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
     assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
@@ -338,9 +334,8 @@ def test_userdefined_set_ultimate_strain_tuple_error(E, fy, eps_su):
     """Test UserDefined material set ultimate strain raise error."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
     with pytest.raises(ValueError):
-        material.set_ultimate_strain(eps_su)
+        UserDefined(x=x, y=y, eps_u=eps_su)
 
 
 @pytest.mark.parametrize(
@@ -658,3 +653,92 @@ def test_get_secant_in_base(eps):
 
     # Assert
     assert np.allclose(secant, expected_secant)
+
+
+@pytest.mark.parametrize(
+    'E1, E2 , eps',
+    [
+        (200000, 150000, [0, 0.001, 0.002]),
+        (210000, 100000, [-0.001, 0, 0.001]),
+        (300000, 200000, 0.002),
+        (10000, 20000, 0.001),
+    ],
+)
+def test_parallel_constitutive_law(E1, E2, eps):
+    """Test parallel constitutive law."""
+    mat1 = Elastic(E1)
+    mat2 = Elastic(E2)
+
+    matP = Parallel([mat1, mat2])
+
+    expected_stiffness = mat1.get_tangent(0) + mat2.get_tangent(0)
+    assert math.isclose(matP.get_tangent(0), expected_stiffness)
+
+    if isinstance(eps, float):
+        expected_stress = expected_stiffness * eps
+        assert math.isclose(expected_stress, matP.get_stress(eps))
+    else:
+        expected_stress = expected_stiffness * np.atleast_1d(eps)
+        assert np.allclose(expected_stress, matP.get_stress(eps))
+
+
+@pytest.mark.parametrize(
+    'E1, E2 , w1, w2, eps',
+    [
+        (200000, 150000, 1, 1, [0, 0.001, 0.002]),
+        (200000, 150000, 0.5, 0.5, [0, 0.001, 0.002]),
+        (210000, 100000, 0.9, 0.1, [-0.001, 0, 0.001]),
+        (300000, 200000, 0.5, 0.5, 0.002),
+        (10000, 20000, 0.2, 0.8, 0.001),
+    ],
+)
+def test_parallel_constitutive_law_weights(E1, E2, w1, w2, eps):
+    """Test parallel constitutive law with weights."""
+    mat1 = Elastic(E1)
+    mat2 = Elastic(E2)
+
+    matP = Parallel([mat1, mat2], weights=[w1, w2])
+
+    expected_stiffness = mat1.get_tangent(0) * w1 + mat2.get_tangent(0) * w2
+    assert math.isclose(matP.get_tangent(0), expected_stiffness)
+
+    if isinstance(eps, float):
+        expected_stress = expected_stiffness * eps
+        assert math.isclose(expected_stress, matP.get_stress(eps))
+    else:
+        expected_stress = expected_stiffness * np.atleast_1d(eps)
+        assert np.allclose(expected_stress, matP.get_stress(eps))
+
+
+def test_paralell_constitutive_law_wrong_args():
+    """Test parallel law with wrong arguments."""
+    mat1 = Elastic(200000)
+    mat2 = Elastic(100000)
+
+    # If we don't pass a proper material
+    with pytest.raises(TypeError):
+        Parallel([mat1, 210000])
+
+    # If we pass wrong number of weigths
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], weights=[2.0, 1.0, 0.5])
+
+
+@pytest.mark.parametrize(
+    'E1, fy1, eps_su1, E2, fy2, eps_su2',
+    [
+        (200000, 450, 0.06, 150000, 800, 0.01),
+        (10000, 10, 0.01, 20000, 20, 0.03),
+    ],
+)
+def test_parallel_get_ultimate_strain(E1, fy1, eps_su1, E2, fy2, eps_su2):
+    """Test get_ultimate_strain for parallel constitutive law."""
+    mat1 = ElasticPlastic(E=E1, fy=fy1, Eh=0, eps_su=eps_su1)
+    mat2 = ElasticPlastic(E=E2, fy=fy2, Eh=0, eps_su=eps_su2)
+
+    matP = Parallel([mat1, mat2])
+
+    ult_strain = matP.get_ultimate_strain()
+    expected_ult_strain = max(eps_su1, eps_su2)
+
+    assert math.isclose(ult_strain[1], expected_ult_strain)

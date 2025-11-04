@@ -1203,8 +1203,7 @@ def test_Isection_elastic_material_marin(cls, name):
     """Test Steel I section elastic strength."""
     Es = 206000
     fy = 355
-    steel = ElasticMaterial(E=Es, density=7850)
-    steel.constitutive_law.set_ultimate_strain(fy / Es)
+    steel = ElasticMaterial(E=Es, density=7850, ultimate_strain=fy / Es)
     # Create geometry
     i_beam = cls(name)
     geo = CompoundGeometry([SurfaceGeometry(i_beam.polygon, steel)])
@@ -1425,24 +1424,22 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     Es = 206000
     fy = 355
     eps_su = 7e-2
-    steel_law = UserDefined(
-        x=[-eps_su, -fy / Es, 0, fy / Es, eps_su], y=[-fy, -fy, 0, fy, fy]
-    )
-    steel = GenericMaterial(density=7850, constitutive_law=steel_law)
+
     # Create geometry
     beam = cls(name)
-
-    geo = CompoundGeometry([SurfaceGeometry(beam.polygon, steel)])
 
     # Compute expected values
     mye_expected = Wyel * fy * 1e-6
     mze_expected = Wzel * fy * 1e-6
     myp_expected = Wypl * fy * 1e-6
     mzp_expected = Wzpl * fy * 1e-6
-    # Create the section with fiber
-    sec = GenericSection(geo)
+
     # Elastic strength
-    steel_law.set_ultimate_strain(fy / Es)
+    steel_law = UserDefined(x=[-fy / Es, 0, fy / Es], y=[-fy, 0, fy])
+    steel = GenericMaterial(density=7850, constitutive_law=steel_law)
+    geo = CompoundGeometry([SurfaceGeometry(beam.polygon, steel)])
+    # Create the section with fiber
+    sec = GenericSection(geo, integrator='fiber', mesh_size=0.001)
     results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, mye_expected, rel_tol=2.5e-2)
     results = sec.section_calculator.calculate_bending_strength(
@@ -1450,7 +1447,13 @@ def test_profiles(cls, name, Wyel, Wzel, Wypl, Wzpl):
     )
     assert math.isclose(-results.m_z * 1e-6, mze_expected, rel_tol=2.5e-2)
     # Plastic strength
-    steel_law.set_ultimate_strain(0.07)
+    steel_law = UserDefined(
+        x=[-eps_su, -fy / Es, 0, fy / Es, eps_su], y=[-fy, -fy, 0, fy, fy]
+    )
+    steel = GenericMaterial(density=7850, constitutive_law=steel_law)
+    geo = CompoundGeometry([SurfaceGeometry(beam.polygon, steel)])
+    # Create the section with fiber
+    sec = GenericSection(geo, integrator='fiber', mesh_size=0.001)
     results = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
     assert math.isclose(-results.m_y * 1e-6, myp_expected, rel_tol=2.5e-2)
     results = sec.section_calculator.calculate_bending_strength(
