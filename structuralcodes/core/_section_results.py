@@ -160,8 +160,186 @@ class MomentCurvatureResults:
     m_y: ArrayLike = None  # the moment
     m_z: ArrayLike = None  # the moment
 
-    # The strains can be reconstructed at each step from chi and eps_axial
-    # The stresses can be recomputed if needed on the fly? Or storing them?
+    section = None
+
+    detailed_result: SectionDetailedResultState = None
+    seed: int = None
+    current_step: int = None
+    num_points: int = None
+
+    def create_detailed_result(self, num_points=1000):
+        """Create the detailed result object.
+
+        Arguments:
+            num_points (int): Number of random points to sample in each
+                surface geometry (default = 1000).
+        """
+        if self.seed is None:
+            self.seed = np.random.randint(1, 100, 1)[0].item()
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_axial[0],
+            chi_y=self.chi_y[0],
+            chi_z=self.chi_z[0],
+            n=self.n,
+            m_y=self.m_y[0],
+            m_z=self.m_z[0],
+            num_points=num_points,
+            seed=self.seed,
+        )
+        self.current_step = 0
+        self.num_points = num_points
+
+    def next_step(self):
+        """Advance to the next step in the detailed result."""
+        if self.detailed_result is None:
+            return
+        if self.current_step < len(self.m_y) - 1:
+            self.current_step += 1
+            self.detailed_result = SectionDetailedResultState(
+                section=self.section,
+                eps_a=self.eps_axial[self.current_step],
+                chi_y=self.chi_y[self.current_step],
+                chi_z=self.chi_z[self.current_step],
+                n=self.n,
+                m_y=self.m_y[self.current_step],
+                m_z=self.m_z[self.current_step],
+                num_points=self.num_points,
+                seed=self.seed,
+            )
+
+    def previous_step(self):
+        """Go back to the previous step in the detailed result."""
+        if self.detailed_result is None:
+            return
+        if self.current_step > 0:
+            self.current_step -= 1
+            self.detailed_result = SectionDetailedResultState(
+                section=self.section,
+                eps_a=self.eps_axial[self.current_step],
+                chi_y=self.chi_y[self.current_step],
+                chi_z=self.chi_z[self.current_step],
+                n=self.n,
+                m_y=self.m_y[self.current_step],
+                m_z=self.m_z[self.current_step],
+                num_points=self.num_points,
+                seed=self.seed,
+            )
+
+    def set_step(self, step: int):
+        """Set the detailed result to a specific step."""
+        if self.detailed_result is None:
+            return
+        if 0 <= step < len(self.m_y):
+            self.current_step = step
+            self.detailed_result = SectionDetailedResultState(
+                section=self.section,
+                eps_a=self.eps_axial[self.current_step],
+                chi_y=self.chi_y[self.current_step],
+                chi_z=self.chi_z[self.current_step],
+                n=self.n,
+                m_y=self.m_y[self.current_step],
+                m_z=self.m_z[self.current_step],
+                num_points=self.num_points,
+                seed=self.seed,
+            )
+
+
+class SectionDetailedResultState:
+    """Something."""
+
+    def __init__(
+        self,
+        section,
+        eps_a,
+        chi_y,
+        chi_z,
+        n,
+        m_y,
+        m_z,
+        num_points=1000,
+        seed=None,
+    ):
+        """Create the SectionDetailedResult.
+
+        Arguments:
+            section: The section object.
+            eps_a: The axial strain at the section centroid.
+            chi_y: The curvature about the y-axis.
+            chi_z: The curvature about the z-axis.
+            n: The axial force.
+            m_y: The bending moment about the y-axis.
+            m_z: The bending moment about the z-axis.
+            num_points (int): Number of random points to sample in each surface
+                geometry (default = 1000).
+            seed (int): Seed for random number generator to ensure
+                reproducibility of random points.
+        """
+        self.eps_a = eps_a
+        self.chi_y = chi_y
+        self.chi_z = chi_z
+        self.n = n
+        self.m_y = m_y
+        self.m_z = m_z
+        self.section = section
+        self.seed = seed
+        self._create_data_structure(num_points=num_points)
+
+    def _create_data_structure(self, num_points=1000):
+        # Data containers
+        surface_data = []
+        point_data = {}
+
+        # SurfaceGeometry random points
+        for surf in self.section.geometry.geometries:
+            # Use surf.random_points_within to get random points
+            y, z = surf.random_points_within(
+                num_points=num_points, seed=self.seed
+            )
+            strain = self.eps_a - self.chi_z * y + self.chi_y * z
+            stress = surf.material.constitutive_law.get_stress(strain)
+            surface_data.append(
+                {
+                    'y': y,
+                    'z': z,
+                    'strain': strain,
+                    'stress': stress,
+                    'name': getattr(surf, 'name', None),
+                    'group_label': getattr(surf, 'group_label', None),
+                }
+            )
+
+        # Collect all group_label values from point_geometries and
+        # find unique ones
+        unique_labels = set(
+            [pg.group_label for pg in self.section.geometry.point_geometries]
+        )
+
+        for label in unique_labels:
+            # There should always be at least one label, which is None
+            coords, mats = self.section.geometry.get_point_geometries(
+                group_label=label
+            )
+            strain = (
+                self.eps_a
+                - self.chi_z * coords[:, 0]
+                + self.chi_y * coords[:, 1]
+            )
+            # Find indices where all mats are the same
+            unique_mats = set(tuple(mat for mat in mats))
+            for mat in unique_mats:
+                mask = [m == mat for m in mats]
+                selected_coords = coords[mask]
+                stress = mat.constitutive_law.get_stress(strain[mask])
+                point_data[label] = {
+                    'coords': selected_coords,
+                    'strain': strain[mask],
+                    'stress': stress,
+                }
+
+        # Store results for later use (e.g., plotting)
+        self.surface_data = surface_data
+        self.point_data = point_data
 
 
 @dataclass
@@ -177,6 +355,84 @@ class UltimateBendingMomentResults:
     chi_y: float = 0  # the curvature corresponding to the ultimate moment
     chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
+
+    section = None
+
+    detailed_result: SectionDetailedResultState = None
+
+    def create_detailed_result(self, num_points=1000):
+        """Create the detailed result object."""
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            n=self.n,
+            m_y=self.m_y,
+            m_z=self.m_z,
+            num_points=num_points,
+        )
+
+    def get_fibers_strains(self, idx: int = None) -> ArrayLike:
+        """Return a dataset with the strains in each fiber."""
+        if self.section is None:
+            return None
+
+        strain = [self.eps_a, self.chi_y, self.chi_z]
+
+        y = []
+        z = []
+        A = []
+        eps = []
+        if idx is not None:
+            tr = self.section.section_calculator.triangulated_data[idx]
+            return (
+                tr[0],
+                tr[1],
+                tr[2],
+                strain[0] - strain[2] * tr[0] + strain[1] * tr[1],
+            )
+        for tr in self.section.section_calculator.triangulated_data:
+            # All have the same material
+            y.append(tr[0])
+            z.append(tr[1])
+            A.append(tr[2])
+            strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+            eps.append(strains)
+
+        return np.hstack(y), np.hstack(z), np.hstack(A), np.hstack(eps)
+
+    def get_fibers_stresses(self, idx: int = None) -> ArrayLike:
+        """Return a dataset with the stresses in each fiber."""
+        if self.section is None:
+            return None
+
+        strain = [self.eps_a, self.chi_y, self.chi_z]
+
+        y = []
+        z = []
+        A = []
+        sig = []
+        if idx is not None:
+            tr = self.section.section_calculator.triangulated_data[idx]
+            return (
+                tr[0],
+                tr[1],
+                tr[2],
+                tr[3].get_stress(
+                    strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+                ),
+            )
+        for tr in self.section.section_calculator.triangulated_data:
+            # All have the same material
+            y.append(tr[0])
+            z.append(tr[1])
+            A.append(tr[2])
+            strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
+            stresses = tr[3].get_stress(strains)
+            sig.append(stresses)
+
+        return np.hstack(y), np.hstack(z), np.hstack(A), np.hstack(sig)
 
 
 @dataclass
