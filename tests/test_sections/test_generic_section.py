@@ -7,6 +7,7 @@ import pytest
 from shapely import Polygon
 
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
+from structuralcodes.core.errors import NoConvergenceWarning
 from structuralcodes.geometry import (
     CircularGeometry,
     RectangularGeometry,
@@ -113,14 +114,6 @@ def test_rectangular_section():
     assert math.isclose(
         res_mc_fiber.m_y[-1], res_mc_fiber_same_curvature.m_y[-1]
     )
-
-    # Calculate moment-curvature for a given array of curvatures, but with
-    # significant axial compression. This should raise a ValueError since we
-    # cannot find equilibrium.
-    with pytest.raises(ValueError):
-        sec.section_calculator.calculate_moment_curvature(
-            theta=0, n=0.95 * n_min_fiber, chi=res_mc_fiber.chi_y
-        )
 
     # check if axial limit forces are the same for marin and fiber
     assert math.isclose(n_min_marin, n_min_fiber, rel_tol=2e-2)
@@ -1124,8 +1117,8 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
 
     # Check that with given loads we don't reach convergence
     section = GenericSection(geo)
-    with pytest.raises(
-        StopIteration, match='Maximum number of iterations reached'
+    with pytest.warns(
+        NoConvergenceWarning, match='Maximum number of iterations reached'
     ):
         section.section_calculator.calculate_strain_profile(
             n, my, mz, tol=1e-7
@@ -1658,3 +1651,136 @@ def test_issue_cracked_properties():
     assert cracked_properties_before.isclose(
         cracked_properties_after, rtol=1e-3, atol=1e-6
     )
+
+
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_strength_warning(b, h, n_bars, diameter, fck, fyk):
+    """Test that a warning for no convergence is raised."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = GenericSection(geo)
+
+    # Compute bending strength without reaching equilibrium
+    # This is fictitiously tested forcing a low max_iter
+    with pytest.warns(NoConvergenceWarning):
+        section.section_calculator.calculate_bending_strength(max_iter=5)
+
+
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_moment_curvature_warning(b, h, n_bars, diameter, fck, fyk):
+    """Test that a warning for no convergence is raised."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = GenericSection(geo)
+    n_u = section.section_calculator.calculate_limit_axial_load()[0]
+    # Compute moment curvature with no warning
+    res_good = section.section_calculator.calculate_moment_curvature(
+        n=n_u * 0.5, max_iter=100
+    )
+    chi = res_good.chi_y.copy()
+
+    # Compute moment curvature without reaching equilibrium
+    # This is fictitiously tested forcing a low max_iter
+    with pytest.warns(NoConvergenceWarning):
+        res = section.section_calculator.calculate_moment_curvature(
+            n=n_u * 0.5, max_iter=8, chi=chi
+        )
+
+    # Check that the curvature arrays are the same up to the last
+    # convergence point
+    assert len(res.chi_y) < len(res_good.chi_y)
+    assert np.allclose(
+        res.chi_y,
+        res_good.chi_y[: len(res.chi_y)],
+        rtol=1e-5,
+        atol=1e-8,
+    )
+
+
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_mm_domain_warning(b, h, n_bars, diameter, fck, fyk):
+    """Test that a warning for no convergence is raised."""
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = GenericSection(geo)
+    n_u = section.section_calculator.calculate_limit_axial_load()[0]
+    # Compute moment curvature with no warning
+    res_good = section.section_calculator.calculate_mm_interaction_domain(
+        n=n_u * 0.5, max_iter=100
+    )
+
+    # Compute moment curvature without reaching equilibrium
+    # This is fictitiously tested forcing a low max_iter
+    with pytest.warns(NoConvergenceWarning):
+        res = section.section_calculator.calculate_mm_interaction_domain(
+            n=n_u * 0.5, max_iter=5
+        )
+
+    # Check that the results arrays have the same size
+    assert len(res.m_y) == len(res_good.m_y)
