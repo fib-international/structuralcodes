@@ -8,8 +8,12 @@ from numpy.testing import assert_allclose
 
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
+    ConcreteSmearedCracking,
+    ConstantPoissonReduction,
     Elastic,
+    Elastic2D,
     ElasticPlastic,
+    GeneralVecchioCollins,
     InitialStrain,
     ParabolaRectangle,
     Parallel,
@@ -92,6 +96,129 @@ def test_elastic_numpy():
 
 
 @pytest.mark.parametrize(
+    'E, nu, strain, expected',
+    [
+        (
+            200000,
+            0.25,
+            [0.001, 0.0, 0.0],
+            [
+                200000 / (1 - 0.25**2) * (0.001 + 0.25 * 0.0),
+                200000 / (1 - 0.25**2) * (0.25 * 0.001 + 0.0),
+                200000 / (2 * (1 + 0.25)) * 0.0,
+            ],
+        ),
+        (
+            200000,
+            0.3,
+            [0.001, 0.0005, 0.0],
+            [
+                200000 / (1 - 0.3**2) * (0.001 + 0.3 * 0.0005),
+                200000 / (1 - 0.3**2) * (0.3 * 0.001 + 0.0005),
+                200000 / (2 * (1 + 0.3)) * 0.0,
+            ],
+        ),
+        (
+            210000,
+            0.25,
+            [0.001, 0.0005, 0.002],
+            [
+                210000 / (1 - 0.25**2) * (0.001 + 0.25 * 0.0005),
+                210000 / (1 - 0.25**2) * (0.25 * 0.001 + 0.0005),
+                210000 / (2 * (1 + 0.25)) * 0.002,
+            ],
+        ),
+        (
+            210000,
+            0.3,
+            [0.0, 0.0, 0.003],
+            [
+                210000 / (1 - 0.3**2) * (0.0 + 0.3 * 0.0),
+                210000 / (1 - 0.3**2) * (0.3 * 0.0 + 0.0),
+                210000 / (2 * (1 + 0.3)) * 0.003,
+            ],
+        ),
+    ],
+)
+def test_elastic2d_stress(E, nu, strain, expected):
+    """Test the get_stress method of Elastic2D."""
+    mat = Elastic2D(E, nu)
+    stress = mat.get_stress(strain)
+    assert np.allclose(stress, expected)
+
+
+def test_strain_input_for_stress():
+    """Test the get_stress method of Elastic2D with invalid strain input."""
+    mat = Elastic2D(200000, 0.25)
+    with pytest.raises(ValueError):
+        mat.get_stress([0.001, 0.002])
+
+
+@pytest.mark.parametrize(
+    'E, nu, expected',
+    [
+        (
+            200000,
+            0.3,
+            200000
+            / (1 - 0.3**2)
+            * np.array(
+                [
+                    [1.0, 0.3, 0.0],
+                    [0.3, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.3) / 2.0],
+                ]
+            ),
+        ),
+        (
+            210000,
+            0.25,
+            210000
+            / (1 - 0.25**2)
+            * np.array(
+                [
+                    [1.0, 0.25, 0.0],
+                    [0.25, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.25) / 2.0],
+                ]
+            ),
+        ),
+        (
+            200000,
+            0.25,
+            200000
+            / (1 - 0.25**2)
+            * np.array(
+                [
+                    [1.0, 0.25, 0.0],
+                    [0.25, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.25) / 2.0],
+                ]
+            ),
+        ),
+        (
+            210000,
+            0.3,
+            210000
+            / (1 - 0.3**2)
+            * np.array(
+                [
+                    [1.0, 0.3, 0.0],
+                    [0.3, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.3) / 2.0],
+                ]
+            ),
+        ),
+    ],
+)
+def test_elastic2d_secant(E, nu, expected):
+    """Test the get_secant method of Elastic2D."""
+    mat = Elastic2D(E, nu)
+    secant = mat.get_secant()
+    assert np.allclose(secant, expected)
+
+
+@pytest.mark.parametrize(
     'E, fy, strain, expected',
     [
         (210000, 410, 0.001, 210.0),
@@ -151,6 +278,144 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
     mat = ParabolaRectangle(fc, eps_0, eps_u)
     assert math.isclose(mat.get_stress(strain), stress)
     assert math.isclose(mat.get_tangent(strain), tangent)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, strain, stress',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            [-0.0015, 0.0, 0.001],
+            [-26.64581728, -2.44270432, 8.06770432],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.003, 0.002, 0],
+            [-45, 0, 0],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.002, -0.0035, -0.001],
+            [-41.22113162, -3.77886838, 12.48075442],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.001, -0.0015, -0.0045],
+            [-11.20993578, -32.37821129, -19.05144796],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.02, 0.0, -0.01],
+            [-0.67731096, -12.153852, -2.86913526],
+        ),
+    ],
+)
+def test_concrete_smeared_cracking(fc, eps_0, eps_u, strain, stress):
+    """Test the concrete smeared cracking material."""
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0, eps_u=eps_u)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
+    mat = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    assert np.allclose(mat.get_stress(strain), stress, atol=1e-3)
+
+
+@pytest.mark.parametrize('nu', (0.0, 0.2))
+@pytest.mark.parametrize(
+    'strain',
+    (
+        (0.0, 0.0, 0.0),
+        (-1.5e-3, 0.0, 0.0),
+        (-1.5e-3, -1.5e-3, 0.0),
+        (0.0, -1.5e-3, 0.0),
+        (-1.5e-3, 0.0, 0.75e-3),
+        (-1.5e-3, -1.5e-3, 0.75e-3),
+        (0.0, -1.5e-3, 0.75e-3),
+    ),
+)
+def test_get_secant_shape(strain, nu):
+    """Test the secant stiffness matrix shape of the concrete smeared cracking
+    material.
+    """
+    uniaxial_compression = ParabolaRectangle(fc=45.0)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    mat = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    C = mat.get_secant(strain)
+
+    # Shape
+    assert C.shape == (3, 3)
+
+    # Symmetry
+    assert np.allclose(C, C.T)
+
+    # Positive diagonal elements
+    assert np.all(np.diag(C) > 0)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, nu, strain, expected',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            0.0,
+            [-0.001, -0.001, 0.0],
+            [[22500, 0.0, 0.0], [0.0, 22500, 0.0], [0.0, 0.0, 0.5 * 22500]],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            0.2,
+            [-0.003, 0.002, 0],
+            [[15000, 0, 0], [0, 0, 0], [0, 0, 3750]],
+        ),
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            0.2,
+            [-0.001, 0.0, 0.0],
+            [
+                [2.31119792e04, 5.27343750e03, 0.0],
+                [5.27343750e03, 2.96223958e04, 0.0],
+                [0.0, 0.0, 1.05468750e04],
+            ],
+        ),
+    ],
+)
+def test_get_secant(fc, eps_0, eps_u, nu, strain, expected):
+    """Test the secant stiffness matrix of the concrete smeared cracking
+    material.
+    """
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0, eps_u=eps_u)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    mat = ConcreteSmearedCracking(
+        uniaxial_compression=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    assert np.allclose(mat.get_secant(strain), expected)
 
 
 @pytest.mark.parametrize(
