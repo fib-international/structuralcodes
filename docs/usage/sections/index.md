@@ -9,6 +9,14 @@ The section contains a _SectionCalculator_ which contains the API for doing calc
 
 The SectionCalculator uses a _SectionIntegrator_ to integrate the strain response on a geometry.
 
+:::{tip}
+See the theory reference for a guide on the [sign convention](#theory-sign-convention) used in StructuralCodes.
+:::
+
+:::{tip}
+The theory reference provides an overview of the theory behind the [section calculator](#theory-section-calculator) and the [section integrators](#theory-section-integrators).
+:::
+
 ## The generic beam section
 
 The {class}`GenericSection <structuralcodes.sections.GenericSection>` takes a {class}`SurfaceGeometry <structuralcodes.geometry.SurfaceGeometry>` or a {class}`CompoundGeometry <structuralcodes.geometry.CompoundGeometry>` as input, and is capable of calculating the response of an arbitrarily shaped geometry with arbitrary reinforcement layout, subject to stresses in the direction of the beam axis.
