@@ -1,7 +1,7 @@
 """Functions from Section 8.2 of EN 1992-1-1:2023."""
 
 import math
-from typing import List, Literal
+from typing import Iterable, Literal
 
 
 def tau_Ed(VEd: float, bw: float, d: float) -> float:
@@ -196,7 +196,11 @@ def d_eff_angle(dx: float, dy: float, vEd_x: float, vEd_y: float) -> float:
     vEd_x = abs(vEd_x)
     vEd_y = abs(vEd_y)
 
-    alpha_v = math.atan2(vEd_y, vEd_x)
+    if vEd_x == 0:
+        # When vEd_x = 0, alpha_v = 90 degrees, return dy
+        return dy
+
+    alpha_v = math.atan(vEd_y / vEd_x)
 
     return dx * math.cos(alpha_v) ** 2 + dy * math.sin(alpha_v) ** 2
 
@@ -573,7 +577,7 @@ def rho_l_planar(
 
     Args:
         vEd_y (float): Shear force in y-direction (kN).
-        vEd_x (float): Shear force in x-direction (kN) (cannot be zero).
+        vEd_x (float): Shear force in x-direction (kN).
         rho_l_x (float): Reinforcement ratio in x-direction.
         rho_l_y (float): Reinforcement ratio in y-direction.
 
@@ -581,8 +585,7 @@ def rho_l_planar(
         float: Reinforcement ratio.
 
     Raises:
-        ValueError: If any of the input values are negative or if vEd_x is zero
-            (division by zero).
+        ValueError: If any of the input values are negative.
     """
     if vEd_y < 0:
         raise ValueError(f'vEd_y must not be negative. Got {vEd_y}')
@@ -593,13 +596,7 @@ def rho_l_planar(
     if rho_l_y < 0:
         raise ValueError(f'rho_l_y must not be negative. Got {rho_l_y}')
 
-    if vEd_x == 0:
-        raise ValueError(
-            'Division by zero: vEd_x cannot be zero for ratio calculation. '
-            + f'Got vEd_x={vEd_x}'
-        )
-
-    ratio = vEd_y / vEd_x
+    ratio = vEd_y / vEd_x if vEd_x != 0 else float('inf')
 
     if ratio <= 0.5:
         rho_l = rho_l_x
@@ -619,40 +616,84 @@ def cot_theta_min(
     VEd: float,
     x: float,
     d: float,
+    Ac: float,
+    apply_ductility_class_a_reduction: bool = False,
 ) -> float:
     """Calculate the minimum cotangent of the compression field inclination
-    angle, thetamin, according to the conditions provided.
+    angle, theta_min, according to the conditions provided.
 
     EN1992-1-1:2023 Eq. (8.41).
 
     Args:
-        NEd (float): Axial force in the member in kN.
-        VEd (float): Shear force in the member in kN.
-        x (float): Depth of the compression chord in mm.
-        d (float): Effective depth of the member in mm.
+        NEd (float): Axial force in the member in kN (positive for tension,
+            negative for compression).
+        VEd (float): Shear force in the member in kN (can be positive or
+            negative).
+        x (float): Depth of the compression chord in mm (must be non-negative).
+        d (float): Effective depth of the member in mm (must be positive).
+        Ac (float): Area of concrete cross-section in mm2 (must be positive).
+        apply_ductility_class_a_reduction (bool, optional): If True, applies
+            20% reduction for ductility class A reinforcement. Default is False
 
     Returns:
         float: Minimum cotangent of the compression field inclination angle.
+        - For tension (NEd > 0): 2.5 - 0.1*NEd/|VEd| (min 1.0)
+        - For compression (NEd < 0) with significant stress and x < 0.25d:
+          3.0 (with interpolation from 2.5 at 0 MPa to 3.0 at 3 MPa)
+        - For compression (NEd < 0) with x >= 0.25d: tension formula
+        - For no axial force (NEd = 0): 2.5
+        - For ductility class A: values reduced by 20% (when flag is True)
 
     Raises:
-        ValueError: If any of the dimensions or forces are negative, or if d is
-            zero.
+        ValueError: If d or Ac is not positive, or if x is negative, or if
+            VEd is zero when NEd is not zero (to avoid division by zero).
     """
     if d <= 0 or x < 0:
         raise ValueError(
-            'Dimensions and forces must be positive, and d must not be zero.'
+            'd must be positive and x must not be negative. '
+            + f'Got d={d}, x={x}'
+        )
+    if Ac <= 0:
+        raise ValueError(f'Ac must be positive. Got {Ac}')
+
+    # Check VEd is not zero when needed for division
+    if VEd == 0 and NEd != 0:
+        raise ValueError(
+            'VEd must not be zero when NEd is not zero to avoid division '
+            + f'by zero. Got VEd={VEd}, NEd={NEd}'
         )
 
+    # Calculate base cot_theta_min
     if NEd > 0:
-        cot_theta_min_value = 2.5 - 0.1 * NEd / abs(VEd)
-        return max(cot_theta_min_value, 1.0)
-    if NEd < 0:
-        return 3.0
+        # Tension case
+        cot_theta_min = 2.5 - 0.1 * NEd / abs(VEd)
+        cot_theta_min = max(cot_theta_min, 1.0)
+    elif NEd < 0:
+        # Compression case
+        sigma_c = abs(NEd) * 1000 / Ac  # Convert to MPa
+        if sigma_c >= 0.0 and x < 0.25 * d:
+            # Significant compressive stress and x < 0.25d
+            # Interpolate: 2.5 at 0 MPa, 3.0 at 3 MPa and above
+            # Formula: 2.5 + (3.0-2.5) * sigma_c / (3.0-0.0)
+            cot_theta_min = 3.0 if sigma_c >= 3.0 else 2.5 + sigma_c / 6.0
+        else:
+            # Use tension formula for other compression cases
+            cot_theta_min = 2.5 - 0.1 * NEd / abs(VEd)
+            cot_theta_min = max(cot_theta_min, 1.0)
+    else:
+        # NEd == 0 (no axial force)
+        cot_theta_min = 2.5
 
-    return 2.5  # NEd == 0
+    # Apply ductility class A reduction (20% reduction)
+    if apply_ductility_class_a_reduction:
+        cot_theta_min *= 0.8
+
+    return cot_theta_min
 
 
-def tau_Rd_sy(rho_w: float, fywd: float, cot_theta: float) -> float:
+def tau_Rd_sy(
+    rho_w: float, fywd: float, cot_theta: float, cot_theta_min: float
+) -> float:
     """Calculate the shear stress resistance of yielding shear reinforcement.
 
     EN1992-1-1:2023 Eq. (8.42).
@@ -660,17 +701,31 @@ def tau_Rd_sy(rho_w: float, fywd: float, cot_theta: float) -> float:
     Args:
         rho_w (float): Shear reinforcement ratio (unitless).
         fywd (float): Design yield strength of the shear reinforcement in MPa.
-        cot_theta (float): Cotangent of the angle of the compression field.
+        cot_theta (float): Cotangent of the angle of the compression field
+            (must be between 1 and cot_theta_min).
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
 
     Returns:
         float: Shear stress resistance in MPa.
 
     Raises:
-        ValueError: If rho_w or fywd is negative.
+        ValueError: If rho_w or fywd is not positive, if cot_theta_min is less
+            than 1, or if cot_theta is not within [1, cot_theta_min].
     """
-    if rho_w < 0 or fywd < 0:
+    if rho_w <= 0 or fywd <= 0:
         raise ValueError(
-            'Shear reinforcement ratio and yield strength must not be negative'
+            'Shear reinforcement ratio and yield strength must be positive. '
+            + f'Got rho_w={rho_w}, fywd={fywd}'
+        )
+
+    if cot_theta_min < 1.0:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    if cot_theta < 1.0 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be between 1 and cot_theta_min. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
         )
 
     return rho_w * fywd * cot_theta
@@ -700,45 +755,80 @@ def rho_w(Asw: float, bw: float, s: float) -> float:
 
 
 def sigma_cd(
-    tau_Ed: float, cot_theta: float, tan_theta: float, nu: float, f_cd: float
+    tau_Ed: float,
+    cot_theta: float,
+    cot_theta_min: float,
+    nu: float,
+    f_cd: float,
 ) -> float:
     """Calculate the stress in the compression field sigma_cd and verify it.
 
     EN1992-1-1:2023 Eq. (8.44).
 
     Args:
-        tau_Ed (float): Design value of the shear stress in MPa.
-        cot_theta (float): Cotangent of the angle of the compression field.
-        tan_theta (float): Tangent of the angle of the compression field.
-        nu (float): Coefficient (usually 0.5 as per the note).
-        f_cd (float): Design value of the concrete compressive strength in MPa.
+        tau_Ed (float): Design value of the shear stress in MPa (must be
+            non-negative).
+        cot_theta (float): Cotangent of the angle of the compression field
+            (must be between 1 and cot_theta_min).
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
+        nu (float): Coefficient (usually 0.5 as per the note, must be
+            non-negative).
+        f_cd (float): Design value of the concrete compressive strength in MPa
+            (must be positive).
 
     Returns:
         float: Stress in the compression field sigma_cd in MPa.
 
     Raises:
-        ValueError: If any of the parameters are negative.
+        ValueError: If tau_Ed is negative, if nu is negative or f_cd is not
+            positive, if cot_theta_min < 1, or if cot_theta is not within
+            [1, cot_theta_min].
     """
-    if tau_Ed < 0 or cot_theta < 0 or tan_theta < 0 or nu < 0 or f_cd < 0:
-        raise ValueError('All parameters must be positive.')
+    if tau_Ed < 0:
+        raise ValueError(f'tau_Ed must not be negative. Got {tau_Ed}')
 
+    if nu < 0 or f_cd <= 0:
+        raise ValueError(
+            'nu must be non-negative and f_cd must be positive. '
+            + f'Got nu={nu}, f_cd={f_cd}'
+        )
+
+    if cot_theta_min < 1.0:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    if cot_theta < 1.0 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be between 1 and cot_theta_min. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
+
+    # Calculate tan_theta from cot_theta to ensure consistency
+    tan_theta = 1.0 / cot_theta
     sigma_cd_value = tau_Ed * (cot_theta + tan_theta)
     return min(sigma_cd_value, nu * f_cd)
 
 
 def tau_Rd(
-    rho_w: float, fywd: float, cot_theta: float, nu: float, f_cd: float
+    rho_w: float,
+    fywd: float,
+    cot_theta: float,
+    cot_theta_min: float,
+    nu: float,
+    f_cd: float,
 ) -> float:
     """Calculate the shear stress resistance tau_Rd considering the
     simultaneous yielding of the shear reinforcement and failure of the
     compression field.
 
-    EN1992-1-1:2023 Eq. (8.42) and (8.44).
+    EN1992-1-1:2023 Eq. (8.42) and (8.44), NOTE 1.
 
     Args:
         rho_w (float): Shear reinforcement ratio, unitless.
         fywd (float): Design yield strength of the shear reinforcement in MPa.
         cot_theta (float): Cotangent of the angle of the compression field.
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
         nu (float): Coefficient (usually 0.5 as per the note).
         f_cd (float): Design value of the concrete compressive strength in MPa.
 
@@ -746,107 +836,174 @@ def tau_Rd(
         float: Shear stress resistance tau_Rd in MPa.
 
     Raises:
-        ValueError: If any of the parameters are negative.
+        ValueError: If any of the parameters are
+            negative, or if cot_theta_min < 1,
+            or if cot_theta is not within [1, cot_theta_min].
     """
     if rho_w < 0 or fywd < 0 or cot_theta < 0 or nu < 0 or f_cd < 0:
         raise ValueError('All parameters must be positive.')
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if cot_theta < 1 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be within [1, cot_theta_min]. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
 
     tau_Rd_value = rho_w * fywd * cot_theta
     return min(tau_Rd_value, nu * f_cd / 2)
 
 
-def cot_theta(
+def cot_theta_simultaneous(
     nu: float, f_cd: float, rho_w: float, fywd: float, cot_theta_min: float
 ) -> float:
-    """Calculate the cotangent of the angle of the compression field
-    considering the simultaneous yielding of the shear reinforcement and
-    failure of the compression field.
+    """Calculate the cotangent of the angle of the compression field that
+    gives simultaneous yielding of the shear reinforcement and failure of the
+    compression field.
 
-    EN1992-1-1:2023 Eq. (8.44).
+    EN1992-1-1:2023 Eq. (8.42) and (8.44), NOTE 1.
+
+    The value is calculated by equating the shear stress resistance from
+    reinforcement and the compression field, then clamped to
+    [1, cot_theta_min].
+
+    According to clause (6), when the angle of the compression field is
+    evaluated according to this method (simultaneous failure), nu may be
+    adopted as 0.5.
 
     Args:
-        nu (float): Coefficient (usually 0.5 as per the note).
+        nu (float): Coefficient. According to clause (6), when the angle is
+            evaluated using this method (simultaneous failure), nu may be
+            adopted as 0.5. Otherwise, nu should be calculated according to
+            Eq. (8.45).
         f_cd (float): Design value of the concrete compressive strength in MPa.
-        rho_w (float): Shear reinforcement ratio, unitless.
-        fywd (float): Design yield strength of the shear reinforcement in MPa.
-        cot_theta_min (float): Value of cot_theta_min.
+        rho_w (float): Shear reinforcement ratio, unitless (must be positive).
+        fywd (float): Design yield strength of the shear reinforcement in MPa
+            (must be positive).
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
 
     Returns:
-        float: Cotangent of the angle of the compression field.
+        float: Cotangent of the angle of the compression field that gives
+            simultaneous failure, clamped to [1, cot_theta_min].
 
     Raises:
-        ValueError: If any of the parameters are negative.
+        ValueError: If any of the parameters are negative, if
+            cot_theta_min < 1, if rho_w * fywd is zero (to avoid division
+            by zero), or if the expression under the square root is negative.
     """
     if nu < 0 or f_cd < 0 or rho_w < 0 or fywd < 0:
-        raise ValueError('All parameters must be positive.')
+        raise ValueError(
+            'All parameters must be positive. '
+            + f'Got nu={nu}, f_cd={f_cd}, rho_w={rho_w}, fywd={fywd}'
+        )
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if rho_w == 0 or fywd == 0:
+        raise ValueError(
+            'rho_w and fywd must not be zero to avoid division by zero. '
+            + f'Got rho_w={rho_w}, fywd={fywd}'
+        )
 
-    cot_theta_value = (nu * f_cd) / (rho_w * fywd) - 1
+    # Calculate the value under the square root
+    sqrt_arg = (nu * f_cd) / (rho_w * fywd) - 1
+    if sqrt_arg < 0:
+        raise ValueError(
+            'Expression under square root must be non-negative. '
+            + f'Got (nu * f_cd) / (rho_w * fywd) - 1 = {sqrt_arg}'
+        )
+    cot_theta_value = math.sqrt(sqrt_arg)
     return min(max(cot_theta_value, 1.0), cot_theta_min)
 
 
-def epsilon_xt(Ftd: float, Est: float, Ast: float) -> float:
+def epsilon_xt(Ftd: float, Es: float, Ast: float) -> float:
     """Calculate epsilon_xt.
 
     EN1992-1-1:2023 Eq. (8.47).
 
+    Ftd and Fcd are chord forces according to Figure 8.9 and Formulae (8.51)
+    to (8.52).
+
     Args:
         Ftd (float): Tensile force in the flexural tension chord in kN.
-        Est (float): Modulus of elasticity of the steel in the tension chord in
+        Es (float): Modulus of elasticity of the steel in the tension chord in
             MPa.
         Ast (float): Area of the longitudinal reinforcement in the flexural
             tension chord in mm2.
 
     Returns:
         float: epsilon_xt (strain).
+
+    Raises:
+        ValueError: If Es is not positive, or if Ast is not positive (to avoid
+            division by zero).
     """
-    if Est < 0:
-        raise ValueError(f'Est must not be negative. Got {Est}')
-    if Ast < 0:
-        raise ValueError(f'Ast must not be negative. Got {Ast}')
-    return abs(Ftd) * 1000 / (Est * Ast)
+    if Es <= 0:
+        raise ValueError(f'Es must be positive. Got Es={Es}')
+    if Ast <= 0:
+        raise ValueError(f'Ast must be positive. Got Ast={Ast}')
+    return abs(Ftd) * 1000 / (Es * Ast)
 
 
-def epsilon_xc_comp(Fcd: float, Ecc: float, Acc: float) -> float:
+def epsilon_xc_comp(Fcd: float, Ec: float, Acc: float) -> float:
     """Calculate epsilon_xc for compression.
 
     EN1992-1-1:2023 Eq. (8.48).
 
+    Ftd and Fcd are chord forces according to Figure 8.9 and Formulae (8.51)
+    to (8.52). Positive values of Fcd refer to compression in the compression
+    chord.
+
     Args:
         Fcd (float): Compressive force in the flexural compression chord in kN.
-        Ecc (float): Modulus of elasticity of the concrete in the compression
+            Positive values refer to compression.
+        Ec (float): Modulus of elasticity of the concrete in the compression
             chord in MPa.
         Acc (float): Area of the flexural compression chord in mm2.
 
     Returns:
         float: epsilon_xc (strain).
+
+    Raises:
+        ValueError: If Ec is not positive, or if Acc is not positive (to avoid
+            division by zero).
     """
-    if Acc < 0:
-        raise ValueError(f'Acc must not be negative. Got {Acc}')
-    if Ecc < 0:
-        raise ValueError(f'Ecc must not be negative. Got {Ecc}')
-    return abs(Fcd) * 1000 / (Ecc * Acc)
+    if Ec <= 0:
+        raise ValueError(f'Ec must be positive. Got Ec={Ec}')
+    if Acc <= 0:
+        raise ValueError(f'Acc must be positive. Got Acc={Acc}')
+    return abs(Fcd) * 1000 / (Ec * Acc)
 
 
-def epsilon_xc_tens(Fcd: float, Esc: float, Asc: float) -> float:
+def epsilon_xc_tens(Fcd: float, Es: float, Asc: float) -> float:
     """Calculate epsilon_xc.
 
     EN1992-1-1:2023 Eq. (8.49).
 
+    Ftd and Fcd are chord forces according to Figure 8.9 and Formulae (8.51)
+    to (8.52). Positive values of Fcd refer to compression in the compression
+    chord.
+
     Args:
-        Fcd (float): Tensile force in the flexural compression chord kN.
-        Esc (float): Modulus of elasticity of the steel in the compression
+        Fcd (float): Compressive force in the flexural compression chord in kN.
+            Positive values refer to compression.
+        Es (float): Modulus of elasticity of the steel in the compression
             chord in MPa.
         Asc (float): Area of the longitudinal reinforcement in the flexural
-            compression chord mm2.
+            compression chord in mm2.
 
     Returns:
         float: epsilon_xc (strain).
+
+    Raises:
+        ValueError: If Es is not positive, or if Asc is not positive (to avoid
+            division by zero).
     """
-    if Asc < 0:
-        raise ValueError(f'Acc must not be negative. Got {Asc}')
-    if Esc < 0:
-        raise ValueError(f'Esc must not be negative. Got {Esc}')
-    return abs(Fcd) * 1000 / (Esc * Asc)
+    if Es <= 0:
+        raise ValueError(f'Es must be positive. Got Es={Es}')
+    if Asc <= 0:
+        raise ValueError(f'Asc must be positive. Got Asc={Asc}')
+    return abs(Fcd) * 1000 / (Es * Asc)
 
 
 def epsilon_x(epsilon_xt: float, epsilon_xc: float) -> float:
@@ -854,32 +1011,53 @@ def epsilon_x(epsilon_xt: float, epsilon_xc: float) -> float:
 
     EN1992-1-1:2023 Eq. (8.46).
 
+    Note on sign conventions:
+    - epsilon_xt: Positive values refer to tension (elongation) in the
+      flexural tension chord.
+    - epsilon_xc: Positive values refer to compression (shortening) in the
+      flexural compression chord.
+
     Args:
-        epsilon_xt (float): Strain in the flexural tension chord.
-        epsilon_xc (float): Strain in the flexural compression chord.
+        epsilon_xt (float): Strain in the flexural tension chord. Positive
+            values refer to tension.
+        epsilon_xc (float): Strain in the flexural compression chord. Positive
+            values refer to compression.
 
     Returns:
-        float: epsilon_x (strain).
+        float: epsilon_x (strain), clamped to non-negative values.
     """
     epsilon_x_value = (epsilon_xt + epsilon_xc) / 2
     return max(epsilon_x_value, 0)
 
 
-def nu(epsilon_x: float, cot_theta: float) -> float:
+def nu(epsilon_x: float, cot_theta: float, cot_theta_min: float) -> float:
     """Calculate nu.
 
     EN1992-1-1:2023 Eq. (8.45).
 
     Args:
         epsilon_x (float): Average strain of the bottom and top chords.
-        cot_theta (float): cotan of the compression field inclination to the
-            member axis.
+        cot_theta (float): Cotangent of the compression field inclination to
+            the member axis.
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
 
     Returns:
         float: nu (dimensionless factor).
+
+    Raises:
+        ValueError: If epsilon_x is negative, if cot_theta_min < 1, or if
+            cot_theta is not within [1, cot_theta_min].
     """
     if epsilon_x < 0:
         raise ValueError(f'epsilon_x must not be negative. Got {epsilon_x}')
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if cot_theta < 1 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be within [1, cot_theta_min]. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
 
     nu_value = 1 / (
         1.0 + 110 * (epsilon_x + (epsilon_x + 0.001) * cot_theta**2)
@@ -887,7 +1065,7 @@ def nu(epsilon_x: float, cot_theta: float) -> float:
     return min(nu_value, 1.0)
 
 
-def Nvd(VEd: float, cot_theta: float) -> float:
+def Nvd(VEd: float, cot_theta: float, cot_theta_min: float) -> float:
     """Calculate the additional tensile axial force NVd due to shear VEd.
 
     EN1992-1-1:2023 Eq. (8.50).
@@ -895,10 +1073,23 @@ def Nvd(VEd: float, cot_theta: float) -> float:
     Args:
         VEd (float): Shear force in kN.
         cot_theta (float): Cotangent of the angle.
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
 
     Returns:
         float: Additional tensile axial force NVd in kN.
+
+    Raises:
+        ValueError: If cot_theta_min < 1, or if cot_theta is not within
+            [1, cot_theta_min].
     """
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if cot_theta < 1 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be within [1, cot_theta_min]. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
     return abs(VEd) * cot_theta
 
 
@@ -913,18 +1104,21 @@ def Ftd(
     EN1992-1-1:2023 Eq. (8.51).
 
     Args:
-        MEd (float): Moment in kNm.
-        z (float): Lever arm in mm.
+        MEd (float): Moment in kNm. Positive values refer to moments with top
+            compressed.
+        z (float): Lever arm in mm (must be positive to avoid division by
+            zero).
         NVd (float): Additional tensile axial force in kN.
-        NE (float): Axial force in kN.
+        NE (float): Axial force in kN. Positive values refer to tension.
 
     Returns:
         float: Chord force Ftd in kN.
 
     Raises:
-        ValueError: If any input is negative.
-
+        ValueError: If z is not positive (to avoid division by zero).
     """
+    if z <= 0:
+        raise ValueError(f'z must be positive. Got z={z}')
     return MEd * 1000 / z + (NVd + NE) / 2
 
 
@@ -939,15 +1133,50 @@ def Fcd(
     EN1992-1-1:2023 Eq. (8.52).
 
     Args:
-        MEd (float): Moment in kNm.
-        z (float): Lever arm in mm.
+        MEd (float): Moment in kNm. Positive values refer to moments with top
+            compressed.
+        z (float): Lever arm in mm (must be positive to avoid division by
+            zero).
         NVd (float): Additional tensile axial force in kN.
-        NE (float): Axial force in kN.
+        NE (float): Axial force in kN. Positive values refer to tension.
 
     Returns:
-        float: Chord force Fcd in kN.
+        float: Chord force Fcd in kN. Positive values refer to compression.
+
+    Raises:
+        ValueError: If z is not positive (to avoid division by zero).
     """
+    if z <= 0:
+        raise ValueError(f'z must be positive. Got z={z}')
     return MEd * 1000 / z - (NVd + NE) / 2
+
+
+def Ftd_max(
+    MEd_max: float,
+    z: float,
+    NEd: float,
+) -> float:
+    """Calculate the maximum chord force Ftd for cases of direct
+    intermediate support or concentrated loads.
+
+    EN1992-1-1:2023 Eq. (8.53).
+
+    Args:
+        MEd_max (float): Maximum moment along the member in kNm. Positive
+            values refer to moments with top compressed.
+        z (float): Lever arm in mm (must be positive to avoid division by
+            zero).
+        NEd (float): Axial force in kN. Positive values refer to tension.
+
+    Returns:
+        float: Maximum chord force Ftd in kN.
+
+    Raises:
+        ValueError: If z is not positive (to avoid division by zero).
+    """
+    if z <= 0:
+        raise ValueError(f'z must be positive. Got z={z}')
+    return MEd_max * 1000 / z + NEd / 2
 
 
 def k_duct(
@@ -959,7 +1188,7 @@ def k_duct(
     """Calculate the k_duct coefficient based on duct material, filling, and
     wall thickness.
 
-    EN1992-1-1:2023 guidelines for k_duct.
+    EN1992-1-1:2023 8.2.3 (10).
 
     Args:
         duct_material (str): Material of the duct ('steel' or 'plastic').
@@ -971,17 +1200,17 @@ def k_duct(
         float: Coefficient k_duct.
 
     Raises:
-        ValueError: If wall_thickness or duct_diameter is negative.
+        ValueError: If wall_thickness or duct_diameter is not positive.
         ValueError: If duct_material is not 'steel' or 'plastic'.
 
     """
-    if wall_thickness < 0:
+    if wall_thickness <= 0:
         raise ValueError(
-            f'Wall thickness must not be negative. Got {wall_thickness}'
+            f'wall_thickness must be positive. Got {wall_thickness}'
         )
-    if duct_diameter < 0:
+    if duct_diameter <= 0:
         raise ValueError(
-            f'Duct diameter must not be negative. Got {duct_diameter}'
+            f'duct_diameter must be positive. Got {duct_diameter}'
         )
 
     max_thickness = max(0.035 * duct_diameter, 2.0)
@@ -1002,17 +1231,18 @@ def k_duct(
 
 def bw_nom(
     bw: float,
-    duct_diameters: List[float],
+    duct_diameters: Iterable[float],
     k_duct: float,
 ) -> float:
-    """Calculate the nominal web width considering the presence of ducts.
+    """Calculate the nominal web width considering the presence of ducts
+    when the sum of duct diameters exceeds bw/8.
 
     EN1992-1-1:2023 Eq. (8.54).
 
     Args:
         bw (float): Actual web width in mm.
-        duct_diameters (List[float]): List of duct diameters in mm (each must
-            be non-negative).
+        duct_diameters (Iterable[float]): Sequence of duct diameters in mm
+            (each must be non-negative). Can be a list, tuple, or numpy array.
         k_duct (float): Coefficient depending on the material and filling of
             the duct.
 
@@ -1043,6 +1273,7 @@ def tau_rd(
     nu: float,
     f_cd: float,
     cot_theta: float,
+    cot_theta_min: float,
     cot_beta_incl: float,
     rho_w: float,
     f_ywd: float,
@@ -1052,24 +1283,41 @@ def tau_rd(
     EN1992-1-1:2023 Eq. (8.55).
 
     Args:
-        nu (float): The factor nu (unitless).
-        f_cd (float): Design value of concrete compressive strength in MPa.
+        nu (float): The factor nu (unitless) (must be non-negative).
+        f_cd (float): Design value of concrete compressive strength in MPa
+            (must be positive).
         cot_theta (float): Cotangent of the inclination of compression field.
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
         cot_beta_incl (float): Cotangent of the inclination of load (cot
             beta_incl).
-        rho_w (float): Reinforcement ratio rho_w.
-        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        rho_w (float): Reinforcement ratio rho_w (must be non-negative).
+        f_ywd (float): Design yield strength of shear reinforcement in MPa
+            (must be positive).
 
     Returns:
         float: Enhanced shear stress resistance tau_Rd in MPa.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If nu, f_cd, rho_w, or f_ywd is negative, if f_cd or
+            f_ywd is zero, if cot_theta_min < 1, or if cot_theta is not
+            within [1, cot_theta_min].
     """
-    if f_cd < 0:
-        raise ValueError(f'f_cd must not be negative. Got {f_cd}')
-    if f_ywd < 0:
-        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+    if nu < 0:
+        raise ValueError(f'nu must not be negative. Got {nu}')
+    if f_cd <= 0:
+        raise ValueError(f'f_cd must be positive. Got {f_cd}')
+    if rho_w < 0:
+        raise ValueError(f'rho_w must not be negative. Got {rho_w}')
+    if f_ywd <= 0:
+        raise ValueError(f'f_ywd must be positive. Got {f_ywd}')
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if cot_theta < 1 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be within [1, cot_theta_min]. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
 
     tau_rd_value = (
         nu * f_cd * (cot_theta - cot_beta_incl) / (1 + cot_theta**2)
@@ -1080,29 +1328,136 @@ def tau_rd(
     return min(tau_rd_value, tau_rd_max)
 
 
+def cot_theta_max_shear_constant_nu(
+    cot_beta_incl: float,
+    cot_theta_min: float,
+) -> float:
+    """Calculate the optimum cot_theta for maximum shear resistance
+    for the case of a constant value nu according to clause (6).
+
+    EN1992-1-1:2023 Section 8.2, NOTE 3.
+
+    Args:
+        cot_beta_incl (float): Cotangent of the inclination of load (cot
+            beta_incl).
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
+
+    Returns:
+        float: Optimum cotangent of the inclination of compression field,
+            capped at cot_theta_min.
+
+    Raises:
+        ValueError: If cot_theta_min < 1 or if the calculated cot_theta < 1.
+    """
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    # Constant nu according to clause (6)
+    cot_theta = cot_beta_incl + math.sqrt(1 + cot_beta_incl**2)
+
+    # Cap at cot_theta_min
+    cot_theta = min(cot_theta, cot_theta_min)
+
+    # Ensure cot_theta >= 1
+    if cot_theta < 1:
+        raise ValueError(
+            f'Calculated cot_theta ({cot_theta}) is less than 1. '
+            + 'This indicates invalid input parameters.'
+        )
+
+    return cot_theta
+
+
+def cot_theta_max_shear_variable_nu(
+    a: float,
+    z: float,
+    cot_theta_min: float,
+) -> float:
+    """Calculate the optimum cot_theta for maximum shear resistance
+    for the case of a variable nu according to clause (7).
+
+    EN1992-1-1:2023 Section 8.2, NOTE 3.
+
+    but should not be larger than cot_theta according to 8.2.3(5), NOTE 1.
+
+    Args:
+        a (float): Distance from support to concentrated load in mm
+            (must be positive).
+        z (float): Lever arm in mm (must be positive).
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
+
+    Returns:
+        float: Optimum cotangent of the inclination of compression field,
+            capped at cot_theta_min.
+
+    Raises:
+        ValueError: If a or z is non-positive, if cot_theta_min < 1, or if
+            the calculated cot_theta < 1.
+    """
+    if a <= 0:
+        raise ValueError(f'a must be positive. Got {a}')
+    if z <= 0:
+        raise ValueError(f'z must be positive. Got {z}')
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    # Variable nu according to clause (7)
+    cot_theta = 1.3 * a / z
+
+    # Cap at cot_theta_min
+    cot_theta = min(cot_theta, cot_theta_min)
+
+    # Ensure cot_theta >= 1
+    if cot_theta < 1:
+        raise ValueError(
+            f'Calculated cot_theta ({cot_theta}) is less than 1. '
+            + 'This indicates invalid input parameters.'
+        )
+
+    return cot_theta
+
+
 def sigma_swd(
-    Es: float, eps_x: float, f_ywd: float, cot_theta: float
+    Es: float,
+    eps_x: float,
+    f_ywd: float,
+    cot_theta: float,
+    cot_theta_min: float,
 ) -> float:
     """Calculate the stress sigma_swd in the shear reinforcement.
 
     EN1992-1-1:2023 Eq. (8.56).
 
     Args:
-        Es (float): Modulus of elasticity of steel Es in MPa.
+        Es (float): Modulus of elasticity of steel Es in MPa (must be
+            positive).
         eps_x (float): Longitudinal strain epsilon_x.
-        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        f_ywd (float): Design yield strength of shear reinforcement in MPa
+            (must be positive).
         cot_theta (float): Cotangent of the inclination of compression field.
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
 
     Returns:
         float: Stress sigma_swd in the shear reinforcement in MPa.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If Es or f_ywd is negative or zero, if cot_theta_min < 1,
+            or if cot_theta is not within [1, cot_theta_min].
     """
-    if Es < 0:
-        raise ValueError(f'e_s must not be negative. Got {Es}')
-    if f_ywd < 0:
-        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+    if Es <= 0:
+        raise ValueError(f'Es must be positive. Got {Es}')
+    if f_ywd <= 0:
+        raise ValueError(f'f_ywd must be positive. Got {f_ywd}')
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if cot_theta < 1 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be within [1, cot_theta_min]. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
 
     sigma_swd_value = Es * (cot_theta**2 * (eps_x + 0.001) - 0.001)
 
@@ -1114,6 +1469,7 @@ def delta_MEd(
     rho_w: float,
     f_ywd: float,
     cot_theta: float,
+    cot_theta_min: float,
     z: float,
     b_w: float,
     a: float,
@@ -1124,31 +1480,43 @@ def delta_MEd(
     EN1992-1-1:2023 Eq. (8.57).
 
     Args:
-        tau_ed (float): Shear stress tau_Ed in MPa (should be positive).
+        tau_ed (float): Shear stress tau_Ed in MPa (must be non-negative).
         rho_w (float): Reinforcement ratio rho_w.
-        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        f_ywd (float): Design yield strength of shear reinforcement in MPa
+            (must be positive).
         cot_theta (float): Cotangent of the inclination of compression field.
-        z (float): Lever arm z in mm (should be positive).
-        b_w (float): Width of the web bw in mm (should be positive).
+        cot_theta_min (float): Minimum cotangent of the compression field
+            inclination angle (must be >= 1).
+        z (float): Lever arm z in mm (must be positive).
+        b_w (float): Width of the web bw in mm (must be positive).
         a (float): Distance between the axis of the support and the
-            concentrated force in mm.
+            concentrated force in mm (must be non-negative).
         x (float): Distance between the support and the investigated
-            cross-section in mm.
+            cross-section in mm (must be non-negative).
 
     Returns:
         float: Additional moment delta MEd in kNm.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If tau_ed, a, or x is negative, if f_ywd, z, or b_w is
+            non-positive, if cot_theta_min < 1, or if cot_theta is not
+            within [1, cot_theta_min].
     """
     if tau_ed < 0:
         raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
-    if f_ywd < 0:
-        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
-    if z < 0:
-        raise ValueError(f'z must not be negative. Got {z}')
-    if b_w < 0:
-        raise ValueError(f'b_w must not be negative. Got {b_w}')
+    if f_ywd <= 0:
+        raise ValueError(f'f_ywd must be positive. Got {f_ywd}')
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+    if cot_theta < 1 or cot_theta > cot_theta_min:
+        raise ValueError(
+            'cot_theta must be within [1, cot_theta_min]. '
+            + f'Got cot_theta={cot_theta}, cot_theta_min={cot_theta_min}'
+        )
+    if z <= 0:
+        raise ValueError(f'z must be positive. Got {z}')
+    if b_w <= 0:
+        raise ValueError(f'b_w must be positive. Got {b_w}')
     if a < 0:
         raise ValueError(f'a must not be negative. Got {a}')
     if x < 0:
@@ -1159,7 +1527,43 @@ def delta_MEd(
     ) / 1e6  # Convert to kNm
 
 
-def tau_rd_sy(
+def cot_theta_inclined(
+    cot_theta: float,
+    alpha_w: float,
+    cot_theta_min: float,
+) -> float:
+    """Calculate and validate cot_theta for inclined shear reinforcement.
+
+    EN1992-1-1:2023 Eq. (8.58).
+
+    Args:
+        cot_theta (float): Cotangent of the inclination of compression field.
+        alpha_w (float): Angle of inclined shear reinforcement alpha_w in
+            degrees (must be in range [45, 90]).
+        cot_theta_min (float): Maximum value for cot_theta (must be >= 1).
+
+    Returns:
+        float: Validated cot_theta value clamped to satisfy the constraint
+            tan(alpha_w/2) <= cot_theta <= cot_theta_min.
+
+    Raises:
+        ValueError: If alpha_w is outside the range [45, 90] degrees, or if
+            cot_theta_min < 1.
+    """
+    if alpha_w < 45 or alpha_w > 90:
+        raise ValueError(
+            f'alpha_w must be in the range [45, 90] degrees. Got {alpha_w}'
+        )
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    alpha_w_rad = math.radians(alpha_w)
+    cot_theta_min_constraint = math.tan(alpha_w_rad / 2)
+
+    return min(max(cot_theta_min_constraint, cot_theta), cot_theta_min)
+
+
+def tau_Rd_sy_inclined(
     rho_w: float,
     f_ywd: float,
     cot_theta: float,
@@ -1169,38 +1573,58 @@ def tau_rd_sy(
     """Calculate the shear stress resistance tau_Rd,sy for inclined shear
     reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.58), (8.59).
+    EN1992-1-1:2023 Eq. (8.59).
 
     Args:
-        rho_w (float): Reinforcement ratio rho_w.
-        f_ywd (float): Design yield strength of shear reinforcement in MPa.
-        cot_theta (float): Cotangent of the inclination of compression field in
-            radians (cottheta).
+        rho_w (float): Reinforcement ratio rho_w (must be non-negative).
+        f_ywd (float): Design yield strength of shear reinforcement in MPa
+            (must be positive, cannot be zero).
+        cot_theta (float): Cotangent of the inclination of compression field.
+            Will be clamped according to Eq. (8.58).
         alpha_w (float): Angle of inclined shear reinforcement alpha_w in
-            degrees (45 ≤ alpha_w < 90).
-        cot_theta_min (float): max value for cot_theta.
+            degrees (must be in range [45, 90]).
+        cot_theta_min (float): Maximum value for cot_theta (must be >= 1).
 
     Returns:
         float: Shear stress resistance tau_Rd,sy in MPa.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If rho_w is negative, if f_ywd is not positive (cannot be
+            zero), if alpha_w is outside the range [45, 90] degrees, or if
+            cot_theta_min < 1.
     """
-    if f_ywd < 0:
-        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
-    if alpha_w < 45 or alpha_w >= 90:
+    if rho_w < 0:
+        raise ValueError(f'rho_w must not be negative. Got {rho_w}')
+    if f_ywd <= 0:
         raise ValueError(
-            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+            f'f_ywd must be positive (cannot be zero). Got {f_ywd}'
         )
+    if alpha_w < 45 or alpha_w > 90:
+        raise ValueError(
+            f'alpha_w must be in the range [45, 90] degrees. Got {alpha_w}'
+        )
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    # Validate cot_theta using Eq. (8.58)
+    cot_theta_validated = cot_theta_inclined(cot_theta, alpha_w, cot_theta_min)
 
     alpha_w_rad = math.radians(alpha_w)
-    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
-    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+    # Handle alpha_w = 90° explicitly to avoid numerical issues with tan(90°)
+    if math.isclose(alpha_w, 90.0):
+        cot_alpha_w = 0.0
+    else:
+        cot_alpha_w = 1 / math.tan(alpha_w_rad)
 
-    return rho_w * f_ywd * (cot_theta + cot_alpha_w) * math.sin(alpha_w_rad)
+    return (
+        rho_w
+        * f_ywd
+        * (cot_theta_validated + cot_alpha_w)
+        * math.sin(alpha_w_rad)
+    )
 
 
-def sigma_cd_s(
+def sigma_cd_inclined(
     tau_ed: float,
     cot_theta: float,
     alpha_w: float,
@@ -1208,45 +1632,62 @@ def sigma_cd_s(
     f_cd: float,
     cot_theta_min: float,
 ) -> float:
-    """Calculate the compression stress sigma_cd.
+    """Calculate the compression stress sigma_cd for inclined shear
+    reinforcement.
 
-    EN1992-1-1:2023 Eq. (8.58), (8.60).
+    EN1992-1-1:2023 Eq. (8.60).
 
     Args:
-        tau_ed (float): Shear stress tau_Ed in MPa.
-        cot_theta (float): Cotangent of the inclination of compression field in
-            radians (cottheta).
+        tau_ed (float): Shear stress tau_Ed in MPa (must be non-negative).
+        cot_theta (float): Cotangent of the inclination of compression field.
+            Will be clamped according to Eq. (8.58).
         alpha_w (float): Angle of inclined shear reinforcement alpha_w in
-            degrees (45 ≤ alpha_w < 90).
-        nu (float): The factor nu.
-        f_cd (float): Design value of concrete compressive strength in MPa.
-        cot_theta_min (float): max value for cot_theta.
+            degrees (must be in range [45, 90]).
+        nu (float): The factor nu (must be non-negative).
+        f_cd (float): Design value of concrete compressive strength in MPa
+            (must be positive, cannot be zero).
+        cot_theta_min (float): Maximum value for cot_theta (must be >= 1).
 
     Returns:
         float: Compression stress sigma_cd in MPa.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If tau_ed is negative, if nu is negative, if f_cd is not
+            positive (cannot be zero), if alpha_w is outside the range
+            [45, 90] degrees, or if cot_theta_min < 1.
     """
     if tau_ed < 0:
         raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
-    if f_cd < 0:
-        raise ValueError(f'f_cd must not be negative. Got {f_cd}')
-    if alpha_w < 45 or alpha_w >= 90:
+    if nu < 0:
+        raise ValueError(f'nu must be non-negative. Got {nu}')
+    if f_cd <= 0:
+        raise ValueError(f'f_cd must be positive (cannot be zero). Got {f_cd}')
+    if alpha_w < 45 or alpha_w > 90:
         raise ValueError(
-            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+            f'alpha_w must be in the range [45, 90] degrees. Got {alpha_w}'
         )
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
 
-    alpha_w_rad = math.radians(alpha_w)
-    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
-    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+    # Validate cot_theta using Eq. (8.58)
+    cot_theta_validated = cot_theta_inclined(cot_theta, alpha_w, cot_theta_min)
+    # Handle alpha_w = 90° explicitly to avoid numerical issues with tan(90°)
+    if math.isclose(alpha_w, 90.0):
+        cot_alpha_w = 0.0
+    else:
+        alpha_w_rad = math.radians(alpha_w)
+        cot_alpha_w = 1 / math.tan(alpha_w_rad)
 
-    sigma_cd_value = tau_ed * (1 + cot_theta**2) / (cot_theta + cot_alpha_w)
+    sigma_cd_value = (
+        tau_ed
+        * (1 + cot_theta_validated**2)
+        / (cot_theta_validated + cot_alpha_w)
+    )
 
     return min(sigma_cd_value, nu * f_cd)
 
 
-def NVds(
+def NVds_inclined(
     VEd: float, cot_theta: float, alpha_w: float, cot_theta_min: float
 ) -> float:
     """Calculate the axial tensile force NVd.
@@ -1254,34 +1695,41 @@ def NVds(
     EN1992-1-1:2023 Eq. (8.58), (8.61).
 
     Args:
-        VEd (float): Design shear force VEd in kN (should be positive).
-        cot_theta (float): Cotangent of the nclination of compression field in
-            radians (cottheta).
+        VEd (float): Design shear force VEd in kN.
+        cot_theta (float): Cotangent of the inclination of compression field.
+            Will be clamped according to Eq. (8.58).
         alpha_w (float): Angle of inclined shear reinforcement alpha_w in
-            degrees (45 ≤ alpha_w < 90).
-        cot_theta_min (float): max value for cot_theta.
+            degrees (must be in range [45, 90]).
+        cot_theta_min (float): Maximum value for cot_theta (must be >= 1).
 
     Returns:
         float: Axial tensile force NVd in kN.
 
     Raises:
-        ValueError: If v_ed is negative.
+        ValueError: If alpha_w is outside the range [45, 90] degrees, or if
+            cot_theta_min < 1.
     """
-    if VEd < 0:
-        raise ValueError(f'VEd must not be negative. Got {VEd}')
-    if alpha_w < 45 or alpha_w >= 90:
+    if alpha_w < 45 or alpha_w > 90:
         raise ValueError(
-            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+            f'alpha_w must be in the range [45, 90] degrees. Got {alpha_w}'
         )
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    # Validate cot_theta using Eq. (8.58)
+    cot_theta_validated = cot_theta_inclined(cot_theta, alpha_w, cot_theta_min)
 
     alpha_w_rad = math.radians(alpha_w)
-    cot_alpha_w = 1 / math.tan(alpha_w_rad)
-    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
+    # Handle alpha_w = 90° explicitly to avoid numerical issues with tan(90°)
+    if math.isclose(alpha_w, 90.0):
+        cot_alpha_w = 0.0
+    else:
+        cot_alpha_w = 1 / math.tan(alpha_w_rad)
 
-    return abs(VEd) * (cot_theta - cot_alpha_w)
+    return abs(VEd) * (cot_theta_validated - cot_alpha_w)
 
 
-def tau_rd_incl(
+def tau_Rd_inclined(
     nu: float,
     f_cd: float,
     cot_theta: float,
@@ -1297,76 +1745,125 @@ def tau_rd_incl(
     EN1992-1-1:2023 Eq. (8.62).
 
     Args:
-        nu (float): The factor nu (unitless).
-        f_cd (float): Design value of concrete compressive strength in MPa.
-        cot_theta (float): Cotangent of the inclination of compression field in
-            radians.
-        cot_beta_incl (float): Cotangent of the inclination of load in radians
-            (cot beta_incl).
-        rho_w (float): Reinforcement ratio rho_w (unitless).
-        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+        nu (float): The factor nu (unitless, must be non-negative).
+        f_cd (float): Design value of concrete compressive strength in MPa
+            (must be positive, cannot be zero).
+        cot_theta (float): Cotangent of the inclination of compression field.
+            Will be clamped according to Eq. (8.58).
+        cot_beta_incl (float): Cotangent of the inclination of load (cot
+            beta_incl).
+        rho_w (float): Reinforcement ratio rho_w (unitless, must be
+            non-negative).
+        f_ywd (float): Design yield strength of shear reinforcement in MPa
+            (must be positive, cannot be zero).
         alpha_w (float): Angle of inclined shear reinforcement alpha_w in
-            degrees (45 ≤ alpha_w < 90).
-        cot_theta_min (float): max value for cot_theta.
+            degrees (must be in range [45, 90]).
+        cot_theta_min (float): Maximum value for cot_theta (must be >= 1).
 
     Returns:
         float: Shear stress resistance tau_Rd in MPa.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If nu is negative, if f_cd is not positive (cannot be
+            zero), if f_ywd is not positive (cannot be zero), if rho_w is
+            negative, if alpha_w is outside the range [45, 90] degrees, or
+            if cot_theta_min < 1.
     """
-    if f_cd < 0:
-        raise ValueError(f'f_cd must not be negative. Got {f_cd}')
-    if f_ywd < 0:
-        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
-    if alpha_w < 45 or alpha_w >= 90:
+    if nu < 0:
+        raise ValueError(f'nu must be non-negative. Got {nu}')
+    if f_cd <= 0:
+        raise ValueError(f'f_cd must be positive (cannot be zero). Got {f_cd}')
+    if f_ywd <= 0:
         raise ValueError(
-            f'alpha_w must be between 45 degrees and 90 degrees. Got {alpha_w}'
+            f'f_ywd must be positive (cannot be zero). Got {f_ywd}'
         )
+    if rho_w < 0:
+        raise ValueError(f'rho_w must be non-negative. Got {rho_w}')
+    if alpha_w < 45 or alpha_w > 90:
+        raise ValueError(
+            f'alpha_w must be in the range [45, 90] degrees. Got {alpha_w}'
+        )
+    if cot_theta_min < 1:
+        raise ValueError(f'cot_theta_min must be >= 1. Got {cot_theta_min}')
+
+    # Validate cot_theta using Eq. (8.58)
+    cot_theta_validated = cot_theta_inclined(cot_theta, alpha_w, cot_theta_min)
 
     alpha_w_rad = math.radians(alpha_w)
-    cot_theta = min(max(math.tan(alpha_w_rad / 2), cot_theta), cot_theta_min)
-    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+    # Handle alpha_w = 90° explicitly to avoid numerical issues with tan(90°)
+    if math.isclose(alpha_w, 90.0):
+        cot_alpha_w = 0.0
+    else:
+        cot_alpha_w = 1 / math.tan(alpha_w_rad)
 
-    tau_rd_value = nu * f_cd * (cot_theta - cot_beta_incl) / (
-        1 + cot_theta**2
+    tau_rd_value = (
+        nu
+        * f_cd
+        * (cot_theta_validated - cot_beta_incl)
+        / (1 + cot_theta_validated**2)
     ) + rho_w * f_ywd * (cot_beta_incl + cot_alpha_w) * math.sin(alpha_w_rad)
 
-    tau_rd_max = nu * f_cd * (cot_theta + cot_alpha_w) / (1 + cot_theta**2)
+    tau_rd_max = (
+        nu
+        * f_cd
+        * (cot_theta_validated + cot_alpha_w)
+        / (1 + cot_theta_validated**2)
+    )
 
     return min(tau_rd_value, tau_rd_max)
 
 
-def sigma_swd_v2(
-    Es: float, eps_x: float, cot_theta: float, alpha_w: float, f_ywd: float
+def sigma_swd_inclined(
+    Es: float,
+    eps_x: float,
+    cot_theta: float,
+    alpha_w: float,
+    f_ywd: float,
 ) -> float:
     """Calculate the stress sigma_swd in the shear reinforcement for
     compression field inclinations.
 
     EN1992-1-1:2023 Eq. (8.63).
 
+    Compression field inclinations with cotθ < tan(αw/2) are allowed if the
+    yield strength fywd in Formula (8.62) is replaced by the stress σswd
+    according to this formula.
+
     Args:
-        Es (float): Modulus of elasticity of steel Es in MPa.
+        Es (float): Modulus of elasticity of steel Es in MPa (must be positive,
+            cannot be zero).
         eps_x (float): Longitudinal strain epsilon_x (unitless).
-        cot_theta (float): Cotangent inclination of compression field in
-            radians.
+        cot_theta (float): Cotangent inclination of compression field.
         alpha_w (float): Angle of inclined shear reinforcement alpha_w in
-            degrees (45 ≤ alpha_w < 90).
-        f_ywd (float): Design yield strength of shear reinforcement in MPa.
+            degrees (must be in range [45, 90]).
+        f_ywd (float): Design yield strength of shear reinforcement in MPa
+            (must be positive, cannot be zero).
 
     Returns:
         float: Stress sigma_swd in the shear reinforcement in MPa.
 
     Raises:
-        ValueError: If any input parameter is negative where applicable.
+        ValueError: If Es is not positive (cannot be zero), if f_ywd is not
+            positive (cannot be zero), or if alpha_w is outside the range
+            [45, 90] degrees.
     """
-    if Es < 0:
-        raise ValueError(f'Es must not be negative. Got {Es}')
-    if f_ywd < 0:
-        raise ValueError(f'f_ywd must not be negative. Got {f_ywd}')
+    if Es <= 0:
+        raise ValueError(f'Es must be positive (cannot be zero). Got {Es}')
+    if f_ywd <= 0:
+        raise ValueError(
+            f'f_ywd must be positive (cannot be zero). Got {f_ywd}'
+        )
+    if alpha_w < 45 or alpha_w > 90:
+        raise ValueError(
+            f'alpha_w must be in the range [45, 90] degrees. Got {alpha_w}'
+        )
 
     alpha_w_rad = math.radians(alpha_w)
-    cot_alpha_w = 1 / math.tan(alpha_w_rad)
+    # Handle alpha_w = 90° explicitly to avoid numerical issues with tan(90°)
+    if math.isclose(alpha_w, 90.0):
+        cot_alpha_w = 0.0
+    else:
+        cot_alpha_w = 1 / math.tan(alpha_w_rad)
 
     sigma_swd_value = Es * (
         (eps_x + 0.001)
@@ -1377,35 +1874,37 @@ def sigma_swd_v2(
     return min(sigma_swd_value, f_ywd)
 
 
-def tao_Rd_m(tau_rd: float, m_ed: float, m_rd: float) -> float:
+def tau_Rdm(tau_rd: float, m_ed: float, m_rd: float) -> float:
     """Calculate the shear stress resistance reduced by the influence of
     transverse bending.
 
     EN1992-1-1:2023 Eq. (8.64).
 
     Args:
-        tau_rd (float): Shear resistance tau_Rd in MPa.
-        m_ed (float): Applied transverse bending moment mEd in kNm.
+        tau_rd (float): Shear resistance tau_Rd in MPa (must be non-negative).
+        m_ed (float): Applied transverse bending moment mEd in kNm (must be
+            non-negative).
         m_rd (float): Bending resistance without interaction with shear mRd in
-            kNm.
+            kNm (must be positive, cannot be zero).
 
     Returns:
         float: Reduced shear stress resistance tau_Rdm in MPa.
 
     Raises:
-        ValueError: If any of the input parameters are negative.
+        ValueError: If tau_rd or m_ed is negative, or if m_rd is not positive
+            (cannot be zero).
     """
     if tau_rd < 0:
         raise ValueError(f'tau_rd must not be negative. Got {tau_rd}')
     if m_ed < 0:
         raise ValueError(f'm_ed must not be negative. Got {m_ed}')
-    if m_rd < 0:
-        raise ValueError(f'm_rd must not be negative. Got {m_rd}')
+    if m_rd <= 0:
+        raise ValueError(f'm_rd must be positive (cannot be zero). Got {m_rd}')
 
     return tau_rd * (1 - (m_ed / m_rd))
 
 
-def tao_Ed_flang(
+def tau_Ed_flange(
     delta_Fd: float,
     hf: float,
     delta_x: float,
@@ -1416,8 +1915,8 @@ def tao_Ed_flang(
     EN1992-1-1:2023 Eq. (8.65).
 
     Args:
-        delta_Fd (float): Change of axial force in the flange over length delta
-            x in kN.
+        delta_Fd (float): Change of axial force in the flange over
+            the length delta x in kN.
         hf (float): Thickness of the flange at the junction in mm.
         delta_x (float): Length under consideration delta x in mm.
 
@@ -1437,57 +1936,73 @@ def tao_Ed_flang(
     return delta_Fd * 1000 / (hf * delta_x)
 
 
-def Ast_min_flang(tau_ed: float, sf: float, hf: float, fyd: float) -> float:
-    """Calculate the minimum transverse reinforcement in web/flanges.
+def check_tau_Ed_flange_verification(
+    tau_ed: float, Ast_min: float, sf: float, hf: float, fyd: float
+) -> bool:
+    """Check if further verification of shear between web and flanges may be
+    omitted.
 
-    EN1992-1-1:2023 Eq. (8.66)
+    EN1992-1-1:2023 Eq. (8.66).
 
     Args:
-        tau_ed (float): Longitudinal shear stress tau_Ed MPa.
-        sf (float): Spacing of reinforcement sf mm.
-        hf (float): Thickness of the flange at the junction mm.
-        fyd (float): Design yield strength of reinforcement fyd MPa.
+        tau_ed (float): Longitudinal shear stress tau_Ed in MPa (must be
+            non-negative).
+        Ast_min (float): Minimum transverse reinforcement according to Table
+            12.1 (NDP) in mm2 (must be non-negative).
+        sf (float): Spacing of reinforcement sf in mm (must be positive).
+        hf (float): Thickness of the flange at the junction in mm (must be
+            positive).
+        fyd (float): Design yield strength of reinforcement fyd in MPa (must be
+            positive).
 
     Returns:
-        float: Minimum required transverse reinforcement area Asf in mm2.
+        bool: True meaning further verification of shear between
+            web and flanges may be omitted. False otherwise.
 
     Raises:
-        ValueError: If any of the input parameters are negative or
-            if cot_theta_f is out of the specified range.
+        ValueError: If tau_ed or Ast_min is negative, or if sf, hf, or fyd is
+            not positive.
     """
     if tau_ed < 0:
         raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
+    if Ast_min < 0:
+        raise ValueError(f'Ast_min must not be negative. Got {Ast_min}')
     if sf <= 0:
         raise ValueError(f'sf must be positive. Got {sf}')
     if hf <= 0:
         raise ValueError(f'hf must be positive. Got {hf}')
-    if fyd < 0:
-        raise ValueError(f'fyd must not be negative. Got {fyd}')
+    if fyd <= 0:
+        raise ValueError(f'fyd must be positive. Got {fyd}')
 
-    return (tau_ed * sf * hf) / (fyd)
+    return tau_ed <= (Ast_min / (sf * hf)) * fyd
 
 
-def Asf_flang(
+def Asf_flange(
     tau_ed: float, sf: float, hf: float, fyd: float, cot_theta_f: float
 ) -> float:
-    """Calculate the transverse reinforcement.
+    """Calculate the minimum transverse reinforcement in flanges.
 
     EN1992-1-1:2023 Eq. (8.69).
 
     Args:
-        tau_ed (float): Longitudinal shear stress tau_Ed MPa.
-        sf (float): Spacing of reinforcement sf mm.
-        hf (float): Thickness of the flange at the junction mm.
-        fyd (float): Design yield strength of reinforcement fyd MPa.
+        tau_ed (float): Longitudinal shear stress tau_Ed in MPa (must be
+            non-negative).
+        sf (float): Spacing of reinforcement sf in mm (must be positive).
+        hf (float): Thickness of the flange at the junction in mm (must be
+            positive).
+        fyd (float): Design yield strength of reinforcement fyd in MPa (must be
+            positive, cannot be zero).
         cot_theta_f (float): Cotangent of the inclination angle of the
-            compression field in the flange thetaf.
+            compression field in the flange thetaf (must be >= 1). For
+            compression flanges: 1 ≤ cot_theta_f ≤ 3.0 (8.67).
+            For tension flanges: 1 ≤ cot_theta_f ≤ 1.25 (8.68).
 
     Returns:
         float: Required transverse reinforcement area Asf in mm2.
 
     Raises:
-        ValueError: If any of the input parameters are negative or if
-            cot_theta_f is out of the specified range.
+        ValueError: If tau_ed is negative, if sf, hf, or fyd is not positive
+            (cannot be zero), or if cot_theta_f < 1.
     """
     if tau_ed < 0:
         raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
@@ -1495,47 +2010,54 @@ def Asf_flang(
         raise ValueError(f'sf must be positive. Got {sf}')
     if hf <= 0:
         raise ValueError(f'hf must be positive. Got {hf}')
-    if fyd < 0:
-        raise ValueError(f'fyd must not be negative. Got {fyd}')
+    if fyd <= 0:
+        raise ValueError(f'fyd must be positive (cannot be zero). Got {fyd}')
+    if cot_theta_f < 1:
+        raise ValueError(f'cot_theta_f must be >= 1. Got {cot_theta_f}')
 
     return (tau_ed * sf * hf) / (fyd * cot_theta_f)
 
 
-def sigma_cd_flang(
+def sigma_cd_flange(
     tau_ed: float,
-    theta_f: float,
+    cot_theta_f: float,
     fcd: float,
     nu: float = 0.5,
 ) -> float:
-    """Computes the compression field stress in the flange.
+    """Calculate the compression field stress in the flange.
 
     EN1992-1-1:2023 Eq. (8.70), (8.71).
 
     Args:
-        tau_ed (float or int): Longitudinal shear stress tau_Ed in MPa.
-        theta_f (float or int): Inclination angle of the compression field in
-            the flange thetaf (degrees).
-        fcd (float or int): Design compressive strength of concrete fcd in MPa.
-        nu (float, optional): Strength reduction factor, default is 0.5.
+        tau_ed (float): Longitudinal shear stress tau_Ed in MPa (must be
+            non-negative).
+        cot_theta_f (float): Cotangent of the inclination angle of the
+            compression field in the flange thetaf (must be >= 1). For
+            compression flanges: 1 ≤ cotθf ≤ 3.0. For tension flanges:
+            1 ≤ cotθf ≤ 1.25.
+        fcd (float): Design compressive strength of concrete fcd in MPa (must
+            be positive, cannot be zero).
+        nu (float, optional): Strength reduction factor (must be positive,
+            cannot be zero). Default is 0.5.
 
     Returns:
-        bool: The compression field stress in MPa.
+        float: The compression field stress in MPa.
 
     Raises:
-        ValueError: If any of the input parameters are
-            negative or if theta_f is out of the specified range.
+        ValueError: If tau_ed is negative, if cot_theta_f < 1, if fcd is not
+            positive (cannot be zero), or if nu is not positive (cannot be
+            zero).
     """
     if tau_ed < 0:
         raise ValueError(f'tau_ed must not be negative. Got {tau_ed}')
-    if theta_f < 0:
-        raise ValueError(f'theta_f must not be negative. Got {theta_f}')
-    if fcd < 0:
-        raise ValueError(f'fcd must not be negative. Got {fcd}')
+    if cot_theta_f < 1:
+        raise ValueError(f'cot_theta_f must be >= 1. Got {cot_theta_f}')
+    if fcd <= 0:
+        raise ValueError(f'fcd must be positive (cannot be zero). Got {fcd}')
     if nu <= 0:
-        raise ValueError(f'nu must be positive. Got {nu}')
+        raise ValueError(f'nu must be positive (cannot be zero). Got {nu}')
 
-    theta_rad = math.radians(theta_f)
-    sigma_cd = tau_ed * (1 / math.tan(theta_rad) + math.tan(theta_rad))
+    sigma_cd = tau_ed * (cot_theta_f + 1 / cot_theta_f)
 
     return min(sigma_cd, nu * fcd)
 
@@ -1547,22 +2069,24 @@ def eps_x_flang(Ftd: float, Ast: float, Es: float) -> float:
     EN1992-1-1:2023 Eq. (8.72)
 
     Args:
-        Ftd (float): force in the tension chord in kN.
-        As (float): Longitudinal reinforcement area in mm2.
-        Es (float): Steel modulus of elasticity in MPa.
+        Ftd (float): Force in the tension chord in kN (must be positive).
+        Ast (float): Longitudinal reinforcement area in mm2 (must be positive).
+        Es (float): Steel modulus of elasticity in MPa (must be positive,
+            cannot be zero).
 
     Returns:
         float: The longitudinal strain in the tensile flange (unitless).
 
     Raises:
-        ValueError: If td is non-positive or if sst is non-positive.
+        ValueError: If Ftd is not positive, if Ast is not positive, or if Es
+            is not positive (cannot be zero).
     """
     if Ftd <= 0:
         raise ValueError(f'Ftd must be positive. Got {Ftd}')
     if Ast <= 0:
         raise ValueError(f'Ast must be positive. Got {Ast}')
     if Es <= 0:
-        raise ValueError(f'Ast must be positive. Got {Es}')
+        raise ValueError(f'Es must be positive (cannot be zero). Got {Es}')
 
     return Ftd * 1000 / (Ast * Es)
 
@@ -1573,19 +2097,22 @@ def tau_Edi(VEdi: float, Ai: float) -> float:
     EN1992-1-1:2023 Eq. (8.74).
 
     Args:
-        VEdi (float): Shear force acting parallel to the interface in kN.
-        Ai (float): Area of the interface in mm2.
+        VEdi (float): Shear force acting parallel to the interface in kN (must
+            be non-negative).
+        Ai (float): Area of the interface in mm2 (must be positive, cannot be
+            zero).
 
     Returns:
         float: Shear stress at the interface in MPa.
 
     Raises:
-        ValueError: If any input value is negative.
+        ValueError: If VEdi is negative, or if Ai is not positive (cannot be
+            zero).
     """
     if VEdi < 0:
         raise ValueError(f'VEdi must not be negative. Got {VEdi}')
-    if Ai < 0:
-        raise ValueError(f'Ai must not be negative. Got {Ai}')
+    if Ai <= 0:
+        raise ValueError(f'Ai must be positive (cannot be zero). Got {Ai}')
 
     return VEdi * 1000 / Ai
 
@@ -1600,26 +2127,30 @@ def tau_Edi_composite(
 
     Args:
         beta_new (float): Ratio of the longitudinal force in the new concrete
-            to the total longitudinal force, dimensionless.
-        VEd (float): Shear force acting perpendicular to the interface in kN.
-        z (float): Lever arm of the composite section in mm.
-        bi (float): Width of the interface in mm.
+            to the total longitudinal force, dimensionless (must be
+            non-negative).
+        VEd (float): Shear force acting perpendicular to the interface in kN
+            (must be non-negative).
+        z (float): Lever arm of the composite section in mm (must be positive,
+            cannot be zero).
+        bi (float): Width of the interface in mm (must be positive, cannot be
+            zero).
 
     Returns:
         float: Longitudinal shear stress at the interface in MPa.
 
     Raises:
-        ValueError: If any input value is negative or zero when it should not
-            be.
+        ValueError: If beta_new or VEd is negative, or if z or bi is not
+            positive (cannot be zero).
     """
     if beta_new < 0:
         raise ValueError(f'beta_new must not be negative. Got {beta_new}')
     if VEd < 0:
-        raise ValueError(f'Ved must not be negative. Got {VEd}')
+        raise ValueError(f'VEd must not be negative. Got {VEd}')
     if z <= 0:
-        raise ValueError(f'z must be positive. Got {z}')
-    if bi < 0:
-        raise ValueError(f'bi must not be negative. Got {bi}')
+        raise ValueError(f'z must be positive (cannot be zero). Got {z}')
+    if bi <= 0:
+        raise ValueError(f'bi must be positive (cannot be zero). Got {bi}')
 
     return beta_new * VEd * 1000 / (z * bi)
 
@@ -1634,6 +2165,7 @@ def tau_Rdi(
     cv1: float,
     mu_v: float,
     gamma_c: float,
+    fcd: float,
 ) -> float:
     """Calculate the design shear stress resistance at the interface for
     scenarios without reinforcement or where reinforcement is sufficiently
@@ -1643,33 +2175,59 @@ def tau_Rdi(
 
     Args:
         fck (float): Lowest compressive strength of the concretes at the
-            interface in MPa.
-        sigma_n (float): Compressive or tensile stress over the interface area
-            in MPa.
-        Ai (float): Area of the interface in mm2.
+            interface in MPa (must be positive, cannot be zero).
+        sigma_n (float): Normal stress over the interface area in MPa. Sign
+            convention: positive values represent compressive stress.
+        Ai (float): Area of the interface in mm2 (must be positive, cannot be
+            zero).
         Asi (float): Cross-sectional area of bonded reinforcement crossing the
-            interface in mm2.
-        fyd (float): Design yield strength of the reinforcement in MPa.
+            interface in mm2 (must be non-negative).
+        fyd (float): Design yield strength of the reinforcement in MPa (must
+            be positive, cannot be zero).
         alpha_deg (float): Angle of reinforcement crossing the interface in
-            degrees.
+            degrees (must be between 35 and 135).
         cv1 (float): Coefficient depending on the roughness of the interface,
-            dimensionless.
+            dimensionless (must be non-negative).
         mu_v (float): Friction coefficient depending on the roughness of the
-            interface, dimensionless.
-        gamma_c (float): safety factory for concrete.
+            interface, dimensionless (must be non-negative).
+        gamma_c (float): Safety factor for concrete (must be positive,
+            cannot be zero).
+        fcd (float): Design compressive strength of concrete in MPa (must be
+            positive, cannot be zero). Calculated according to EN1992-1-1:2023
+            Eq. (5.3) as fcd = eta_cc * k_tc * fck / gamma_c.
 
     Returns:
         float: Shear stress resistance at the interface in MPa.
 
     Raises:
-        ValueError: If any input value is negative or outside expected ranges.
+        ValueError: If fck, Ai, fyd, gamma_c, or fcd is not positive (cannot be
+            zero), if Asi, cv1, or mu_v is negative, or if alpha_deg is
+            outside the range [35, 135].
     """
-    if fck < 0 or Ai < 0 or Asi < 0 or fyd < 0 or gamma_c < 0:
-        raise ValueError('Input values must not be negative.')
+    if fck <= 0:
+        raise ValueError(f'fck must be positive (cannot be zero). Got {fck}')
+    if Ai <= 0:
+        raise ValueError(f'Ai must be positive (cannot be zero). Got {Ai}')
+    if Asi < 0:
+        raise ValueError(f'Asi must not be negative. Got {Asi}')
+    if fyd <= 0:
+        raise ValueError(f'fyd must be positive (cannot be zero). Got {fyd}')
+    if gamma_c <= 0:
+        raise ValueError(
+            f'gamma_c must be positive (cannot be zero). Got {gamma_c}'
+        )
+    if fcd <= 0:
+        raise ValueError(f'fcd must be positive (cannot be zero). Got {fcd}')
+    if cv1 < 0:
+        raise ValueError(f'cv1 must not be negative. Got {cv1}')
+    if mu_v < 0:
+        raise ValueError(f'mu_v must not be negative. Got {mu_v}')
     if not (35 <= alpha_deg <= 135):
-        raise ValueError('Alpha must be between 35 and 135 degrees.')
+        raise ValueError(
+            f'alpha_deg must be between 35 and 135 degrees. Got {alpha_deg}'
+        )
 
-    sigma_n = max(0, min(sigma_n, 0.6 * fck / gamma_c))
+    sigma_n = max(0, min(sigma_n, 0.6 * fcd))
 
     alpha_rad = math.radians(alpha_deg)
     rho_i = Asi / Ai
@@ -1680,8 +2238,8 @@ def tau_Rdi(
         + rho_i * fyd * (mu_v * math.sin(alpha_rad) + math.cos(alpha_rad))
     )
 
-    # Limiting tau_rdi according to the specification
-    return min(tau_rdi, 0.30 * fck + rho_i * fyd * math.cos(alpha_rad))
+    # Limiting tau_rdi according to EN1992-1-1:2023 Eq. (8.76)
+    return min(tau_rdi, 0.30 * fcd + rho_i * fyd * math.cos(alpha_rad))
 
 
 def cv1(
@@ -1715,6 +2273,11 @@ def cv1(
         'very rough': 0.19,
         'keyed': 0.37,
     }
+    if surface_roughness not in coefficients:
+        raise ValueError(
+            f'Unknown surface roughness: {surface_roughness}. '
+            f'Must be one of: {list(coefficients.keys())}'
+        )
     return coefficients[surface_roughness]
 
 
@@ -1743,6 +2306,11 @@ def mu_v(
         'very rough': 0.9,
         'keyed': 0.9,
     }
+    if surface_roughness not in coefficients:
+        raise ValueError(
+            f'Unknown surface roughness: {surface_roughness}. '
+            f'Must be one of: {list(coefficients.keys())}'
+        )
     return coefficients[surface_roughness]
 
 
@@ -1774,6 +2342,11 @@ def cv2(
         'rough': 0.08,
         'very rough': 0.15,
     }
+    if surface_roughness not in coefficients:
+        raise ValueError(
+            f'Unknown surface roughness: {surface_roughness}. '
+            f'Must be one of: {list(coefficients.keys())}'
+        )
     return coefficients[surface_roughness]
 
 
@@ -1799,6 +2372,11 @@ def kv(
         'rough': 0.5,
         'very rough': 0.5,
     }
+    if surface_roughness not in coefficients:
+        raise ValueError(
+            f'Unknown surface roughness: {surface_roughness}. '
+            f'Must be one of: {list(coefficients.keys())}'
+        )
     return coefficients[surface_roughness]
 
 
@@ -1824,10 +2402,15 @@ def kdowel(
         'rough': 0.9,
         'very rough': 0.9,
     }
+    if surface_roughness not in coefficients:
+        raise ValueError(
+            f'Unknown surface roughness: {surface_roughness}. '
+            f'Must be one of: {list(coefficients.keys())}'
+        )
     return coefficients[surface_roughness]
 
 
-def tau_Rdi_ny(
+def tau_Rdi_no_yielding(
     cv2: float,
     fck: float,
     gamma_c: float,
@@ -1837,6 +2420,7 @@ def tau_Rdi_ny(
     rho_i: float,
     fyd: float,
     kdowel: float,
+    fcd: float,
 ) -> float:
     """Calculate the shear stress resistance at the interface when yielding is
     not ensured at the interface.
@@ -1845,36 +2429,67 @@ def tau_Rdi_ny(
 
     Args:
         cv2 (float): Coefficient depending on the roughness of the interface
-            (unitless).
-        fck (float): Concrete compressive resistance in MPa.
-        gamma_c (float): Partial safety factor for concrete (unitless).
-        mu_v (float): Coefficient mu_v from the Eurocode (unitless).
-        sigma_n (float): Normal stress in the interface MPa.
-        kv (float): Coefficient kv from the Eurocode (unitless).
-        rho_i (float): Reinforcement ratio at the interface (unitless).
-        fyd (float): Design yield strength of reinforcement MPa.
+            (unitless, must be non-negative).
+        fck (float): Concrete compressive resistance in MPa (must be positive,
+            cannot be zero).
+        gamma_c (float): Partial safety factor for concrete (unitless, must be
+            positive, cannot be zero).
+        mu_v (float): Coefficient mu_v from the Eurocode (unitless, must be
+            non-negative).
+        sigma_n (float): Normal stress in the interface in MPa. Sign
+            convention: positive values represent compressive stress (acting
+            perpendicular to the interface, compressing the interface),
+            negative values represent tensile stress (acting perpendicular to
+            the interface, pulling apart the interface). The value is clamped
+            to be non-negative (tensile stresses are treated as zero).
+        kv (float): Coefficient kv from the Eurocode (unitless, must be
+            non-negative).
+        rho_i (float): Reinforcement ratio at the interface (unitless, must be
+            non-negative).
+        fyd (float): Design yield strength of reinforcement in MPa (must be
+            positive, cannot be zero).
         kdowel (float): Coefficient for dowel action of reinforcement
-            (unitless).
+            (unitless, must be non-negative).
+        fcd (float): Design compressive strength of concrete in MPa (must be
+            positive, cannot be zero). Calculated according to EN1992-1-1:2023
+            Eq. (5.3) as fcd = eta_cc * k_tc * fck / gamma_c.
 
     Returns:
-        float: Shear stress resistance tau_Rdi MPa.
+        float: Shear stress resistance tau_Rdi in MPa.
 
     Raises:
-        ValueError: If any of the dimensions or resistances are negative.
+        ValueError: If fck, gamma_c, fcd, or fyd is not positive (cannot be
+            zero), or if cv2, mu_v, kv, rho_i, or kdowel is negative.
     """
-    if any(x < 0 for x in [fck, gamma_c, kv, rho_i, fyd, kdowel]):
-        raise ValueError('Dimensions and resistances must not be negative.')
+    if fck <= 0:
+        raise ValueError(f'fck must be positive (cannot be zero). Got {fck}')
+    if gamma_c <= 0:
+        raise ValueError(
+            f'gamma_c must be positive (cannot be zero). Got {gamma_c}'
+        )
+    if fcd <= 0:
+        raise ValueError(f'fcd must be positive (cannot be zero). Got {fcd}')
+    if fyd <= 0:
+        raise ValueError(f'fyd must be positive (cannot be zero). Got {fyd}')
+    if cv2 < 0:
+        raise ValueError(f'cv2 must not be negative. Got {cv2}')
+    if mu_v < 0:
+        raise ValueError(f'mu_v must not be negative. Got {mu_v}')
+    if kv < 0:
+        raise ValueError(f'kv must not be negative. Got {kv}')
+    if rho_i < 0:
+        raise ValueError(f'rho_i must not be negative. Got {rho_i}')
+    if kdowel < 0:
+        raise ValueError(f'kdowel must not be negative. Got {kdowel}')
 
     sigma_n = max(0, sigma_n)
     tau_rdi = (
         cv2 * math.sqrt(fck) / gamma_c
         + mu_v * sigma_n
         + kv * rho_i * fyd * mu_v
-        + kdowel * rho_i * math.sqrt(fyd * fck / gamma_c)
+        + kdowel * rho_i * math.sqrt(fyd * fcd)
     )
-    return min(
-        tau_rdi, 0.25 * fck / gamma_c
-    )  # Cap tau_Rdi according to the formula
+    return min(tau_rdi, 0.25 * fcd)  # Cap tau_Rdi according to the formula
 
 
 def as_min(tmin: float, fctm: float, fyk: float) -> float:

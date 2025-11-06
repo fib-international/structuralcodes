@@ -640,6 +640,8 @@ def test_rho_l_p_value_errors(ds, As, dp, Ap, bw, d):
         (20, 40, 0.005, 0.008, 0.005),  # vEd_y/vEd_x <= 0.5
         (40, 20, 0.005, 0.008, 0.008),  # vEd_y/vEd_x >= 2
         (30, 40, 0.005, 0.008, 0.00308),  # 0.5 < vEd_y/vEd_x < 2
+        (20, 0, 0.005, 0.008, 0.008),  # vEd_x = 0 (returns rho_l_y)
+        (25, 50, 0.005, 0.008, 0.005),  # Additional test to cover line 598
     ],
 )
 def test_rho_l_planar(vEd_y, vEd_x, rho_l_x, rho_l_y, expected):
@@ -659,11 +661,10 @@ def test_rho_l_planar(vEd_y, vEd_x, rho_l_x, rho_l_y, expected):
         (20, -40, 0.005, 0.008),  # Negative vEd_x
         (20, 40, -0.005, 0.008),  # Negative rho_l_x
         (20, 40, 0.005, -0.008),  # Negative rho_l_y
-        (20, 0, 0.005, 0.008),  # vEd_x zero (division by zero)
     ],
 )
 def test_rho_l_planar_value_errors(vEd_y, vEd_x, rho_l_x, rho_l_y):
-    """Test that rho_l_planar raises ValueError for invalid inputs."""
+    """Test that rho_l_planar raises ValueError for negative inputs."""
     with pytest.raises(ValueError):
         _section_8_2_shear.rho_l_planar(vEd_y, vEd_x, rho_l_x, rho_l_y)
 
@@ -671,64 +672,255 @@ def test_rho_l_planar_value_errors(vEd_y, vEd_x, rho_l_x, rho_l_y):
 # Tests using pytest
 def test_cot_theta_min():
     """Tests the function cot_theta_min with various scenarios."""
-    assert _section_8_2_shear.cot_theta_min(0, 100, 10, 400) == 2.5
-    assert _section_8_2_shear.cot_theta_min(0, 100, 10, 400) == 2.5
-    assert _section_8_2_shear.cot_theta_min(10, 100, 10, 400) == 2.49
-    assert _section_8_2_shear.cot_theta_min(-100, 100, 50, 400) == 3.0
+    Ac = 100000  # 100,000 mm2
+    # No axial force (NEd = 0)
+    assert _section_8_2_shear.cot_theta_min(0, 100, 10, 400, Ac) == 2.5
+
+    # Tension case (NEd > 0)
+    assert _section_8_2_shear.cot_theta_min(10, 100, 10, 400, Ac) == 2.49
+
+    # Compression case with x < 0.25d (uses interpolation)
+    # NEd = -100 kN, sigma_c = 1 MPa, interpolation: 2.5 + 1.0/6.0 = 2.666...
+    assert _section_8_2_shear.cot_theta_min(
+        -100, 100, 50, 400, Ac
+    ) == pytest.approx(2.5 + 1.0 / 6.0, rel=1e-9)
+
+    # Compression case with significant stress and x < 0.25d
+    NEd = -300  # -300 kN (3 MPa stress: 300 * 1000 / 100000 = 3.0 MPa)
+    assert _section_8_2_shear.cot_theta_min(NEd, 100, 50, 400, Ac) == 3.0
+
+    # Compression case with very high stress (6 MPa) and x < 0.25d
+    NEd_high = -600  # -600 kN (6 MPa stress: 600 * 1000 / 100000 = 6.0 MPa)
+    assert _section_8_2_shear.cot_theta_min(NEd_high, 100, 50, 400, Ac) == 3.0
+
+    # Compression case with intermediate stress (4.5 MPa) and x < 0.25d
+    # sigma_c >= 3.0, so returns 3.0 (capped)
+    NEd_intermediate = -450  # -450 kN (4.5 MPa stress)
+    assert (
+        _section_8_2_shear.cot_theta_min(NEd_intermediate, 100, 50, 400, Ac)
+        == 3.0
+    )
+
+    # Compression case with significant stress but x >= 0.25d (tension formula)
+    # sigma_c = 3.0 MPa, x = 120 >= 100, so: 2.5 - 0.1*(-300)/100 = 2.8
+    assert _section_8_2_shear.cot_theta_min(NEd, 100, 120, 400, Ac) == 2.8
+
+    # Compression case with low stress and x < 0.25d (uses interpolation)
+    NEd_low = -100  # -100 kN (1 MPa stress: 100 * 1000 / 100000 = 1.0 MPa)
+    assert _section_8_2_shear.cot_theta_min(
+        NEd_low, 100, 50, 400, Ac
+    ) == pytest.approx(2.5 + 1.0 / 6.0, rel=1e-9)
+
+    # Test ductility class A (20% reduction)
+    assert _section_8_2_shear.cot_theta_min(
+        0, 100, 10, 400, Ac, apply_ductility_class_a_reduction=True
+    ) == pytest.approx(2.0, rel=1e-9)
+    assert _section_8_2_shear.cot_theta_min(
+        10, 100, 10, 400, Ac, apply_ductility_class_a_reduction=True
+    ) == pytest.approx(1.992, rel=1e-9)
+    assert _section_8_2_shear.cot_theta_min(
+        NEd_high, 100, 50, 400, Ac, apply_ductility_class_a_reduction=True
+    ) == pytest.approx(2.4, rel=1e-9)
 
 
 @pytest.mark.parametrize(
-    'NEd, VEd, x, d',
+    'NEd, VEd, x, d, Ac, expected',
     [
-        (0, 100, -1, 400),  # x negative
-        (0, 100, 10, 0),  # d zero
-        (0, 100, -1, 0),  # x negative and d zero
-        (0, 100, 10, -400),  # d negative
-        (0, 100, -10, -400),  # both negative
-        (-10, 100, 10, 0),  # d zero with NEd negative
-        (10, 100, 10, 0),  # d zero with NEd positive
+        # No axial force cases
+        (0, 100, 10, 400, 100000, 2.5),
+        (0, 200, 20, 500, 100000, 2.5),
+        # Tension cases (NEd > 0)
+        (10, 100, 10, 400, 100000, 2.49),
+        (50, 200, 20, 500, 100000, 2.475),
+        (100, 100, 10, 400, 100000, 2.4),
+        (200, 100, 10, 400, 100000, 2.3),
+        (500, 100, 10, 400, 100000, 2.0),  # 2.5 - 0.1*500/100 = 2.0
+        (1000, 100, 10, 400, 100000, 1.5),  # 2.5 - 0.1*1000/100 = 1.5
+        # Compression cases with x < 0.25d (uses interpolation)
+        (-10, 100, 10, 400, 100000, 2.5 + 0.1 / 6.0),  # 0.1 MPa
+        (-50, 200, 20, 500, 100000, 2.5 + 0.5 / 6.0),  # 0.5 MPa
+        (-100, 100, 10, 400, 100000, 2.5 + 1.0 / 6.0),  # 1.0 MPa
+        (-200, 100, 10, 400, 100000, 2.5 + 2.0 / 6.0),  # 2.0 MPa
+        # Compression cases with significant stress and x < 0.25d
+        (-300, 100, 50, 400, 100000, 3.0),  # 3 MPa stress, x < 0.25d
+        (-400, 200, 80, 500, 100000, 3.0),  # 4 MPa stress, x < 0.25d
+        (-500, 100, 90, 400, 100000, 3.0),  # 5 MPa stress, x < 0.25d
+        # Compression cases with significant stress but x >= 0.25d
+        # (tension formula)
+        (-300, 100, 120, 400, 100000, 2.8),  # 3 MPa, x >= 0.25d
+        (-400, 200, 150, 500, 100000, 2.7),  # 4 MPa, x >= 0.25d
+        # Compression cases with low stress and x < 0.25d (uses interpolation)
+        (-100, 100, 50, 400, 100000, 2.5 + 1.0 / 6.0),  # 1 MPa stress
+        (-200, 200, 80, 500, 100000, 2.5 + 2.0 / 6.0),  # 2 MPa stress
     ],
 )
-def test_cot_theta_min_value_error_all_cases(NEd, VEd, x, d):
+def test_cot_theta_min_comprehensive(NEd, VEd, x, d, Ac, expected):
+    """Test cot_theta_min with comprehensive scenarios."""
+    result = _section_8_2_shear.cot_theta_min(NEd, VEd, x, d, Ac)
+    assert result == pytest.approx(expected, rel=1e-9)
+
+
+def test_cot_theta_min_edge_cases():
+    """Test cot_theta_min edge cases and boundary conditions."""
+    # Test exactly at 3 MPa stress boundary
+    Ac = 100000  # 100,000 mm2
+    NEd_exact = -300  # Exactly 3 MPa: 300 * 1000 / 100000 = 3.0 MPa
+    assert _section_8_2_shear.cot_theta_min(NEd_exact, 100, 50, 400, Ac) == 3.0
+
+    # Test just below 3 MPa stress
+    NEd_below = -299  # 2.99 MPa: 299 * 1000 / 100000 = 2.99 MPa
+    # sigma_c = 2.99 MPa, x < 0.25d, so: 2.5 + 2.99/6.0 = 2.9983...
+    assert _section_8_2_shear.cot_theta_min(
+        NEd_below, 100, 50, 400, Ac
+    ) == pytest.approx(2.5 + 2.99 / 6.0, rel=1e-9)
+
+    # Test exactly at x = 0.25d boundary (x = 100, not < 100, so tension)
+    x_exact = 100  # 0.25 * 400
+    # sigma_c = 3.0 MPa, x = 100 (not < 100), so: 2.5 - 0.1*(-300)/100 = 2.8
+    assert (
+        _section_8_2_shear.cot_theta_min(NEd_exact, 100, x_exact, 400, Ac)
+        == 2.8
+    )
+
+    # Test just above x = 0.25d boundary (tension formula)
+    x_above = 101  # Just above 0.25 * 400
+    assert (
+        _section_8_2_shear.cot_theta_min(NEd_exact, 100, x_above, 400, Ac)
+        == 2.8
+    )
+
+    # Test minimum tension value (1.0)
+    NEd_high_tension = 1500  # High tension force
+    result = _section_8_2_shear.cot_theta_min(
+        NEd_high_tension, 100, 10, 400, Ac
+    )
+    assert result == 1.0
+
+    # Test with zero VEd when NEd is zero (valid case)
+    assert _section_8_2_shear.cot_theta_min(0, 0, 10, 400, Ac) == 2.5
+
+    # Test with zero VEd when NEd is not zero (should raise ValueError)
+    with pytest.raises(ValueError, match='VEd must not be zero'):
+        _section_8_2_shear.cot_theta_min(10, 0, 10, 400, Ac)
+
+
+def test_cot_theta_min_ductility_class_a_reduction():
+    """Test cot_theta_min ductility class A reduction."""
+    Ac = 100000  # 100,000 mm2
+    # Test with and without reduction
+    base_value = _section_8_2_shear.cot_theta_min(0, 100, 10, 400, Ac)
+    reduced_value = _section_8_2_shear.cot_theta_min(
+        0, 100, 10, 400, Ac, apply_ductility_class_a_reduction=True
+    )
+
+    assert reduced_value == base_value * 0.8
+    assert reduced_value == 2.0
+
+
+def test_cot_theta_min_interpolation():
+    """Test cot_theta_min interpolation for intermediate stress values."""
+    Ac = 100000  # 100,000 mm2
+
+    # Test various stress levels from 0 to 3 MPa and above
+    test_cases = [
+        (0.0, 2.5),  # Exactly 0 MPa: 2.5 + 0/6.0 = 2.5
+        (1.0, 2.5 + 1.0 / 6.0),  # 1 MPa: 2.5 + 1.0/6.0 = 2.666...
+        (2.0, 2.5 + 2.0 / 6.0),  # 2 MPa: 2.5 + 2.0/6.0 = 2.833...
+        (2.5, 2.5 + 2.5 / 6.0),  # 2.5 MPa: 2.5 + 2.5/6.0 = 2.916...
+        (3.0, 3.0),  # Exactly 3 MPa (capped at 3.0)
+        (4.0, 3.0),  # 4 MPa (capped at 3.0)
+        (5.0, 3.0),  # 5 MPa (capped at 3.0)
+        (6.0, 3.0),  # 6 MPa (capped at 3.0)
+        (7.0, 3.0),  # 7 MPa (capped at 3.0)
+    ]
+
+    for stress_mpa, expected in test_cases:
+        # Convert stress (MPa) to NEd (kN): sigma_c = abs(NEd) * 1000 / Ac
+        # So: abs(NEd) = sigma_c * Ac / 1000
+        NEd = -stress_mpa * Ac / 1000  # Convert to kN
+        result = _section_8_2_shear.cot_theta_min(NEd, 100, 50, 400, Ac)
+        assert result == pytest.approx(expected, rel=1e-3)
+
+
+@pytest.mark.parametrize(
+    'NEd, VEd, x, d, Ac',
+    [
+        (0, 100, -1, 400, 100000),  # x negative
+        (0, 100, 10, 0, 100000),  # d zero
+        (0, 100, -1, 0, 100000),  # x negative and d zero
+        (0, 100, 10, -400, 100000),  # d negative
+        (0, 100, -10, -400, 100000),  # both negative
+        (-10, 100, 10, 0, 100000),  # d zero with NEd negative
+        (10, 100, 10, 0, 100000),  # d zero with NEd positive
+        (0, 100, 10, 400, 0),  # Ac zero
+        (0, 100, 10, 400, -100000),  # Ac negative
+        (10, 0, 10, 400, 100000),  # VEd zero with NEd positive
+        (-10, 0, 10, 400, 100000),  # VEd zero with NEd negative
+    ],
+)
+def test_cot_theta_min_value_error_all_cases(NEd, VEd, x, d, Ac):
     """Test cot_theta_min raises ValueError."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.cot_theta_min(NEd, VEd, x, d)
+        _section_8_2_shear.cot_theta_min(NEd, VEd, x, d, Ac)
 
 
 @pytest.mark.parametrize(
-    'NEd, VEd, x, d',
+    'NEd, VEd, x, d, Ac',
     [
-        (0, 100, 10, 0),  # d is zero
-        (0, 100, -10, 400),  # x is negative
-        (0, 100, -10, 0),  # x negative and d zero
-        (0, 100, 10, -400),  # d negative
-        (0, 100, -10, -400),  # both negative
+        (0, 100, 10, 0, 100000),  # d is zero
+        (0, 100, -10, 400, 100000),  # x is negative
+        (0, 100, -10, 0, 100000),  # x negative and d zero
+        (0, 100, 10, -400, 100000),  # d negative
+        (0, 100, -10, -400, 100000),  # both negative
+        (0, 100, 10, 400, 0),  # Ac zero
+        (0, 100, 10, 400, -100000),  # Ac negative
+        (10, 0, 10, 400, 100000),  # VEd zero with NEd positive
+        (-10, 0, 10, 400, 100000),  # VEd zero with NEd negative
     ],
 )
-def test_cot_theta_min_value_error(NEd, VEd, x, d):
+def test_cot_theta_min_value_error(NEd, VEd, x, d, Ac):
     """Test cot_theta_min raises ValueError for invalid dimensions."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.cot_theta_min(NEd, VEd, x, d)
+        _section_8_2_shear.cot_theta_min(NEd, VEd, x, d, Ac)
 
 
 def test_tau_Rd_sy():
     """Tests the function tau_Rd_sy."""
-    assert _section_8_2_shear.tau_Rd_sy(0.01, 500, 2) == 10
-    assert _section_8_2_shear.tau_Rd_sy(0.02, 400, 2.5) == 20
+    assert _section_8_2_shear.tau_Rd_sy(0.01, 500, 2, 2.5) == 10
+    assert _section_8_2_shear.tau_Rd_sy(0.02, 400, 2.5, 3.0) == 20
+    # Test boundary cases
+    # cot_theta = 1 (minimum)
+    assert _section_8_2_shear.tau_Rd_sy(0.01, 500, 1.0, 2.5) == 5
+    # cot_theta = cot_theta_min (maximum)
+    assert _section_8_2_shear.tau_Rd_sy(0.01, 500, 2.5, 2.5) == 12.5
+    # cot_theta_min = 1 (minimum allowed)
+    assert _section_8_2_shear.tau_Rd_sy(0.01, 500, 1.0, 1.0) == 5
 
 
 @pytest.mark.parametrize(
-    'rho_w, fywd, cot_theta',
+    'rho_w, fywd, cot_theta, cot_theta_min',
     [
-        (-0.01, 500, 2),  # Negative rho_w
-        (0.01, -500, 2),  # Negative fywd
-        (-0.01, -500, 2),  # Both negative
+        (-0.01, 500, 2, 2.5),  # Negative rho_w
+        (0.01, -500, 2, 2.5),  # Negative fywd
+        (-0.01, -500, 2, 2.5),  # Both negative
+        (0, 500, 2, 2.5),  # Zero rho_w
+        (0.01, 0, 2, 2.5),  # Zero fywd
+        (0, 0, 2, 2.5),  # Both zero
+        (-0.01, 0, 2, 2.5),  # Negative rho_w, zero fywd
+        (0, -500, 2, 2.5),  # Zero rho_w, negative fywd
+        (0.01, 500, 2, 0),  # Zero cot_theta_min
+        (0.01, 500, 2, -2.5),  # Negative cot_theta_min
+        (0.01, 500, 2, 0.5),  # cot_theta_min < 1
+        (0.01, 500, 2, 0.9),  # cot_theta_min < 1 (edge case)
+        (0.01, 500, 0.5, 2.5),  # cot_theta < 1
+        (0.01, 500, 3.0, 2.5),  # cot_theta > cot_theta_min
+        (0.01, 500, 2.6, 2.5),  # cot_theta > cot_theta_min (edge case)
     ],
 )
-def test_tau_Rd_sy_value_errors(rho_w, fywd, cot_theta):
-    """Test tau_Rd_sy raises ValueError for negative rho_w or fywd."""
+def test_tau_Rd_sy_value_errors(rho_w, fywd, cot_theta, cot_theta_min):
+    """Test tau_Rd_sy raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_Rd_sy(rho_w, fywd, cot_theta)
+        _section_8_2_shear.tau_Rd_sy(rho_w, fywd, cot_theta, cot_theta_min)
 
 
 def test_rho_w():
@@ -758,55 +950,99 @@ def test_rho_w_value_errors(Asw, bw, s):
 
 def test_sigma_cd():
     """Tests the function sigma_cd."""
-    assert _section_8_2_shear.sigma_cd(1, 2, 0.5, 0.5, 20) == 2.5
+    # tan_theta = 1/cot_theta = 1/2 = 0.5
+    # sigma_cd = 1 * (2 + 0.5) = 2.5, min(2.5, 0.5 * 20) = 2.5
+    assert _section_8_2_shear.sigma_cd(1, 2, 2.5, 0.5, 20) == 2.5
+    # Test with cot_theta = cot_theta_min
+    assert _section_8_2_shear.sigma_cd(1, 2.5, 2.5, 0.5, 20) == 2.9
+    # Test with cot_theta = 1
+    assert _section_8_2_shear.sigma_cd(1, 1, 2.5, 0.5, 20) == 2.0
+    # Test with cot_theta_min = 1 (boundary case)
+    assert _section_8_2_shear.sigma_cd(1, 1, 1, 0.5, 20) == 2.0
 
 
 @pytest.mark.parametrize(
-    'tau_Ed, cot_theta, tan_theta, nu, f_cd',
+    'tau_Ed, cot_theta, cot_theta_min, nu, f_cd',
     [
-        (-1, 1, 1, 0.5, 20),  # Negative tau_Ed
-        (1, -1, 1, 0.5, 20),  # Negative cot_theta
-        (1, 1, -1, 0.5, 20),  # Negative tan_theta
-        (1, 1, 1, -0.5, 20),  # Negative nu
-        (1, 1, 1, 0.5, -20),  # Negative f_cd
-        (-1, -1, -1, -0.5, -20),  # All negative
+        (-1, 2, 2.5, 0.5, 20),  # Negative tau_Ed
+        (1, 2, 0, 0.5, 20),  # Zero cot_theta_min
+        (1, 2, -2.5, 0.5, 20),  # Negative cot_theta_min
+        (1, 2, 0.5, 0.5, 20),  # cot_theta_min < 1
+        (1, 2, 0.9, 0.5, 20),  # cot_theta_min < 1 (edge case)
+        (1, 0.5, 2.5, 0.5, 20),  # cot_theta < 1
+        (1, 3.0, 2.5, 0.5, 20),  # cot_theta > cot_theta_min
+        (1, 2.6, 2.5, 0.5, 20),  # cot_theta > cot_theta_min (edge case)
+        (1, 2, 2.5, -0.5, 20),  # Negative nu
+        (1, 2, 2.5, 0.5, 0),  # Zero f_cd
+        (1, 2, 2.5, 0.5, -20),  # Negative f_cd
+        (-1, 0.5, 0.5, -0.5, -20),  # Multiple errors
     ],
 )
-def test_sigma_cd_value_errors(tau_Ed, cot_theta, tan_theta, nu, f_cd):
-    """Test sigma_cd raises ValueError for negative arguments."""
+def test_sigma_cd_value_errors(tau_Ed, cot_theta, cot_theta_min, nu, f_cd):
+    """Test sigma_cd raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.sigma_cd(tau_Ed, cot_theta, tan_theta, nu, f_cd)
+        _section_8_2_shear.sigma_cd(tau_Ed, cot_theta, cot_theta_min, nu, f_cd)
 
 
 def test_tau_Rd():
     """Tests the function tau_Rd."""
-    assert _section_8_2_shear.tau_Rd(0.01, 500, 2, 0.5, 50) == 10
+    assert _section_8_2_shear.tau_Rd(0.01, 500, 2, 2.5, 0.5, 50) == 10
     assert (
-        _section_8_2_shear.tau_Rd(0.01, 500, 3, 0.5, 20) == 5
+        _section_8_2_shear.tau_Rd(0.01, 500, 3, 3.0, 0.5, 20) == 5
     )  # Limited by the compression field
+    # Test boundary cases
+    assert _section_8_2_shear.tau_Rd(0.01, 500, 1, 2.5, 0.5, 50) == 5
+    assert _section_8_2_shear.tau_Rd(0.01, 500, 2.5, 2.5, 0.5, 50) == 12.5
 
 
 @pytest.mark.parametrize(
-    'rho_w, fywd, cot_theta, nu, f_cd',
+    'rho_w, fywd, cot_theta, cot_theta_min, nu, f_cd',
     [
-        (-0.01, 500, 2, 0.5, 50),  # Negative rho_w
-        (0.01, -500, 2, 0.5, 50),  # Negative fywd
-        (0.01, 500, -2, 0.5, 50),  # Negative cot_theta
-        (0.01, 500, 2, -0.5, 50),  # Negative nu
-        (0.01, 500, 2, 0.5, -50),  # Negative f_cd
-        (-0.01, -500, -2, -0.5, -50),  # All negative
+        (-0.01, 500, 2, 2.5, 0.5, 50),  # Negative rho_w
+        (0.01, -500, 2, 2.5, 0.5, 50),  # Negative fywd
+        (0.01, 500, -2, 2.5, 0.5, 50),  # Negative cot_theta
+        (0.01, 500, 2, 0.5, 0.5, 50),  # cot_theta_min < 1
+        (0.01, 500, 2, 2.5, -0.5, 50),  # Negative nu
+        (0.01, 500, 2, 2.5, 0.5, -50),  # Negative f_cd
+        (-0.01, -500, -2, 0.5, -0.5, -50),  # All negative
+        (0.01, 500, 0.5, 2.5, 0.5, 50),  # cot_theta < 1
+        (0.01, 500, 3, 2.5, 0.5, 50),  # cot_theta > cot_theta_min
     ],
 )
-def test_tau_Rd_value_errors(rho_w, fywd, cot_theta, nu, f_cd):
-    """Test tau_Rd raises ValueError for negative arguments."""
+def test_tau_Rd_value_errors(rho_w, fywd, cot_theta, cot_theta_min, nu, f_cd):
+    """Test tau_Rd raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_Rd(rho_w, fywd, cot_theta, nu, f_cd)
+        _section_8_2_shear.tau_Rd(
+            rho_w, fywd, cot_theta, cot_theta_min, nu, f_cd
+        )
 
 
-def test_cot_theta():
-    """Tests the function cot_theta."""
-    assert _section_8_2_shear.cot_theta(0.5, 20, 0.01, 500, 2) == 1
-    assert _section_8_2_shear.cot_theta(0.5, 40, 0.01, 500, 2) == 2
+def test_cot_theta_simultaneous():
+    """Tests the function cot_theta_simultaneous."""
+    # Test basic calculation: sqrt((0.5 * 20) / (0.01 * 500) - 1) = sqrt(1) = 1
+    assert (
+        _section_8_2_shear.cot_theta_simultaneous(0.5, 20, 0.01, 500, 2) == 1
+    )
+    # Test: sqrt((0.5 * 40) / (0.01 * 500) - 1) = sqrt(3) ≈ 1.732
+    assert _section_8_2_shear.cot_theta_simultaneous(
+        0.5, 40, 0.01, 500, 2
+    ) == pytest.approx(1.732, rel=1e-3)
+    # Test clamping to minimum (1.0)
+    # sqrt((0.5 * 10) / (0.01 * 500) - 1) = sqrt(0) = 0, clamped to 1
+    assert (
+        _section_8_2_shear.cot_theta_simultaneous(0.5, 10, 0.01, 500, 2.5)
+        == 1.0
+    )
+    # Test clamping to cot_theta_min
+    # sqrt((0.5 * 60) / (0.01 * 500) - 1) = sqrt(5) ≈ 2.236
+    assert _section_8_2_shear.cot_theta_simultaneous(
+        0.5, 60, 0.01, 500, 2.5
+    ) == pytest.approx(2.236, rel=1e-3)
+
+    # Test case where expression under square root is negative
+    # (0.5 * 8) / (0.01 * 500) - 1 = 4 / 5 - 1 = -0.2 < 0
+    with pytest.raises(ValueError, match='Expression under square root'):
+        _section_8_2_shear.cot_theta_simultaneous(0.5, 8, 0.01, 500, 2.5)
 
 
 @pytest.mark.parametrize(
@@ -817,84 +1053,102 @@ def test_cot_theta():
         (0.5, 20, -0.01, 500, 2),  # Negative rho_w
         (0.5, 20, 0.01, -500, 2),  # Negative fywd
         (-0.5, -20, -0.01, -500, 2),  # All negative
+        (0.5, 20, 0.01, 500, 0.5),  # cot_theta_min < 1
+        (0.5, 20, 0, 500, 2),  # rho_w is zero
+        (0.5, 20, 0.01, 0, 2),  # fywd is zero
+        (0.5, 8, 0.01, 500, 2),  # Expression under square root is negative
     ],
 )
-def test_cot_theta_value_errors(nu, f_cd, rho_w, fywd, cot_theta_min):
-    """Test cot_theta raises ValueError for negative arguments."""
+def test_cot_theta_simultaneous_value_errors(
+    nu, f_cd, rho_w, fywd, cot_theta_min
+):
+    """Test cot_theta_simultaneous raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.cot_theta(nu, f_cd, rho_w, fywd, cot_theta_min)
+        _section_8_2_shear.cot_theta_simultaneous(
+            nu, f_cd, rho_w, fywd, cot_theta_min
+        )
 
 
 @pytest.mark.parametrize(
-    'Ftd, Est, Ast, expected', [(500, 210000, 1000, 0.002380952380952381)]
+    'Ftd, Es, Ast, expected', [(500, 210000, 1000, 0.002380952380952381)]
 )
-def test_epsilon_xt(Ftd, Est, Ast, expected):
+def test_epsilon_xt(Ftd, Es, Ast, expected):
     """Test εxt calculation."""
-    assert _section_8_2_shear.epsilon_xt(Ftd, Est, Ast) == pytest.approx(
+    assert _section_8_2_shear.epsilon_xt(Ftd, Es, Ast) == pytest.approx(
         expected
     )
 
 
 @pytest.mark.parametrize(
-    'Ftd, Est, Ast',
+    'Ftd, Es, Ast',
     [
-        (500, -210000, 1000),  # Negative Est
+        (500, -210000, 1000),  # Negative Es
         (500, 210000, -1000),  # Negative Ast
         (500, -210000, -1000),  # Both negative
+        (500, 0, 1000),  # Es is zero
+        (500, 210000, 0),  # Ast is zero
     ],
 )
-def test_epsilon_xt_value_errors(Ftd, Est, Ast):
-    """Test epsilon_xt raises ValueError for negative Est or Ast."""
+def test_epsilon_xt_value_errors(Ftd, Es, Ast):
+    """Test epsilon_xt raises ValueError for negative or zero Es or Ast."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.epsilon_xt(Ftd, Est, Ast)
+        _section_8_2_shear.epsilon_xt(Ftd, Es, Ast)
 
 
 @pytest.mark.parametrize(
-    'Fcd, Ecc, Acc, expected', [(500, 30000, 1000, 0.016666666666666666)]
+    'Fcd, Ec, Acc, expected', [(500, 30000, 1000, 0.016666666666666666)]
 )
-def test_epsilon_xc_compression(Fcd, Ecc, Acc, expected):
+def test_epsilon_xc_compression(Fcd, Ec, Acc, expected):
     """Test εxc calculation for compression."""
-    assert _section_8_2_shear.epsilon_xc_comp(Fcd, Ecc, Acc) == pytest.approx(
+    assert _section_8_2_shear.epsilon_xc_comp(Fcd, Ec, Acc) == pytest.approx(
         expected, rel=10e-3
     )
 
 
 @pytest.mark.parametrize(
-    'Fcd, Ecc, Acc',
+    'Fcd, Ec, Acc',
     [
-        (500, -30000, 1000),  # Negative Ecc
+        (500, -30000, 1000),  # Negative Ec
         (500, 30000, -1000),  # Negative Acc
         (500, -30000, -1000),  # Both negative
+        (500, 0, 1000),  # Ec is zero
+        (500, 30000, 0),  # Acc is zero
     ],
 )
-def test_epsilon_xc_comp_value_errors(Fcd, Ecc, Acc):
-    """Test epsilon_xc_comp raises ValueError for negative Ecc or Acc."""
+def test_epsilon_xc_comp_value_errors(Fcd, Ec, Acc):
+    """Test epsilon_xc_comp raises ValueError for negative or zero Ec or
+    Acc.
+    """
     with pytest.raises(ValueError):
-        _section_8_2_shear.epsilon_xc_comp(Fcd, Ecc, Acc)
+        _section_8_2_shear.epsilon_xc_comp(Fcd, Ec, Acc)
 
 
 @pytest.mark.parametrize(
-    'Fcd, Esc, Asc, expected', [(500, 210000, 1000, 0.002380952380952381)]
+    'Fcd, Es, Asc, expected', [(500, 210000, 1000, 0.002380952380952381)]
 )
-def test_epsilon_xc_tension(Fcd, Esc, Asc, expected):
+def test_epsilon_xc_tension(Fcd, Es, Asc, expected):
     """Test εxc calculation for tension."""
-    assert _section_8_2_shear.epsilon_xc_tens(Fcd, Esc, Asc) == pytest.approx(
+    assert _section_8_2_shear.epsilon_xc_tens(Fcd, Es, Asc) == pytest.approx(
         expected, rel=10e-3
     )
 
 
 @pytest.mark.parametrize(
-    'Fcd, Esc, Asc',
+    'Fcd, Es, Asc',
     [
-        (500, -210000, 1000),  # Negative Esc
+        (500, -210000, 1000),  # Negative Es
         (500, 210000, -1000),  # Negative Asc
         (500, -210000, -1000),  # Both negative
+        (500, 0, 1000),  # Es is zero
+        (500, 210000, 0),  # Asc is zero
     ],
 )
-def test_epsilon_xc_tens_value_errors(Fcd, Esc, Asc):
-    """Test epsilon_xc_tens raises ValueError for negative Esc or Asc."""
+def test_epsilon_xc_tens_value_errors(Fcd, Es, Asc):
+    """Test epsilon_xc_tens raises ValueError for negative or zero Es or
+    Asc.
+    """
     with pytest.raises(ValueError):
-        _section_8_2_shear.epsilon_xc_tens(Fcd, Esc, Asc)
+        _section_8_2_shear.epsilon_xc_tens(Fcd, Es, Asc)
 
 
 @pytest.mark.parametrize(
@@ -907,40 +1161,75 @@ def test_epsilon_x(epsilon_xt, epsilon_xc, expected):
     ) == pytest.approx(expected)
 
 
-@pytest.mark.parametrize('epsilon_x, theta, expected', [(0.001, 2, 0.5025)])
-def test_nu(epsilon_x, theta, expected):
+@pytest.mark.parametrize(
+    'epsilon_x, cot_theta, cot_theta_min, expected',
+    [(0.001, 2, 2.5, 0.5025)],
+)
+def test_nu(epsilon_x, cot_theta, cot_theta_min, expected):
     """Test ν calculation."""
-    assert _section_8_2_shear.nu(epsilon_x, theta) == pytest.approx(
-        expected, rel=10e-3
+    assert _section_8_2_shear.nu(
+        epsilon_x, cot_theta, cot_theta_min
+    ) == pytest.approx(expected, rel=10e-3)
+    # Test boundary cases
+    # For cot_theta = 1: nu = 1 / (1.0 + 110 * (0.001 + 0.002 * 1)) ≈ 0.7519
+    assert _section_8_2_shear.nu(0.001, 1, 2.5) == pytest.approx(
+        0.7519, rel=10e-3
+    )
+    # For cot_theta = 2.5: nu = 1 / (1.0 + 110 * (0.001 + 0.002 * 6.25))
+    # ≈ 0.4024
+    assert _section_8_2_shear.nu(0.001, 2.5, 2.5) == pytest.approx(
+        0.4024, rel=10e-3
     )
 
 
 @pytest.mark.parametrize(
-    'epsilon_x, cot_theta',
+    'epsilon_x, cot_theta, cot_theta_min',
     [
-        (-0.001, 2),  # Negative epsilon_x
-        (-1.0, 0),  # Negative epsilon_x, zero cot_theta
-        (-0.5, -2),  # Negative epsilon_x, negative cot_theta
+        (-0.001, 2, 2.5),  # Negative epsilon_x
+        (-1.0, 2, 2.5),  # Negative epsilon_x
+        (-0.5, 2, 2.5),  # Negative epsilon_x
+        (0.001, 2, 0.5),  # cot_theta_min < 1
+        (0.001, 0.5, 2.5),  # cot_theta < 1
+        (0.001, 3, 2.5),  # cot_theta > cot_theta_min
     ],
 )
-def test_nu_value_errors(epsilon_x, cot_theta):
-    """Test nu raises ValueError for negative epsilon_x."""
+def test_nu_value_errors(epsilon_x, cot_theta, cot_theta_min):
+    """Test nu raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.nu(epsilon_x, cot_theta)
+        _section_8_2_shear.nu(epsilon_x, cot_theta, cot_theta_min)
 
 
 @pytest.mark.parametrize(
-    'VEd, theta, expected',
+    'VEd, cot_theta, cot_theta_min, expected',
     [
-        (100, 2, 200),
-        (150, 1.5, 225),
+        (100, 2, 2.5, 200),
+        (150, 1.5, 2.5, 225),
     ],
 )
-def test_calculate_nv(VEd, theta, expected):
+def test_calculate_nv(VEd, cot_theta, cot_theta_min, expected):
     """Test calculate_nv function with various inputs."""
-    assert _section_8_2_shear.Nvd(VEd, theta) == pytest.approx(
-        expected, rel=1e-6
+    assert _section_8_2_shear.Nvd(
+        VEd, cot_theta, cot_theta_min
+    ) == pytest.approx(expected, rel=1e-6)
+    # Test boundary cases
+    assert _section_8_2_shear.Nvd(100, 1, 2.5) == pytest.approx(100, rel=1e-6)
+    assert _section_8_2_shear.Nvd(100, 2.5, 2.5) == pytest.approx(
+        250, rel=1e-6
     )
+
+
+@pytest.mark.parametrize(
+    'VEd, cot_theta, cot_theta_min',
+    [
+        (100, 2, 0.5),  # cot_theta_min < 1
+        (100, 0.5, 2.5),  # cot_theta < 1
+        (100, 3, 2.5),  # cot_theta > cot_theta_min
+    ],
+)
+def test_Nvd_value_errors(VEd, cot_theta, cot_theta_min):
+    """Test Nvd raises ValueError for invalid arguments."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.Nvd(VEd, cot_theta, cot_theta_min)
 
 
 @pytest.mark.parametrize(
@@ -972,6 +1261,61 @@ def test_calculate_fcd(MEd, z, NVd, NE, expected):
 
 
 @pytest.mark.parametrize(
+    'MEd, z, NVd, NE',
+    [
+        (200, 0, 100, 50),  # z is zero
+        (200, -400, 100, 50),  # z is negative
+    ],
+)
+def test_Ftd_value_errors(MEd, z, NVd, NE):
+    """Test Ftd raises ValueError for invalid z."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.Ftd(MEd, z, NVd, NE)
+
+
+@pytest.mark.parametrize(
+    'MEd, z, NVd, NE',
+    [
+        (200, 0, 100, 50),  # z is zero
+        (200, -400, 100, 50),  # z is negative
+    ],
+)
+def test_Fcd_value_errors(MEd, z, NVd, NE):
+    """Test Fcd raises ValueError for invalid z."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.Fcd(MEd, z, NVd, NE)
+
+
+@pytest.mark.parametrize(
+    'MEd_max, z, NEd, expected',
+    [
+        (200, 400, 50, 525.0),  # 200*1000/400 + 50/2 = 500 + 25 = 525
+        (300, 600, 100, 550.0),  # 300*1000/600 + 100/2 = 500 + 50 = 550
+    ],
+)
+def test_Ftd_max(MEd_max, z, NEd, expected):
+    """Test Ftd_max calculation for direct intermediate support or concentrated
+    loads.
+    """
+    assert _section_8_2_shear.Ftd_max(MEd_max, z, NEd) == pytest.approx(
+        expected, rel=1e-6
+    )
+
+
+@pytest.mark.parametrize(
+    'MEd_max, z, NEd',
+    [
+        (200, 0, 50),  # z is zero
+        (200, -400, 50),  # z is negative
+    ],
+)
+def test_Ftd_max_value_errors(MEd_max, z, NEd):
+    """Test Ftd_max raises ValueError for invalid z."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.Ftd_max(MEd_max, z, NEd)
+
+
+@pytest.mark.parametrize(
     'duct_material, is_grouted, wall_thickness, duct_diameter, expected',
     [
         ('steel', True, 3.0, 50.0, 0.5),  # Grouted steel ducts
@@ -999,12 +1343,14 @@ def test_calculate_k_duct(
         ('steel', True, 2.0, -50.0),  # Negative duct_diameter
         ('plastic', False, -0.5, 40.0),  # Negative wall_thickness
         ('plastic', False, 1.0, -40.0),  # Negative duct_diameter
+        ('steel', True, 0, 50.0),  # Zero wall_thickness
+        ('steel', True, 2.0, 0),  # Zero duct_diameter
     ],
 )
 def test_k_duct_negative_dimensions(
     duct_material, is_grouted, wall_thickness, duct_diameter
 ):
-    """Test k_duct raises ValueError."""
+    """Test k_duct raises ValueError for non-positive dimensions."""
     with pytest.raises(ValueError):
         _section_8_2_shear.k_duct(
             duct_material, is_grouted, wall_thickness, duct_diameter
@@ -1064,79 +1410,160 @@ def test_bw_nom_value_errors(bw, duct_diameters, k_duct):
 
 
 @pytest.mark.parametrize(
-    'nu, f_cd, theta, beta_incl, rho_w, f_ywd, expected',
+    (
+        'nu, f_cd, cot_theta, cot_theta_min, cot_beta_incl, rho_w, f_ywd, '
+        'expected'
+    ),
     [
-        (0.6, 30, 1, 1.5, 0.01, 500, 3),
-        (0.5, 40, 1.5, 1, 0.02, 400, 9.2307),
+        (0.6, 30, 1, 2.5, 1.5, 0.01, 500, 3),
+        (0.5, 40, 1.5, 2.5, 1, 0.02, 400, 9.2307),
     ],
 )
-def test_tau_rd(nu, f_cd, theta, beta_incl, rho_w, f_ywd, expected):
+def test_tau_rd(
+    nu, f_cd, cot_theta, cot_theta_min, cot_beta_incl, rho_w, f_ywd, expected
+):
     """Test calculation of enhanced shear stress resistance τRd."""
     assert math.isclose(
-        _section_8_2_shear.tau_rd(nu, f_cd, theta, beta_incl, rho_w, f_ywd),
+        _section_8_2_shear.tau_rd(
+            nu, f_cd, cot_theta, cot_theta_min, cot_beta_incl, rho_w, f_ywd
+        ),
         expected,
+        rel_tol=1e-2,
+    )
+    assert math.isclose(
+        _section_8_2_shear.tau_rd(0.6, 30, 1, 2.5, 1.5, 0.01, 500),
+        3,
+        rel_tol=1e-2,
+    )
+    assert math.isclose(
+        _section_8_2_shear.tau_rd(0.6, 30, 2.5, 2.5, 1.5, 0.01, 500),
+        6.207,
         rel_tol=1e-2,
     )
 
 
 @pytest.mark.parametrize(
-    'nu, f_cd, cot_theta, cot_beta_incl, rho_w, f_ywd',
+    'nu, f_cd, cot_theta, cot_theta_min, cot_beta_incl, rho_w, f_ywd',
     [
-        (0.6, -30, 1, 1.5, 0.01, 500),  # Negative f_cd
-        (0.6, 30, 1, 1.5, 0.01, -500),  # Negative f_ywd
-        (0.6, -30, 1, 1.5, 0.01, -500),  # Both negative
+        (-0.1, 30, 1, 2.5, 1.5, 0.01, 500),  # Negative nu
+        (0.6, -30, 1, 2.5, 1.5, 0.01, 500),  # Negative f_cd
+        (0.6, 0, 1, 2.5, 1.5, 0.01, 500),  # Zero f_cd
+        (0.6, 30, 1, 2.5, 1.5, -0.01, 500),  # Negative rho_w
+        (0.6, 30, 1, 2.5, 1.5, 0.01, -500),  # Negative f_ywd
+        (0.6, 30, 1, 2.5, 1.5, 0.01, 0),  # Zero f_ywd
+        (0.6, -30, 1, 2.5, 1.5, 0.01, -500),  # Both f_cd and f_ywd negative
+        (0.6, 30, 1, 0.5, 1.5, 0.01, 500),  # cot_theta_min < 1
+        (0.6, 30, 0.5, 2.5, 1.5, 0.01, 500),  # cot_theta < 1
+        (0.6, 30, 3, 2.5, 1.5, 0.01, 500),  # cot_theta > cot_theta_min
     ],
 )
-def test_tau_rd_value_errors(nu, f_cd, cot_theta, cot_beta_incl, rho_w, f_ywd):
-    """Test tau_rd raises ValueError for negative f_cd or f_ywd."""
+def test_tau_rd_value_errors(
+    nu, f_cd, cot_theta, cot_theta_min, cot_beta_incl, rho_w, f_ywd
+):
+    """Test tau_rd raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
         _section_8_2_shear.tau_rd(
-            nu, f_cd, cot_theta, cot_beta_incl, rho_w, f_ywd
+            nu,
+            f_cd,
+            cot_theta,
+            cot_theta_min,
+            cot_beta_incl,
+            rho_w,
+            f_ywd,
         )
 
 
 @pytest.mark.parametrize(
-    'e_s, eps_x, f_ywd, cot_theta, expected',
+    'cot_beta_incl, cot_theta_min, expected',
     [
-        (200000, 0.001, 500, 2, 500),
-        (210000, 0.002, 450, 1, 420),
+        (1.0, 2.5, 2.414213562373095),  # sqrt(2) ≈ 1.414
+        (1.5, 2.5, 2.5),  # Capped at cot_theta_min
+        (2.0, 3.0, 3.0),  # 2.0 + sqrt(5) ≈ 4.236, capped at 3.0
+        (0.5, 2.0, 1.618033988749895),  # sqrt(1.25) ≈ 1.118
     ],
 )
-def test_sigma_swd(e_s, eps_x, f_ywd, cot_theta, expected):
+def test_cot_theta_max_shear_constant_nu(
+    cot_beta_incl, cot_theta_min, expected
+):
+    """Test calculation of optimum cot_theta for constant nu."""
+    result = _section_8_2_shear.cot_theta_max_shear_constant_nu(
+        cot_beta_incl, cot_theta_min
+    )
+    assert math.isclose(result, expected, rel_tol=1e-2)
+
+
+@pytest.mark.parametrize(
+    'a, z, cot_theta_min, expected',
+    [
+        (1000, 500, 2.5, 2.5),  # 1.3 * 1000 / 500 = 2.6, capped at 2.5
+        (1500, 500, 3.0, 3.0),  # 1.3 * 1500 / 500 = 3.9, capped at 3.0
+        (1000, 1000, 3.0, 1.3),  # 1.3 * 1000 / 1000 = 1.3
+        (500, 500, 2.5, 1.3),  # 1.3 * 500 / 500 = 1.3
+    ],
+)
+def test_cot_theta_max_shear_variable_nu(a, z, cot_theta_min, expected):
+    """Test calculation of optimum cot_theta for variable nu."""
+    result = _section_8_2_shear.cot_theta_max_shear_variable_nu(
+        a, z, cot_theta_min
+    )
+    assert math.isclose(result, expected, rel_tol=1e-2)
+
+
+@pytest.mark.parametrize(
+    'cot_beta_incl, cot_theta_min',
+    [
+        (1.0, 0.5),  # cot_theta_min < 1
+        (-10.0, 1.0),  # Calculated cot_theta < 1
+    ],
+)
+def test_cot_theta_max_shear_constant_nu_value_errors(
+    cot_beta_incl, cot_theta_min
+):
+    """Test cot_theta_max_shear_constant_nu raises ValueError for invalid
+    arguments.
+    """
+    with pytest.raises(ValueError):
+        _section_8_2_shear.cot_theta_max_shear_constant_nu(
+            cot_beta_incl, cot_theta_min
+        )
+
+
+@pytest.mark.parametrize(
+    'a, z, cot_theta_min',
+    [
+        (0, 500, 2.5),  # a <= 0
+        (-1000, 500, 2.5),  # a < 0
+        (1000, 0, 2.5),  # z <= 0
+        (1000, -500, 2.5),  # z < 0
+        (1000, 500, 0.5),  # cot_theta_min < 1
+        (
+            100,
+            10000,
+            1.0,
+        ),  # Calculated cot_theta < 1 (1.3 * 100 / 10000 = 0.013)
+    ],
+)
+def test_cot_theta_max_shear_variable_nu_value_errors(a, z, cot_theta_min):
+    """Test cot_theta_max_shear_variable_nu raises ValueError for invalid
+    arguments.
+    """
+    with pytest.raises(ValueError):
+        _section_8_2_shear.cot_theta_max_shear_variable_nu(a, z, cot_theta_min)
+
+
+@pytest.mark.parametrize(
+    'e_s, eps_x, f_ywd, cot_theta, cot_theta_min, expected',
+    [
+        (200000, 0.001, 500, 2, 2.5, 500),
+        (210000, 0.002, 450, 1, 2.5, 420),
+        (200000, 0.001, 500, 2.5, 2.5, 500),  # cot_theta = cot_theta_min
+    ],
+)
+def test_sigma_swd(e_s, eps_x, f_ywd, cot_theta, cot_theta_min, expected):
     """Test calculation of stress σswd in shear reinforcement."""
     assert math.isclose(
-        _section_8_2_shear.sigma_swd(e_s, eps_x, f_ywd, cot_theta),
-        expected,
-        rel_tol=1e-2,
-    )
-
-
-@pytest.mark.parametrize(
-    'Es, eps_x, f_ywd, cot_theta',
-    [
-        (-200000, 0.001, 500, 2),  # Negative Es
-        (200000, 0.001, -500, 2),  # Negative f_ywd
-        (-200000, 0.001, -500, 2),  # Both negative
-    ],
-)
-def test_sigma_swd_value_errors(Es, eps_x, f_ywd, cot_theta):
-    """Test sigma_swd raises ValueError for negative Es or f_ywd."""
-    with pytest.raises(ValueError):
-        _section_8_2_shear.sigma_swd(Es, eps_x, f_ywd, cot_theta)
-
-
-@pytest.mark.parametrize(
-    'tau_ed, rho_w, f_ywd, theta, z, b_w, a, x, expected',
-    [
-        (0.5, 0.01, 500, 1, 300, 200, 500, 250, 0),
-        (0.4, 0.02, 400, 0.7, 350, 250, 600, 200, -45.5),
-    ],
-)
-def test_delta_m_ed(tau_ed, rho_w, f_ywd, theta, z, b_w, a, x, expected):
-    """Test calculation of additional moment ΔMEd."""
-    assert math.isclose(
-        _section_8_2_shear.delta_MEd(
-            tau_ed, rho_w, f_ywd, theta, z, b_w, a, x
+        _section_8_2_shear.sigma_swd(
+            e_s, eps_x, f_ywd, cot_theta, cot_theta_min
         ),
         expected,
         rel_tol=1e-2,
@@ -1144,37 +1571,147 @@ def test_delta_m_ed(tau_ed, rho_w, f_ywd, theta, z, b_w, a, x, expected):
 
 
 @pytest.mark.parametrize(
-    'tau_ed, rho_w, f_ywd, cot_theta, z, b_w, a, x',
+    'Es, eps_x, f_ywd, cot_theta, cot_theta_min',
     [
-        (-0.5, 0.01, 500, 1, 300, 200, 500, 250),  # Negative tau_ed
-        (0.5, 0.01, -500, 1, 300, 200, 500, 250),  # Negative f_ywd
-        (0.5, 0.01, 500, 1, -300, 200, 500, 250),  # Negative z
-        (0.5, 0.01, 500, 1, 300, -200, 500, 250),  # Negative b_w
-        (0.5, 0.01, 500, 1, 300, 200, -500, 250),  # Negative a
-        (0.5, 0.01, 500, 1, 300, 200, 500, -250),  # Negative x
-        (-0.5, 0.01, -500, 1, -300, -200, -500, -250),  # All negative
+        (-200000, 0.001, 500, 2, 2.5),  # Negative Es
+        (0, 0.001, 500, 2, 2.5),  # Zero Es
+        (200000, 0.001, -500, 2, 2.5),  # Negative f_ywd
+        (200000, 0.001, 0, 2, 2.5),  # Zero f_ywd
+        (-200000, 0.001, -500, 2, 2.5),  # Both negative
+        (200000, 0.001, 500, 2, 0.5),  # cot_theta_min < 1
+        (200000, 0.001, 500, 0.5, 2.5),  # cot_theta < 1
+        (200000, 0.001, 500, 3, 2.5),  # cot_theta > cot_theta_min
     ],
 )
-def test_delta_MEd_value_errors(tau_ed, rho_w, f_ywd, cot_theta, z, b_w, a, x):
-    """Test delta_MEd raises ValueError for negative arguments."""
+def test_sigma_swd_value_errors(Es, eps_x, f_ywd, cot_theta, cot_theta_min):
+    """Test sigma_swd raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.delta_MEd(
-            tau_ed, rho_w, f_ywd, cot_theta, z, b_w, a, x
+        _section_8_2_shear.sigma_swd(
+            Es, eps_x, f_ywd, cot_theta, cot_theta_min
         )
 
 
 @pytest.mark.parametrize(
-    'rho_w, f_ywd, theta, alpha_w, cot_theta_min, expected',
+    'tau_ed, rho_w, f_ywd, cot_theta, cot_theta_min, z, b_w, a, x, expected',
     [
-        (0.01, 500, 1, 45, 1.5, 7.071),
-        (0.02, 450, 2, 60, 3, 20.088),
+        (0.5, 0.01, 500, 1, 2.5, 300, 200, 500, 250, 0),
+        (0.4, 0.02, 400, 1.5, 2.5, 350, 250, 600, 200, -101.5),
+        (
+            0.5,
+            0.01,
+            500,
+            2.5,
+            2.5,
+            300,
+            200,
+            500,
+            250,
+            0,
+        ),  # cot_theta = cot_theta_min
     ],
 )
-def test_tau_rd_sy(rho_w, f_ywd, theta, alpha_w, cot_theta_min, expected):
-    """Test calculation of shear stress resistance τRd,sy."""
+def test_delta_m_ed(
+    tau_ed, rho_w, f_ywd, cot_theta, cot_theta_min, z, b_w, a, x, expected
+):
+    """Test calculation of additional moment ΔMEd."""
     assert math.isclose(
-        _section_8_2_shear.tau_rd_sy(
-            rho_w, f_ywd, theta, alpha_w, cot_theta_min
+        _section_8_2_shear.delta_MEd(
+            tau_ed, rho_w, f_ywd, cot_theta, cot_theta_min, z, b_w, a, x
+        ),
+        expected,
+        rel_tol=1e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'tau_ed, rho_w, f_ywd, cot_theta, cot_theta_min, z, b_w, a, x',
+    [
+        (-0.5, 0.01, 500, 1, 2.5, 300, 200, 500, 250),  # Negative tau_ed
+        (0.5, 0.01, 0, 1, 2.5, 300, 200, 500, 250),  # Zero f_ywd
+        (0.5, 0.01, -500, 1, 2.5, 300, 200, 500, 250),  # Negative f_ywd
+        (0.5, 0.01, 500, 1, 0.5, 300, 200, 500, 250),  # cot_theta_min < 1
+        (0.5, 0.01, 500, 0.5, 2.5, 300, 200, 500, 250),  # cot_theta < 1
+        (
+            0.5,
+            0.01,
+            500,
+            3,
+            2.5,
+            300,
+            200,
+            500,
+            250,
+        ),  # cot_theta > cot_theta_min
+        (0.5, 0.01, 500, 1, 2.5, 0, 200, 500, 250),  # Zero z
+        (0.5, 0.01, 500, 1, 2.5, -300, 200, 500, 250),  # Negative z
+        (0.5, 0.01, 500, 1, 2.5, 300, 0, 500, 250),  # Zero b_w
+        (0.5, 0.01, 500, 1, 2.5, 300, -200, 500, 250),  # Negative b_w
+        (0.5, 0.01, 500, 1, 2.5, 300, 200, -500, 250),  # Negative a
+        (0.5, 0.01, 500, 1, 2.5, 300, 200, 500, -250),  # Negative x
+    ],
+)
+def test_delta_MEd_value_errors(
+    tau_ed, rho_w, f_ywd, cot_theta, cot_theta_min, z, b_w, a, x
+):
+    """Test delta_MEd raises ValueError for invalid arguments."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.delta_MEd(
+            tau_ed, rho_w, f_ywd, cot_theta, cot_theta_min, z, b_w, a, x
+        )
+
+
+@pytest.mark.parametrize(
+    'cot_theta, alpha_w, cot_theta_min, expected',
+    [
+        (1, 45, 2.5, 1.0),  # tan(45/2) ≈ 0.414, 1.0 is within range
+        (2, 60, 3.0, 2.0),  # tan(60/2) ≈ 0.577, so 2.0 is valid
+        (0.5, 60, 3.0, 0.5773502691896257),  # Clamped to tan(30)
+        (4, 60, 3.0, 3.0),  # Clamped to cot_theta_min
+    ],
+)
+def test_cot_theta_inclined(cot_theta, alpha_w, cot_theta_min, expected):
+    """Test calculation and validation of cot_theta for inclined
+    reinforcement (Eq. 8.58).
+    """
+    result = _section_8_2_shear.cot_theta_inclined(
+        cot_theta, alpha_w, cot_theta_min
+    )
+    assert math.isclose(result, expected, rel_tol=1e-2)
+
+
+@pytest.mark.parametrize(
+    'cot_theta, alpha_w, cot_theta_min',
+    [
+        (1, 44, 2.5),  # alpha_w < 45
+        (1, 100, 2.5),  # alpha_w > 90
+        (1, 60, 0.5),  # cot_theta_min < 1
+    ],
+)
+def test_cot_theta_inclined_value_errors(cot_theta, alpha_w, cot_theta_min):
+    """Test cot_theta_inclined raises ValueError for invalid arguments."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.cot_theta_inclined(
+            cot_theta, alpha_w, cot_theta_min
+        )
+
+
+@pytest.mark.parametrize(
+    'rho_w, f_ywd, cot_theta, alpha_w, cot_theta_min, expected',
+    [
+        (0.01, 500, 1, 45, 3.0, 7.071),
+        (0.02, 450, 2, 60, 3.0, 20.088),
+        (0.01, 500, 1, 90, 3.0, 5.0),  # alpha_w = 90°
+    ],
+)
+def test_tau_Rd_sy_inclined(
+    rho_w, f_ywd, cot_theta, alpha_w, cot_theta_min, expected
+):
+    """Test calculation of shear stress resistance τRd,sy for inclined
+    reinforcement (Eq. 8.59).
+    """
+    assert math.isclose(
+        _section_8_2_shear.tau_Rd_sy_inclined(
+            rho_w, f_ywd, cot_theta, alpha_w, cot_theta_min
         ),
         expected,
         rel_tol=1e-2,
@@ -1184,18 +1721,20 @@ def test_tau_rd_sy(rho_w, f_ywd, theta, alpha_w, cot_theta_min, expected):
 @pytest.mark.parametrize(
     'rho_w, f_ywd, cot_theta, alpha_w, cot_theta_min',
     [
-        (0.01, -500, 2, 60, 3),  # Negative f_ywd
-        (0.01, 500, 2, 44, 3),  # alpha_w < 45
-        (0.01, 500, 2, 90, 3),  # alpha_w >= 90
-        (0.01, 500, 2, 100, 3),  # alpha_w > 90
+        (-0.01, 500, 2, 60, 3.0),  # Negative rho_w
+        (0.01, 0, 2, 60, 3.0),  # Zero f_ywd
+        (0.01, -500, 2, 60, 3.0),  # Negative f_ywd
+        (0.01, 500, 2, 44, 3.0),  # alpha_w < 45
+        (0.01, 500, 2, 100, 3.0),  # alpha_w > 90
+        (0.01, 500, 2, 60, 0.5),  # cot_theta_min < 1
     ],
 )
-def test_tau_rd_sy_value_errors(
+def test_tau_Rd_sy_inclined_value_errors(
     rho_w, f_ywd, cot_theta, alpha_w, cot_theta_min
 ):
-    """Test tau_rd_sy raises ValueError for invalid f_ywd or alpha_w."""
+    """Test tau_Rd_sy_inclined raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_rd_sy(
+        _section_8_2_shear.tau_Rd_sy_inclined(
             rho_w, f_ywd, cot_theta, alpha_w, cot_theta_min
         )
 
@@ -1205,12 +1744,17 @@ def test_tau_rd_sy_value_errors(
     [
         (0.5, 1, 45, 0.6, 30, 2, 0.5),
         (0.7759, 2, 60, 0.5, 40, 2, 1.50522),
+        (0.5, 1, 90, 0.6, 30, 2, 1.0),  # alpha_w = 90°
     ],
 )
-def test_sigma_cd_s(tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min, expected):
-    """Test calculation of compression stress σcd."""
+def test_sigma_cd_inclined(
+    tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min, expected
+):
+    """Test calculation of compression stress σcd for inclined reinforcement
+    (Eq. 8.60).
+    """
     assert math.isclose(
-        _section_8_2_shear.sigma_cd_s(
+        _section_8_2_shear.sigma_cd_inclined(
             tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min
         ),
         expected,
@@ -1222,19 +1766,20 @@ def test_sigma_cd_s(tau_ed, theta, alpha_w, nu, f_cd, cot_theta_min, expected):
     'tau_ed, cot_theta, alpha_w, nu, f_cd, cot_theta_min',
     [
         (-0.5, 1, 60, 0.6, 30, 2),  # Negative tau_ed
+        (0.5, 1, 60, -0.6, 30, 2),  # Negative nu
+        (0.5, 1, 60, 0.6, 0, 2),  # Zero f_cd
         (0.5, 1, 60, 0.6, -30, 2),  # Negative f_cd
         (0.5, 1, 44, 0.6, 30, 2),  # alpha_w < 45
-        (0.5, 1, 90, 0.6, 30, 2),  # alpha_w >= 90
         (0.5, 1, 100, 0.6, 30, 2),  # alpha_w > 90
-        (-0.5, 1, 44, 0.6, -30, 2),  # All invalid
+        (0.5, 1, 60, 0.6, 30, 0.5),  # cot_theta_min < 1
     ],
 )
-def test_sigma_cd_s_value_errors(
+def test_sigma_cd_inclined_value_errors(
     tau_ed, cot_theta, alpha_w, nu, f_cd, cot_theta_min
 ):
-    """Test sigma_cd_s raises ValueError for invalid arguments."""
+    """Test sigma_cd_inclined raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.sigma_cd_s(
+        _section_8_2_shear.sigma_cd_inclined(
             tau_ed, cot_theta, alpha_w, nu, f_cd, cot_theta_min
         )
 
@@ -1244,12 +1789,13 @@ def test_sigma_cd_s_value_errors(
     [
         (100, 0.3, 45, 1, -58.5786),
         (80, 0.1, 50, 3, -29.8233),
+        (100, 1, 90, 2, 100.0),  # alpha_w = 90°
     ],
 )
 def test_n_vd(v_ed, theta, alpha_w, cot_theta_min, expected):
     """Test calculation of axial tensile force NVd."""
     assert math.isclose(
-        _section_8_2_shear.NVds(v_ed, theta, alpha_w, cot_theta_min),
+        _section_8_2_shear.NVds_inclined(v_ed, theta, alpha_w, cot_theta_min),
         expected,
         rel_tol=1e-2,
     )
@@ -1258,16 +1804,17 @@ def test_n_vd(v_ed, theta, alpha_w, cot_theta_min, expected):
 @pytest.mark.parametrize(
     'VEd, cot_theta, alpha_w, cot_theta_min',
     [
-        (-100, 1, 60, 2),  # Negative VEd
         (100, 1, 44, 2),  # alpha_w < 45
-        (100, 1, 90, 2),  # alpha_w >= 90
         (100, 1, 100, 2),  # alpha_w > 90
+        (100, 1, 60, 0.5),  # cot_theta_min < 1
     ],
 )
 def test_NVds_value_errors(VEd, cot_theta, alpha_w, cot_theta_min):
-    """Test NVds raises ValueError for invalid arguments."""
+    """Test NVds_inclined raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.NVds(VEd, cot_theta, alpha_w, cot_theta_min)
+        _section_8_2_shear.NVds_inclined(
+            VEd, cot_theta, alpha_w, cot_theta_min
+        )
 
 
 @pytest.mark.parametrize(
@@ -1276,6 +1823,7 @@ def test_NVds_value_errors(VEd, cot_theta, alpha_w, cot_theta_min):
     [
         (0.6, 30, 1, 3, 0.01, 500, 45, 2, -3.8578),
         (0.5, 40, 0.7, 1, 0.02, 400, 60, 5, 6.9013),
+        (0.6, 30, 1, 3, 0.01, 500, 90, 2, -3.0),  # alpha_w = 90°
     ],
 )
 def test_tau_rd_incl(
@@ -1283,7 +1831,7 @@ def test_tau_rd_incl(
 ):
     """Test calculation of shear stress resistance τRd."""
     assert math.isclose(
-        _section_8_2_shear.tau_rd_incl(
+        _section_8_2_shear.tau_Rd_inclined(
             nu, f_cd, theta, beta_incl, rho_w, f_ywd, alpha_w, cot_theta_min
         ),
         expected,
@@ -1294,11 +1842,15 @@ def test_tau_rd_incl(
 @pytest.mark.parametrize(
     'nu, f_cd, cot_theta, cot_beta_incl, rho_w, f_ywd, alpha_w, cot_theta_min',
     [
+        (-0.1, 30, 1, 3, 0.01, 500, 45, 2),  # Negative nu
         (0.6, -30, 1, 3, 0.01, 500, 45, 2),  # Negative f_cd
+        (0.6, 0, 1, 3, 0.01, 500, 45, 2),  # Zero f_cd
+        (0.6, 30, 1, 3, -0.01, 500, 45, 2),  # Negative rho_w
         (0.6, 30, 1, 3, 0.01, -500, 45, 2),  # Negative f_ywd
+        (0.6, 30, 1, 3, 0.01, 0, 45, 2),  # Zero f_ywd
         (0.6, 30, 1, 3, 0.01, 500, 44, 2),  # alpha_w < 45
-        (0.6, 30, 1, 3, 0.01, 500, 90, 2),  # alpha_w >= 90
         (0.6, 30, 1, 3, 0.01, 500, 100, 2),  # alpha_w > 90
+        (0.6, 30, 1, 3, 0.01, 500, 45, 0.5),  # cot_theta_min < 1
     ],
 )
 def test_tau_rd_incl_value_errors(
@@ -1306,7 +1858,7 @@ def test_tau_rd_incl_value_errors(
 ):
     """Test tau_rd_incl raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_rd_incl(
+        _section_8_2_shear.tau_Rd_inclined(
             nu,
             f_cd,
             cot_theta,
@@ -1319,33 +1871,52 @@ def test_tau_rd_incl_value_errors(
 
 
 @pytest.mark.parametrize(
-    'e_s, eps_x, theta, alpha_w, f_ywd, expected',
-    [
-        (200000, 0.001, 1, 45, 500, 500),  # Example values
-        (210000, 0.002, 2, 60, 450, 450),  # Example values
-    ],
-)
-def test_sigma_swd_v2(e_s, eps_x, theta, alpha_w, f_ywd, expected):
-    """Test calculation of stress σswd."""
-    assert math.isclose(
-        _section_8_2_shear.sigma_swd_v2(e_s, eps_x, theta, alpha_w, f_ywd),
-        expected,
-        rel_tol=1e-2,
-    )
-
-
-@pytest.mark.parametrize(
     'Es, eps_x, cot_theta, alpha_w, f_ywd',
     [
         (-200000, 0.001, 2, 45, 500),  # Negative Es
+        (0, 0.001, 2, 45, 500),  # Zero Es
         (200000, 0.001, 2, 45, -500),  # Negative f_ywd
+        (200000, 0.001, 2, 45, 0),  # Zero f_ywd
+        (200000, 0.001, 2, 44, 500),  # alpha_w < 45
+        (200000, 0.001, 2, 100, 500),  # alpha_w > 90
         (-200000, 0.001, 2, 45, -500),  # Both negative
     ],
 )
 def test_sigma_swd_v2_value_errors(Es, eps_x, cot_theta, alpha_w, f_ywd):
-    """Test sigma_swd_v2 raises ValueError for negative Es or f_ywd."""
+    """Test sigma_swd_inclined raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.sigma_swd_v2(Es, eps_x, cot_theta, alpha_w, f_ywd)
+        _section_8_2_shear.sigma_swd_inclined(
+            Es, eps_x, cot_theta, alpha_w, f_ywd
+        )
+
+
+# Test for sigma_swd_inclined with valid parameters (covers lines 1863-1874)
+@pytest.mark.parametrize(
+    'Es, eps_x, cot_theta, alpha_w, f_ywd, expected',
+    [
+        # Test with alpha_w = 90.0 to cover lines 1863-1864 (isclose check)
+        (200000, 0.001, 1.5, 90.0, 500, 500),
+        # Test with alpha_w = 45.0 to cover line 1866 (else branch)
+        (200000, 0.001, 1.5, 45.0, 500, 500),
+        # Test with alpha_w = 60.0 to cover line 1866 (else branch)
+        (200000, 0.001, 1.5, 60.0, 500, 500),
+        # Test with alpha_w = 89.0 to cover line 1866 (else branch)
+        (200000, 0.001, 1.5, 89.0, 500, 500),
+        # Test with smaller eps_x to get a value less than f_ywd
+        (200000, 0.0001, 1.5, 90.0, 500, 295.0),
+    ],
+)
+def test_sigma_swd_inclined_valid(
+    Es, eps_x, cot_theta, alpha_w, f_ywd, expected
+):
+    """Test sigma_swd_inclined with valid parameters.
+
+    Covers lines 1863-1874.
+    """
+    result = _section_8_2_shear.sigma_swd_inclined(
+        Es, eps_x, cot_theta, alpha_w, f_ywd
+    )
+    assert result == pytest.approx(expected, rel=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -1357,7 +1928,7 @@ def test_sigma_swd_v2_value_errors(Es, eps_x, cot_theta, alpha_w, f_ywd):
 )
 def test_shear_stress_resistance_reduced(tau_rd, m_ed, m_rd, expected):
     """Test calculation of reduced shear stress resistance."""
-    assert _section_8_2_shear.tao_Rd_m(tau_rd, m_ed, m_rd) == pytest.approx(
+    assert _section_8_2_shear.tau_Rdm(tau_rd, m_ed, m_rd) == pytest.approx(
         expected, rel=10e-2
     )
 
@@ -1368,13 +1939,14 @@ def test_shear_stress_resistance_reduced(tau_rd, m_ed, m_rd, expected):
         (-1.0, 2.0, 10.0),  # Negative tau_rd
         (5.0, -2.0, 10.0),  # Negative m_ed
         (5.0, 2.0, -10.0),  # Negative m_rd
+        (5.0, 2.0, 0),  # Zero m_rd
         (-1.0, -2.0, -10.0),  # All negative
     ],
 )
 def test_tao_Rd_m_value_errors(tau_rd, m_ed, m_rd):
-    """Test tao_Rd_m raises ValueError for negative arguments."""
+    """Test tau_Rdm raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tao_Rd_m(tau_rd, m_ed, m_rd)
+        _section_8_2_shear.tau_Rdm(tau_rd, m_ed, m_rd)
 
 
 @pytest.mark.parametrize(
@@ -1386,7 +1958,7 @@ def test_tao_Rd_m_value_errors(tau_rd, m_ed, m_rd):
 )
 def test_longitudinal_shear_stress(delta_fd, hf, delta_x, expected):
     """Test calculation of longitudinal shear stress."""
-    assert _section_8_2_shear.tao_Ed_flang(
+    assert _section_8_2_shear.tau_Ed_flange(
         delta_fd, hf, delta_x
     ) == pytest.approx(expected, rel=10e-2)
 
@@ -1405,39 +1977,7 @@ def test_longitudinal_shear_stress(delta_fd, hf, delta_x, expected):
 def test_tao_Ed_flang_value_errors(delta_fd, hf, delta_x):
     """Test tao_Ed_flang raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tao_Ed_flang(delta_fd, hf, delta_x)
-
-
-@pytest.mark.parametrize(
-    'tau_ed, sf, hf, fyd, expected',
-    [
-        (2.0, 150.0, 200.0, 500.0, 120.0),
-        (1.5, 100.0, 100.0, 400.0, 37.5),
-        (0.0, 200.0, 300.0, 600.0, 0.0),  # zero shear stress
-    ],
-)
-def test_Ast_min_flang_valid(tau_ed, sf, hf, fyd, expected):
-    """Test Ast_min_flang with valid inputs."""
-    assert _section_8_2_shear.Ast_min_flang(
-        tau_ed, sf, hf, fyd
-    ) == pytest.approx(expected, rel=1e-6)
-
-
-@pytest.mark.parametrize(
-    'tau_ed, sf, hf, fyd',
-    [
-        (-1.0, 150.0, 200.0, 500.0),  # Negative tau_ed
-        (2.0, 0.0, 200.0, 500.0),  # Zero sf
-        (2.0, -150.0, 200.0, 500.0),  # Negative sf
-        (2.0, 150.0, 0.0, 500.0),  # Zero hf
-        (2.0, 150.0, -200.0, 500.0),  # Negative hf
-        (2.0, 150.0, 200.0, -500.0),  # Negative fyd
-    ],
-)
-def test_Ast_min_flang_value_errors(tau_ed, sf, hf, fyd):
-    """Test Ast_min_flang raises ValueError for invalid arguments."""
-    with pytest.raises(ValueError):
-        _section_8_2_shear.Ast_min_flang(tau_ed, sf, hf, fyd)
+        _section_8_2_shear.tau_Ed_flange(delta_fd, hf, delta_x)
 
 
 @pytest.mark.parametrize(
@@ -1451,7 +1991,7 @@ def test_transverse_reinforcement_flange(
     tau_ed, sf, hf, fyd, cot_theta_f, expected
 ):
     """Test calculation of transverse reinforcement in the flange."""
-    assert _section_8_2_shear.Asf_flang(
+    assert _section_8_2_shear.Asf_flange(
         tau_ed, sf, hf, fyd, cot_theta_f
     ) == pytest.approx(expected, rel=10e-2)
 
@@ -1465,43 +2005,110 @@ def test_transverse_reinforcement_flange(
         (2.0, 150.0, 0.0, 500.0, 1.0),  # Zero hf
         (2.0, 150.0, -200.0, 500.0, 1.0),  # Negative hf
         (2.0, 150.0, 200.0, -500.0, 1.0),  # Negative fyd
+        (2.0, 150.0, 200.0, 0, 1.0),  # Zero fyd
+        (2.0, 150.0, 200.0, 500.0, 0.5),  # cot_theta_f < 1
     ],
 )
 def test_Asf_flang_value_errors(tau_ed, sf, hf, fyd, cot_theta_f):
-    """Test Asf_flang raises ValueError for invalid arguments."""
+    """Test Asf_flange raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.Asf_flang(tau_ed, sf, hf, fyd, cot_theta_f)
+        _section_8_2_shear.Asf_flange(tau_ed, sf, hf, fyd, cot_theta_f)
 
 
 @pytest.mark.parametrize(
-    'tau_ed, theta_f, fcd, nu, expected',
+    'tau_ed, cot_theta_f, fcd, nu, expected',
     [
-        (5, 45.0, 30.0, 0.5, 10),
-        (3, 30.0, 25.0, 0.5, 6.9282),
+        (5, 1.0, 30.0, 0.5, 10),  # cot(45°) = 1.0
+        (3, 1.732, 25.0, 0.5, 6.9282),  # cot(30°) ≈ 1.732
     ],
 )
-def test_sigma_cd_flang(tau_ed, theta_f, fcd, nu, expected):
+def test_sigma_cd_flange(tau_ed, cot_theta_f, fcd, nu, expected):
     """Test check of compression field stress in the flange."""
-    assert _section_8_2_shear.sigma_cd_flang(
-        tau_ed, theta_f, fcd, nu
+    assert _section_8_2_shear.sigma_cd_flange(
+        tau_ed, cot_theta_f, fcd, nu
     ) == pytest.approx(expected, rel=10e-2)
 
 
 @pytest.mark.parametrize(
-    'tau_ed, theta_f, fcd, nu',
+    'tau_ed, Ast_min, sf, hf, fyd, expected',
     [
-        (-1.0, 45.0, 30.0, 0.5),  # Negative tau_ed
-        (5.0, -45.0, 30.0, 0.5),  # Negative theta_f
-        (5.0, 45.0, -30.0, 0.5),  # Negative fcd
-        (5.0, 45.0, 30.0, 0.0),  # nu zero
-        (5.0, 45.0, 30.0, -0.1),  # nu negative
-        (-1.0, -45.0, -30.0, -0.1),  # All negative
+        (
+            1.0,
+            100,
+            200,
+            200,
+            500,
+            True,
+        ),  # tau_ed <= (100/(200*200))*500 = 1.25
+        (
+            2.0,
+            100,
+            200,
+            200,
+            500,
+            False,
+        ),  # tau_ed > (100/(200*200))*500 = 1.25
+        (
+            1.25,
+            100,
+            200,
+            200,
+            500,
+            True,
+        ),  # tau_ed == (100/(200*200))*500 = 1.25
     ],
 )
-def test_sigma_cd_flang_value_errors(tau_ed, theta_f, fcd, nu):
-    """Test sigma_cd_flang raises ValueError for invalid arguments."""
+def test_check_tau_Ed_flange_verification(
+    tau_ed, Ast_min, sf, hf, fyd, expected
+):
+    """Test check_tau_Ed_flange_verification."""
+    assert (
+        _section_8_2_shear.check_tau_Ed_flange_verification(
+            tau_ed, Ast_min, sf, hf, fyd
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    'tau_ed, Ast_min, sf, hf, fyd',
+    [
+        (-1.0, 100, 200, 200, 500),  # Negative tau_ed
+        (1.0, -100, 200, 200, 500),  # Negative Ast_min
+        (1.0, 100, 0, 200, 500),  # Zero sf
+        (1.0, 100, -200, 200, 500),  # Negative sf
+        (1.0, 100, 200, 0, 500),  # Zero hf
+        (1.0, 100, 200, -200, 500),  # Negative hf
+        (1.0, 100, 200, 200, 0),  # Zero fyd
+        (1.0, 100, 200, 200, -500),  # Negative fyd
+    ],
+)
+def test_check_tau_Ed_flange_verification_value_errors(
+    tau_ed, Ast_min, sf, hf, fyd
+):
+    """Test check_tau_Ed_flange_verification raises ValueError."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.sigma_cd_flang(tau_ed, theta_f, fcd, nu)
+        _section_8_2_shear.check_tau_Ed_flange_verification(
+            tau_ed, Ast_min, sf, hf, fyd
+        )
+
+
+@pytest.mark.parametrize(
+    'tau_ed, cot_theta_f, fcd, nu',
+    [
+        (-1.0, 1.0, 30.0, 0.5),  # Negative tau_ed
+        (5.0, 0.5, 30.0, 0.5),  # cot_theta_f < 1
+        (5.0, 1.0, -30.0, 0.5),  # Negative fcd
+        (5.0, 1.0, 0, 0.5),  # Zero fcd
+        (5.0, 1.0, 30.0, 0.0),  # nu zero
+        (5.0, 1.0, 30.0, -0.1),  # nu negative
+        (-1.0, 0.5, -30.0, -0.1),  # All invalid
+    ],
+)
+def test_sigma_cd_flange_value_errors(tau_ed, cot_theta_f, fcd, nu):
+    """Test sigma_cd_flange raises ValueError for invalid arguments."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.sigma_cd_flange(tau_ed, cot_theta_f, fcd, nu)
 
 
 # Valid inputs
@@ -1555,11 +2162,12 @@ def test_calculate_tau_edi(VEdi, Ai, expected):
     [
         (-10, 1000),  # Negative VEdi
         (100, -1000),  # Negative Ai
+        (100, 0),  # Zero Ai
         (-5, -1000),  # Both negative
     ],
 )
 def test_tau_Edi_value_errors(VEdi, Ai):
-    """Test tau_Edi raises ValueError for negative VEdi or Ai."""
+    """Test tau_Edi raises ValueError for invalid arguments."""
     with pytest.raises(ValueError):
         _section_8_2_shear.tau_Edi(VEdi, Ai)
 
@@ -1582,10 +2190,11 @@ def test_calculate_tau_edi_composite(beta_new, VEd, z, bi, expected):
 @pytest.mark.parametrize(
     'beta_new, VEd, z, bi',
     [
-        (-0.1, 1000, 200, 1000),
-        (0.5, -1, 200, 1000),
-        (0.5, 1000, 0, 1000),
-        (0.5, 1000, 200, -1),
+        (-0.1, 1000, 200, 1000),  # Negative beta_new
+        (0.5, -1, 200, 1000),  # Negative VEd
+        (0.5, 1000, 0, 1000),  # Zero z
+        (0.5, 1000, 200, -1),  # Negative bi
+        (0.5, 1000, 200, 0),  # Zero bi
     ],
 )
 def test_calculate_tau_edi_composite_errors(beta_new, VEd, z, bi):
@@ -1600,15 +2209,21 @@ def test_calculate_tau_edi_composite_errors(beta_new, VEd, z, bi):
         (30, 5, 10000, 100, 500, 45, 0.1, 0.2, 1.5, 5.61),
         (35, 0, 20000, 200, 550, 90, 0.2, 0.25, 1.5, 2.1638),
         (40, 12, 15000, 150, 600, 135, 0.15, 0.3, 1.5, 1.2626),
+        # alpha_deg = 35 (boundary, covers lines 2225-2228 and 2246)
+        (30, 5, 10000, 100, 500, 35, 0.1, 0.2, 1.5, 6.0345),
+        # alpha_deg = 135 (boundary, covers lines 2225-2228 and 2246)
+        (30, 5, 10000, 100, 500, 135, 0.1, 0.2, 1.5, -1.4633),
     ],
 )
 def test_tau_rdi(
     fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, expected
 ):
     """Test the basic functionality and expected results of tau_Rdi."""
+    # Calculate fcd from gamma_c (assuming eta_cc=1, k_tc=1 for test cases)
+    fcd = fck / gamma_c
     assert math.isclose(
         _section_8_2_shear.tau_Rdi(
-            fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c
+            fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, fcd
         ),
         expected,
         rel_tol=1e-3,
@@ -1616,25 +2231,57 @@ def test_tau_rdi(
 
 
 @pytest.mark.parametrize(
-    'fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c',
+    'fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, fcd',
     [
-        (-30, 5, 10000, 100, 500, 45, 0.1, 0.2, 1.5),  # Negative fck
-        (30, 5, -10000, 100, 500, 45, 0.1, 0.2, 1.5),  # Negative Ai
-        (30, 5, 10000, -100, 500, 45, 0.1, 0.2, 1.5),  # Negative Asi
-        (30, 5, 10000, 100, -500, 45, 0.1, 0.2, 1.5),  # Negative fyd
-        (30, 5, 10000, 100, 500, 20, 0.1, 0.2, 1.5),  # alpha_deg < 35
-        (30, 5, 10000, 100, 500, 140, 0.1, 0.2, 1.5),  # alpha_deg > 135
-        (30, 5, 10000, 100, 500, 45, 0.1, 0.2, -1.5),  # Negative gamma_c
-        (-30, 5, -10000, -100, -500, 20, 0.1, 0.2, -1.5),  # All negative
+        (-30, 5, 10000, 100, 500, 45, 0.1, 0.2, 1.5, 20),  # Negative fck
+        (0, 5, 10000, 100, 500, 45, 0.1, 0.2, 1.5, 0),  # Zero fck
+        (30, 5, -10000, 100, 500, 45, 0.1, 0.2, 1.5, 20),  # Negative Ai
+        (30, 5, 0, 100, 500, 45, 0.1, 0.2, 1.5, 20),  # Zero Ai
+        (30, 5, 10000, -100, 500, 45, 0.1, 0.2, 1.5, 20),  # Negative Asi
+        (30, 5, 10000, 100, -500, 45, 0.1, 0.2, 1.5, 20),  # Negative fyd
+        (30, 5, 10000, 100, 0, 45, 0.1, 0.2, 1.5, 20),  # Zero fyd
+        # alpha_deg validation check (line 2226)
+        (30, 5, 10000, 100, 500, 20, 0.1, 0.2, 1.5, 20),  # alpha_deg < 35
+        (
+            30,
+            5,
+            10000,
+            100,
+            500,
+            34,
+            0.1,
+            0.2,
+            1.5,
+            20,
+        ),  # alpha_deg < 35 (edge)
+        (30, 5, 10000, 100, 500, 140, 0.1, 0.2, 1.5, 20),  # alpha_deg > 135
+        (
+            30,
+            5,
+            10000,
+            100,
+            500,
+            136,
+            0.1,
+            0.2,
+            1.5,
+            20,
+        ),  # alpha_deg > 135 (edge)
+        (30, 5, 10000, 100, 500, 45, 0.1, 0.2, -1.5, -20),  # Negative gamma_c
+        (30, 5, 10000, 100, 500, 45, 0.1, 0.2, 0, 0),  # Zero gamma_c
+        (30, 5, 10000, 100, 500, 45, 0.1, 0.2, 1.5, 0),  # Zero fcd
+        (30, 5, 10000, 100, 500, 45, -0.1, 0.2, 1.5, 20),  # Negative cv1
+        (30, 5, 10000, 100, 500, 45, 0.1, -0.2, 1.5, 20),  # Negative mu_v
+        (-30, 5, -10000, -100, -500, 20, 0.1, 0.2, -1.5, 20),  # All negative
     ],
 )
 def test_tau_Rdi_value_errors(
-    fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c
+    fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, fcd
 ):
     """Test tau_Rdi raises ValueError."""
     with pytest.raises(ValueError):
         _section_8_2_shear.tau_Rdi(
-            fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c
+            fck, sigma_n, Ai, Asi, fyd, alpha_deg, cv1, mu_v, gamma_c, fcd
         )
 
 
@@ -1656,6 +2303,12 @@ def test_cv1(surface_roughness, tensile_stress, expected):
     )
 
 
+def test_cv1_value_errors():
+    """Test cv1 raises ValueError for unknown surface roughness."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.cv1('unknown', False)
+
+
 # Test mu_v function
 @pytest.mark.parametrize(
     'surface_roughness, expected',
@@ -1670,6 +2323,12 @@ def test_cv1(surface_roughness, tensile_stress, expected):
 def test_mu_v(surface_roughness, expected):
     """Test mu_v."""
     assert _section_8_2_shear.mu_v(surface_roughness) == expected
+
+
+def test_mu_v_value_errors():
+    """Test mu_v raises ValueError for unknown surface roughness."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.mu_v('unknown')
 
 
 # Test cv2 function
@@ -1689,6 +2348,12 @@ def test_cv2(surface_roughness, tensile_stress, expected):
     )
 
 
+def test_cv2_value_errors():
+    """Test cv2 raises ValueError for unknown surface roughness."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.cv2('unknown', False)
+
+
 # Test kv function
 @pytest.mark.parametrize(
     'surface_roughness, expected',
@@ -1702,6 +2367,12 @@ def test_cv2(surface_roughness, tensile_stress, expected):
 def test_kv(surface_roughness, expected):
     """Test kv."""
     assert _section_8_2_shear.kv(surface_roughness) == expected
+
+
+def test_kv_value_errors():
+    """Test kv raises ValueError for unknown surface roughness."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.kv('unknown')
 
 
 # Test kdowel function
@@ -1719,6 +2390,12 @@ def test_kdowel(surface_roughness, expected):
     assert _section_8_2_shear.kdowel(surface_roughness) == expected
 
 
+def test_kdowel_value_errors():
+    """Test kdowel raises ValueError for unknown surface roughness."""
+    with pytest.raises(ValueError):
+        _section_8_2_shear.kdowel('unknown')
+
+
 @pytest.mark.parametrize(
     'cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, expected',
     [
@@ -1729,31 +2406,109 @@ def test_shear_stress_resistance(
     cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, expected
 ):
     """Test the shear stress resistance calculation."""
-    result = _section_8_2_shear.tau_Rdi_ny(
-        cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel
+    # Calculate fcd from gamma_c (assuming eta_cc=1, k_tc=1 for test cases)
+    fcd = fck / gamma_c
+    result = _section_8_2_shear.tau_Rdi_no_yielding(
+        cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, fcd
     )
     assert result == pytest.approx(expected, rel=10e-3)
 
 
 @pytest.mark.parametrize(
-    'cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel',
+    'cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, fcd',
     [
-        (0.1, -30, 1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0),  # Negative fck
-        (0.1, 30, -1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0),  # Negative gamma_c
-        (0.1, 30, 1.5, 0.2, 0.3, -0.1, 0.02, 500, 0.0),  # Negative kv
-        (0.1, 30, 1.5, 0.2, 0.3, 0.1, -0.02, 500, 0.0),  # Negative rho_i
-        (0.1, 30, 1.5, 0.2, 0.3, 0.1, 0.02, -500, 0.0),  # Negative fyd
-        (0.1, 30, 1.5, 0.2, 0.3, 0.1, 0.02, 500, -0.1),  # Negative kdowel
-        (0.1, -30, -1.5, 0.2, 0.3, -0.1, -0.02, -500, -0.1),  # All negative
+        (-0.1, 30, 1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0, 20),  # Negative cv2
+        (0.1, -30, 1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0, 20),  # Negative fck
+        (0.1, 0, 1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0, 0),  # Zero fck
+        (
+            0.1,
+            30,
+            -1.5,
+            0.2,
+            0.3,
+            0.1,
+            0.02,
+            500,
+            0.0,
+            -20,
+        ),  # Negative gamma_c
+        (0.1, 30, 0, 0.2, 0.3, 0.1, 0.02, 500, 0.0, 0),  # Zero gamma_c
+        (0.1, 30, 1.5, 0.2, 0.3, 0.1, 0.02, 500, 0.0, 0),  # Zero fcd
+        # fyd validation check (line 2473)
+        (
+            0.1,
+            30,
+            1.5,
+            0.2,
+            0.3,
+            0.1,
+            0.02,
+            -500,
+            0.0,
+            20,
+        ),  # Negative fyd
+        (0.1, 30, 1.5, 0.2, 0.3, 0.1, 0.02, 0, 0.0, 20),  # Zero fyd
+        (0.1, 30, 1.5, -0.2, 0.3, 0.1, 0.02, 500, 0.0, 20),  # Negative mu_v
+        # kv validation check (line 2479)
+        (
+            0.1,
+            30,
+            1.5,
+            0.2,
+            0.3,
+            -0.1,
+            0.02,
+            500,
+            0.0,
+            20,
+        ),  # Negative kv
+        # rho_i validation check (line 2481)
+        (
+            0.1,
+            30,
+            1.5,
+            0.2,
+            0.3,
+            0.1,
+            -0.02,
+            500,
+            0.0,
+            20,
+        ),  # Negative rho_i
+        # kdowel validation check (line 2483)
+        (
+            0.1,
+            30,
+            1.5,
+            0.2,
+            0.3,
+            0.1,
+            0.02,
+            500,
+            -0.1,
+            20,
+        ),  # Negative kdowel
+        (
+            0.1,
+            -30,
+            -1.5,
+            0.2,
+            0.3,
+            -0.1,
+            -0.02,
+            -500,
+            -0.1,
+            20,
+        ),  # All negative
     ],
 )
-def test_tau_Rdi_ny_value_errors(
-    cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel
+def test_tau_Rdi_no_yielding_value_errors(
+    cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, fcd
 ):
-    """Test tau_Rdi_ny raises ValueError."""
+    """Test tau_Rdi_no_yielding raises ValueError."""
     with pytest.raises(ValueError):
-        _section_8_2_shear.tau_Rdi_ny(
-            cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel
+        _section_8_2_shear.tau_Rdi_no_yielding(
+            cv2, fck, gamma_c, mu_v, sigma_n, kv, rho_i, fyd, kdowel, fcd
         )
 
 
