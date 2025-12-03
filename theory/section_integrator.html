@@ -427,12 +427,15 @@ M_z &amp;= - \int_A y \sigma(z) \, dA = - \sum_{n=0}^N a_n \mathcal{M}_{1,n}
 \[P(y,z) = \sigma(y,z) = \sum_{m=0}^M \sum_{n=0}^N a_{m,n} y^m z^n \]</div>
 </div>
 <p>An alternative approach is to rotate the section in order to have uniaxial bending in the new reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, see figure <a class="reference internal" href="#theory-fig-marin-rotation"><span class="std std-ref">below</span></a>. In StructuralCodes we are adopting the latter approach.</p>
-<figure class="align-default" id="id2">
-<span id="theory-fig-marin-rotation"></span><img alt="../_images/FigureBendingRotated.png" src="../_images/FigureBendingRotated.png" />
-<figcaption>
-<p><span class="caption-text">Rotation of reference system for having uniaxial bending.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-marin-rotation">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FigureBendingRotated_light.png" class="only-light align-center" src="../_images/FigureBendingRotated_light.png" />
+<img alt="../_images/FigureBendingRotated_dark.png" class="only-dark align-center" src="../_images/FigureBendingRotated_dark.png" />
+<p>Rotation of reference system for having uniaxial bending.</p>
+</div>
+</div>
+</div>
 </div>
 <p>The coeficients <span class="math notranslate nohighlight">\(a_n\)</span> are dependent on the stress function <span class="math notranslate nohighlight">\(\sigma(z)\)</span>, therefore they depend on the constitutive law <span class="math notranslate nohighlight">\(\sigma(\varepsilon)\)</span>. For this reason, each constitutive law that is used with Marin integration, must implement a special <code class="docutils literal notranslate"><span class="pre">__marin__</span></code> method that returns the coefficients <span class="math notranslate nohighlight">\(a_n\)</span> for each polynomial branch that defines the constitutive law.</p>
 <p>In determination of stiffness matrix, we need to integrate the tangent modulus over the cross-section. In this case we are integrating the function <span class="math notranslate nohighlight">\(\sigma'\)</span>, where <span class="math notranslate nohighlight">\(\cdot'\)</span> indicates the derivative (i.e. the tangent modulus).</p>
@@ -483,12 +486,15 @@ a_1 &amp;= E \cdot \chi_y
 <section id="elastic-plastic-material">
 <h3>Elastic-plastic material<a class="headerlink" href="#elastic-plastic-material" title="Link to this heading">¶</a></h3>
 <p>The constitutive law of an elastic plastic material with linear hardening is represented as in the figure <a class="reference internal" href="#figure-theory-marin-ep-constitutive"><span class="std std-ref">below</span></a>.</p>
-<figure class="align-default" id="id3">
-<span id="figure-theory-marin-ep-constitutive"></span><img alt="../_images/Figure_const_ep.png" src="../_images/Figure_const_ep.png" />
-<figcaption>
-<p><span class="caption-text">Elastic plastic with linear hardening law</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="figure-theory-marin-ep-constitutive">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure_const_ep_light.png" class="only-light align-center" src="../_images/Figure_const_ep_light.png" />
+<img alt="../_images/Figure_const_ep_dark.png" class="only-dark align-center" src="../_images/Figure_const_ep_dark.png" />
+<p>Elastic plastic with linear hardening law.</p>
+</div>
+</div>
+</div>
 <p>In this case, the constitutive law cannot be expressed as a whole with a single polynomial function, but looking at the picture <a class="reference internal" href="#figure-theory-marin-ep-constitutive"><span class="std std-ref">above</span></a> we can recognize 5 different portions, each one representing a different polynomial function. The constitutive law can then be written for the five branches as:</p>
 <div class="math-wrapper docutils container" id="equation-eq-const-law-ep">
 <div class="math notranslate nohighlight" id="equation-eq-const-law-ep">
@@ -503,9 +509,9 @@ E_h \cdot \varepsilon + \Delta \sigma &amp; \text{for } \varepsilon_y \le \varep
 </div>
 <p>where <span class="math notranslate nohighlight">\(E_h\)</span> is the hardening modulus (i.e. the slope of the hardning branch) and <span class="math notranslate nohighlight">\(\Delta \sigma = f_y \cdot \left(1 - \dfrac{E_h}{E}\right)\)</span>.</p>
 <p>Substituting <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-const-law-ep">(15)</a>, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.</p>
-<div class="table-wrapper docutils container" id="id4">
-<table class="docutils align-default" id="id4">
-<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of elastic-plastic constitutive law</span><a class="headerlink" href="#id4" title="Link to this table">¶</a></caption>
+<div class="table-wrapper docutils container" id="id2">
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of elastic-plastic constitutive law</span><a class="headerlink" href="#id2" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Branch name</p></th>
 <th class="head"><p>Strain range</p></th>
@@ -552,9 +558,9 @@ E_h  &amp; \text{for } \varepsilon_y \le \varepsilon &lt; \varepsilon_u \\
 \end{cases} \end{split}\]</div>
 </div>
 <p>Therefore the marin coefficients for stiffness function are:</p>
-<div class="table-wrapper docutils container" id="id5">
-<table class="docutils align-default" id="id5">
-<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of elastic-plastic constitutive law</span><a class="headerlink" href="#id5" title="Link to this table">¶</a></caption>
+<div class="table-wrapper docutils container" id="id3">
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of elastic-plastic constitutive law</span><a class="headerlink" href="#id3" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Branch name</p></th>
 <th class="head"><p>Strain range</p></th>
@@ -585,12 +591,15 @@ E_h  &amp; \text{for } \varepsilon_y \le \varepsilon &lt; \varepsilon_u \\
 <section id="bilinear-compression">
 <h3>Bilinear compression<a class="headerlink" href="#bilinear-compression" title="Link to this heading">¶</a></h3>
 <p>The bilinear compression is characterized by no strength in tension and a linear behavior in compression up to <span class="math notranslate nohighlight">\(\varepsilon_{c0}\)</span> and then a constant stress equal to <span class="math notranslate nohighlight">\(f_c\)</span> (negative). After <span class="math notranslate nohighlight">\(\varepsilon_{cu}\)</span>, the stress drops to 0. The constituive law is depicted the figure <a class="reference internal" href="#figure-theory-marin-bilin-compr-constitutive"><span class="std std-ref">below</span></a>.</p>
-<figure class="align-default" id="id6">
-<span id="figure-theory-marin-bilin-compr-constitutive"></span><img alt="../_images/Figure_const_bilinearcompression.png" src="../_images/Figure_const_bilinearcompression.png" />
-<figcaption>
-<p><span class="caption-text">Elastic plastic with linear hardening law</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="figure-theory-marin-bilin-compr-constitutive">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure_const_bilinearcompression_light.png" class="only-light align-center" src="../_images/Figure_const_bilinearcompression_light.png" />
+<img alt="../_images/Figure_const_bilinearcompression_dark.png" class="only-dark align-center" src="../_images/Figure_const_bilinearcompression_dark.png" />
+<p>Bilinear compression constitutive law.</p>
+</div>
+</div>
+</div>
 <p>The constitutive law can be written in the following branches:</p>
 <div class="math-wrapper docutils container" id="equation-eq-const-law-bilin-compr">
 <div class="math notranslate nohighlight" id="equation-eq-const-law-bilin-compr">
@@ -603,9 +612,9 @@ f_c &amp; \text{for } \varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0} \\
 \end{cases} \end{split}\]</div>
 </div>
 <p>Substituting <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-const-law-bilin-compr">(17)</a>, one can compute the Marin coefficients for each branch. The coefficients are reported in the following table.</p>
-<div class="table-wrapper docutils container" id="id7">
-<table class="docutils align-default" id="id7">
-<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of bilinear compression constitutive law</span><a class="headerlink" href="#id7" title="Link to this table">¶</a></caption>
+<div class="table-wrapper docutils container" id="id4">
+<table class="docutils align-default" id="id4">
+<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of bilinear compression constitutive law</span><a class="headerlink" href="#id4" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Branch name</p></th>
 <th class="head"><p>Strain range</p></th>
@@ -633,9 +642,9 @@ f_c &amp; \text{for } \varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0} \\
 </table>
 </div>
 <p>The Marin coefficients for each branch for stiffness function are reported in the following table.</p>
-<div class="table-wrapper docutils container" id="id8">
-<table class="docutils align-default" id="id8">
-<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of bilinear compression constitutive law</span><a class="headerlink" href="#id8" title="Link to this table">¶</a></caption>
+<div class="table-wrapper docutils container" id="id5">
+<table class="docutils align-default" id="id5">
+<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of bilinear compression constitutive law</span><a class="headerlink" href="#id5" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Branch name</p></th>
 <th class="head"><p>Strain range</p></th>
@@ -662,12 +671,15 @@ f_c &amp; \text{for } \varepsilon_{cu} \le \varepsilon &lt; \varepsilon_{c0} \\
 <section id="parabola-rectangle">
 <h3>Parabola rectangle<a class="headerlink" href="#parabola-rectangle" title="Link to this heading">¶</a></h3>
 <p>The parabola rectangle law, typically used for concrete, cannot be written as a whole with a polynomial law. Despite that, looking at the constitutive law plotted in the figure <a class="reference internal" href="#figure-theory-marin-paraborect-constitutive"><span class="std std-ref">below</span></a>, we can recognize a portion for the parabolic branch, a portion for the constant part and finally a portion for zero stress (both in tension and for excessive compression)</p>
-<figure class="align-default" id="id9">
-<span id="figure-theory-marin-paraborect-constitutive"></span><img alt="../_images/Figure_const_parabolarectangle.png" src="../_images/Figure_const_parabolarectangle.png" />
-<figcaption>
-<p><span class="caption-text">Parabola rectangle law</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="figure-theory-marin-paraborect-constitutive">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure_const_parabolarectangle_light.png" class="only-light align-center" src="../_images/Figure_const_parabolarectangle_light.png" />
+<img alt="../_images/Figure_const_parabolarectangle_dark.png" class="only-dark align-center" src="../_images/Figure_const_parabolarectangle_dark.png" />
+<p>Parabola rectangle law.</p>
+</div>
+</div>
+</div>
 <p>The constitutive law can therefore be written as:</p>
 <div class="math-wrapper docutils container" id="equation-eq-const-law-paraborect">
 <div class="math notranslate nohighlight" id="equation-eq-const-law-paraborect">
@@ -680,9 +692,9 @@ f_c \left[ 1 - \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}} \right) ^2 \righ
 \end{cases} \end{split}\]</div>
 </div>
 <p>Substituting  <a class="reference internal" href="#equation-eq-marin-linear-strain">(10)</a> in <a class="reference internal" href="#equation-eq-const-law-paraborect">(18)</a> the Marin coefficients for each branch can be determined. They are reported in the following table.</p>
-<div class="table-wrapper docutils container" id="id10">
-<table class="docutils align-default" id="id10">
-<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of parabola rectangle constitutive law</span><a class="headerlink" href="#id10" title="Link to this table">¶</a></caption>
+<div class="table-wrapper docutils container" id="id6">
+<table class="docutils align-default" id="id6">
+<caption><span class="caption-text">Marin coefficients for stress integration for the different branches of parabola rectangle constitutive law</span><a class="headerlink" href="#id6" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Branch name</p></th>
 <th class="head"><p>Strain range</p></th>
@@ -726,9 +738,9 @@ f_c \left[ 1 - \left( 1 - \dfrac{\varepsilon}{\varepsilon_{c0}} \right) ^2 \righ
 <span class="eqno">(20)<a class="headerlink" href="#equation-eq-const-law-paraborect-stiffness-fun" title="Link to this equation">¶</a></span>\[\sigma'(z) = \dfrac{2 f_c}{\varepsilon_{c0}} \left( 1 - \dfrac{\varepsilon_0}{\varepsilon_{c0}}\right) - \dfrac{2 f_c}{\varepsilon_{c0}} \dfrac{\chi_y}{\varepsilon_{c0}} \cdot z\]</div>
 </div>
 <p>The marin coefficients for stiffness function integration are therefore:</p>
-<div class="table-wrapper docutils container" id="id11">
-<table class="docutils align-default" id="id11">
-<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of parabola rectangle constitutive law</span><a class="headerlink" href="#id11" title="Link to this table">¶</a></caption>
+<div class="table-wrapper docutils container" id="id7">
+<table class="docutils align-default" id="id7">
+<caption><span class="caption-text">Marin coefficients for stiffness integration for the different branches of parabola rectangle constitutive law</span><a class="headerlink" href="#id7" title="Link to this table">¶</a></caption>
 <thead>
 <tr class="row-odd"><th class="head"><p>Branch name</p></th>
 <th class="head"><p>Strain range</p></th>

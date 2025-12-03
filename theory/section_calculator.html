@@ -337,31 +337,38 @@ Pay attention that default-defined constitutive laws by material classes work wi
 <section id="compute-bending-strength">
 <span id="thery-compute-bending-strength"></span><h2>Compute bending strength<a class="headerlink" href="#compute-bending-strength" title="Link to this heading">¶</a></h2>
 <p>With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis.</p>
-<figure class="align-default" id="id3">
-<span id="theory-fig-bending-calc-rotated-system"></span><img alt="../_images/FigureBendingRotated.png" src="../_images/FigureBendingRotated.png" />
-<figcaption>
-<p><span class="caption-text">The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-bending-calc-rotated-system">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FigureBendingRotated_light.png" class="only-light align-center" src="../_images/FigureBendingRotated_light.png" />
+<img alt="../_images/FigureBendingRotated_dark.png" class="only-dark align-center" src="../_images/FigureBendingRotated_dark.png" />
+<p>The reference system used for computing bending strength; C indicates the compressed portion, T indicates the stretched portion.</p>
+</div>
+</div>
+</div>
 <p>In the rotated reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, the bending strength in terms of positive <span class="math notranslate nohighlight">\(M_{y^*}\)</span> is computed.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be equal to <span class="math notranslate nohighlight">\(\pi\)</span>.</p>
-<figure class="align-default" id="id4">
-<span id="theory-fig-system-uniaxial-bending"></span><img alt="../_images/FigureBendingTopCompression.png" src="../_images/FigureBendingTopCompression.png" />
-<figcaption>
-<p><span class="caption-text">Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-system-uniaxial-bending">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FigureBendingTopCompression_light.png" class="only-light align-center" src="../_images/FigureBendingTopCompression_light.png" />
+<img alt="../_images/FigureBendingTopCompression_dark.png" class="only-dark align-center" src="../_images/FigureBendingTopCompression_dark.png" />
+<p>Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.</p>
 </div>
-<div class="docutils">
+</div>
+</div>
+</div>
 <p>According to classic RC theory<a class="footnote-reference brackets" href="#leonhardt1973" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, the deformations domains could be represented as following (with domains from 1 to 6 moving respectivelly from pure tension to pure compression).</p>
-<figure class="align-default" id="id5">
-<span id="theory-fig-deformation-domain"></span><img alt="../_images/Figure_DeformationDomain.png" src="../_images/Figure_DeformationDomain.png" />
-<figcaption>
-<p><span class="caption-text">Ultimate deformation domains for uniaxial bending with or without axial force <a class="footnote-reference brackets" href="#leonhardt1973" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-deformation-domain">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FigureDeformationDomain_light.png" class="only-light align-center" src="../_images/FigureDeformationDomain_light.png" />
+<img alt="../_images/FigureDeformationDomain_dark.png" class="only-dark align-center" src="../_images/FigureDeformationDomain_dark.png" />
+<p>Ultimate deformation domains for uniaxial bending with or without axial force <a class="footnote-reference brackets" href="#leonhardt1973" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+</div>
+</div>
 </div>
 <p>The algorithm developed can be summarized as follows:</p>
 <ol class="arabic">
@@ -371,21 +378,27 @@ Pay attention that default-defined constitutive laws by material classes work wi
 <p>a. The internal axial load, defined by the balanced failure condition (i.e., the simultaneous reaching of ultimate strain in both the stretched and compressed materials), is evaluated by integrating the strain profile.</p>
 <p>b. If the internal axial load is greater than the external axial load, the neutral axis needs to be lowered, indicating excessive tension in the section. If the internal axial load is lower, the neutral axis should be raised to reduce compression.</p>
 <p>c. The strain profile is then adjusted by changing the curvature, pivoting on either the top or bottom chord. The goal is to balance the axial load and reach a solution that satisfies equilibrium. This is done solving the equation <span class="math notranslate nohighlight">\(\Delta N(\chi_{y^*})=0\)</span> where <span class="math notranslate nohighlight">\(\Delta N(\chi_{y^*})=N_{ext}-N_{int}(\chi_{y^*})\)</span>. For instance the function could be something like depicted in the following picture.</p>
-<figure class="align-default" id="id6">
-<span id="theory-fig-dn-chi"></span><img alt="../_images/FiguredN_chi.png" src="../_images/FiguredN_chi.png" />
-<figcaption>
-<p><span class="caption-text">The function <span class="math notranslate nohighlight">\(\Delta N(\chi_y^*)\)</span> the searched curvature is the intersection with the horizontal axis (i.e. when <span class="math notranslate nohighlight">\(\Delta N(\chi_y^*) = 0\)</span>).</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-dn-chi">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FiguredN_chi_light.png" class="only-light align-center" src="../_images/FiguredN_chi_light.png" />
+<img alt="../_images/FiguredN_chi_dark.png" class="only-dark align-center" src="../_images/FiguredN_chi_dark.png" />
+<p>The function <span class="math notranslate nohighlight">\(\Delta N(\chi_y^*)\)</span> the searched curvature is the intersection with the horizontal axis (i.e. when <span class="math notranslate nohighlight">\(\Delta N(\chi_y^*) = 0\)</span>).</p>
+</div>
+</div>
+</div>
 <p>Bisection algorithm permits to find the zero of the function within some iterations.</p>
 </li>
 </ol>
-<figure class="align-default" id="id7">
-<span id="theory-fig-bisection-dem"></span><img alt="../_images/bisection_demo.gif" src="../_images/bisection_demo.gif" />
-<figcaption>
-<p><span class="caption-text">Bisection algorithm for finding the strain plain that is in equilibrium with extenal axial force.</span><a class="headerlink" href="#id7" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-bisection-dem">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/bisection_demo_light.gif" class="only-light align-center" src="../_images/bisection_demo_light.gif" />
+<img alt="../_images/bisection_demo_dark.gif" class="only-dark align-center" src="../_images/bisection_demo_dark.gif" />
+<p>Bisection algorithm for finding the strain plain that is in equilibrium with extenal axial force.</p>
+</div>
+</div>
+</div>
 <ol class="arabic simple" start="4">
 <li><p><strong>Final Computation of Bending Strength</strong>: once the equilibrium strain profile is found, the bending strength is calculated by integrating the obtained strain profile. This results in the final bending strength in the rotated coordinate system described in step 1, which is then transformed back to the original coordinate system.</p></li>
 </ol>
@@ -413,12 +426,15 @@ To do so, the algorithm proceeds iterativelly, for a fixed value of curvature, s
 <p>In this way, <span class="math notranslate nohighlight">\(\varepsilon_{0,B}\)</span> increases in fast way within very few iterations (generally 2-3 iterations are enough).</p>
 <p>The value of <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_{0,B,i})\)</span> is computed and whenever <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_{0,A}) \cdot \Delta N(\varepsilon_{0,B,i}) &lt; 0\)</span> the algorithm stops having found the range <span class="math notranslate nohighlight">\([\varepsilon_{0,A}, \varepsilon_{0,B}]\)</span> where the bisection algorithm is applied. The use of this algorithm permits to find a good range where bisection algorithm is applied in an efficient way without too many iterations.</p>
 <p>Graphically this can be seen in the figure <a class="reference internal" href="#theory-fig-dn-eps0"><span class="std std-ref">below</span></a>, where the function <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)\)</span> is plotted indicating the value <span class="math notranslate nohighlight">\(\varepsilon_{0,A}\)</span> from the previous step and the two iterations needed to find <span class="math notranslate nohighlight">\(\varepsilon_{0,B}'\)</span>.</p>
-<figure class="align-default" id="id8">
-<span id="theory-fig-dn-eps0"></span><img alt="../_images/FiguredN_eps_0.png" src="../_images/FiguredN_eps_0.png" />
-<figcaption>
-<p><span class="caption-text">The function <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)\)</span> during <span class="math notranslate nohighlight">\(i\)</span>-th step of moment-curvature computation: application of the pre-find algorithm to select the range where bisection is applied.</span><a class="headerlink" href="#id8" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-dn-eps0">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FiguredN_eps_0_light.png" class="only-light align-center" src="../_images/FiguredN_eps_0_light.png" />
+<img alt="../_images/FiguredN_eps_0_dark.png" class="only-dark align-center" src="../_images/FiguredN_eps_0_dark.png" />
+<p>The function <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0)\)</span> during <span class="math notranslate nohighlight">\(i\)</span>-th step of moment-curvature computation: application of the pre-find algorithm to select the range where bisection is applied.</p>
+</div>
+</div>
+</div>
 <p>Then, the usual bisection algorithm is adopted to find the value <span class="math notranslate nohighlight">\(\varepsilon_0\)</span> for which <span class="math notranslate nohighlight">\(\Delta N(\varepsilon_0) = N_{ext} - N_{int}(\varepsilon_0)\)</span> is sufficiently near to 0.</p>
 </div>
 </section>
@@ -432,18 +448,24 @@ To do so, the algorithm proceeds iterativelly, for a fixed value of curvature, s
 <li><p><strong>Integrate stresses for all computed ultimate strain profiles</strong>: for all the strain profiles determined in step 2, the stresses are integrated computing the pair <span class="math notranslate nohighlight">\((N, M_y^*)\)</span> that represent a point in the ultimate domain profile.
 This is represented by the following image that shows for a rectangular RC section the ultimate strain profiles computed and the corresponding MN interaction domain. The different colors correspond to different domains. The same is visible in the animation <a class="reference internal" href="#theory-anim-domain-nm"><span class="std std-ref">here</span></a></p></li>
 </ol>
-<figure class="align-default" id="id9">
-<span id="theory-fig-domain-nm"></span><img alt="../_images/Figure_domain_mn.png" src="../_images/Figure_domain_mn.png" />
-<figcaption>
-<p><span class="caption-text">Ultimate strain profiles for uniaxial bending and corresponding interaction domain.</span><a class="headerlink" href="#id9" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id10">
-<span id="theory-anim-domain-nm"></span><img alt="../_images/Figure_domain_mn.gif" src="../_images/Figure_domain_mn.gif" />
-<figcaption>
-<p><span class="caption-text">Animation of ultimate strain profiles for uniaxial bending and corresponding interaction domain.</span><a class="headerlink" href="#id10" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-domain-nm">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure_domain_mn_light.png" class="only-light align-center" src="../_images/Figure_domain_mn_light.png" />
+<img alt="../_images/Figure_domain_mn_dark.png" class="only-dark align-center" src="../_images/Figure_domain_mn_dark.png" />
+<p>Ultimate strain profiles for uniaxial bending and corresponding interaction domain.</p>
+</div>
+</div>
+</div>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-anim-domain-nm">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure_domain_mn_light.gif" class="only-light align-center" src="../_images/Figure_domain_mn_light.gif" />
+<img alt="../_images/Figure_domain_mn_dark.gif" class="only-dark align-center" src="../_images/Figure_domain_mn_dark.gif" />
+<p>Animation of ultimate strain profiles for uniaxial bending and corresponding interaction domain.</p>
+</div>
+</div>
+</div>
 <ol class="arabic simple" start="4">
 <li><p><strong>Rotate back to original <span class="math notranslate nohighlight">\(yz\)</span> coordinate system</strong>: the pair of values <span class="math notranslate nohighlight">\((N, M_y^*)\)</span> is rotated back obtaining the triplet <span class="math notranslate nohighlight">\((N, M_y, M_z)\)</span></p></li>
 </ol>
@@ -454,12 +476,15 @@ This is represented by the following image that shows for a rectangular RC secti
 <p>To do so, the algorithm loops different values of angle <span class="math notranslate nohighlight">\(\theta_i\)</span> of neutral axes respect axis <span class="math notranslate nohighlight">\(y\)</span>, going from <span class="math notranslate nohighlight">\(0\)</span> to <span class="math notranslate nohighlight">\(2\pi\)</span> (the number of discretizations can be customized with the parameter <code class="docutils literal notranslate"><span class="pre">num_theta</span></code> whose default value is equal to 32).
 For each value of the angle <span class="math notranslate nohighlight">\(\theta_i\)</span>, the algorithm proceeds as the case of unixial bending (<a class="reference internal" href="#theory-nm-domain"><span class="std std-ref">here</span></a>).
 The final result is represented by the data structure collecting for all points the triplet <span class="math notranslate nohighlight">\((N, M_y, M_z)\)</span> and the corresponding ultimate strain profile.</p>
-<figure class="align-default" id="id11">
-<span id="theory-figure-nmm"></span><img alt="../_images/Figure_domain_nmm.png" src="../_images/Figure_domain_nmm.png" />
-<figcaption>
-<p><span class="caption-text">Left: ultimate domain NMM. Right: corresponding points in terms of N, <span class="math notranslate nohighlight">\(\chi_y\)</span>, <span class="math notranslate nohighlight">\(\chi_z\)</span>.</span><a class="headerlink" href="#id11" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-figure-nmm">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure_domain_nmm_light.png" class="only-light align-center" src="../_images/Figure_domain_nmm_light.png" />
+<img alt="../_images/Figure_domain_nmm_dark.png" class="only-dark align-center" src="../_images/Figure_domain_nmm_dark.png" />
+<p>Left: ultimate domain NMM. Right: corresponding points in terms of N, <span class="math notranslate nohighlight">\(\chi_y\)</span>, <span class="math notranslate nohighlight">\(\chi_z\)</span>.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="compute-mm-interaction-domain">
 <h2>Compute MM interaction domain<a class="headerlink" href="#compute-mm-interaction-domain" title="Link to this heading">¶</a></h2>
@@ -480,8 +505,8 @@ The final result is represented by the data structure collecting for all points 
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header sd-bg-primary sd-bg-text-primary">
 <span class="sd-summary-icon"><svg version="1.1" width="1.0em" height="1.0em" class="sd-octicon sd-octicon-code" viewBox="0 0 16 16" aria-hidden="true"><path d="m11.28 3.22 4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L13.94 8l-3.72-3.72a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215Zm-6.56 0a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L2.06 8l3.72 3.72a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L.47 8.53a.75.75 0 0 1 0-1.06Z"></path></svg></span><span class="sd-summary-text">Syntax</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
-<div class="literal-block-wrapper docutils container" id="id12">
-<div class="code-block-caption"><span class="caption-text">Create many slices of MM interaction domains to have a full NMM domain.</span><a class="headerlink" href="#id12" title="Link to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Create many slices of MM interaction domains to have a full NMM domain.</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
@@ -562,12 +587,15 @@ The final result is represented by the data structure collecting for all points 
 </div>
 </div>
 </details><p>The obtain figure is shown in the figure <a class="reference internal" href="#theory-figure-many-mm">below</a>.</p>
-<figure class="align-default" id="id13">
-<span id="theory-figure-many-mm"></span><img alt="../_images/Figure-many-mm-3d.png" src="../_images/Figure-many-mm-3d.png" />
-<figcaption>
-<p><span class="caption-text">Ultimate domain NMM obtained as a set of slices computed as MM interaction domains.</span><a class="headerlink" href="#id13" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-figure-many-mm">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/Figure-many-mm-3d_light.png" class="only-light align-center" src="../_images/Figure-many-mm-3d_light.png" />
+<img alt="../_images/Figure-many-mm-3d_dark.png" class="only-dark align-center" src="../_images/Figure-many-mm-3d_dark.png" />
+<p>Ultimate domain NMM obtained as a set of slices computed as MM interaction domains.</p>
+</div>
+</div>
+</div>
 </div>
 </section>
 <section id="compute-strain-profile-for-given-external-forces">

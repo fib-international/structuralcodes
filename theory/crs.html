@@ -337,12 +337,15 @@
 </dl>
 <p>Note that this coordinate system is consistent with graphical representations, where Shapely operates in screen coordinates <span class="math notranslate nohighlight">\(xy\)</span>, mapped to <strong>GRS</strong> coordinates as <span class="math notranslate nohighlight">\(yz\)</span>.</p>
 <p>The figure <a class="reference internal" href="#theory-fig-coordinate-system">below</a> illustrates the coordinate system in a rectangular geometry.</p>
-<figure class="align-default" id="id1">
-<span id="theory-fig-coordinate-system"></span><img alt="../_images/FigureGRS.png" src="../_images/FigureGRS.png" />
-<figcaption>
-<p><span class="caption-text">The coordinate system adopted in StructuralCodes shown on a rectangular geometry.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-coordinate-system">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FigureGRS_light.png" class="only-light align-center" src="../_images/FigureGRS_light.png" />
+<img alt="../_images/FigureGRS_dark.png" class="only-dark align-center" src="../_images/FigureGRS_dark.png" />
+<p>The coordinate system adopted in StructuralCodes shown on a rectangular geometry.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="sign-conventions">
 <span id="theory-sign-convention"></span><h2>Sign conventions<a class="headerlink" href="#sign-conventions" title="Link to this heading">¶</a></h2>
@@ -361,21 +364,29 @@
 <dt><strong>Loads</strong></dt><dd><p>Act in the origin of the <strong>GRS</strong>.</p>
 </dd>
 </dl>
-<figure class="align-default" id="id2">
-<span id="theory-fig-moment-signs"></span><img alt="../_images/FigureSigns.png" src="../_images/FigureSigns.png" />
-<figcaption>
-<p><span class="caption-text">The definition of positive moments.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-moment-signs">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<img alt="../_images/FigureSigns_light.png" class="only-light align-center" src="../_images/FigureSigns_light.png" />
+<img alt="../_images/FigureSigns_dark.png" class="only-dark align-center" src="../_images/FigureSigns_dark.png" />
+<p>The definition of positive moments.</p>
+</div>
+</div>
+</div>
 <div class="caution admonition">
 <p class="admonition-title">Loads act in the origin!</p>
 <p>Pay particular attention to <strong>loads</strong>. When the section is subjected to axial load, this is considered acting in the origin, i.e. <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">0)</span></code>. If the center of gravity of the section is not aligned with the origin, offset moments are generated, as illustrated in the figure <a class="reference internal" href="#theory-fig-geometry-not-in-origin">below</a>. If you want the load to act on the center of the geometry, translate the geometry in order to have the center in <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">0)</span></code>.</p>
-<figure class="align-default" id="id3">
-<span id="theory-fig-geometry-not-in-origin"></span><img alt="../_images/FigureLoadOrigin.png" src="../_images/FigureLoadOrigin.png" />
-<figcaption>
-<p><span class="caption-text">Illustration of the offset moments that are generated when a geometry which is not aligned with the origin is subjected to an axial force.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
-</figcaption>
-</figure>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-geometry-not-in-origin">
+<div class="sd-row docutils">
+<div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
+<a class="only-light reference internal image-reference" href="../_images/FigureLoadOrigin_light.png"><img alt="../_images/FigureLoadOrigin_light.png" class="only-light align-center" src="../_images/FigureLoadOrigin_light.png" style="width: 60%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/FigureLoadOrigin_dark.png"><img alt="../_images/FigureLoadOrigin_dark.png" class="only-dark align-center" src="../_images/FigureLoadOrigin_dark.png" style="width: 60%;" />
+</a>
+<p>Illustration of the offset moments that are generated when a geometry which is not aligned with the origin is subjected to an axial force.</p>
+</div>
+</div>
+</div>
 </div>
 </section>
 </section>
