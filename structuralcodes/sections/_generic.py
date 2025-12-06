@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy.linalg import lu_factor, lu_solve
 from shapely import MultiPolygon
+from shapely.geometry import Point
 from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
@@ -1493,3 +1494,82 @@ class GenericSectionCalculator(SectionCalculator):
             raise StopIteration('Maximum number of iterations reached.')
 
         return strain.tolist()
+
+    def get_stress_point(
+        self,
+        y: float,
+        z: float,
+        eps_a: float,
+        chi_y: float,
+        chi_z: float,
+        where: t.Literal[0, 1, 2] = 0,
+    ) -> t.List[s_res.PointStressResult]:
+        """Get the stress at a given point (y, z) inside the cross-section.
+
+        Evaluates all geometries that contain the point and returns a list
+        of results. The `where` parameter filters which geometry types to
+        evaluate.
+
+        Args:
+            y (float): Y-coordinate of the point.
+            z (float): Z-coordinate of the point.
+            eps_a (float): Strain at (0,0).
+            chi_y (float): Curvature around the Y-axis (1/mm).
+            chi_z (float): Curvature around the Z-axis (1/mm).
+            where (int): 0: all geometries; 1: surface geometries only;
+                2: point geometries only.
+
+        Returns:
+            List[PointStressResult]: List of stress results at the point
+                (y, z). Returns an empty list if the point is not found
+                within any geometry.
+        """
+        if y is None or z is None:
+            return []
+
+        geom = self.section.geometry
+        pt = Point(y, z)
+        results = []
+
+        # Calculate strain at the point
+        # According to the codebase convention:
+        # eps = eps_a + chi_y * z - chi_z * y
+        strain = eps_a + z * chi_y - y * chi_z
+
+        # Check point geometries (reinforcement)
+        if where in [0, 2]:
+            for g in geom.point_geometries:
+                center = g._point
+                r = g._diameter / 2
+                poly = center.buffer(r)
+                if poly.contains(pt) or poly.touches(pt):
+                    stress = g.material.constitutive_law.get_stress(strain)
+                    results.append(
+                        s_res.PointStressResult(
+                            y=y,
+                            z=z,
+                            strain=strain,
+                            stress=stress,
+                            geometry_name=g.name,
+                            geometry_group_label=g.group_label,
+                        )
+                    )
+
+        # Check surface geometries
+        if where in [0, 1]:
+            for g in geom.geometries:
+                poly = g.polygon
+                if poly.contains(pt) or poly.touches(pt):
+                    stress = g.material.constitutive_law.get_stress(strain)
+                    results.append(
+                        s_res.PointStressResult(
+                            y=y,
+                            z=z,
+                            strain=strain,
+                            stress=stress,
+                            geometry_name=g.name,
+                            geometry_group_label=g.group_label,
+                        )
+                    )
+
+        return results
