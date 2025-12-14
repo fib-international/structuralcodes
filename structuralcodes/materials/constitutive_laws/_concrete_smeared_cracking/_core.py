@@ -62,11 +62,11 @@ class ConcreteSmearedCracking:
         # Establish strain transformation matrix
         T = establish_strain_transformation_matrix(phi=phi)
 
-        # Compressive-strength reduction factor due to lateral tension.
-        beta = self.strength_reduction_lateral_cracking.reduction(eps_p)
-
         # Include the influence of Poisson's ratio on the principal strains.
         eps_pf = self.calculate_effective_principal_strains(eps_p)
+
+        # Compressive-strength reduction factor due to lateral tension.
+        beta = self.strength_reduction_lateral_cracking.reduction(eps_pf)
 
         # Compute the principal stresses from the uniaxial compression law.
         sig_p = self.uniaxial_compression.get_stress(eps_pf)
@@ -89,35 +89,28 @@ class ConcreteSmearedCracking:
         # Establish strain transformation matrix
         T = establish_strain_transformation_matrix(phi=phi)
 
-        # Compressive-strength reduction factor due to lateral tension.
-        beta = self.strength_reduction_lateral_cracking.reduction(eps_p)
-
         # Poisson correction
         eps_pf = self.calculate_effective_principal_strains(eps_p)
+        cracked = self.cracking_criterion.cracked(eps_p=eps_pf)
 
         # Establish the diagonal of material stiffness matrix
         D = self.uniaxial_compression.get_secant(eps_pf)
+
+        # Compressive-strength reduction factor due to lateral tension.
+        beta = self.strength_reduction_lateral_cracking.reduction(eps_pf)
 
         # Scale down compressive stiffness with strength reduction factor
         D[eps_pf < 0] *= beta
 
         # Correct for the poisson effect
-        C = self.poisson_reduction.poisson_matrix(
-            self.cracking_criterion.cracked(eps_p=eps_p)
-        ) @ np.diag(D)
+        C = self.poisson_reduction.poisson_matrix(cracked=cracked) @ np.diag(D)
 
         # Ensure symmetry
         C = 0.5 * (C + C.T)
 
         # Shear modulus
         G_value = D.mean() / (
-            2
-            * (
-                1
-                + self.poisson_reduction.nu(
-                    self.cracking_criterion.cracked(eps_p=eps_p)
-                )
-            )
+            2 * (1 + self.poisson_reduction.nu(cracked=cracked))
         )
         G_value = max(G_value, 1e-4 * self.initial_modulus_compression)
         G_12 = np.array([[G_value]])  # Shape (1, 1)
@@ -146,12 +139,18 @@ class ConcreteSmearedCracking:
         Poisson's ratio. Taken from 'Nonlinear Analysis of Reinforced-Concrete
         Shells' by M. A. Polak and F. J. Vecchio (1993).
         """
-        return (
-            self.poisson_reduction.poisson_matrix(
-                cracked=self.cracking_criterion.cracked(eps_p=eps_p)
-            )
-            @ eps_p
+        # Calculate the effective principal strains assuming uncracked
+        eps_pf_uncracked = (
+            self.poisson_reduction.poisson_matrix(cracked=False) @ eps_p
         )
+
+        # If the assumption of uncracked holds after calculating effective
+        # strains, return the effective uncracked principal strains
+        if not self.cracking_criterion.cracked(eps_p=eps_pf_uncracked):
+            return eps_pf_uncracked
+
+        # Else, return the effective principal strains assuming cracked
+        return self.poisson_reduction.poisson_matrix(cracked=True) @ eps_p
 
     @property
     def uniaxial_compression(self) -> ConstitutiveLaw:
