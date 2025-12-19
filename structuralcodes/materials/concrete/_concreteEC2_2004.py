@@ -392,11 +392,11 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             float: The maximum strength at failure of concrete.
 
         Note:
-            The returned value is derived from fcm if eps_cu1 is not manually
+            The returned value is derived from fck if eps_cu1 is not manually
             provided when initializing the object.
         """
         if self._eps_cu1 is None:
-            return ec2_2004.eps_cu1(self.fcm)
+            return ec2_2004.eps_cu1(self.fck)
         return self._eps_cu1
 
     @property
