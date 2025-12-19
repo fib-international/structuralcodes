@@ -1003,6 +1003,7 @@ class GenericSectionCalculator(SectionCalculator):
         type_4: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
         type_5: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
         type_6: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
+        complete_domain: bool = False,
     ) -> s_res.NMInteractionDomain:
         """Calculate the NM interaction domain.
 
@@ -1037,6 +1038,9 @@ class GenericSectionCalculator(SectionCalculator):
                 type_1 for options.
             type_6 (str): Type of spacing for field 6 (default = 'linear'). See
                 type_1 for options.
+            complete_domain (bool): Flag to indicate if only the part of the
+                domain related to the negative moment is returned (False), or
+                if the positive part of the domain is also included (True).
 
         Returns:
             NMInteractionDomain: The calculation results.
@@ -1053,7 +1057,7 @@ class GenericSectionCalculator(SectionCalculator):
                 )
             )
 
-        # Get ultimate strain profiles for theta angle
+        # Get ultimate strain profiles for theta = theta
         strains, field_num = self._compute_ultimate_strain_profiles(
             theta=theta,
             num_1=num_1,
@@ -1069,6 +1073,29 @@ class GenericSectionCalculator(SectionCalculator):
             type_5=type_5,
             type_6=type_6,
         )
+
+        if complete_domain:
+            # Add strain profiles for theta = (theta + pi)
+            additional_strains, additional_field_num = (
+                self._compute_ultimate_strain_profiles(
+                    theta=theta + np.pi,
+                    num_1=num_1,
+                    num_2=num_2,
+                    num_3=num_3,
+                    num_4=num_4,
+                    num_5=num_5,
+                    num_6=num_6,
+                    type_1=type_1,
+                    type_2=type_2,
+                    type_3=type_3,
+                    type_4=type_4,
+                    type_5=type_5,
+                    type_6=type_6,
+                )
+            )
+            # Here, we should make sure that
+            strains = np.array([*strains, *additional_strains[-2:0:-1]])
+            field_num = np.array([*field_num, *additional_field_num[-2:0:-1]])
 
         # integrate all strain profiles
         forces = np.zeros_like(strains)
