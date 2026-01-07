@@ -45,6 +45,7 @@ from ._concrete_material_properties import (
     k_sargin,
     n_parabolic_rectangular,
 )
+from ._cracking_restraint_imposed_deformations import eps_sm_eps_cm_m1
 from ._reinforcement_material_properties import (
     epsud,
     fyd,
@@ -94,6 +95,7 @@ __all__ = [
     'Asw_s_required',
     'alpha_e',
     'eps_sm_eps_cm',
+    'eps_sm_eps_cm_m1',
     'hc_eff',
     'k',
     'k1',
