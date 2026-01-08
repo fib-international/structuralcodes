@@ -104,3 +104,9 @@ The following functions are related to calculating crack widths.
 ```{eval-rst}
 .. autofunction:: structuralcodes.codes.ec2_2004.As_min_2
 ```
+
+## Crack widths due to restraint of imposed deformations
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.eps_sm_eps_cm_restraint_end
+```
