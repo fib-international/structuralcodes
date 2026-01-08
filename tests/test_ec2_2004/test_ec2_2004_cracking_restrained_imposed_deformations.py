@@ -24,7 +24,7 @@ def test_eps_sm_eps_cm_m1_returns_expected_values(
     """Test that eps_sm_cm_m1 returns expected values."""
     # Assert
     assert math.isclose(
-        _cracking_restraint_imposed_deformations.eps_sm_eps_cm_m1(
+        _cracking_restraint_imposed_deformations.eps_sm_eps_cm_restraint_end(
             alpha_e, rho_p_eff, kc, k, fct_eff, Es
         ),
         expected,

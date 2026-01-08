@@ -1,7 +1,7 @@
 """Collection of functions from EUROCODE 1992-3:2006."""
 
 
-def eps_sm_eps_cm_m1(
+def eps_sm_eps_cm_restraint_end(
     alpha_e: float,
     rho_p_eff: float,
     kc: float,
