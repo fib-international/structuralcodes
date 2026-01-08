@@ -1658,3 +1658,79 @@ def test_issue_cracked_properties():
     assert cracked_properties_before.isclose(
         cracked_properties_after, rtol=1e-3, atol=1e-6
     )
+
+
+def test_mn_full_domain():
+    """Test calculating the full MN interaction domain."""
+    # Set parameters
+    width = 250
+    height = 500
+    diameter_reinf = 25
+    cover = 50
+
+    fck = 45
+    fyk = 500
+    Es = 200e3
+    epsuk = 6e-2
+
+    # Create materials
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement = ReinforcementEC2_2004(fyk=fyk, Es=Es, ftk=fyk, epsuk=epsuk)
+
+    # Create geometry
+    z_reinforcement = height / 2 - cover - diameter_reinf / 2
+    y_reinforcement = width / 2 - cover - diameter_reinf / 2
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    for z in (-z_reinforcement, z_reinforcement):
+        geometry = add_reinforcement_line(
+            geometry,
+            (z, -y_reinforcement),
+            (z, y_reinforcement),
+            diameter_reinf,
+            reinforcement,
+            n=2,
+        )
+
+    # Create section
+    section = GenericSection(geometry, integrator='fiber')
+
+    # Calculate interaction domain for theta = 0
+    interaction_domain_0 = (
+        section.section_calculator.calculate_nm_interaction_domain(theta=0)
+    )
+
+    # Calculate interaction domain for theta = pi
+    interaction_domain_180 = (
+        section.section_calculator.calculate_nm_interaction_domain(theta=np.pi)
+    )
+
+    # Calculate the full interaction domain
+    interaction_domain_full = (
+        section.section_calculator.calculate_nm_interaction_domain(
+            complete_domain=True
+        )
+    )
+
+    # Combine theta = 0 and theta = 180 to obtain the full domain
+    interaction_domain_full_combined_n = [
+        *interaction_domain_0.n,
+        *interaction_domain_180.n[-2:0:-1],
+    ]
+    interaction_domain_full_combined_my = [
+        *interaction_domain_0.m_y,
+        *interaction_domain_180.m_y[-2:0:-1],
+    ]
+
+    assert (
+        len(interaction_domain_full.n)
+        == len(interaction_domain_0.n) + len(interaction_domain_180.n) - 2
+    )
+    assert np.allclose(
+        interaction_domain_full.n, interaction_domain_full_combined_n
+    )
+    assert np.allclose(
+        interaction_domain_full.m_y, interaction_domain_full_combined_my
+    )
