@@ -10,8 +10,9 @@ def eps_sm_eps_cm_restraint_end(
     Es: float,
 ) -> float:
     """Returns the strain difference (epsilon_sm - epsilon_cm) needed to
-    compute the crack width for restraint member at its end according
-    to equation M.1.
+    compute the crack width for restraint member at its end.
+
+    EN 1992-3:2006, Eq. (M.1).
 
     Args:
         alpha_e (float): Is the ratio Es/Ecm.
@@ -31,6 +32,9 @@ def eps_sm_eps_cm_restraint_end(
             expected to occur: fct_eff=fctm or fctm(t) if crack is expected
             earlier than 28 days.
         Es (float): Steel elastic modulus in MPa.
+
+    Returns:
+        float: The calculated strain difference.
     """
     return (
         0.5 * alpha_e * kc * k * fct_eff * (1 + 1 / (alpha_e * rho_p_eff)) / Es
