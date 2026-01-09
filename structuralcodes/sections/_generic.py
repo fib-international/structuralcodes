@@ -1093,9 +1093,10 @@ class GenericSectionCalculator(SectionCalculator):
                     type_6=type_6,
                 )
             )
-            # Here, we should make sure that
-            strains = np.array([*strains, *additional_strains[-2:0:-1]])
-            field_num = np.array([*field_num, *additional_field_num[-2:0:-1]])
+            strains = np.concatenate((strains, additional_strains[-2:0:-1]))
+            field_num = np.concatenate(
+                (field_num, additional_field_num[-2:0:-1])
+            )
 
         # integrate all strain profiles
         forces = np.zeros_like(strains)
