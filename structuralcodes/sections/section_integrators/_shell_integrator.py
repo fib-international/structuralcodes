@@ -65,8 +65,11 @@ class ShellFiberIntegrator(SectionIntegrator):
         prepared_input = []
         IA = []
         z_list = []
+
+        # A positive in-plane strain gives tension
+        # A positive curvature gives a negative strain for a positive z-value
         for z in z_coords:
-            fiber_strain = strain[:3] + z * strain[3:]
+            fiber_strain = strain[:3] - z * strain[3:]
             if integrate == 'stress':
                 integrand = material.constitutive_law.get_stress(fiber_strain)
             elif integrate == 'modulus':
@@ -81,7 +84,7 @@ class ShellFiberIntegrator(SectionIntegrator):
             z_r = r.z
             material = r.material
 
-            fiber_strain = strain[:3] + z_r * strain[3:]
+            fiber_strain = strain[:3] - z_r * strain[3:]
             eps_sj = r.T @ fiber_strain
 
             if integrate == 'stress':
@@ -118,9 +121,12 @@ class ShellFiberIntegrator(SectionIntegrator):
         Nx = np.sum(fiber_stress[:, 0])
         Ny = np.sum(fiber_stress[:, 1])
         Nxy = np.sum(fiber_stress[:, 2])
-        Mx = np.sum(fiber_stress[:, 0] * z)
-        My = np.sum(fiber_stress[:, 1] * z)
-        Mxy = np.sum(fiber_stress[:, 2] * z)
+
+        # A positive stress at a positive z-value gives a negative moment
+        # contribution
+        Mx = -np.sum(fiber_stress[:, 0] * z)
+        My = -np.sum(fiber_stress[:, 1] * z)
+        Mxy = -np.sum(fiber_stress[:, 2] * z)
         return Nx, Ny, Nxy, Mx, My, Mxy
 
     def integrate_modulus(
@@ -142,7 +148,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         D = np.zeros((3, 3))
         for C_layer, z_i in zip(MA, z):
             A += C_layer
-            B += z_i * C_layer
+            B -= z_i * C_layer
             D += z_i**2 * C_layer
 
         return np.block([[A, B], [B, D]])
