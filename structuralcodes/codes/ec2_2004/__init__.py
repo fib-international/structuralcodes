@@ -31,6 +31,9 @@ from ._concrete_creep_and_shrinkage import (
 )
 from ._concrete_material_properties import (
     Ecm,
+    beta_cc,
+    beta_ct,
+    beta_E,
     eps_c1,
     eps_c2,
     eps_c3,
@@ -164,6 +167,9 @@ __all__ = [
     'phi_RH',
     't0_adj',
     't_T',
+    'beta_cc',
+    'beta_ct',
+    'beta_E',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2004'

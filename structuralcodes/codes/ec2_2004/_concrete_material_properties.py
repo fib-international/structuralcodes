@@ -1,6 +1,11 @@
 """Concrete material properties according to Tab. 3.1."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import math
+
+import numpy as np
+from numpy.typing import ArrayLike
 
 from structuralcodes.codes import mc2010
 
@@ -237,3 +242,65 @@ def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
         float: The design compressive strength of concrete in MPa
     """
     return abs(alpha_cc) * abs(fck) / abs(gamma_c)
+
+
+def beta_cc(t: ArrayLike, s: float) -> ArrayLike:
+    """The time development function for compressive strength of concrete.
+
+    EN 1992-1-1:2004, Eq. (3.2)
+
+    Args:
+        t (ArrayLike): The time in days to evaluate the development function
+            for.
+        s (float): The scale factor in the exponent for the time development
+            function. s = 0.20 for class R, 0.25 for class N, and 0.38 for
+            class N.
+
+    Returns:
+        ArrayLike: The value of the time development function.
+    """
+    return np.exp(s * (1 - np.sqrt(28 / t)))
+
+
+def beta_ct(t: ArrayLike, s: float) -> ArrayLike:
+    """The time development function for tensile strength of concrete.
+
+    EN 1992-1-1:2004, part of Eq. (3.4)
+
+    Args:
+        t (ArrayLike): The time in days to evaluate the development function
+            for.
+        s (float): The scale factor in the exponent for the time development
+            function. s = 0.20 for class R, 0.25 for class N, and 0.38 for
+            class N.
+
+    Returns:
+        ArrayLike: The value of the time development function.
+    """
+    if np.isscalar(t):
+        beta = beta_cc(t, s)
+        if t < 28:
+            return beta
+        return np.pow(beta, 2 / 3)
+    t = np.atleast_1d(t)
+    beta = beta_cc(t, s)
+    beta[t >= 28] = np.pow(beta[t >= 28], 2 / 3)
+    return beta
+
+
+def beta_E(t: ArrayLike, s: float) -> ArrayLike:
+    """The time development function for Young's modulus of concrete.
+
+    EN 1992-1-1:2004, part of Eq. (3.5)
+
+    Args:
+        t (ArrayLike): The time in days to evaluate the development function
+            for.
+        s (float): The scale factor in the exponent for the time development
+            function. s = 0.20 for class R, 0.25 for class N, and 0.38 for
+            class N.
+
+    Returns:
+        ArrayLike: The value of the time development function.
+    """
+    return np.pow(beta_cc(t, s), 0.3)
