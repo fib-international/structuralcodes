@@ -59,3 +59,17 @@ The following functions are related to calculation of material properties of con
 ```{eval-rst}
 .. autofunction:: structuralcodes.codes.ec2_2004.n_parabolic_rectangular
 ```
+
+## Time development of properties
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.beta_cc
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.beta_ct
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.beta_E
+```
