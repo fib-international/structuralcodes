@@ -6,9 +6,14 @@ import numpy as np
 import pytest
 
 from structuralcodes.codes.ec2_2004._concrete_material_properties import (
+    Ecm,
+    Ecm_time,
     beta_cc,
     beta_ct,
     beta_E,
+    fcm_time,
+    fctm,
+    fctm_time,
     s_time_development,
 )
 
@@ -85,3 +90,57 @@ def test_s_time_development(
     else:
         with pytest.raises(ValueError):
             s_time_development(cement_class)
+
+
+@pytest.mark.parametrize('s', (0.2, 0.25, 0.38))
+@pytest.mark.parametrize('fcm', (20, 35, 65))
+def test_ecm_time(fcm: float, s: float):
+    """Test the function for development of Young's modulus with time."""
+    # Arrange
+    t_max = 367
+    E_reference = Ecm(fcm=fcm)
+    _beta_E = beta_E(t_max, s)
+    _beta_cc = beta_cc(t_max, s)
+    fcm_t = _beta_cc * fcm
+    Ecm_t_beta = E_reference * _beta_E
+
+    # Act
+    Ecm_t = Ecm_time(fcm, fcm_t, E_reference)
+
+    # Assert
+    assert np.isclose(Ecm_t, Ecm_t_beta)
+
+
+@pytest.mark.parametrize('s', (0.2, 0.25, 0.38))
+@pytest.mark.parametrize('fcm', (20, 35, 65))
+def test_fcm_time(fcm: float, s: float):
+    """Test the function for development of compressive strength with time."""
+    # Arrange
+    t_max = 367
+    _beta_cc = beta_cc(t_max, s)
+    fcm_t_beta = _beta_cc * fcm
+
+    # Act
+    fcm_t = fcm_time(fcm, _beta_cc)
+
+    # Assert
+    assert np.isclose(fcm_t, fcm_t_beta)
+
+
+@pytest.mark.parametrize('t', (26, 35, 367))
+@pytest.mark.parametrize('s', (0.2, 0.25, 0.38))
+@pytest.mark.parametrize('fcm', (20, 35, 65))
+def test_fctm_time(fcm: float, s: float, t: float):
+    """Test the function for development of tensile strength with time."""
+    # Arrange
+    fctm_reference = fctm(fck=fcm - 8)
+    _beta_cc = beta_cc(t, s)
+    _beta_ct = beta_ct(t, s)
+    alpha = 1 if t < 28 else 2 / 3
+    fctm_t_beta = _beta_ct * fctm_reference
+
+    # Act
+    fctm_t = fctm_time(fctm_reference, _beta_cc, alpha)
+
+    # Assert
+    assert np.isclose(fctm_t, fctm_t_beta)

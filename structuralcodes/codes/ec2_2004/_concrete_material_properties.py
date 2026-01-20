@@ -342,3 +342,65 @@ def s_time_development(cement_class: t.Literal['S', 'N', 'R']) -> float:
             )
         )
     return s
+
+
+def fcm_time(fcm: float, beta_cc: ArrayLike) -> ArrayLike:
+    """Calculate the compressive strength as function of time.
+
+    EN 1992-1-1:2004, Eq. (3.1).
+
+    Args:
+        fcm (float): The reference value for the compressive strength.
+        beta_cc (ArrayLike): The value(s) of the time development function.
+
+    Returns:
+        ArrayLike: The calculated value(s) of the compressive strength.
+
+    Note:
+        The value of beta_cc should be calculated with the function beta_cc.
+    """
+    return fcm * beta_cc
+
+
+def fctm_time(fctm: float, beta_cc: ArrayLike, alpha: ArrayLike) -> ArrayLike:
+    """Calculate the tensile strength as function of time.
+
+    EN 1992-1-1:2004, Eq. (3.4).
+
+    Args:
+        fctm (float): The reference value for the tensile strength.
+        beta_cc (ArrayLike): The value(s) of the time development function.
+        alpha (ArrayLike): An exponent for the time development function. It
+            should be set to 1 for t < 28, and 2/3 else.
+
+    Returns:
+        ArrayLike: The calculated value(s) of the tensile strength.
+
+    Note:
+        The value of beta_cc should be calculated with the function beta_cc.
+        Alternatively, the time development function for the tensile strength
+        could be calculated directly with the function beta_ct.
+    """
+    return np.pow(beta_cc, alpha) * fctm
+
+
+def Ecm_time(fcm: float, fcm_time: ArrayLike, Ecm: float) -> ArrayLike:
+    """Calculate the Young's modulus as function of time.
+
+    EN 1992-1-1:2004, Eq. (3.5).
+
+    Args:
+        fcm (float): The reference value for the compressive strength.
+        fcm_time (float): The value(s) of the compressive strength at the
+            point(s) in time.
+        Ecm (float): The reference value for the Young's modulus.
+
+    Returns:
+        ArrayLike: The calculated value(s) of the Young's modulus.
+
+    Note:
+        The value of fcm_time should be calculated with the function fcm_time.
+        Alternatively, the time development function for the Young's modulus
+        could be calculated directly with the function beta_E.
+    """
+    return np.pow(fcm_time / fcm, 0.3) * Ecm

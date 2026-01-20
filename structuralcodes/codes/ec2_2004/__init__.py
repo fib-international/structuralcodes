@@ -31,6 +31,7 @@ from ._concrete_creep_and_shrinkage import (
 )
 from ._concrete_material_properties import (
     Ecm,
+    Ecm_time,
     beta_cc,
     beta_ct,
     beta_E,
@@ -42,9 +43,11 @@ from ._concrete_material_properties import (
     eps_cu3,
     fcd,
     fcm,
+    fcm_time,
     fctk_5,
     fctk_95,
     fctm,
+    fctm_time,
     k_sargin,
     n_parabolic_rectangular,
     s_time_development,
@@ -172,6 +175,9 @@ __all__ = [
     'beta_ct',
     'beta_E',
     's_time_development',
+    'fcm_time',
+    'fctm_time',
+    'Ecm_time',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2004'

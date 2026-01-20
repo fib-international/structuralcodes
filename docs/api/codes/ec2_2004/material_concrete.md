@@ -77,3 +77,15 @@ The following functions are related to calculation of material properties of con
 ```{eval-rst}
 .. autofunction:: structuralcodes.codes.ec2_2004.s_time_development
 ```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.fcm_time
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.fctm_time
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2004.Ecm_time
+```
