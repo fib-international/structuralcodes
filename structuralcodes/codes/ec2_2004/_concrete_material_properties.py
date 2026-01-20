@@ -136,7 +136,7 @@ def k_sargin(
 ) -> float:
     """Computation of k parameter for Sargin constitutive Law.
 
-    EN 1992-1-1:2004, Eq. (3.14)
+    EN 1992-1-1:2004, Eq. (3.14).
 
     Args:
         Ecm (float): the mean elastic modulus of concrete in MPa.
@@ -237,7 +237,7 @@ def eps_cu3(fck: float) -> float:
 def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
     """The design compressive strength of concrete.
 
-    EN 1992-1-1:2004, Eq. (3.15)
+    EN 1992-1-1:2004, Eq. (3.15).
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -254,7 +254,7 @@ def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
 def beta_cc(t: ArrayLike, s: float) -> ArrayLike:
     """The time development function for compressive strength of concrete.
 
-    EN 1992-1-1:2004, Eq. (3.2)
+    EN 1992-1-1:2004, Eq. (3.2).
 
     Args:
         t (ArrayLike): The time in days to evaluate the development function
@@ -272,7 +272,7 @@ def beta_cc(t: ArrayLike, s: float) -> ArrayLike:
 def beta_ct(t: ArrayLike, s: float) -> ArrayLike:
     """The time development function for tensile strength of concrete.
 
-    EN 1992-1-1:2004, part of Eq. (3.4)
+    EN 1992-1-1:2004, part of Eq. (3.4).
 
     Args:
         t (ArrayLike): The time in days to evaluate the development function
@@ -298,7 +298,7 @@ def beta_ct(t: ArrayLike, s: float) -> ArrayLike:
 def beta_E(t: ArrayLike, s: float) -> ArrayLike:
     """The time development function for Young's modulus of concrete.
 
-    EN 1992-1-1:2004, part of Eq. (3.5)
+    EN 1992-1-1:2004, part of Eq. (3.5).
 
     Args:
         t (ArrayLike): The time in days to evaluate the development function
