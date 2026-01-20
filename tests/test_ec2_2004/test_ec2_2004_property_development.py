@@ -1,5 +1,7 @@
 """Tests related to development of concrete property with time."""
 
+import typing as t
+
 import numpy as np
 import pytest
 
@@ -7,6 +9,7 @@ from structuralcodes.codes.ec2_2004._concrete_material_properties import (
     beta_cc,
     beta_ct,
     beta_E,
+    s_time_development,
 )
 
 
@@ -62,3 +65,23 @@ def test_relation_compression_stiffness(t: float, s: float):
 def test_compressive_strength_development(t, expected):
     """Test time development function at specific stages."""
     assert np.isclose(beta_cc(t, 0.25), expected)
+
+
+@pytest.mark.parametrize(
+    'cement_class, expected',
+    (
+        ('r', 0.20),
+        ('N', 0.25),
+        ('S', 0.38),
+        (None, None),
+    ),
+)
+def test_s_time_development(
+    cement_class: t.Optional[str], expected: t.Optional[float]
+):
+    """Test the function for getting s based on the cement class."""
+    if cement_class is not None:
+        assert np.isclose(s_time_development(cement_class), expected)
+    else:
+        with pytest.raises(ValueError):
+            s_time_development(cement_class)

@@ -3,11 +3,18 @@
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import math
+import typing as t
 
 import numpy as np
 from numpy.typing import ArrayLike
 
 from structuralcodes.codes import mc2010
+
+S_TIME_DEVELOPMENT_DICT = {
+    'R': 0.20,
+    'N': 0.25,
+    'S': 0.38,
+}  # As defined in Eq. (3.2)
 
 
 def fcm(fck: float, delta_f: float = 8) -> float:
@@ -304,3 +311,34 @@ def beta_E(t: ArrayLike, s: float) -> ArrayLike:
         ArrayLike: The value of the time development function.
     """
     return np.pow(beta_cc(t, s), 0.3)
+
+
+def s_time_development(cement_class: t.Literal['S', 'N', 'R']) -> float:
+    """Return the scale factor for the exponent for the time development
+    function.
+
+    EN 1992-1-1:2004, Eq. (3.2).
+
+    Args:
+        cement_class (str): The cement class, either 'S', 'N' or 'R'.
+
+    Returns:
+        float: The scale factor that depends on the cement type.
+
+    Raises:
+        ValueError: If an invalid cement class is provided.
+
+    """
+    cement_class = (
+        cement_class.upper().strip() if cement_class is not None else ''
+    )
+    s = S_TIME_DEVELOPMENT_DICT.get(cement_class)
+
+    if s is None:
+        raise ValueError(
+            (
+                f'"{cement_class}" is not a valid cement class. '
+                'Use either S, N or R.'
+            )
+        )
+    return s

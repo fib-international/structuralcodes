@@ -47,6 +47,7 @@ from ._concrete_material_properties import (
     fctm,
     k_sargin,
     n_parabolic_rectangular,
+    s_time_development,
 )
 from ._cracking_restraint_imposed_deformations import (
     eps_sm_eps_cm_restraint_end,
@@ -170,6 +171,7 @@ __all__ = [
     'beta_cc',
     'beta_ct',
     'beta_E',
+    's_time_development',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2004'
