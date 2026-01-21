@@ -76,7 +76,7 @@ When the cross-section (i.e. the integration domain) is represented by a closed 
 \mathcal{M}_{m,n} = \dfrac{m! n!}{\left(m+n+2\right)!}
 \sum_{i=1}^P w_i \sum_{j=0}^m \sum_{k=0}^n 
 \binom{j+k}{k} \cdot \binom{m+n-j-k}{n-k}
-y_i^{m-j} y_{i+1}^j z_i^{n-k} y_{i+1}^k
+y_i^{m-j} y_{i+1}^j z_i^{n-k} z_{i+1}^k
 :::
 
 where $\binom{n}{k}$ indicates the usual binomial coefficients:
