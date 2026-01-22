@@ -54,6 +54,11 @@ Furthermore, we have the following methods:
 
 See the {class}`GenericSectionCalculator <structuralcodes.sections.GenericSectionCalculator>` for a complete list.
 
+(usage-sections-complete-nm-note)=
+:::{note}
+Notice that a call to {py:meth}`.calculate_nm_interaction_domain() <structuralcodes.sections.GenericSectionCalculator.calculate_nm_interaction_domain>` returns the interaction domain for a negative bending moment, i.e. a bending moment that gives compression at the top of the cross section according to the [sign convention](#theory-sign-convention). To obtain the interaction domain for the positive bending moment, the neutral axis for the calculation should be rotated an angle {math}`\theta = \pi`, i.e. the method should be called with the keyword argument `theta = np.pi` or `theta = math.pi`. Alternatively, to return the complete domain, the method could be called with the keyword argument `complete_domain = True`.
+:::
+
 (code-usage-generic-section)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_create_surface_geometries_with_reinforcement.py

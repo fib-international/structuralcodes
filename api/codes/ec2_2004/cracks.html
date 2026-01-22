@@ -1077,6 +1077,46 @@ position.</p>
 </dd></dl>
 
 </section>
+<section id="crack-widths-due-to-restraint-of-imposed-deformations">
+<h2>Crack widths due to restraint of imposed deformations<a class="headerlink" href="#crack-widths-due-to-restraint-of-imposed-deformations" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_sm_eps_cm_restraint_end">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_sm_eps_cm_restraint_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_p_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fct_eff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Es</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_cracking_restraint_imposed_deformations.py#L4-L41"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_sm_eps_cm_restraint_end" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the strain difference (epsilon_sm - epsilon_cm) needed to
+compute the crack width for restraint member at its end.</p>
+<p>EN 1992-3:2006, Eq. (M.1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha_e</strong> (<em>float</em>) – Is the ratio Es/Ecm.</p></li>
+<li><p><strong>rho_p_eff</strong> (<em>float</em>) – Effective bond ratio between areas given by Eq.
+(7.10).</p></li>
+<li><p><strong>kc</strong> (<em>float</em>) – is a coefficient which takes account of the stress
+distribution within the section immediately prior to cracking and
+the change of the lever arm.</p></li>
+<li><p><strong>k</strong> (<em>float</em>) – is the coefficient which allow for the effect of
+non-uniform self-equilibrating stresses, which lead to a
+reduction of restraint forces.
+k=1 for webs w&lt;=300mm or flanges widths less than 300mm
+k=0.65 for webs w&gt;=800mm or flanges with widths greater than 800mm
+Intermediate values may be interpolated.</p></li>
+<li><p><strong>fct_eff</strong> (<em>float</em>) – Is the mean value of the tensile strength in MPa of
+the concrete effective at the time when the cracks may first be
+expected to occur: fct_eff=fctm or fctm(t) if crack is expected
+earlier than 28 days.</p></li>
+<li><p><strong>Es</strong> (<em>float</em>) – Steel elastic modulus in MPa.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calculated strain difference.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 
         </article>
@@ -1108,7 +1148,7 @@ position.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2025, fib International
+                Copyright &#169; 2026, fib International
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1173,6 +1213,10 @@ position.</p>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.As_min"><code class="docutils literal notranslate"><span class="pre">As_min()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.As_min_p"><code class="docutils literal notranslate"><span class="pre">As_min_p()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.As_min_2"><code class="docutils literal notranslate"><span class="pre">As_min_2()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#crack-widths-due-to-restraint-of-imposed-deformations">Crack widths due to restraint of imposed deformations</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_sm_eps_cm_restraint_end"><code class="docutils literal notranslate"><span class="pre">eps_sm_eps_cm_restraint_end()</span></code></a></li>
 </ul>
 </li>
 </ul>
