@@ -8,7 +8,6 @@ input by the user.
 
 import typing as t
 
-import numpy as np
 from numpy.typing import ArrayLike
 from shapely import Point
 
