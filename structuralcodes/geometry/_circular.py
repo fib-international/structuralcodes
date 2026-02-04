@@ -10,21 +10,18 @@ import typing as t
 
 import numpy as np
 from numpy.typing import ArrayLike
-from shapely import Polygon
+from shapely import Point
 
 from structuralcodes.core.base import Material
 
 from ._geometry import SurfaceGeometry
 
 
-def _create_circle(radius, npoints=20, origin: t.Optional[ArrayLike] = None):
+def _create_circle(radius, origin: t.Optional[ArrayLike] = None):
     """Create a circle with a given radius."""
     origin = origin if origin is not None else (0.0, 0.0)
-    phi = np.linspace(0, 2 * np.pi, npoints + 1)
-    x = radius * np.cos(phi) + origin[0]
-    y = radius * np.sin(phi) + origin[1]
-    points = np.transpose(np.array([x, y]))
-    return Polygon(points)
+    pt = Point(origin)
+    return pt.buffer(radius)
 
 
 class CircularGeometry(SurfaceGeometry):
@@ -38,7 +35,6 @@ class CircularGeometry(SurfaceGeometry):
         self,
         diameter: float,
         material: Material,
-        n_points: int = 20,
         concrete: bool = False,
         origin: t.Optional[ArrayLike] = None,
         name: t.Optional[str] = None,
@@ -49,8 +45,6 @@ class CircularGeometry(SurfaceGeometry):
         Arguments:
             diameter (float): The diameter of the geometry.
             material (Material): A Material class applied to the geometry.
-            n_points (int): The number of points used to discretize the
-                circle as a shapely `Polygon` (default = 20).
             concrete (bool): Flag to indicate if the geometry is concrete.
             origin (Optional(ArrayLike)): The center point of the circle.
                 (0.0, 0.0) is used as default.
@@ -72,7 +66,7 @@ class CircularGeometry(SurfaceGeometry):
         origin = origin if origin is not None else (0.0, 0.0)
         # Create the shapely polygon
         polygon = _create_circle(
-            radius=self._radius, npoints=n_points, origin=origin
+            radius=self._radius, origin=origin
         )
         # Pass everything to the base class
         super().__init__(
