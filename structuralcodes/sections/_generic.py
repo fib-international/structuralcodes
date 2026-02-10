@@ -209,7 +209,9 @@ class GenericSectionCalculator(SectionCalculator):
             ) = self.integrator.integrate_strain_response_on_geometry(
                 geometry,
                 [0, 1, 0],
-                integration_data=self.integration_data,
+                # even if tempted we should not pass integration data here,
+                # since the materials are different!
+                integration_data=None,
                 mesh_size=self.mesh_size,
             )
             # Change sign due to moment sign convention
