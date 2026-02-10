@@ -1734,3 +1734,116 @@ def test_mn_full_domain():
     assert np.allclose(
         interaction_domain_full.m_y, interaction_domain_full_combined_my
     )
+
+
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+def test_issue_gross_props_after_calculation(integrator):
+    """Test for issue #303.
+    Bug in section.gross_properties in relation to calculate_moment_curvature.
+
+    This test shows that when computing the gross properties before
+    another calculation it works, but after it does not work anymore.
+    """
+    # ===========================================================
+    # Test 1: Rectangular section
+    # ===========================================================
+
+    # Create materials
+    concrete = ConcreteMC2010(fck=40)
+    reinforcement = ReinforcementMC2010(
+        fyk=500, Es=200000, ftk=500, epsuk=0.075
+    )
+
+    # Create geometry
+    width = 300
+    height = 500
+    cover = 50
+
+    geo = RectangularGeometry(width=width, height=height, material=concrete)
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(-width / 2 + cover, -height / 2 + cover),
+        coords_j=(width / 2 - cover, -height / 2 + cover),
+        diameter=16,
+        material=reinforcement,
+        n=4,
+    )
+
+    section = GenericSection(geometry=geo, integrator=integrator)
+    gp_before = section.gross_properties
+
+    res = section.section_calculator.calculate_bending_strength()
+    m_1 = -res.m_y
+
+    # This should be the cached one, so the same as before
+    gp_after = section.gross_properties
+    assert gp_before.isclose(gp_after, rtol=1e-3, atol=1e-6)
+
+    # Now create a new section but compute first the strength
+    section = GenericSection(geometry=geo, integrator=integrator)
+    res = section.section_calculator.calculate_bending_strength()
+    m_2 = -res.m_y
+
+    gp_after = section.gross_properties
+
+    # gp after and before should be the same
+    assert gp_before.isclose(gp_after, rtol=1e-3, atol=1e-6)
+
+    # m_1 and m_2 should be the same
+    assert math.isclose(m_1, m_2, rel_tol=1e-3)
+
+    # ===========================================================
+    # Test 2: Different section (from issue #303)
+    # ===========================================================
+    b = 300  # mm
+    b0 = 200
+    d = 200
+    d1 = 200
+    cover = 50
+
+    polygon = Polygon(
+        [
+            (-b / 2, d / 2),
+            (-b / 2, -d / 2),
+            (-b0 / 2, -d / 2),
+            (-b0 / 2, -d / 2 - d1),
+            (b0 / 2, -d / 2 - d1),
+            (b0 / 2, -d / 2),
+            (b / 2, -d / 2),
+            (b / 2, d / 2),
+        ]
+    )
+
+    geometry = SurfaceGeometry(poly=polygon, material=concrete)
+
+    geometry = add_reinforcement_line(
+        geometry,
+        (-b0 / 2 + cover, -d / 2 - d1 + cover),
+        (b0 / 2 - cover, -d / 2 - d1 + cover),
+        20,
+        reinforcement,
+        3,
+    )
+
+    section = GenericSection(geometry=geometry, integrator=integrator)
+    gp_before = section.gross_properties
+
+    res = section.section_calculator.calculate_moment_curvature()
+    m_max1 = np.max(np.abs(res.m_y))
+
+    # This should be the cached one, so the same as before
+    gp_after = section.gross_properties
+    assert gp_before.isclose(gp_after, rtol=1e-3, atol=1e-6)
+
+    # Now create a new section but compute first the strength
+    section = GenericSection(geometry=geometry, integrator=integrator)
+    res = section.section_calculator.calculate_moment_curvature()
+    m_max2 = np.max(np.abs(res.m_y))
+
+    gp_after = section.gross_properties
+
+    # gp after and before should be the same
+    assert gp_before.isclose(gp_after, rtol=1e-3, atol=1e-6)
+
+    # m_max1 and m_max2 should be the same
+    assert math.isclose(m_max1, m_max2, rel_tol=1e-3)
