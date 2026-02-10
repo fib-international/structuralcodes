@@ -1743,6 +1743,8 @@ def test_issue_gross_props_after_calculation(integrator):
 
     This test shows that when computing the gross properties before
     another calculation it works, but after it does not work anymore.
+
+    Fixed with PR #315.
     """
     # ===========================================================
     # Test 1: Rectangular section
