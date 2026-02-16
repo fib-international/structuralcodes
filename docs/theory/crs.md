@@ -78,6 +78,13 @@ The definition of positive moments.
 ::::
 :::::
 
+::::::{admonition} Sign convention for moments
+:class: attention
+
+The sign convention for the moments $M_y$ and $M_z$ is following the RHR expressed above. Please note that this may differ with the usual "engineering" sign convention for moments in use in your country (e.g. positive moments when stretching bottom chord fibers and negative when stretching top fibers). When interpreting the results always remember that StructuralCodes sticks with this sign convention.
+
+::::::
+
 ::::::{admonition} Loads act in the origin!
 :class: caution
 
