@@ -16,11 +16,12 @@ from structuralcodes.core.base import Material
 from ._geometry import SurfaceGeometry
 
 
-def _create_circle(radius, origin: t.Optional[ArrayLike] = None):
+def _create_circle(radius, npoints:int = 20, origin: t.Optional[ArrayLike] = None):
     """Create a circle with a given radius."""
     origin = origin if origin is not None else (0.0, 0.0)
     pt = Point(origin)
-    return pt.buffer(radius)
+    quad_segs = 4 * round(npoints / 4) # Round to the nearest multiple of 4
+    return pt.buffer(radius, quad_segs=quad_segs)
 
 
 class CircularGeometry(SurfaceGeometry):
@@ -34,6 +35,7 @@ class CircularGeometry(SurfaceGeometry):
         self,
         diameter: float,
         material: Material,
+        n_points: int = 20,
         concrete: bool = False,
         origin: t.Optional[ArrayLike] = None,
         name: t.Optional[str] = None,
@@ -44,6 +46,8 @@ class CircularGeometry(SurfaceGeometry):
         Arguments:
             diameter (float): The diameter of the geometry.
             material (Material): A Material class applied to the geometry.
+            n_points (int): The number of points used to discretize the
+                circle as a shapely `Polygon` (default = 20).
             concrete (bool): Flag to indicate if the geometry is concrete.
             origin (Optional(ArrayLike)): The center point of the circle.
                 (0.0, 0.0) is used as default.
@@ -65,7 +69,7 @@ class CircularGeometry(SurfaceGeometry):
         origin = origin if origin is not None else (0.0, 0.0)
         # Create the shapely polygon
         polygon = _create_circle(
-            radius=self._radius, origin=origin
+            radius=self._radius, npoints=n_points, origin=origin
         )
         # Pass everything to the base class
         super().__init__(
