@@ -48,7 +48,7 @@ The following sign conventions apply.
 : Are negative when in compression.
 
 **Moments**
-: Follow the right-hand rule as illustrated in the figure [below](#theory-fig-moment-signs):
+: Follow the right-hand rule (RHR) as illustrated in the figure [below](#theory-fig-moment-signs):
    - $M_{\textrm{y}}$, bending about the $y$-axis, is positive when top fibers are stretched, and bottom fibers are compressed.
    - $M_{\textrm{z}}$, bending about the $z$-axis, is positive when left fibers are stretched, and right fibers are compressed.
 
