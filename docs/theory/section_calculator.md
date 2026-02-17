@@ -16,7 +16,7 @@ Pay attention that default-defined constitutive laws by material classes work wi
 
 As better detailed below, most of the methods require the angle $\theta$ (`theta` input argument) for defining the neutral axis inclination $\theta$.
 
-The parameter $\theta$ represents the angle between the original axis $y$ of the section reference system $(y,z)$ and the rotated axis $y^*$ of the local reference system $(y^*,z^*)$ used internally to calculate the section response.
+The parameter $\theta$ represents the angle between the original axis $y$ of the section reference system $(y,z)$ and the rotated axis $y^*$ of the local reference system $(y^*,z^*)$ used internally to calculate the section response (see figure [below](theory-fig-bending-calc-rotated-system)).
 
 The angle `theta` is assumed positive if counter-clockwise (CCW), negative if clockwise (CW).
 
