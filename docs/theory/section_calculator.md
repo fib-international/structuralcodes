@@ -12,7 +12,7 @@ Note that in the current implementation both material constitutive laws and sect
 Pay attention that default-defined constitutive laws by material classes work with the units defined by the considered code, e.g. MPa for EC2 or MC2010.
 :::
 
-### Neutral axis orientation (`theta`)
+## Neutral axis orientation (`theta`)
 
 As better detailed below, most of the methods require the angle $\theta$ (`theta` input argument) for defining the neutral axis inclination $\theta$.
 
