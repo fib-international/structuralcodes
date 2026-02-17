@@ -78,6 +78,8 @@ The reference system used for computing bending strength; C indicates the compre
 
 In the rotated reference system **$y^*z^*$**, the bending strength in terms of ***negative*** moment $M_{y^*}$ is computed. This means that the moment calculated is the one stretching bottom fiber in the rotated system **$y^*z^*$**.
 
+After the bending strength is computed in the rotated reference system **$y^*z^*$**, the result is rotated back to the original coordinate system **$yz$** with moments signs following our sign convention described [here](theory-crs-sign-convention).
+
 ::::::{Note}
 According to such definition, to compute the bending strength for a section with top fibers in tension and bottom fibers in compression, the angle theta should be equal to $\pi$.
 
