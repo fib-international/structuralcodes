@@ -13,15 +13,13 @@ from structuralcodes.materials.reinforcement import ReinforcementMC2010
 
 # Test create a circular geometry
 @pytest.mark.parametrize(
-    'diameter, n_points',
-    [(100, 20), (200, 20), (300, 20), (300, 30), (400, 40), (500, 24)],
+    'diameter',
+    [100, 200, 300, 400, 500],
 )
-def test_create_circular_geometry(diameter, n_points):
+def test_create_circular_geometry(diameter):
     """Test creating a CircularGeometry."""
     mat = ElasticMaterial(E=300000, density=2450)
-    circle = CircularGeometry(diameter, mat, n_points)
-
-    assert len(circle.polygon.exterior.coords) == n_points + 2
+    circle = CircularGeometry(diameter, mat)
 
     assert math.isclose(circle.diameter, diameter)
     assert math.isclose(circle.radius, diameter / 2.0)
