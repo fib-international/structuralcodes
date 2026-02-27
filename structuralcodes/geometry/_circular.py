@@ -22,7 +22,10 @@ def _create_circle(
     """Create a circle with a given radius."""
     origin = origin if origin is not None else (0.0, 0.0)
     pt = Point(origin)
-    quad_segs = 4 * round(npoints / 4)  # Round to the nearest multiple of 4
+    # Note that .buffer takes the argument quad_segs which is the number of
+    # line segments in a quarter of the circle.
+    # Round to the nearest multiple of 4.
+    quad_segs = round(npoints / 4)
     return pt.buffer(radius, quad_segs=quad_segs)
 
 
