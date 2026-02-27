@@ -1039,7 +1039,7 @@ class CompoundGeometry(Geometry):
             return [*surfaces, *points]
         return {'surfaces': surfaces, 'points': points}
 
-    def group_matches(
+    def group_filter(
         self,
         pattern: str,
         *,
@@ -1065,16 +1065,17 @@ class CompoundGeometry(Geometry):
         surfaces = self.geometries
         points = self.point_geometries
 
-        surfaces = [
-            g
-            for g in surfaces
-            if g._group_matches(pattern, case_sensitive=case_sensitive)
-        ]
-        points = [
-            g
-            for g in points
-            if g._group_matches(pattern, case_sensitive=case_sensitive)
-        ]
+        if pattern:
+            surfaces = [
+                g
+                for g in surfaces
+                if g._group_matches(pattern, case_sensitive=case_sensitive)
+            ]
+            points = [
+                g
+                for g in points
+                if g._group_matches(pattern, case_sensitive=case_sensitive)
+            ]
         if return_mode == 'flat':
             return [*surfaces, *points]
         return {'surfaces': surfaces, 'points': points}
