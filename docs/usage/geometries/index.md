@@ -110,6 +110,13 @@ The following families of profiles are available:
 - {class}`UBP <structuralcodes.geometry.profiles.UBP>`
 - {class}`IPN <structuralcodes.geometry.profiles.IPN>`
 - {class}`UPN <structuralcodes.geometry.profiles.UPN>`
+- {class}`HP <structuralcodes.geometry.profiles.HP>`
+- {class}`HD <structuralcodes.geometry.profiles.HD>`
+- {class}`UPE <structuralcodes.geometry.profiles.UPE>`
+- {class}`U <structuralcodes.geometry.profiles.U>`
+- {class}`W <structuralcodes.geometry.profiles.W>`
+- {class}`L <structuralcodes.geometry.profiles.L>`
+- {class}`LI <structuralcodes.geometry.profiles.LI>`
 
 The available profiles within each family can be listed by calling the `.profiles` method on the respective class. The code below shows how to list the available profiles in the {class}`HE <structuralcodes.geometry.profiles.HE>` family.
 
