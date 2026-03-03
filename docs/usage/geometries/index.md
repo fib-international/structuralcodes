@@ -134,7 +134,7 @@ To create an HEA100 profile, simply pass the name of the profile to the class as
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_steel_profiles.py
    :lines: 3, 6-7
-   :caption: List the available profiles in the HE family.
+   :caption: Create an HEA100 profile.
 :::
 ::::
 
