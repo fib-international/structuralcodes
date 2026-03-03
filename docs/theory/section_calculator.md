@@ -291,7 +291,7 @@ Animation of ultimate strain profiles for uniaxial bending and corresponding int
 4. **Rotate back to original $yz$ coordinate system**: the pair of values $(N, M_y^*)$ is rotated back obtaining the triplet $(N, M_y, M_z)$
 
 (theory-nmm-domain)=
-## Compute MNN interaction domain
+## Compute NMM interaction domain
 
 With this algorithm, StructuralCodes computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
 
