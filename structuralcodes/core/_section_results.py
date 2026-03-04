@@ -331,6 +331,91 @@ class MomentCurvatureResults:
             self.current_step = step
             self._create_detailed_result()
 
+    def get_point_strain(
+        self,
+        y: float,
+        z: float,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
+        case_sensitive: bool = True,
+        all_results: bool = False,
+    ) -> np.ndarray:
+        """Return the strain at a given point (y,z).
+
+        Arguments:
+            y (float): The y-coordinate of the point.
+            z (float): The z-coordinate of the point.
+            name (str, optional): The name of the surface geometry to check.
+            group_label (str, optional): The group label of the surface
+                geometry to check.
+            case_sensitive (bool, optional): If True (default) the matching is
+                case sensitive.
+            all_results (bool): If True, return the strain for all geometries
+                that matches the filters, otherwise return the strain for the
+                first geometry that matches the filters (default False).
+
+        Returns:
+            numpy.ndarray: The strain at the given point for all the steps, or
+                None if the point is not within any of the geometries that
+                match the filters.
+        """
+        return _get_point_response(
+            section=self.section,
+            eps_a=np.asarray(self.eps_axial),
+            chi_y=np.asarray(self.chi_y),
+            chi_z=np.asarray(self.chi_z),
+            y=y,
+            z=z,
+            response_type='strain',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
+        )
+
+    def get_point_stress(
+        self,
+        y: float,
+        z: float,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
+        case_sensitive: bool = True,
+        all_results: bool = False,
+    ) -> np.ndarray:
+        """Return the stress at a given point (y,z).
+
+        Arguments:
+            y (float): The y-coordinate of the point.
+            z (float): The z-coordinate of the point.
+            name (str, optional): The pattern for filtering the geometries by
+                their name.
+            group_label (str, optional): The pattern for filtering the
+                geometries by their group_label.
+            case_sensitive (bool, optional): If True (default) the matching is
+                case sensitive.
+            all_results (bool): If True, return the stress for all geometries
+                that matches the filters, otherwise return the stress for the
+                first geometry that matches the filters (default False).
+
+        Returns:
+            numpy.ndarray: The stress at the given point for all the steps, or
+                None if the point is not within any of the geometries that
+                match the filters.
+        """
+        return _get_point_response(
+            section=self.section,
+            eps_a=np.asarray(self.eps_axial),
+            chi_y=np.asarray(self.chi_y),
+            chi_z=np.asarray(self.chi_z),
+            y=y,
+            z=z,
+            response_type='stress',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
+        )
+
 
 class SectionDetailedResultState:
     """Something."""
