@@ -48,7 +48,7 @@ The following sign conventions apply.
 : Are negative when in compression.
 
 **Moments**
-: Follow the right-hand rule as illustrated in the figure [below](#theory-fig-moment-signs):
+: Follow the right-hand rule (RHR) as illustrated in the figure [below](#theory-fig-moment-signs):
    - $M_{\textrm{y}}$, bending about the $y$-axis, is positive when top fibers are stretched, and bottom fibers are compressed.
    - $M_{\textrm{z}}$, bending about the $z$-axis, is positive when left fibers are stretched, and right fibers are compressed.
 
@@ -77,6 +77,13 @@ The definition of positive moments.
 
 ::::
 :::::
+
+::::::{admonition} Sign convention for moments
+:class: attention
+
+The sign convention for the moments $M_y$ and $M_z$ is following the RHR expressed above. Please note that this may differ with the usual "engineering" sign convention for moments in use in your country (e.g. positive moments when stretching bottom chord fibers and negative when stretching top fibers). When interpreting the results always remember that StructuralCodes sticks with this sign convention.
+
+::::::
 
 ::::::{admonition} Loads act in the origin!
 :class: caution

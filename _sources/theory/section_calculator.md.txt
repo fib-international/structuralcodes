@@ -12,7 +12,47 @@ Note that in the current implementation both material constitutive laws and sect
 Pay attention that default-defined constitutive laws by material classes work with the units defined by the considered code, e.g. MPa for EC2 or MC2010.
 :::
 
-(thery-compute-bending-strength)=
+## Neutral axis orientation (`theta`)
+
+As better detailed below, most of the methods require the angle $\theta$ (`theta` input argument) for defining the neutral axis inclination $\theta$.
+
+The parameter $\theta$ represents the angle between the original axis $y$ of the section reference system $(y,z)$ and the rotated axis $y^*$ of the local reference system $(y^*,z^*)$ used internally to calculate the section response (see figure [below](theory-fig-bending-calc-rotated-system)).
+
+The angle `theta` is assumed positive if counter-clockwise (CCW), negative if clockwise (CW).
+
+Therefore:
+- `theta` = 0 → axis $y^*$ coincides with axis $y$.
+- `theta` > 0 → the rotated system $(y^*, z^*)$ is obtained by a CCW rotation.
+- `theta` < 0 → the rotated system $(y^*, z^*)$ is obtained by a CW rotation.
+
+The neutral axis is orthogonal to the $z^*$ direction. Hence, theta directly controls the bending direction and allows the treatment of:
+- uniaxial bending about principal or non-principal axes,
+- biaxial bending,
+
+Internally, once `theta` is defined, coordinates are transformed according to the standard rotation:
+
+$$
+\begin{aligned}
+y^* &= y \cos\theta + z \sin\theta \\
+z^* &= -y \sin\theta + z \cos\theta
+\end{aligned}
+$$
+
+In the rotated system $(y^*, z^*)$ the bending is unixial, therefore the strain field is expressed in the rotated system as:
+
+$$
+\varepsilon(y^*) = \varepsilon_0 + \kappa^* \, z^*  
+$$
+
+where:
+
+- $\varepsilon_0$ is the axial strain,
+- $\kappa^*$ is the curvature,
+- $z^*$ is the coordinate measured in the direction perpendicular to the neutral axis.
+
+This formulation provides a fully general description of section behaviour under combined axial force and biaxial bending.
+
+(theory-compute-bending-strength)=
 ## Compute bending strength
 With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis. 
 
@@ -36,10 +76,12 @@ The reference system used for computing bending strength; C indicates the compre
 ::::
 :::::
 
-In the rotated reference system **$y^*z^*$**, the bending strength in terms of positive $M_{y^*}$ is computed.
+In the rotated reference system **$y^*z^*$**, the bending strength in terms of ***negative*** moment $M_{y^*}$ is computed. This means that the moment calculated is the one stretching bottom fiber in the rotated system **$y^*z^*$**.
+
+After the bending strength is computed in the rotated reference system **$y^*z^*$**, the result is rotated back to the original coordinate system **$yz$** with moments signs following our sign convention described [here](theory-crs-sign-convention).
 
 ::::::{Note}
-According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be equal to $\pi$.
+According to such definition, to compute the bending strength for a section with top fibers in tension and bottom fibers in compression, the angle theta should be equal to $\pi$.
 
 (theory-fig-system-uniaxial-bending)=
 :::::{grid}
@@ -56,7 +98,7 @@ According to such definition, to compute the bending strength for a section with
 :class: only-dark
 :::
 
-Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.
+Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers compressed and top fibers stretched.
 
 ::::
 :::::
@@ -249,7 +291,7 @@ Animation of ultimate strain profiles for uniaxial bending and corresponding int
 4. **Rotate back to original $yz$ coordinate system**: the pair of values $(N, M_y^*)$ is rotated back obtaining the triplet $(N, M_y, M_z)$
 
 (theory-nmm-domain)=
-## Compute MNN interaction domain
+## Compute NMM interaction domain
 
 With this algorithm, StructuralCodes computes the full three dimensional $N$-$M_y$-$M_z$ interaction domain.
 
@@ -283,7 +325,7 @@ With this algorithm, StructuralCodes computes the two dimensional $M_y$, $M_z$ i
 
 The algorithm works with the following steps:
 1. **Create an array of angles**: the algorithm creates an array of linearly spaced values of angle $\theta$ of neutral axis respect to axis $y$. 
-2. **Compute bending strength**: for each value of the angle $\theta_i$, the bending strength (with the iterative algorithm described [here](thery-compute-bending-strength)) for the given value of external axial load $N$ is computed obtaining a pair $(M_{y,i}, M_{z,i})$ that represent the point in the failure domain. Doing this for all values, the entire $M_yM_z$ failure domain is created.
+2. **Compute bending strength**: for each value of the angle $\theta_i$, the bending strength (with the iterative algorithm described [here](theory-compute-bending-strength)) for the given value of external axial load $N$ is computed obtaining a pair $(M_{y,i}, M_{z,i})$ that represent the point in the failure domain. Doing this for all values, the entire $M_yM_z$ failure domain is created.
 
 :::{note}
 In the previous cases (i.e. [NM domain](theory-nm-domain) and [NMM domain](theory-nmm-domain)) we simply integrate a bunch of strain profiles obtaining a set of points in the interaction domain. This is a very fast and no iterative solutions are needed. A side effect of this choice is that the obtained domain points are not controlled in terms of a constant external axial forces, see e.g. [this figure](theory-figure-nmm). 

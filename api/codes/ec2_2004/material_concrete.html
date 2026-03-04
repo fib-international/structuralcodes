@@ -492,6 +492,22 @@ MPa.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.k_sargin">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">k_sargin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ecm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_c1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_material_properties.py#L132-L146"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.k_sargin" title="Link to this definition">¶</a></dt>
+<dd><p>Computation of k parameter for Sargin constitutive Law.</p>
+<p>EN 1992-1-1:2004, Eq. (3.14).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ecm</strong> (<em>float</em>) – the mean elastic modulus of concrete in MPa.</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – the mean compressive strength in MPa.</p></li>
+<li><p><strong>eps_c1</strong> (<em>float</em>) – the strain corresponding to peak stress.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="structuralcodes.codes.ec2_2004.eps_c2">
 <span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2004.</span></span><span class="sig-name descname"><span class="pre">eps_c2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2004\_concrete_material_properties.py#L149-L166"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2004.eps_c2" title="Link to this definition">¶</a></dt>
 <dd><p>The strain at maximum compressive stress of concrete for the
@@ -850,6 +866,7 @@ could be calculated directly with the function beta_E.</p>
 <li><a class="reference internal" href="#parameters-of-constitutive-relations">Parameters of constitutive relations</a><ul>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_c1"><code class="docutils literal notranslate"><span class="pre">eps_c1()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_cu1"><code class="docutils literal notranslate"><span class="pre">eps_cu1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.k_sargin"><code class="docutils literal notranslate"><span class="pre">k_sargin()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_c2"><code class="docutils literal notranslate"><span class="pre">eps_c2()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_cu2"><code class="docutils literal notranslate"><span class="pre">eps_cu2()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2004.eps_c3"><code class="docutils literal notranslate"><span class="pre">eps_c3()</span></code></a></li>

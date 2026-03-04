@@ -535,6 +535,171 @@ the fib Model Code 2010 (2013), Eq. 5.1-51.</p>
 </dd></dl>
 
 </section>
+<section id="parameters-of-constitutive-relations">
+<h2>Parameters of constitutive relations<a class="headerlink" href="#parameters-of-constitutive-relations" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_c1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_c1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L221-L269"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_c1" title="Link to this definition">¶</a></dt>
+<dd><p>The strain at maximum compressive stress of concrete (fcm) for the
+Sargin constitutive law.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-26 and Table 5.1-8</p>
+<p>The value is computing using interpolation from Table 5.1-8</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The strain at maximum compressive stress, absolute value, no
+unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if fck is less than 12 or greater than 120</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.k_sargin">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">k_sargin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L318-L359"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.k_sargin" title="Link to this definition">¶</a></dt>
+<dd><p>The plasticity number k for Sargin constitutive Law.</p>
+<p>Defined in fib Model Code 2010 (2013), Eq. 5.1-26 and Table 5.1-8</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The plasticity number k, absolute value, no unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cu1">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cu1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L362-L375"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cu1" title="Link to this definition">¶</a></dt>
+<dd><p>The nominal ultimate strain for the Sargin constitutive law.</p>
+<p>Defined in fib Model Code 2010 (2013), Table 7.2-1 and Eq. 7.2-10</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The strain at maximum compressive stress, absolute value, no
+unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_c2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_c2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L378-L395"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_c2" title="Link to this definition">¶</a></dt>
+<dd><p>The strain at maximum compressive stress of concrete for the
+parabolic-rectangular law.</p>
+<p>Defined in fib Model Code 2010 (2013), Table 7.2-1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The strain at maximum compressive stress, absolute value, no
+unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cu2">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cu2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L398-L415"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cu2" title="Link to this definition">¶</a></dt>
+<dd><p>The ultimate strain of the parabolic-rectangular law.</p>
+<p>Defined in fib Model Code 2010 (2013), Table 7.2-1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ultimate strain, absolute value, no unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.n_parabolic_rectangular">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">n_parabolic_rectangular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L418-L431"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.n_parabolic_rectangular" title="Link to this definition">¶</a></dt>
+<dd><p>The exponent in the parabolic-rectangular law.</p>
+<p>Defined in fib Model Code 2010 (2013), Table 7.2-1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The exponent n, absolute value, no unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_c3">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_c3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L434-L448"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_c3" title="Link to this definition">¶</a></dt>
+<dd><p>The strain at maximum compressive stress of the bi-linear law.</p>
+<p>Defined in fib Model Code 2010 (2013), Table 7.2-1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The strain at maximum compressive stress, absolute value, no
+unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.mc2010.eps_cu3">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.mc2010.</span></span><span class="sig-name descname"><span class="pre">eps_cu3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\mc2010\_concrete_material_properties.py#L451-L463"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.mc2010.eps_cu3" title="Link to this definition">¶</a></dt>
+<dd><p>The ultimate strain of the bi-linear law.</p>
+<p>Defined in fib Model Code 2010 (2013), Table 7.2-1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fck</strong> (<em>float</em>) – The characteristic compressive strength of concrete in
+MPa.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ultimate strain, absolute value, no unit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="miscellaneous-properties">
 <h2>Miscellaneous properties<a class="headerlink" href="#miscellaneous-properties" title="Link to this heading">¶</a></h2>
 <dl class="py function">
@@ -635,6 +800,17 @@ strength.</p>
 <li><a class="reference internal" href="#structuralcodes.codes.mc2010.Eci"><code class="docutils literal notranslate"><span class="pre">Eci()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.mc2010.Eci_t"><code class="docutils literal notranslate"><span class="pre">Eci_t()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.mc2010.beta_e"><code class="docutils literal notranslate"><span class="pre">beta_e()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#parameters-of-constitutive-relations">Parameters of constitutive relations</a><ul>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_c1"><code class="docutils literal notranslate"><span class="pre">eps_c1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.k_sargin"><code class="docutils literal notranslate"><span class="pre">k_sargin()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cu1"><code class="docutils literal notranslate"><span class="pre">eps_cu1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_c2"><code class="docutils literal notranslate"><span class="pre">eps_c2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cu2"><code class="docutils literal notranslate"><span class="pre">eps_cu2()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.n_parabolic_rectangular"><code class="docutils literal notranslate"><span class="pre">n_parabolic_rectangular()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_c3"><code class="docutils literal notranslate"><span class="pre">eps_c3()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.mc2010.eps_cu3"><code class="docutils literal notranslate"><span class="pre">eps_cu3()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#miscellaneous-properties">Miscellaneous properties</a><ul>

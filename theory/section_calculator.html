@@ -334,8 +334,49 @@
 Pay attention that default-defined constitutive laws by material classes work with the units defined by the considered code, e.g. MPa for EC2 or MC2010.</p>
 </div>
 </section>
+<section id="neutral-axis-orientation-theta">
+<h2>Neutral axis orientation (<code class="docutils literal notranslate"><span class="pre">theta</span></code>)<a class="headerlink" href="#neutral-axis-orientation-theta" title="Link to this heading">¶</a></h2>
+<p>As better detailed below, most of the methods require the angle <span class="math notranslate nohighlight">\(\theta\)</span> (<code class="docutils literal notranslate"><span class="pre">theta</span></code> input argument) for defining the neutral axis inclination <span class="math notranslate nohighlight">\(\theta\)</span>.</p>
+<p>The parameter <span class="math notranslate nohighlight">\(\theta\)</span> represents the angle between the original axis <span class="math notranslate nohighlight">\(y\)</span> of the section reference system <span class="math notranslate nohighlight">\((y,z)\)</span> and the rotated axis <span class="math notranslate nohighlight">\(y^*\)</span> of the local reference system <span class="math notranslate nohighlight">\((y^*,z^*)\)</span> used internally to calculate the section response (see figure <a class="reference internal" href="#theory-fig-bending-calc-rotated-system"><span class="std std-ref">below</span></a>).</p>
+<p>The angle <code class="docutils literal notranslate"><span class="pre">theta</span></code> is assumed positive if counter-clockwise (CCW), negative if clockwise (CW).</p>
+<p>Therefore:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">theta</span></code> = 0 → axis <span class="math notranslate nohighlight">\(y^*\)</span> coincides with axis <span class="math notranslate nohighlight">\(y\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">theta</span></code> &gt; 0 → the rotated system <span class="math notranslate nohighlight">\((y^*, z^*)\)</span> is obtained by a CCW rotation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">theta</span></code> &lt; 0 → the rotated system <span class="math notranslate nohighlight">\((y^*, z^*)\)</span> is obtained by a CW rotation.</p></li>
+</ul>
+<p>The neutral axis is orthogonal to the <span class="math notranslate nohighlight">\(z^*\)</span> direction. Hence, theta directly controls the bending direction and allows the treatment of:</p>
+<ul class="simple">
+<li><p>uniaxial bending about principal or non-principal axes,</p></li>
+<li><p>biaxial bending,</p></li>
+</ul>
+<p>Internally, once <code class="docutils literal notranslate"><span class="pre">theta</span></code> is defined, coordinates are transformed according to the standard rotation:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{aligned}
+y^* &amp;= y \cos\theta + z \sin\theta \\
+z^* &amp;= -y \sin\theta + z \cos\theta
+\end{aligned}
+\end{split}\]</div>
+</div>
+<p>In the rotated system <span class="math notranslate nohighlight">\((y^*, z^*)\)</span> the bending is unixial, therefore the strain field is expressed in the rotated system as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\varepsilon(y^*) = \varepsilon_0 + \kappa^* \, z^*  
+\]</div>
+</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\varepsilon_0\)</span> is the axial strain,</p></li>
+<li><p><span class="math notranslate nohighlight">\(\kappa^*\)</span> is the curvature,</p></li>
+<li><p><span class="math notranslate nohighlight">\(z^*\)</span> is the coordinate measured in the direction perpendicular to the neutral axis.</p></li>
+</ul>
+<p>This formulation provides a fully general description of section behaviour under combined axial force and biaxial bending.</p>
+</section>
 <section id="compute-bending-strength">
-<span id="thery-compute-bending-strength"></span><h2>Compute bending strength<a class="headerlink" href="#compute-bending-strength" title="Link to this heading">¶</a></h2>
+<span id="theory-compute-bending-strength"></span><h2>Compute bending strength<a class="headerlink" href="#compute-bending-strength" title="Link to this heading">¶</a></h2>
 <p>With this algorithm, StructuralCodes computes the bending strength of the section given the axial load (positive in tension and negative in compression) and an angle of the neutral axes respect to the y axis.</p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-bending-calc-rotated-system">
 <div class="sd-row docutils">
@@ -346,16 +387,17 @@ Pay attention that default-defined constitutive laws by material classes work wi
 </div>
 </div>
 </div>
-<p>In the rotated reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, the bending strength in terms of positive <span class="math notranslate nohighlight">\(M_{y^*}\)</span> is computed.</p>
+<p>In the rotated reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, the bending strength in terms of <em><strong>negative</strong></em> moment <span class="math notranslate nohighlight">\(M_{y^*}\)</span> is computed. This means that the moment calculated is the one stretching bottom fiber in the rotated system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>.</p>
+<p>After the bending strength is computed in the rotated reference system <strong><span class="math notranslate nohighlight">\(y^*z^*\)</span></strong>, the result is rotated back to the original coordinate system <strong><span class="math notranslate nohighlight">\(yz\)</span></strong> with moments signs following our sign convention described <a class="reference internal" href="crs.html#theory-crs-sign-convention"><span class="std std-ref">here</span></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>According to such definition, to compute the bending strength for a section with top fibers in compression and bottom fibers in tension, the angle theta should be equal to <span class="math notranslate nohighlight">\(\pi\)</span>.</p>
+<p>According to such definition, to compute the bending strength for a section with top fibers in tension and bottom fibers in compression, the angle theta should be equal to <span class="math notranslate nohighlight">\(\pi\)</span>.</p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils" id="theory-fig-system-uniaxial-bending">
 <div class="sd-row docutils">
 <div class="sd-col sd-d-flex-column caption-text sd-text-center docutils">
 <img alt="../_images/FigureBendingTopCompression_light.png" class="only-light align-center" src="../_images/FigureBendingTopCompression_light.png" />
 <img alt="../_images/FigureBendingTopCompression_dark.png" class="only-dark align-center" src="../_images/FigureBendingTopCompression_dark.png" />
-<p>Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers stretched and top fibers compressed.</p>
+<p>Rotated Coordinate system to be used for computing uniaxial bending with bottom fibers compressed and top fibers stretched.</p>
 </div>
 </div>
 </div>
@@ -470,8 +512,8 @@ This is represented by the following image that shows for a rectangular RC secti
 <li><p><strong>Rotate back to original <span class="math notranslate nohighlight">\(yz\)</span> coordinate system</strong>: the pair of values <span class="math notranslate nohighlight">\((N, M_y^*)\)</span> is rotated back obtaining the triplet <span class="math notranslate nohighlight">\((N, M_y, M_z)\)</span></p></li>
 </ol>
 </section>
-<section id="compute-mnn-interaction-domain">
-<span id="theory-nmm-domain"></span><h2>Compute MNN interaction domain<a class="headerlink" href="#compute-mnn-interaction-domain" title="Link to this heading">¶</a></h2>
+<section id="compute-nmm-interaction-domain">
+<span id="theory-nmm-domain"></span><h2>Compute NMM interaction domain<a class="headerlink" href="#compute-nmm-interaction-domain" title="Link to this heading">¶</a></h2>
 <p>With this algorithm, StructuralCodes computes the full three dimensional <span class="math notranslate nohighlight">\(N\)</span>-<span class="math notranslate nohighlight">\(M_y\)</span>-<span class="math notranslate nohighlight">\(M_z\)</span> interaction domain.</p>
 <p>To do so, the algorithm loops different values of angle <span class="math notranslate nohighlight">\(\theta_i\)</span> of neutral axes respect axis <span class="math notranslate nohighlight">\(y\)</span>, going from <span class="math notranslate nohighlight">\(0\)</span> to <span class="math notranslate nohighlight">\(2\pi\)</span> (the number of discretizations can be customized with the parameter <code class="docutils literal notranslate"><span class="pre">num_theta</span></code> whose default value is equal to 32).
 For each value of the angle <span class="math notranslate nohighlight">\(\theta_i\)</span>, the algorithm proceeds as the case of unixial bending (<a class="reference internal" href="#theory-nm-domain"><span class="std std-ref">here</span></a>).
@@ -492,7 +534,7 @@ The final result is represented by the data structure collecting for all points 
 <p>The algorithm works with the following steps:</p>
 <ol class="arabic simple">
 <li><p><strong>Create an array of angles</strong>: the algorithm creates an array of linearly spaced values of angle <span class="math notranslate nohighlight">\(\theta\)</span> of neutral axis respect to axis <span class="math notranslate nohighlight">\(y\)</span>.</p></li>
-<li><p><strong>Compute bending strength</strong>: for each value of the angle <span class="math notranslate nohighlight">\(\theta_i\)</span>, the bending strength (with the iterative algorithm described <a class="reference internal" href="#thery-compute-bending-strength"><span class="std std-ref">here</span></a>) for the given value of external axial load <span class="math notranslate nohighlight">\(N\)</span> is computed obtaining a pair <span class="math notranslate nohighlight">\((M_{y,i}, M_{z,i})\)</span> that represent the point in the failure domain. Doing this for all values, the entire <span class="math notranslate nohighlight">\(M_yM_z\)</span> failure domain is created.</p></li>
+<li><p><strong>Compute bending strength</strong>: for each value of the angle <span class="math notranslate nohighlight">\(\theta_i\)</span>, the bending strength (with the iterative algorithm described <a class="reference internal" href="#theory-compute-bending-strength"><span class="std std-ref">here</span></a>) for the given value of external axial load <span class="math notranslate nohighlight">\(N\)</span> is computed obtaining a pair <span class="math notranslate nohighlight">\((M_{y,i}, M_{z,i})\)</span> that represent the point in the failure domain. Doing this for all values, the entire <span class="math notranslate nohighlight">\(M_yM_z\)</span> failure domain is created.</p></li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -940,10 +982,11 @@ S_y &amp; I_{yz} &amp; I_{zz}
             <ul>
 <li><a class="reference internal" href="#">Section calculator</a><ul>
 <li><a class="reference internal" href="#general-concept">General concept</a></li>
+<li><a class="reference internal" href="#neutral-axis-orientation-theta">Neutral axis orientation (<code class="docutils literal notranslate"><span class="pre">theta</span></code>)</a></li>
 <li><a class="reference internal" href="#compute-bending-strength">Compute bending strength</a></li>
 <li><a class="reference internal" href="#compute-moment-curvature-relation">Compute Moment-curvature relation</a></li>
 <li><a class="reference internal" href="#compute-nm-interaction-domain">Compute NM interaction domain</a></li>
-<li><a class="reference internal" href="#compute-mnn-interaction-domain">Compute MNN interaction domain</a></li>
+<li><a class="reference internal" href="#compute-nmm-interaction-domain">Compute NMM interaction domain</a></li>
 <li><a class="reference internal" href="#compute-mm-interaction-domain">Compute MM interaction domain</a></li>
 <li><a class="reference internal" href="#compute-strain-profile-for-given-external-forces">Compute strain profile for given external forces</a></li>
 </ul>

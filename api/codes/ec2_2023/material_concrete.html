@@ -634,6 +634,36 @@ for the Sargin constitutive law.</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="structuralcodes.codes.ec2_2023.k_sargin">
+<span class="sig-prename descclassname"><span class="pre">structuralcodes.codes.ec2_2023.</span></span><span class="sig-name descname"><span class="pre">k_sargin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ecm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_c1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference external" href="https://github.com/fib-international/structuralcodes/tree/main/structuralcodes\codes\ec2_2023\_section5_materials.py#L731-L760"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#structuralcodes.codes.ec2_2023.k_sargin" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the coefficient k for Sargin constitutive law in compression.</p>
+<p>EN 1992-1-1:2003, eq. (5.7)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Ecm</strong> (<em>float</em>) – the secant modulus between sigma_c=0 and sigma_c=0.4*fcm
+in MPa</p></li>
+<li><p><strong>fcm</strong> (<em>float</em>) – the mean compressive strength of concrete in MPa</p></li>
+<li><p><strong>eps_c1</strong> (<em>float</em>) – the strain of concrete at stress fcm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the coefficient k for Sargin constitutive law</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – if Ecm is less or equal to 0</p></li>
+<li><p><strong>ValueError</strong> – if fcm is less than 12+8MPa</p></li>
+<li><p><strong>ValueError</strong> – if eps_c1 is less or equal to 0</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="miscellaneous-properties">
 <h2>Miscellaneous properties<a class="headerlink" href="#miscellaneous-properties" title="Link to this heading">¶</a></h2>
@@ -761,6 +791,7 @@ plain concrete.</p>
 <li><a class="reference internal" href="#parameters-of-constitutive-relations">Parameters of constitutive relations</a><ul>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2023.eps_c1"><code class="docutils literal notranslate"><span class="pre">eps_c1()</span></code></a></li>
 <li><a class="reference internal" href="#structuralcodes.codes.ec2_2023.eps_cu1"><code class="docutils literal notranslate"><span class="pre">eps_cu1()</span></code></a></li>
+<li><a class="reference internal" href="#structuralcodes.codes.ec2_2023.k_sargin"><code class="docutils literal notranslate"><span class="pre">k_sargin()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#miscellaneous-properties">Miscellaneous properties</a><ul>
