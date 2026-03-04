@@ -289,9 +289,48 @@ class SectionDetailedResultState:
         self._create_data_structure(num_points=num_points)
 
     def _create_data_structure(self, num_points=1000):
-        # Data containers
-        surface_data = []
-        point_data = {}
+        """Create the data structure for storing the detailed results.
+
+        This is designed to be easily used as input for DataFrames.
+        """
+
+        def _append_batch(cols: dict, batch: dict):
+            """Helper function to append a batch of values to data."""
+            # Determine batch length from first key
+            first_key = next(iter(batch))
+            n = len(batch[first_key])
+
+            for k, v in batch.items():
+                # Convert to list for extend
+                if isinstance(v, np.ndarray):
+                    cols[k].extend(v.tolist())
+                elif isinstance(v, (list, tuple)):
+                    cols[k].extend(v)
+                else:
+                    # this could be strings or materials
+                    cols[k].extend([v] * n)
+
+        # Data containers for surfaces and points
+        surface_data = {
+            'group_label': [],
+            'name': [],
+            'material': [],
+            'y': [],
+            'z': [],
+            'strain': [],
+            'stress': [],
+        }
+        point_data = {
+            'group_label': [],
+            'name': [],
+            'material': [],
+            'diameter': [],
+            'area': [],
+            'y': [],
+            'z': [],
+            'strain': [],
+            'stress': [],
+        }
 
         # SurfaceGeometry random points
         for surf in self.section.geometry.geometries:
@@ -301,7 +340,8 @@ class SectionDetailedResultState:
             )
             strain = self.eps_a - self.chi_z * y + self.chi_y * z
             stress = surf.material.constitutive_law.get_stress(strain)
-            surface_data.append(
+            _append_batch(
+                surface_data,
                 {
                     'y': y,
                     'z': z,
@@ -309,36 +349,56 @@ class SectionDetailedResultState:
                     'stress': stress,
                     'name': getattr(surf, 'name', None),
                     'group_label': getattr(surf, 'group_label', None),
-                }
+                    'material': getattr(surf, 'material', None),
+                },
             )
 
-        # Collect all group_label values from point_geometries and
-        # find unique ones
-        unique_labels = set(
-            [pg.group_label for pg in self.section.geometry.point_geometries]
-        )
+        # Get all point geometries
+        point_geometries = self.section.geometry.group_filter(
+            None, return_mode='split'
+        )['points']
 
-        for label in unique_labels:
-            # There should always be at least one label, which is None
-            coords, mats = self.section.geometry.get_point_geometries(
-                group_label=label
-            )
-            strain = (
-                self.eps_a
-                - self.chi_z * coords[:, 0]
-                + self.chi_y * coords[:, 1]
-            )
-            # Find indices where all mats are the same
-            unique_mats = set(tuple(mat for mat in mats))
-            for mat in unique_mats:
-                mask = [m == mat for m in mats]
-                selected_coords = coords[mask]
-                stress = mat.constitutive_law.get_stress(strain[mask])
-                point_data[label] = {
-                    'coords': selected_coords,
-                    'strain': strain[mask],
-                    'stress': stress,
-                }
+        if len(point_geometries) > 0:
+            # We got some point geometries, so we will process them
+            # For efficiency it is better to first group them by material,
+            # so to use the vectorized get_stress of the constitutive law
+
+            point_geometries_map = {}
+            for pg in point_geometries:
+                key = pg.material
+                if key not in point_geometries_map:
+                    point_geometries_map[key] = [pg]
+                else:
+                    point_geometries_map[key].append(pg)
+
+            # Process each material group
+            for material, pgs in point_geometries_map.items():
+                print(f'Processing material: {material}')
+                y = np.array([pg.x for pg in pgs])
+                z = np.array([pg.y for pg in pgs])
+                strain = self.eps_a - self.chi_z * y + self.chi_y * z
+                stress = material.constitutive_law.get_stress(strain)
+                _append_batch(
+                    point_data,
+                    {
+                        'y': y,
+                        'z': z,
+                        'strain': strain,
+                        'stress': stress,
+                        'name': [getattr(pg, 'name', None) for pg in pgs],
+                        'group_label': [
+                            getattr(pg, 'group_label', None) for pg in pgs
+                        ],
+                        'material': material,
+                        'diameter': [
+                            getattr(pg, 'diameter', None) for pg in pgs
+                        ],
+                        'area': [getattr(pg, 'area', None) for pg in pgs],
+                    },
+                )
+        else:
+            # If we don't have points return empty data structure
+            point_data = None
 
         # Store results for later use (e.g., plotting)
         self.surface_data = surface_data
