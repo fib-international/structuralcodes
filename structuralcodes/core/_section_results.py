@@ -148,6 +148,116 @@ class SectionProperties:
         return np.allclose(a, b, rtol=rtol, atol=atol)
 
 
+def _matching_geometries(
+    section,  # @mortenengen here we have circular import if I want to type it. Probably we should refactor? # noqa: E501
+    name: t.Optional[str] = None,
+    group_label: t.Optional[str] = None,
+    case_sensitive: bool = True,
+):
+    """Return (surfaces, points) that match name/group filters."""
+    geometries_name = section.geometry.name_filter(
+        name, return_mode='split', case_sensitive=case_sensitive
+    )
+    geometries_group = section.geometry.group_filter(
+        group_label, return_mode='split', case_sensitive=case_sensitive
+    )
+
+    surfaces = list(
+        set(geometries_name['surfaces']) & set(geometries_group['surfaces'])
+    )
+
+    points = list(
+        set(geometries_name['points']) & set(geometries_group['points'])
+    )
+
+    return surfaces, points
+
+
+def _strain_from_kinematics(eps_a, chi_y, chi_z, y: float, z: float):
+    """Vectorized strain computation: works for scalars or arrays."""
+    # strain = eps_a - chi_z * y + chi_y * z
+    return eps_a - chi_z * y + chi_y * z
+
+
+def _point_inside_geometry_surface(geo, y: float, z: float) -> bool:
+    p = Point(y, z)
+    return geo.polygon.contains(p) or geo.polygon.touches(p)
+
+
+def _point_matches_geometry_point(gp, y: float, z: float) -> bool:
+    # check if a point is close enought to the point geometry gp
+
+    # Here we could implement in the future something that returns the
+    # strain at the point even if it is not exactly in the coordinates of
+    # the point geometries, but for now we will just check if it is close
+    # to any of the point geometries coordinates and return the strain if
+    # it is close enough.
+    return math.isclose(gp.x, y) and math.isclose(gp.y, z)
+
+
+def _get_point_response(
+    section,  # @mortenengen here we have circular import if I want to type it. Probably we should refactor? # noqa: E501
+    eps_a: float,
+    chi_y: float,
+    chi_z: float,
+    y: float,
+    z: float,
+    response_type: t.Literal['strain', 'stress'],
+    name: t.Optional[str] = None,
+    group_label: t.Optional[str] = None,
+    case_sensitive: bool = True,
+    all_results: bool = False,
+):
+    """Shared engine for get_point_strain / get_point_stress.
+    Returns scalar/array (depending on eps_a/chi_y/chi_z) or dict if
+    all_results=True.
+    """
+    if section is None:
+        return None
+
+    surfaces, points = _matching_geometries(
+        section, name, group_label, case_sensitive
+    )
+
+    if all_results:
+        response = {}
+
+    # Surfaces: identify which surface(s) contain the point, then evaluate
+    # response
+    for geo in surfaces:
+        if _point_inside_geometry_surface(geo, y, z):
+            strain = _strain_from_kinematics(eps_a, chi_y, chi_z, y, z)
+            value = (
+                strain
+                if response_type == 'strain'
+                else geo.material.constitutive_law.get_stress(strain)
+            )
+
+            if all_results:
+                response[(geo.name, geo.group_label)] = value
+            else:
+                return value
+
+    # Points: check if we hit a point geometry exactly, then evaluate response
+    for gp in points:
+        if _point_matches_geometry_point(gp, y, z):
+            strain = _strain_from_kinematics(eps_a, chi_y, chi_z, y, z)
+            value = (
+                strain
+                if response_type == 'strain'
+                else gp.material.constitutive_law.get_stress(strain)
+            )
+
+            if all_results:
+                response[(gp.name, gp.group_label)] = value
+            else:
+                return value
+
+    if all_results and len(response) > 0:
+        return response
+    return None
+
+
 @dataclass
 class MomentCurvatureResults:
     """Class for storing moment curvature results.
@@ -436,54 +546,19 @@ class UltimateBendingMomentResults:
             float: The strain at the given point, or None if the point is not
                 within any of the geometries that match the filters.
         """
-        if self.section is None:
-            return None
-
-        # Check if the point is any of the filtered geometries
-        geometries_name = self.section.geometry.name_filter(
-            name, return_mode='split', case_sensitive=case_sensitive
+        return _get_point_response(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            y=y,
+            z=z,
+            response_type='strain',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
         )
-        geometries_group = self.section.geometry.group_filter(
-            group_label, return_mode='split', case_sensitive=case_sensitive
-        )
-
-        geometries_surface = list(
-            set(geometries_name['surfaces'])
-            & set(geometries_group['surfaces'])
-        )
-
-        geometries_point = list(
-            set(geometries_name['points']) & set(geometries_group['points'])
-        )
-
-        if all_results:
-            strains = {}
-        # Check if the point is any of the filtered surface geometries
-        point = Point(y, z)
-        for geo in geometries_surface:
-            if geo.polygon.contains(point) or geo.polygon.touches(point):
-                strain = self.eps_a - self.chi_z * y + self.chi_y * z
-                if all_results:
-                    strains[(geo.name, geo.group_label)] = strain
-                else:
-                    return strain
-
-        # Here we could implement in the future something that returns the
-        # strain at the point even if it is not exactly in the coordinates of
-        # the point geometries, but for now we will just check if it is close
-        # to any of the point geometries coordinates and return the strain if
-        # it is close enough.
-        for gp in geometries_point:
-            if math.isclose(gp.x, y) and math.isclose(gp.y, z):
-                strain = self.eps_a - self.chi_z * y + self.chi_y * z
-                if all_results:
-                    strains[(gp.name, gp.group_label)] = strain
-                else:
-                    return strain
-        # If nothing is found return none
-        if all_results and len(strains) > 0:
-            return strains
-        return None
 
     def get_point_stress(
         self,
@@ -505,64 +580,27 @@ class UltimateBendingMomentResults:
                 geometries by their group_label.
             case_sensitive (bool, optional): If True (default) the matching is
                 case sensitive.
-            all_results (bool): If True, return the strain for all geometries
-                that matches the filters, otherwise return the strain for the
+            all_results (bool): If True, return the stress for all geometries
+                that matches the filters, otherwise return the stress for the
                 first geometry that matches the filters (default False).
 
         Returns:
             float: The strain at the given point, or None if the point is not
                 within any of the geometries that match the filters.
         """
-        if self.section is None:
-            return None
-
-        # Check if the point is any of the filtered geometries
-        geometries_name = self.section.geometry.name_filter(
-            name, return_mode='split', case_sensitive=case_sensitive
+        return _get_point_response(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            y=y,
+            z=z,
+            response_type='stress',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
         )
-        geometries_group = self.section.geometry.group_filter(
-            group_label, return_mode='split', case_sensitive=case_sensitive
-        )
-
-        geometries_surface = list(
-            set(geometries_name['surfaces'])
-            & set(geometries_group['surfaces'])
-        )
-
-        geometries_point = list(
-            set(geometries_name['points']) & set(geometries_group['points'])
-        )
-
-        if all_results:
-            stresses = {}
-        # Check if the point is any of the filtered surface geometries
-        point = Point(y, z)
-        for geo in geometries_surface:
-            if geo.polygon.contains(point) or geo.polygon.touches(point):
-                strain = self.eps_a - self.chi_z * y + self.chi_y * z
-                stress = geo.material.constitutive_law.get_stress(strain)
-                if all_results:
-                    stresses[(geo.name, geo.group_label)] = stress
-                else:
-                    return stress
-
-        # Here we could implement in the future something that returns the
-        # strain at the point even if it is not exactly in the coordinates of
-        # the point geometries, but for now we will just check if it is close
-        # to any of the point geometries coordinates and return the strain if
-        # it is close enough.
-        for gp in geometries_point:
-            if math.isclose(gp.x, y) and math.isclose(gp.y, z):
-                strain = self.eps_a - self.chi_z * y + self.chi_y * z
-                stress = gp.material.constitutive_law.get_stress(strain)
-                if all_results:
-                    stresses[(gp.name, gp.group_label)] = stress
-                else:
-                    return stress
-        # If nothing is found return none
-        if all_results and len(stresses) > 0:
-            return stresses
-        return None
 
 
 @dataclass
