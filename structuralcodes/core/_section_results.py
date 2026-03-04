@@ -170,6 +170,19 @@ class MomentCurvatureResults:
     current_step: int = None
     num_points: int = None
 
+    def _create_detailed_result(self):
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_axial[self.current_step],
+            chi_y=self.chi_y[self.current_step],
+            chi_z=self.chi_z[self.current_step],
+            n=self.n,
+            m_y=self.m_y[self.current_step],
+            m_z=self.m_z[self.current_step],
+            num_points=self.num_points,
+            seed=self.seed,
+        )
+
     def create_detailed_result(self, num_points=1000):
         """Create the detailed result object.
 
@@ -179,19 +192,10 @@ class MomentCurvatureResults:
         """
         if self.seed is None:
             self.seed = np.random.randint(1, 100, 1)[0].item()
-        self.detailed_result = SectionDetailedResultState(
-            section=self.section,
-            eps_a=self.eps_axial[0],
-            chi_y=self.chi_y[0],
-            chi_z=self.chi_z[0],
-            n=self.n,
-            m_y=self.m_y[0],
-            m_z=self.m_z[0],
-            num_points=num_points,
-            seed=self.seed,
-        )
+
         self.current_step = 0
         self.num_points = num_points
+        self._create_detailed_result()
 
     def next_step(self):
         """Advance to the next step in the detailed result."""
@@ -199,17 +203,7 @@ class MomentCurvatureResults:
             return
         if self.current_step < len(self.m_y) - 1:
             self.current_step += 1
-            self.detailed_result = SectionDetailedResultState(
-                section=self.section,
-                eps_a=self.eps_axial[self.current_step],
-                chi_y=self.chi_y[self.current_step],
-                chi_z=self.chi_z[self.current_step],
-                n=self.n,
-                m_y=self.m_y[self.current_step],
-                m_z=self.m_z[self.current_step],
-                num_points=self.num_points,
-                seed=self.seed,
-            )
+            self._create_detailed_result()
 
     def previous_step(self):
         """Go back to the previous step in the detailed result."""
@@ -217,17 +211,7 @@ class MomentCurvatureResults:
             return
         if self.current_step > 0:
             self.current_step -= 1
-            self.detailed_result = SectionDetailedResultState(
-                section=self.section,
-                eps_a=self.eps_axial[self.current_step],
-                chi_y=self.chi_y[self.current_step],
-                chi_z=self.chi_z[self.current_step],
-                n=self.n,
-                m_y=self.m_y[self.current_step],
-                m_z=self.m_z[self.current_step],
-                num_points=self.num_points,
-                seed=self.seed,
-            )
+            self._create_detailed_result()
 
     def set_step(self, step: int):
         """Set the detailed result to a specific step."""
@@ -235,17 +219,7 @@ class MomentCurvatureResults:
             return
         if 0 <= step < len(self.m_y):
             self.current_step = step
-            self.detailed_result = SectionDetailedResultState(
-                section=self.section,
-                eps_a=self.eps_axial[self.current_step],
-                chi_y=self.chi_y[self.current_step],
-                chi_z=self.chi_z[self.current_step],
-                n=self.n,
-                m_y=self.m_y[self.current_step],
-                m_z=self.m_z[self.current_step],
-                num_points=self.num_points,
-                seed=self.seed,
-            )
+            self._create_detailed_result()
 
 
 class SectionDetailedResultState:
@@ -373,7 +347,6 @@ class SectionDetailedResultState:
 
             # Process each material group
             for material, pgs in point_geometries_map.items():
-                print(f'Processing material: {material}')
                 y = np.array([pg.x for pg in pgs])
                 z = np.array([pg.y for pg in pgs])
                 strain = self.eps_a - self.chi_z * y + self.chi_y * z
