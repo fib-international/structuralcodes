@@ -122,6 +122,30 @@ def test_group_filter_wildcards(reinforced_t_section_geometry):
     assert len(top_reinforcement) == 12
 
 
+def test_group_filter_none_returns_split_dict(reinforced_t_section_geometry):
+    """Test filtering by group_label with pattern=None and split return."""
+    geo = reinforced_t_section_geometry
+
+    filtered = geo.group_filter(None, return_mode='split')
+
+    assert set(filtered.keys()) == {'surfaces', 'points'}
+    assert len(filtered['surfaces']) == 2
+    assert len(filtered['points']) == 16
+
+
+def test_group_filter_wildcards_returns_split_dict(
+    reinforced_t_section_geometry,
+):
+    """Test filtering by group_labele and split return."""
+    geo = reinforced_t_section_geometry
+
+    filtered = geo.group_filter('top*', return_mode='split')
+
+    assert set(filtered.keys()) == {'surfaces', 'points'}
+    assert len(filtered['surfaces']) == 0
+    assert len(filtered['points']) == 12
+
+
 def test_group_filter_none_returns_all_geometries(
     reinforced_t_section_geometry,
 ):
