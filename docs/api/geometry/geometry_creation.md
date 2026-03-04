@@ -62,6 +62,9 @@
     .. automethod:: mirror
 
     .. automethod:: calculate_extents
+    
+    .. automethod:: name_filter
+    .. automethod:: group_filter
 
     .. automethod:: from_geometry
 
