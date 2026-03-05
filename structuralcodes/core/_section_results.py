@@ -148,6 +148,11 @@ class SectionProperties:
         return np.allclose(a, b, rtol=rtol, atol=atol)
 
 
+# Utility functions for point response evaluation, used by both
+# get_point_strain and get_point_stress.
+# These are not meant to be public methods, but they are separated for clarity
+
+
 def _matching_geometries(
     section,  # @mortenengen here we have circular import if I want to type it. Probably we should refactor? # noqa: E501
     name: t.Optional[str] = None,
@@ -174,24 +179,28 @@ def _matching_geometries(
 
 
 def _strain_from_kinematics(eps_a, chi_y, chi_z, y: float, z: float):
-    """Vectorized strain computation: works for scalars or arrays."""
+    """Get strain on points from section kinematics.
+    Vectorized strain computation: works for scalars or arrays.
+    """
     # strain = eps_a - chi_z * y + chi_y * z
     return eps_a - chi_z * y + chi_y * z
 
 
 def _point_inside_geometry_surface(geo, y: float, z: float) -> bool:
+    """Check if a point is inside or on the boundary of a surface geometry."""
     p = Point(y, z)
     return geo.polygon.contains(p) or geo.polygon.touches(p)
 
 
 def _point_matches_geometry_point(gp, y: float, z: float) -> bool:
-    # check if a point is close enought to the point geometry gp
+    """Check if a point is close enough to the point geometry gp.
 
-    # Here we could implement in the future something that returns the
-    # strain at the point even if it is not exactly in the coordinates of
-    # the point geometries, but for now we will just check if it is close
-    # to any of the point geometries coordinates and return the strain if
-    # it is close enough.
+    Here we could implement in the future something that returns the
+    strain at the point even if it is not exactly in the coordinates of
+    the point geometries, but for now we will just check if it is close
+    to any of the point geometries coordinates and return the strain if
+    it is close enough.
+    """
     return math.isclose(gp.x, y) and math.isclose(gp.y, z)
 
 
