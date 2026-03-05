@@ -4,6 +4,7 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import typing as t
 import warnings
+from fnmatch import fnmatchcase
 from math import atan2
 
 import numpy as np
@@ -123,6 +124,68 @@ class Geometry:
             CompoundGeometry: A new CompoundGeometry.
         """
         return CompoundGeometry([self, other])
+
+    def _name_matches(
+        self, pattern: str, *, case_sensitive: bool = True
+    ) -> bool:
+        """Checks if the name matches a pattern.
+
+        Arguments:
+            pattern (str): the string pattern to be checked
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): if True (default) the check is
+                case sensitive.
+
+        Returns:
+            (bool): Returns True if the name matches the pattern.
+
+        Note:
+            The matching permits to use:
+                - "*" any chars
+                - "?" single char
+                - "[abc]" character set
+
+        Examples:
+            >>> geo.name_matches("nametos*")
+            >>> geo.name_matches("*pier*")
+            >>> geo.name_matches("Abutment??", case_senstive=False)
+        """
+        if not case_sensitive:
+            return fnmatchcase(self.name.casefold(), pattern.casefold())
+        return fnmatchcase(self.name, pattern)
+
+    def _group_matches(
+        self, pattern: str, *, case_sensitive: bool = True
+    ) -> bool:
+        """Checks if the group_label matches a pattern.
+
+        Arguments:
+            pattern (str): the string pattern to be checked
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): if True (default) the check is
+                case sensitive.
+
+        Returns:
+            (bool): Returns True if the group_label matches the pattern.
+
+        Note:
+            The matching permits to use:
+                - "*" any chars
+                - "?" single char
+                - "[abc]" character set
+
+        Examples:
+            >>> geo.group_matches("nametos*")
+            >>> geo.group_matches("*pier*")
+            >>> geo.group_matches("Abutment??", case_senstive=False)
+        """
+        if self.group_label is None:
+            return False
+        if not case_sensitive:
+            return fnmatchcase(self.group_label.casefold(), pattern.casefold())
+        return fnmatchcase(self.group_label, pattern)
 
 
 class PointGeometry(Geometry):
@@ -933,3 +996,140 @@ class CompoundGeometry(Geometry):
                 PointGeometry.from_geometry(geo=pg, new_material=new_material)
             )
         return CompoundGeometry(geometries=processed_geoms)
+
+    def name_filter(
+        self,
+        pattern: t.Optional[str],
+        *,
+        case_sensitive: bool = True,
+        return_mode: t.Literal['flat', 'split'] = 'flat',
+    ) -> t.Union[t.List[Geometry], t.Dict[str, t.List[Geometry]]]:
+        """Filter geometries by name using a pattern.
+
+        This method returns the geometries whose name matches a given pattern.
+
+        Arguments:
+            pattern (str | None, optional): Pattern used to match geometry
+                names. If ``None``, all geometries are returned.
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): If ``True`` (default), the match
+                is case-sensitive.
+            return_mode (str, optional): Controls the return format. ``"flat"``
+                (default): return a single list containing both
+                ``SurfaceGeometry`` and ``PointGeometry`` objects. ``"split"``:
+                return a dictionary separating the two types.
+
+        Returns:
+            list[Geometry] | dict[str, list[Geometry]]: The filtered
+            geometries. If ``return_mode="flat"``, a single list containing
+            both ``SurfaceGeometry`` and ``PointGeometry`` objects is returned.
+            If ``return_mode="split"``, a dictionary with keys ``"surfaces"``
+            and ``"points"`` is returned.
+
+        Note:
+            The pattern supports simple wildcard matching:
+
+            * ``*`` matches any sequence of characters
+            * ``?`` matches a single character
+            * ``[abc]`` matches any character in the set
+
+        Examples:
+            Match geometries whose name starts with ``"nametos"``:
+
+            >>> geo.name_filter("nametos*")
+
+            Match geometries containing ``"pier"``:
+
+            >>> geo.name_filter("*pier*")
+
+            Case-insensitive match:
+
+            >>> geo.name_filter("Abutment??", case_sensitive=False)
+        """
+        surfaces = self.geometries
+        points = self.point_geometries
+
+        if pattern:
+            surfaces = [
+                g
+                for g in surfaces
+                if g._name_matches(pattern, case_sensitive=case_sensitive)
+            ]
+            points = [
+                g
+                for g in points
+                if g._name_matches(pattern, case_sensitive=case_sensitive)
+            ]
+        if return_mode == 'flat':
+            return [*surfaces, *points]
+        return {'surfaces': surfaces, 'points': points}
+
+    def group_filter(
+        self,
+        pattern: t.Optional[str],
+        *,
+        case_sensitive: bool = True,
+        return_mode: t.Literal['flat', 'split'] = 'flat',
+    ) -> t.Union[t.List[Geometry], t.Dict[str, t.List[Geometry]]]:
+        """Filter geometries by group_label using a pattern.
+
+        This method returns the geometries whose group_label matches a given
+        pattern.
+
+        Arguments:
+            pattern (str | None, optional): Pattern used to match geometry
+                group labels. If ``None``, all geometries are returned.
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): If ``True`` (default), the match
+                is case-sensitive.
+            return_mode (str, optional): Controls the return format. ``"flat"``
+                (default): return a single list containing both
+                `SurfaceGeometry`` and ``PointGeometry`` objects. ``"split"``:
+                return a dictionary separating the two types.
+
+        Returns:
+            list[Geometry] | dict[str, list[Geometry]]: The filtered
+            geometries. If ``return_mode="flat"``, a single list containing
+            both ``SurfaceGeometry`` and ``PointGeometry`` objects is returned.
+            If ``return_mode="split"``, a dictionary with keys ``"surfaces"``
+            and ``"points"`` is returned.
+
+        Note:
+            The pattern supports simple wildcard matching:
+
+            * ``*`` matches any sequence of characters
+            * ``?`` matches a single character
+            * ``[abc]`` matches any character in the set
+
+        Examples:
+            Match geometries whose group_label starts with ``"grouptos"``:
+
+            >>> geo.group_filter("grouptos*")
+
+            Match geometries containing ``"pier"``:
+
+            >>> geo.group_filter("*pier*")
+
+            Case-insensitive match:
+
+            >>> geo.group_filter("Abutment??", case_sensitive=False)
+        """
+        surfaces = self.geometries
+        points = self.point_geometries
+
+        if pattern:
+            surfaces = [
+                g
+                for g in surfaces
+                if g._group_matches(pattern, case_sensitive=case_sensitive)
+            ]
+            points = [
+                g
+                for g in points
+                if g._group_matches(pattern, case_sensitive=case_sensitive)
+            ]
+        if return_mode == 'flat':
+            return [*surfaces, *points]
+        return {'surfaces': surfaces, 'points': points}
