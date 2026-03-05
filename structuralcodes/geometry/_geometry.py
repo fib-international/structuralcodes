@@ -134,23 +134,23 @@ class Geometry:
         Arguments:
             pattern (str): the string pattern to be checked
 
-        Keywordarguments:
+        Keyword Arguments:
             case_sensitive (bool, optional): if True (default) the check is
                 case sensitive.
 
         Returns:
             (bool): Returns True if the name matches the pattern.
 
-        Notes:
+        Note:
             The matching permits to use:
                 - "*" any chars
                 - "?" single char
                 - "[abc]" character set
 
         Examples:
-            geo.name_matches("nametos*")
-            geo.name_matches("*pier*")
-            geo.name_matches("Abutment??", case_senstive=False)
+            >>> geo.name_matches("nametos*")
+            >>> geo.name_matches("*pier*")
+            >>> geo.name_matches("Abutment??", case_senstive=False)
         """
         if not case_sensitive:
             return fnmatchcase(self.name.casefold(), pattern.casefold())
@@ -164,23 +164,23 @@ class Geometry:
         Arguments:
             pattern (str): the string pattern to be checked
 
-        Keywordarguments:
+        Keyword Arguments:
             case_sensitive (bool, optional): if True (default) the check is
                 case sensitive.
 
         Returns:
             (bool): Returns True if the group_label matches the pattern.
 
-        Notes:
+        Note:
             The matching permits to use:
                 - "*" any chars
                 - "?" single char
                 - "[abc]" character set
 
         Examples:
-            geo.group_matches("nametos*")
-            geo.group_matches("*pier*")
-            geo.group_matches("Abutment??", case_senstive=False)
+            >>> geo.group_matches("nametos*")
+            >>> geo.group_matches("*pier*")
+            >>> geo.group_matches("Abutment??", case_senstive=False)
         """
         if self.group_label is None:
             return False
@@ -1131,30 +1131,26 @@ class CompoundGeometry(Geometry):
 
         This method returns the geometries whose name matches a given pattern.
 
-        Args:
+        Arguments:
             pattern (str | None, optional): Pattern used to match geometry
-                names.
-                If ``None``, all geometries are returned.
+                names. If ``None``, all geometries are returned.
 
+        Keyword Arguments:
             case_sensitive (bool, optional): If ``True`` (default), the match
                 is case-sensitive.
-
-            return_mode (str, optional): Controls the return format:
-
-                * ``"flat"`` (default): return a single list containing both
-                    ``SurfaceGeometry`` and ``PointGeometry`` objects.
-                * ``"split"``: return a dictionary separating the two types.
+            return_mode (str, optional): Controls the return format. ``"flat"``
+                (default): return a single list containing both
+                ``SurfaceGeometry`` and ``PointGeometry`` objects. ``"split"``:
+                return a dictionary separating the two types.
 
         Returns:
-            list[Geometry] | dict[str, list[Geometry]]: The filtered geometries
+            list[Geometry] | dict[str, list[Geometry]]: The filtered
+            geometries. If ``return_mode="flat"``, a single list containing
+            both ``SurfaceGeometry`` and ``PointGeometry`` objects is returned.
+            If ``return_mode="split"``, a dictionary with keys ``"surfaces"``
+            and ``"points"`` is returned.
 
-                * If ``return_mode="flat"``, a single list containing both
-                    ``SurfaceGeometry`` and ``PointGeometry`` objects is
-                    returned.
-                * If ``return_mode="split"``, a dictionary with keys
-                    ``"surfaces"`` and ``"points"`` is returned.
-
-        Notes:
+        Note:
             The pattern supports simple wildcard matching:
 
             * ``*`` matches any sequence of characters
@@ -1204,30 +1200,26 @@ class CompoundGeometry(Geometry):
         This method returns the geometries whose group_label matches a given
         pattern.
 
-        Args:
+        Arguments:
             pattern (str | None, optional): Pattern used to match geometry
-                group labels.
-                If ``None``, all geometries are returned.
+                group labels. If ``None``, all geometries are returned.
 
+        Keyword Arguments:
             case_sensitive (bool, optional): If ``True`` (default), the match
                 is case-sensitive.
-
-            return_mode (str, optional): Controls the return format:
-
-                * ``"flat"`` (default): return a single list containing both
-                    `SurfaceGeometry`` and ``PointGeometry`` objects.
-                * ``"split"``: return a dictionary separating the two types.
+            return_mode (str, optional): Controls the return format. ``"flat"``
+                (default): return a single list containing both
+                `SurfaceGeometry`` and ``PointGeometry`` objects. ``"split"``:
+                return a dictionary separating the two types.
 
         Returns:
-            list[Geometry] | dict[str, list[Geometry]]: The filtered geometries
+            list[Geometry] | dict[str, list[Geometry]]: The filtered
+            geometries. If ``return_mode="flat"``, a single list containing
+            both ``SurfaceGeometry`` and ``PointGeometry`` objects is returned.
+            If ``return_mode="split"``, a dictionary with keys ``"surfaces"``
+            and ``"points"`` is returned.
 
-                * If ``return_mode="flat"``, a single list containing both
-                    ``SurfaceGeometry`` and ``PointGeometry`` objects is
-                    returned.
-                * If ``return_mode="split"``, a dictionary with keys
-                    ``"surfaces"`` and ``"points"`` is returned.
-
-        Notes:
+        Note:
             The pattern supports simple wildcard matching:
 
             * ``*`` matches any sequence of characters
