@@ -154,7 +154,7 @@ class SectionProperties:
 
 
 def _matching_geometries(
-    section,  # @mortenengen here we have circular import if I want to type it. Probably we should refactor? # noqa: E501
+    section,  # For now we can't type hint the Section or even GenericSection due to circular import. #noqa: E501
     name: t.Optional[str] = None,
     group_label: t.Optional[str] = None,
     case_sensitive: bool = True,
@@ -205,7 +205,7 @@ def _point_matches_geometry_point(gp, y: float, z: float) -> bool:
 
 
 def _get_point_response(
-    section,  # @mortenengen here we have circular import if I want to type it. Probably we should refactor? # noqa: E501
+    section,  # For now we can't type hint the Section or even GenericSection due to circular import. #noqa: E501
     eps_a: float,
     chi_y: float,
     chi_z: float,
@@ -306,7 +306,7 @@ class MomentCurvatureResults:
         """Create the detailed result object.
 
         Arguments:
-            num_points (int): Number of random points to sample in each
+            num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
         """
         if self.seed is None:
@@ -333,7 +333,11 @@ class MomentCurvatureResults:
             self._create_detailed_result()
 
     def set_step(self, step: int):
-        """Set the detailed result to a specific step."""
+        """Set the detailed result to a specific step.
+
+        Arguments:
+            step (int): the step to set for the datailed_result object.
+        """
         if self.detailed_result is None:
             return
         if 0 <= step < len(self.m_y):
@@ -427,7 +431,16 @@ class MomentCurvatureResults:
 
 
 class SectionDetailedResultState:
-    """Something."""
+    """A class for storing section detailed results for specific state.
+
+    This class stores in a specific data structure the results in terms of
+    strain and stress fields for a specific state.
+
+    The state is characterized by a strain plane (describing the section
+    kinematics). This can correspond for instance to the plane strain
+    computed when determining the ultimate strength of the section, or it can
+    be a specific step during a moment-curvature analysis.
+    """
 
     def __init__(
         self,
@@ -601,7 +614,12 @@ class UltimateBendingMomentResults:
     detailed_result: SectionDetailedResultState = None
 
     def create_detailed_result(self, num_points=1000):
-        """Create the detailed result object."""
+        """Create the detailed result object.
+
+        Arguments:
+            num_points (int): Number of random points to sample fpr each
+                surface geometry (default = 1000).
+        """
         self.detailed_result = SectionDetailedResultState(
             section=self.section,
             eps_a=self.eps_a,
