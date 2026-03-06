@@ -702,7 +702,7 @@ class UltimateBendingMomentResults:
         """Create the detailed result object.
 
         Arguments:
-            num_points (int): Number of random points to sample fpr each
+            num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
         """
         self.detailed_result = SectionDetailedResultState(

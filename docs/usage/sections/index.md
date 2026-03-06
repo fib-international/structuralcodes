@@ -92,7 +92,7 @@ The moment-curvature relation computed with the code [above](#code-usage-generic
 
 ## Inspecting further with results objects
 
-The results objects contains methods for inspecting and processing further the detailed results on the section after a calculation is performed.
+The results objects contain methods for inspecting and processing further the detailed results on the section after a calculation is performed.
 
 For instance, calling the method {py:meth}`.calculate_bending_strength() <structuralcodes.sections.GenericSectionCalculator.calculate_bending_strength>` returns an object of class {class}`UltimateBendingMomentResults <structuralcodes.core._section_results.UltimateBendingMomentResults>`.
 
@@ -122,7 +122,7 @@ If we inspect this result object, we find among its attributes `detailed_result`
 (code-usage-generic-section-result-strength-plot)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 101-124
+:lines: 101-104,108-121
 :caption: Create a plot of strain and stress fields for bending strength.
 :::
 ::::
@@ -146,7 +146,7 @@ If we only want to know the strain and/or stress at a specific point we can dire
 (code-usage-generic-section-result-strength-point-stress)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 88-96
+:lines: 88-95
 :caption: Get the stress at the coordinates of one reinforcement
 :::
 ::::
@@ -167,7 +167,7 @@ If we are not interested in getting the detailed results but we want to get the 
 (code-usage-generic-section-result-mcurv-point-stress)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 181-205
+:lines: 181-204
 :caption: Plot the stress at reinforcement position for increasing curvature.
 :::
 ::::
