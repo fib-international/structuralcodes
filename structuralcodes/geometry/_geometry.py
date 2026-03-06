@@ -860,8 +860,6 @@ def _process_geometries_multipolygon(
                 SurfaceGeometry(
                     poly=g,
                     material=materials,
-                    name=g.name,
-                    group_label=g.group_label,
                 )
             )
     elif isinstance(materials, list):
@@ -873,7 +871,8 @@ def _process_geometries_multipolygon(
         for g, m in zip(geometries.geoms, materials):
             checked_geometries.append(
                 SurfaceGeometry(
-                    poly=g, material=m, name=g.name, group_label=g.group_label
+                    poly=g,
+                    material=m,
                 )
             )
     return checked_geometries
