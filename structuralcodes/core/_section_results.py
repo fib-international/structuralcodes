@@ -469,14 +469,14 @@ class SectionDetailedResultState:
             seed (int): Seed for random number generator to ensure
                 reproducibility of random points.
         """
-        self.eps_a = eps_a
-        self.chi_y = chi_y
-        self.chi_z = chi_z
-        self.n = n
-        self.m_y = m_y
-        self.m_z = m_z
-        self.section = section
-        self.seed = seed
+        self._eps_a = eps_a
+        self._chi_y = chi_y
+        self._chi_z = chi_z
+        self._n = n
+        self._m_y = m_y
+        self._m_z = m_z
+        self._section = section
+        self._seed = seed
         self._create_data_structure(num_points=num_points)
 
     def _create_data_structure(self, num_points=1000):
@@ -591,8 +591,93 @@ class SectionDetailedResultState:
             point_data = None
 
         # Store results for later use (e.g., plotting)
-        self.surface_data = surface_data
-        self.point_data = point_data
+        self._surface_data = surface_data
+        self._point_data = point_data
+
+    @property
+    def section(self):
+        """Return the section pointer."""
+        return self._section
+
+    @property
+    def seed(self):
+        """Return the seed for random sample of points."""
+        return self._seed
+
+    @property
+    def n(self):
+        """Return axial force."""
+        return self._n
+
+    @property
+    def m_y(self):
+        """Return bending moment m_y."""
+        return self._m_y
+
+    @property
+    def m_z(self):
+        """Return bending moment m_z."""
+        return self._m_z
+
+    @property
+    def eps_a(self):
+        """Return axial strain at (0, 0)."""
+        return self._eps_a
+
+    @property
+    def chi_y(self):
+        """Return curvature chi_y."""
+        return self._chi_y
+
+    @property
+    def chi_z(self):
+        """Return curvature chi_z."""
+        return self._chi_z
+
+    @property
+    def strain(self):
+        """Return the strain plane as a numpy array."""
+        return np.array([self.eps_a, self.chi_y, self.chi_z])
+
+    @property
+    def surface_data(self):
+        """Return the datastructure for surface geometries.
+
+        The datastructure is a dictionary containing the following information
+        for each point along the surfaces:
+
+        - name: the name of the geometry
+        - group_label: the group_label fo the geometry
+        - material: the material of the geometry
+        - y: the y coordinate of the point
+        - z: the z coordinate of the point
+        - strain: the strain of the point
+        - stress: the stress of the point
+
+        This dictionary can be easily given as input for creating a DataFrame.
+        """
+        return self._surface_data
+
+    @property
+    def point_data(self):
+        """Return the datastructure for point geometries.
+
+        The datastructure is a dictionary containing the following information
+        for each point along the surfaces:
+
+        - name: the name of the geometry
+        - group_label: the group_label fo the geometry
+        - material: the material of the geometry
+        - diameter: the diameter of the geometry
+        - area: the area of the geometry
+        - y: the y coordinate of the point
+        - z: the z coordinate of the point
+        - strain: the strain of the point
+        - stress: the stress of the point
+
+        This dictionary can be easily given as input for creating a DataFrame.
+        """
+        return self._point_data
 
 
 @dataclass
