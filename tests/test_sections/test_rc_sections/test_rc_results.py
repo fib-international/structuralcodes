@@ -314,3 +314,29 @@ def test_moment_curvature_result(simple_rc_section):
     res.set_step(10)
     stress_bottom = res.detailed_result.point_data['stress'][0]
     assert np.isclose(stress_bottom, stresses_bottom[10])
+
+
+def test_bending_strength_result(simple_rc_section):
+    """Test that bending strength result is computed correctly."""
+    section = simple_rc_section
+
+    res = section.section_calculator.calculate_bending_strength()
+
+    res.create_detailed_result()
+
+    stress_bottom = res.get_point_stress(
+        y=-160.0, z=-160.0, group_label='bottom'
+    )
+    stress_top = res.get_point_stress(y=160.0, z=160.0, group_label='top')
+
+    assert len(res.detailed_result.surface_data['stress']) == 1000
+    assert len(res.detailed_result.point_data['stress']) == 8
+
+    assert np.isclose(
+        stress_bottom, res.detailed_result.point_data['stress'][0]
+    )
+    assert np.isclose(
+        stress_bottom, res.detailed_result.point_data['material'][0].fyd()
+    )
+
+    assert np.isclose(stress_top, res.detailed_result.point_data['stress'][-1])
