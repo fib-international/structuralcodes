@@ -741,6 +741,8 @@ class SurfaceGeometry(Geometry):
             poly=affinity.translate(self.polygon, dx, dy),
             material=self.material,
             concrete=self.concrete,
+            name=self.name,
+            group_label=self.group_label,
         )
 
     def rotate(
@@ -768,6 +770,8 @@ class SurfaceGeometry(Geometry):
             ),
             material=self.material,
             concrete=self.concrete,
+            name=self.name,
+            group_label=self.group_label,
         )
 
     def mirror(self, axis: LineString) -> SurfaceGeometry:
@@ -790,6 +794,8 @@ class SurfaceGeometry(Geometry):
             poly=affinity.affine_transform(self.polygon, params),
             material=self.material,
             concrete=self.concrete,
+            name=self.name,
+            group_label=self.group_label,
         )
 
     @staticmethod
@@ -827,7 +833,11 @@ class SurfaceGeometry(Geometry):
             # elastic modulus
             new_material = ElasticMaterial.from_material(geo.material)
 
-        return SurfaceGeometry(poly=geo.polygon, material=new_material)
+        return SurfaceGeometry(
+            poly=geo.polygon,
+            material=new_material,
+            group_label=geo.group_label,
+        )
 
     # here we can also add static methods like:
     # from_points
@@ -847,7 +857,12 @@ def _process_geometries_multipolygon(
     if isinstance(materials, Material):
         for g in geometries.geoms:
             checked_geometries.append(
-                SurfaceGeometry(poly=g, material=materials)
+                SurfaceGeometry(
+                    poly=g,
+                    material=materials,
+                    name=g.name,
+                    group_label=g.group_label,
+                )
             )
     elif isinstance(materials, list):
         # the list of materials is provided, one for each polygon
@@ -856,7 +871,11 @@ def _process_geometries_multipolygon(
                 'geometries and materials should have the same length'
             )
         for g, m in zip(geometries.geoms, materials):
-            checked_geometries.append(SurfaceGeometry(poly=g, material=m))
+            checked_geometries.append(
+                SurfaceGeometry(
+                    poly=g, material=m, name=g.name, group_label=g.group_label
+                )
+            )
     return checked_geometries
 
 
