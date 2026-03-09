@@ -2,10 +2,13 @@
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
+import typing as t
 from dataclasses import dataclass, field, fields
 
 import numpy as np
 from numpy.typing import ArrayLike
+from shapely import Polygon, contains, covers, points
+from shapely.prepared import prep
 
 
 @dataclass
@@ -264,3 +267,59 @@ class MMInteractionDomain(InteractionDomain):
 
     num_theta: float = 0  # number of discretizations along the angle
     theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA
+
+    def contains(
+        self,
+        My: t.Union[float, ArrayLike],
+        Mz: t.Union[float, ArrayLike],
+        include_boundary: bool = True,
+    ) -> t.Union[bool, ArrayLike]:
+        """Checks if the load pair (My, Mz) is contained in the domain.
+
+        Arguments:
+            My (ArrayLike): Bending moment applied to the section about y-axis.
+            Mz (ArrayLike): Bending moment applied to the section about z-axis.
+            include_boundary (bool): If True, points on the boundary of the
+                domain are considered as contained. If False, points on the
+                boundary are not considered as contained.
+
+        Returns:
+            Union[bool, ArrayLike]: if My and Mz are scalars, returns a boolean
+                indicating if the load pair (My,Mz) is inside the domain.
+                If My and Mz are arrays, returns an array of booleans.
+
+        Note:
+            If My and Mz are arrays, the length of My and Mz must be the same,
+            and the function will return an array of booleans indicating for
+            each pair (My[i], Mz[i]) if it is inside the domain or not.
+        """
+        # This should never happen if the result object is returned by the
+        # corresponding function, but we check it just in case
+        if self.forces is None:
+            raise ValueError('Interaction domain data is not available.')
+
+        My = np.atleast_1d(My)
+        Mz = np.atleast_1d(Mz)
+
+        if My.shape != Mz.shape:
+            raise ValueError('My and Mz must have the same size.')
+
+        # Convert the domain into a shapely polygon
+        poly_ = Polygon(
+            self.forces[:, 1:3]
+        )  # My and Mz are in columns 1 and 2
+        P = prep(poly_)  # Prepare the polygon for faster contains checks
+
+        # Create an array of points
+        pts = points(My, Mz)
+
+        # This is the vectorized code that runs in C so its fast
+        if include_boundary:
+            res = covers(P.context, pts)
+        else:
+            res = contains(P.context, pts)
+
+        # If the input was scalar, return a scalar
+        if res.size == 1:
+            return res[0]
+        return res

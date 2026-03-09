@@ -584,6 +584,59 @@ def test_rectangular_section_mm_domain():
     )
 
 
+@pytest.mark.parametrize(
+    'My, Mz, contains_true',
+    [
+        (
+            [-80e6, -90e6, 10e6, 10e6],
+            [-10e6, -20e6, 20e6, -22e6],
+            np.array([True, False, True, False]),
+        ),
+        (
+            np.array([-80e6, -90e6, 10e6, 10e6]),
+            np.array([-10e6, -20e6, 20e6, -22e6]),
+            np.array([True, False, True, False]),
+        ),
+    ],
+)
+def test_rectangular_section_mm_domain_check_points(My, Mz, contains_true):
+    """Test rectangular section MM interaction domain contains points."""
+    # Create materials to use
+    concrete = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=200000, ftk=450, epsuk=0.075)
+
+    # The section
+    geo = RectangularGeometry(width=200, height=500, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-60, -210),
+        coords_j=(60, -210),
+        diameter=16,
+        n=3,
+        material=steel,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-60, 210),
+        coords_j=(60, 210),
+        diameter=10,
+        n=2,
+        material=steel,
+    )
+
+    # Create section with fiber integrator
+    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
+
+    # Compute MM domain
+    mm_fiber = sec_fiber.section_calculator.calculate_mm_interaction_domain(
+        num_theta=33
+    )
+
+    contains = mm_fiber.contains(My, Mz)
+
+    assert np.all(contains == contains_true)
+
+
 def test_rectangular_section_nmm_domain():
     """Test rectangular section NMM interaction domain."""
     # Create materials to use
