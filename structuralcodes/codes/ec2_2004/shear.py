@@ -200,7 +200,7 @@ def VRdc(
             Default value is 0.18 / gamma_c.
 
     Returns:
-        float: The concrete shear resistance in MPa.
+        float: The concrete shear resistance in N.
     """
     CRdc = CRdc or 0.18 / gamma_c
     return max(
