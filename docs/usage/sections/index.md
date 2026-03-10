@@ -112,7 +112,7 @@ In the example [below](#code-usage-generic-section-result-strength), we continue
 (code-usage-generic-section-result-strength)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 85-86, 98-99
+:lines: 87-88, 100-101
 :caption: Create the detailed result datastructure.
 :::
 ::::
@@ -122,7 +122,7 @@ If we inspect this result object, we find among its attributes `detailed_result`
 (code-usage-generic-section-result-strength-plot)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 101-104,108-121
+:lines: 103-141
 :caption: Create a plot of strain and stress fields for bending strength.
 :::
 ::::
@@ -146,7 +146,7 @@ If we only want to know the strain and/or stress at a specific point we can dire
 (code-usage-generic-section-result-strength-point-stress)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 88-95
+:lines: 90-98
 :caption: Get the stress at the coordinates of one reinforcement
 :::
 ::::
@@ -167,7 +167,7 @@ If we are not interested in getting the detailed results but we want to get the 
 (code-usage-generic-section-result-mcurv-point-stress)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_bending_strength_results.py
-:lines: 181-204
+:lines: 202-226
 :caption: Plot the stress at reinforcement position for increasing curvature.
 :::
 ::::
@@ -177,4 +177,21 @@ If we are not interested in getting the detailed results but we want to get the 
 :width: 75%
 
 The stress for increasing curvature plotted with the code [above](#code-usage-generic-section-result-mcurv-point-stress).
+:::
+
+Using in a more advanced way matplotlib, it is possible to create an animation (like for instance a *gif* file) showing the stress field for the steps of the moment-curvature analysis. The code [below](code-usage-generic-section-result-mcurv-anim) create an animation with the moment curvature diagram on the left and the cross section stress field on the right.
+
+(code-usage-generic-section-result-mcurv-anim)=
+::::{dropdown-syntax}
+:::{literalinclude} ../../_example_code/usage_bending_strength_results.py
+:lines: 228-359
+:caption: Generate an animation for the moment-curvature section response.
+:::
+::::
+
+(fig-usage-stress-animation)=
+:::{figure} moment_curvature_stress_animation.gif
+:width: 75%
+
+The animation of the stress field with increasing curvature created with the code [above](#code-usage-generic-section-result-mcurv-anim).
 :::
