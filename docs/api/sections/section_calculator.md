@@ -35,11 +35,36 @@
 ```
 
 ```{eval-rst}
+.. autoclass:: structuralcodes.core._section_results.SectionDetailedResultState
+
+    .. autoproperty:: n
+    .. autoproperty:: m_y
+    .. autoproperty:: m_z
+    .. autoproperty:: eps_a
+    .. autoproperty:: chi_y
+    .. autoproperty:: chi_z
+    .. autoproperty:: strain
+    .. autoproperty:: surface_data
+    .. autoproperty:: point_data
+```
+
+```{eval-rst}
 .. autoclass:: structuralcodes.core._section_results.MomentCurvatureResults
+
+    .. automethod:: create_detailed_result
+    .. automethod:: next_step
+    .. automethod:: previous_step
+    .. automethod:: set_step
+    .. automethod:: get_point_strain
+    .. automethod:: get_point_stress    
 ```
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.core._section_results.UltimateBendingMomentResults
+
+    .. automethod:: create_detailed_result
+    .. automethod:: get_point_strain
+    .. automethod:: get_point_stress
 ```
 
 ```{eval-rst}

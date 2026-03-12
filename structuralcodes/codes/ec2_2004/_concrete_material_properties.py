@@ -1,8 +1,20 @@
 """Concrete material properties according to Tab. 3.1."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import math
+import typing as t
+
+import numpy as np
+from numpy.typing import ArrayLike
 
 from structuralcodes.codes import mc2010
+
+S_TIME_DEVELOPMENT_DICT = {
+    'R': 0.20,
+    'N': 0.25,
+    'S': 0.38,
+}  # As defined in Eq. (3.2)
 
 
 def fcm(fck: float, delta_f: float = 8) -> float:
@@ -124,7 +136,7 @@ def k_sargin(
 ) -> float:
     """Computation of k parameter for Sargin constitutive Law.
 
-    EN 1992-1-1:2004, Eq. (3.14)
+    EN 1992-1-1:2004, Eq. (3.14).
 
     Args:
         Ecm (float): the mean elastic modulus of concrete in MPa.
@@ -225,7 +237,7 @@ def eps_cu3(fck: float) -> float:
 def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
     """The design compressive strength of concrete.
 
-    EN 1992-1-1:2004, Eq. (3.15)
+    EN 1992-1-1:2004, Eq. (3.15).
 
     Args:
         fck (float): The characteristic compressive strength in MPa.
@@ -237,3 +249,158 @@ def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
         float: The design compressive strength of concrete in MPa
     """
     return abs(alpha_cc) * abs(fck) / abs(gamma_c)
+
+
+def beta_cc(t: ArrayLike, s: float) -> ArrayLike:
+    """The time development function for compressive strength of concrete.
+
+    EN 1992-1-1:2004, Eq. (3.2).
+
+    Args:
+        t (ArrayLike): The time in days to evaluate the development function
+            for.
+        s (float): The scale factor in the exponent for the time development
+            function. s = 0.20 for class R, 0.25 for class N, and 0.38 for
+            class N.
+
+    Returns:
+        ArrayLike: The value of the time development function.
+    """
+    return np.exp(s * (1 - np.sqrt(28 / t)))
+
+
+def beta_ct(t: ArrayLike, s: float) -> ArrayLike:
+    """The time development function for tensile strength of concrete.
+
+    EN 1992-1-1:2004, part of Eq. (3.4).
+
+    Args:
+        t (ArrayLike): The time in days to evaluate the development function
+            for.
+        s (float): The scale factor in the exponent for the time development
+            function. s = 0.20 for class R, 0.25 for class N, and 0.38 for
+            class N.
+
+    Returns:
+        ArrayLike: The value of the time development function.
+    """
+    if np.isscalar(t):
+        beta = beta_cc(t, s)
+        if t < 28:
+            return beta
+        return np.pow(beta, 2 / 3)
+    t = np.atleast_1d(t)
+    beta = beta_cc(t, s)
+    beta[t >= 28] = np.pow(beta[t >= 28], 2 / 3)
+    return beta
+
+
+def beta_E(t: ArrayLike, s: float) -> ArrayLike:
+    """The time development function for Young's modulus of concrete.
+
+    EN 1992-1-1:2004, part of Eq. (3.5).
+
+    Args:
+        t (ArrayLike): The time in days to evaluate the development function
+            for.
+        s (float): The scale factor in the exponent for the time development
+            function. s = 0.20 for class R, 0.25 for class N, and 0.38 for
+            class N.
+
+    Returns:
+        ArrayLike: The value of the time development function.
+    """
+    return np.pow(beta_cc(t, s), 0.3)
+
+
+def s_time_development(cement_class: t.Literal['S', 'N', 'R']) -> float:
+    """Return the scale factor for the exponent for the time development
+    function.
+
+    EN 1992-1-1:2004, Eq. (3.2).
+
+    Args:
+        cement_class (str): The cement class, either 'S', 'N' or 'R'.
+
+    Returns:
+        float: The scale factor that depends on the cement type.
+
+    Raises:
+        ValueError: If an invalid cement class is provided.
+
+    """
+    cement_class = (
+        cement_class.upper().strip() if cement_class is not None else ''
+    )
+    s = S_TIME_DEVELOPMENT_DICT.get(cement_class)
+
+    if s is None:
+        raise ValueError(
+            (
+                f'"{cement_class}" is not a valid cement class. '
+                'Use either S, N or R.'
+            )
+        )
+    return s
+
+
+def fcm_time(fcm: float, beta_cc: ArrayLike) -> ArrayLike:
+    """Calculate the compressive strength as function of time.
+
+    EN 1992-1-1:2004, Eq. (3.1).
+
+    Args:
+        fcm (float): The reference value for the compressive strength.
+        beta_cc (ArrayLike): The value(s) of the time development function.
+
+    Returns:
+        ArrayLike: The calculated value(s) of the compressive strength.
+
+    Note:
+        The value of beta_cc should be calculated with the function beta_cc.
+    """
+    return fcm * beta_cc
+
+
+def fctm_time(fctm: float, beta_cc: ArrayLike, alpha: ArrayLike) -> ArrayLike:
+    """Calculate the tensile strength as function of time.
+
+    EN 1992-1-1:2004, Eq. (3.4).
+
+    Args:
+        fctm (float): The reference value for the tensile strength.
+        beta_cc (ArrayLike): The value(s) of the time development function.
+        alpha (ArrayLike): An exponent for the time development function. It
+            should be set to 1 for t < 28, and 2/3 else.
+
+    Returns:
+        ArrayLike: The calculated value(s) of the tensile strength.
+
+    Note:
+        The value of beta_cc should be calculated with the function beta_cc.
+        Alternatively, the time development function for the tensile strength
+        could be calculated directly with the function beta_ct.
+    """
+    return np.pow(beta_cc, alpha) * fctm
+
+
+def Ecm_time(fcm: float, fcm_time: ArrayLike, Ecm: float) -> ArrayLike:
+    """Calculate the Young's modulus as function of time.
+
+    EN 1992-1-1:2004, Eq. (3.5).
+
+    Args:
+        fcm (float): The reference value for the compressive strength.
+        fcm_time (float): The value(s) of the compressive strength at the
+            point(s) in time.
+        Ecm (float): The reference value for the Young's modulus.
+
+    Returns:
+        ArrayLike: The calculated value(s) of the Young's modulus.
+
+    Note:
+        The value of fcm_time should be calculated with the function fcm_time.
+        Alternatively, the time development function for the Young's modulus
+        could be calculated directly with the function beta_E.
+    """
+    return np.pow(fcm_time / fcm, 0.3) * Ecm

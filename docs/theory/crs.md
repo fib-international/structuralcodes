@@ -19,10 +19,25 @@ Note that this coordinate system is consistent with graphical representations, w
 The figure [below](#theory-fig-coordinate-system) illustrates the coordinate system in a rectangular geometry.
 
 (theory-fig-coordinate-system)=
-:::{figure} FigureGRS.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureGRS_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureGRS_dark.png
+:align: center
+:class: only-dark
+:::
 
 The coordinate system adopted in StructuralCodes shown on a rectangular geometry.
-:::
+
+::::
+:::::
+
 
 (theory-sign-convention)=
 ## Sign conventions
@@ -33,7 +48,7 @@ The following sign conventions apply.
 : Are negative when in compression.
 
 **Moments**
-: Follow the right-hand rule as illustrated in the figure [below](#theory-fig-moment-signs):
+: Follow the right-hand rule (RHR) as illustrated in the figure [below](#theory-fig-moment-signs):
    - $M_{\textrm{y}}$, bending about the $y$-axis, is positive when top fibers are stretched, and bottom fibers are compressed.
    - $M_{\textrm{z}}$, bending about the $z$-axis, is positive when left fibers are stretched, and right fibers are compressed.
 
@@ -44,20 +59,57 @@ The following sign conventions apply.
 : Act in the origin of the **GRS**.
 
 (theory-fig-moment-signs)=
-:::{figure} FigureSigns.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
 
-The definition of positive moments.
+:::{image} FigureSigns_light.png
+:align: center
+:class: only-light
 :::
 
-::::{admonition} Loads act in the origin!
+:::{image} FigureSigns_dark.png
+:align: center
+:class: only-dark
+:::
+
+The definition of positive moments.
+
+::::
+:::::
+
+::::::{admonition} Sign convention for moments
+:class: attention
+
+The sign convention for the moments $M_y$ and $M_z$ is following the RHR expressed above. Please note that this may differ with the usual "engineering" sign convention for moments in use in your country (e.g. positive moments when stretching bottom chord fibers and negative when stretching top fibers). When interpreting the results always remember that StructuralCodes sticks with this sign convention.
+
+::::::
+
+::::::{admonition} Loads act in the origin!
 :class: caution
 
 Pay particular attention to **loads**. When the section is subjected to axial load, this is considered acting in the origin, i.e. `(0, 0)`. If the center of gravity of the section is not aligned with the origin, offset moments are generated, as illustrated in the figure [below](#theory-fig-geometry-not-in-origin). If you want the load to act on the center of the geometry, translate the geometry in order to have the center in `(0, 0)`.
 
 (theory-fig-geometry-not-in-origin)=
-:::{figure} FigureLoadOrigin.png
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
 
-Illustration of the offset moments that are generated when a geometry which is not aligned with the origin is subjected to an axial force.
+:::{image} FigureLoadOrigin_light.png
+:align: center
+:class: only-light
+:width: 60%
 :::
 
+:::{image} FigureLoadOrigin_dark.png
+:align: center
+:class: only-dark
+:width: 60%
+:::
+
+Illustration of the offset moments that are generated when a geometry which is not aligned with the origin is subjected to an axial force.
+
 ::::
+:::::
+
+::::::

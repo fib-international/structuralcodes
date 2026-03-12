@@ -113,3 +113,17 @@
    .. autoproperty:: wrapped_law
 
 ```
+
+## Parallel
+
+```{eval-rst}
+.. autoclass:: structuralcodes.materials.constitutive_laws.Parallel
+
+   .. automethod:: __init__
+   .. automethod:: get_stress
+   .. automethod:: get_tangent
+   .. automethod:: get_ultimate_strain
+
+   .. autoproperty:: weights
+   .. autoproperty:: wrapped_laws
+```

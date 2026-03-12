@@ -8,23 +8,25 @@ input by the user.
 
 import typing as t
 
-import numpy as np
 from numpy.typing import ArrayLike
-from shapely import Polygon
+from shapely import Point
 
 from structuralcodes.core.base import Material
 
 from ._geometry import SurfaceGeometry
 
 
-def _create_circle(radius, npoints=20, origin: t.Optional[ArrayLike] = None):
+def _create_circle(
+    radius, npoints: int = 20, origin: t.Optional[ArrayLike] = None
+):
     """Create a circle with a given radius."""
     origin = origin if origin is not None else (0.0, 0.0)
-    phi = np.linspace(0, 2 * np.pi, npoints + 1)
-    x = radius * np.cos(phi) + origin[0]
-    y = radius * np.sin(phi) + origin[1]
-    points = np.transpose(np.array([x, y]))
-    return Polygon(points)
+    pt = Point(origin)
+    # Note that .buffer takes the argument quad_segs which is the number of
+    # line segments in a quarter of the circle.
+    # Round to the nearest multiple of 4.
+    quad_segs = round(npoints / 4)
+    return pt.buffer(radius, quad_segs=quad_segs)
 
 
 class CircularGeometry(SurfaceGeometry):
@@ -50,7 +52,8 @@ class CircularGeometry(SurfaceGeometry):
             diameter (float): The diameter of the geometry.
             material (Material): A Material class applied to the geometry.
             n_points (int): The number of points used to discretize the
-                circle as a shapely `Polygon` (default = 20).
+                circle as a shapely `Polygon` (default = 20). Note that the
+                number of points is rounded to the nearest multiple of 4.
             concrete (bool): Flag to indicate if the geometry is concrete.
             origin (Optional(ArrayLike)): The center point of the circle.
                 (0.0, 0.0) is used as default.

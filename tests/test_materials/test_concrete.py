@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+from structuralcodes.codes import ec2_2004
 from structuralcodes.materials.concrete import (
     Concrete,
     ConcreteEC2_2004,
@@ -120,3 +121,28 @@ def test_invalid_constitutive_law(concrete_type):
     )
     with pytest.raises(ValueError):
         concrete_type(fck=45, constitutive_law=invalid_constitutive_law)
+
+
+@pytest.mark.parametrize(
+    'fck',
+    (
+        35,
+        45,
+        55,
+        65,
+        70,
+    ),
+)
+def test_sargin_strains_ec2_2004(fck):
+    """Test that ConcreteEC2_2004 initializes the correct ultimate strain for
+    the Sargin law.
+    """
+    # Arrange
+    concrete = ConcreteEC2_2004(fck=fck)
+
+    # Act
+    eps_cu1_concrete = concrete.eps_cu1
+    eps_cu1_code = ec2_2004.eps_cu1(fck=fck)
+
+    # Assert
+    assert math.isclose(eps_cu1_concrete, eps_cu1_code)

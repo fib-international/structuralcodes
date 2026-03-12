@@ -54,6 +54,11 @@ Furthermore, we have the following methods:
 
 See the {class}`GenericSectionCalculator <structuralcodes.sections.GenericSectionCalculator>` for a complete list.
 
+(usage-sections-complete-nm-note)=
+:::{note}
+Notice that a call to {py:meth}`.calculate_nm_interaction_domain() <structuralcodes.sections.GenericSectionCalculator.calculate_nm_interaction_domain>` returns the interaction domain for a negative bending moment, i.e. a bending moment that gives compression at the top of the cross section according to the [sign convention](#theory-sign-convention). To obtain the interaction domain for the positive bending moment, the neutral axis for the calculation should be rotated an angle {math}`\theta = \pi`, i.e. the method should be called with the keyword argument `theta = np.pi` or `theta = math.pi`. Alternatively, to return the complete domain, the method could be called with the keyword argument `complete_domain = True`.
+:::
+
 (code-usage-generic-section)=
 ::::{dropdown-syntax}
 :::{literalinclude} ../../_example_code/usage_create_surface_geometries_with_reinforcement.py
@@ -84,3 +89,109 @@ The moment-curvature relation computed with the code [above](#code-usage-generic
 :::
 
 :::::
+
+## Inspecting further with results objects
+
+The results objects contain methods for inspecting and processing further the detailed results on the section after a calculation is performed.
+
+For instance, calling the method {py:meth}`.calculate_bending_strength() <structuralcodes.sections.GenericSectionCalculator.calculate_bending_strength>` returns an object of class {class}`UltimateBendingMomentResults <structuralcodes.core._section_results.UltimateBendingMomentResults>`.
+
+The object contains the following methods:
+
+{py:meth}`.create_detailed_result() <structuralcodes.core._section_results.UltimateBendingMomentResults.create_detailed_result>`
+: Create an object of class {class}`SectionDetailedResultState <structuralcodes.core._section_results.SectionDetailedResultState>` with the datastructure storing strain and stress fields across the section.
+
+{py:meth}`.get_point_strain() <structuralcodes.core._section_results.UltimateBendingMomentResults.get_point_strain>`
+: Get the strain at a point.
+
+{py:meth}`.get_point_stress() <structuralcodes.core._section_results.UltimateBendingMomentResults.get_point_stress>`
+: Get the stress at a point.
+
+In the example [below](#code-usage-generic-section-result-strength), we continue the example with the T-shaped geometry and we create the detailed_result.
+
+(code-usage-generic-section-result-strength)=
+::::{dropdown-syntax}
+:::{literalinclude} ../../_example_code/usage_bending_strength_results.py
+:lines: 87-88, 100-101
+:caption: Create the detailed result datastructure.
+:::
+::::
+
+If we inspect this result object, we find among its attributes `detailed_result` that has two useful datastructures: one for surface geometries and one for point geometries. The datastructure for surface geometries contains all points samples from the geometries. These data structures can be easily input for creating a DataFrame object permitting further processing. For instance in the example [below](#code-usage-generic-section-result-strength-plot), we use pandas plotting abilities to create a visualization of strain and stress fields.
+
+(code-usage-generic-section-result-strength-plot)=
+::::{dropdown-syntax}
+:::{literalinclude} ../../_example_code/usage_bending_strength_results.py
+:lines: 103-141
+:caption: Create a plot of strain and stress fields for bending strength.
+:::
+::::
+
+(fig-usage-strain-field)=
+:::{figure} strain_field.png
+:width: 75%
+
+The strain field plotted with the code [above](#code-usage-generic-section-result-strength-plot).
+:::
+
+(fig-usage-stress-field)=
+:::{figure} stress_field.png
+:width: 75%
+
+The stress field plotted with the code [above](#code-usage-generic-section-result-strength-plot).
+:::
+
+If we only want to know the strain and/or stress at a specific point we can directly use methods {py:meth}`.get_point_strain() <structuralcodes.core._section_results.UltimateBendingMomentResults.get_point_strain>` or {py:meth}`.get_point_stress() <structuralcodes.core._section_results.UltimateBendingMomentResults.get_point_stress>` without the need of creating the detailed result. For instance with the code [below](#code-usage-generic-section-result-strength-point-stress) we query the stress at a point for any geometry whose `group_label` matches the pattern `"reinforcement"`. Note that a pattern can be given with wildcards (like `'*'` or `'?'`); for more information refer to {py:meth}`.get_point_stress() <structuralcodes.core._section_results.UltimateBendingMomentResults.get_point_stress>` and {py:meth}`.group_filter()<structuralcodes.geometry.CompoundGeometry.group_filter>`.
+
+(code-usage-generic-section-result-strength-point-stress)=
+::::{dropdown-syntax}
+:::{literalinclude} ../../_example_code/usage_bending_strength_results.py
+:lines: 90-98
+:caption: Get the stress at the coordinates of one reinforcement
+:::
+::::
+
+When dealing with analysis that do not involve a single section state, like for instance a Moment-Curvature analysis, the `detailed_result` object is created for the `current_step`. The `current_step` is initialized at 0. Then methods are available for navigating through steps:
+
+{py:meth}`.next_step() <structuralcodes.core._section_results.MomentCurvatureResults.next_step>`
+: Navigate to the next step.
+
+{py:meth}`.previous_step() <structuralcodes.core._section_results.MomentCurvatureResults.previous_step>`
+: Navigate to the previous step.
+
+{py:meth}`.set_step() <structuralcodes.core._section_results.MomentCurvatureResults.set_step>`
+: Navigate to a specific step.
+
+If we are not interested in getting the detailed results but we want to get the stresses and/or strains at specific points the same methods {py:meth}`.get_point_stress() <structuralcodes.core._section_results.MomentCurvatureResults.get_point_stress>` and {py:meth}`.get_point_strain() <structuralcodes.core._section_results.MomentCurvatureResults.get_point_strain>` can be used. In this case the return will be an array of stresses (or strains) for the point through the moment-curvature analysis. For instance with the code [below](#code-usage-generic-section-result-mcurv-point-stress) it is possible to plot the stress for one rebar at a given position for the increasing curvature.
+
+(code-usage-generic-section-result-mcurv-point-stress)=
+::::{dropdown-syntax}
+:::{literalinclude} ../../_example_code/usage_bending_strength_results.py
+:lines: 202-226
+:caption: Plot the stress at reinforcement position for increasing curvature.
+:::
+::::
+
+(fig-usage-stress-curvature)=
+:::{figure} stress_at_rebar.png
+:width: 75%
+
+The stress for increasing curvature plotted with the code [above](#code-usage-generic-section-result-mcurv-point-stress).
+:::
+
+Using in a more advanced way matplotlib, it is possible to create an animation (like for instance a *gif* file) showing the stress field for the steps of the moment-curvature analysis. The code [below](code-usage-generic-section-result-mcurv-anim) create an animation with the moment curvature diagram on the left and the cross section stress field on the right.
+
+(code-usage-generic-section-result-mcurv-anim)=
+::::{dropdown-syntax}
+:::{literalinclude} ../../_example_code/usage_bending_strength_results.py
+:lines: 228-359
+:caption: Generate an animation for the moment-curvature section response.
+:::
+::::
+
+(fig-usage-stress-animation)=
+:::{figure} moment_curvature_stress_animation.gif
+:width: 75%
+
+The animation of the stress field with increasing curvature created with the code [above](#code-usage-generic-section-result-mcurv-anim).
+:::
