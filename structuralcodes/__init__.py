@@ -19,4 +19,4 @@ __all__ = [
     'sections',
 ]
 
-warnings.filterwarnings(action='always', category=StructuralCodesWarning)
+warnings.filterwarnings(action='error', category=StructuralCodesWarning)
