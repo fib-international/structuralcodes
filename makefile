@@ -18,7 +18,7 @@ lint:  ## Linting and static type checking
 	python -m ruff check tests
 
 test:  ## Run tests and output reports
-	python -m pytest --junitxml=junit/test-results.xml --cov=structuralcodes --cov-report=term-missing --cov-report=xml
+	python -m pytest --junitxml=junit/test-results.xml --cov=structuralcodes --cov-report=term-missing --cov-report=xml --cov-report=html
 
 tox:   ## Run tox
 	python -m tox -e py
