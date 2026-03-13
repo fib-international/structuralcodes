@@ -7,7 +7,7 @@ import typing as t
 from dataclasses import dataclass, field, fields
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import Point
 
 
@@ -697,6 +697,184 @@ class UltimateBendingMomentResults:
     section = None
 
     detailed_result: SectionDetailedResultState = None
+
+    def create_detailed_result(self, num_points=1000):
+        """Create the detailed result object.
+
+        Arguments:
+            num_points (int): Number of random points to sample for each
+                surface geometry (default = 1000).
+        """
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            n=self.n,
+            m_y=self.m_y,
+            m_z=self.m_z,
+            num_points=num_points,
+        )
+
+    def get_point_strain(
+        self,
+        y: float,
+        z: float,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
+        case_sensitive: bool = True,
+        all_results: bool = False,
+    ) -> float:
+        """Return the strain at a given point (y,z).
+
+        Arguments:
+            y (float): The y-coordinate of the point.
+            z (float): The z-coordinate of the point.
+            name (str, optional): The name of the surface geometry to check.
+            group_label (str, optional): The group label of the surface
+                geometry to check.
+            case_sensitive (bool, optional): If True (default) the matching is
+                case sensitive.
+            all_results (bool): If True, return the strain for all geometries
+                that matches the filters, otherwise return the strain for the
+                first geometry that matches the filters (default False).
+
+        Returns:
+            float: The strain at the given point, or None if the point is not
+                within any of the geometries that match the filters.
+        """
+        return _get_point_response(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            y=y,
+            z=z,
+            response_type='strain',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
+        )
+
+    def get_point_stress(
+        self,
+        y: float,
+        z: float,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
+        case_sensitive: bool = True,
+        all_results: bool = False,
+    ) -> float:
+        """Return the stress at a given point (y,z).
+
+        Arguments:
+            y (float): The y-coordinate of the point.
+            z (float): The z-coordinate of the point.
+            name (str, optional): The pattern for filtering the geometries by
+                their name.
+            group_label (str, optional): The pattern for filtering the
+                geometries by their group_label.
+            case_sensitive (bool, optional): If True (default) the matching is
+                case sensitive.
+            all_results (bool): If True, return the stress for all geometries
+                that matches the filters, otherwise return the stress for the
+                first geometry that matches the filters (default False).
+
+        Returns:
+            float: The strain at the given point, or None if the point is not
+                within any of the geometries that match the filters.
+        """
+        return _get_point_response(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            y=y,
+            z=z,
+            response_type='stress',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
+        )
+
+
+@dataclass(slots=True)
+class StrainProfileResult:
+    """Class for storing the results from calculate_strain_profile method."""
+
+    # Solved generalized strains
+    eps_a: float = 0.0  # the axial strain at 0, 0
+    chi_y: float = 0.0  # the curvature respect y axes
+    chi_z: float = 0.0  # the curvature respect z axes
+
+    # target external loads assigned by user
+    n_ext: float = 0.0  # Target axial load acting at 0, 0
+    m_y_ext: float = 0.0  # Target moment My
+    m_z_ext: float = 0.0  # Target moment Mz
+
+    # Actual integrated loads at the converged strain state
+    n: float = 0.0  # Axial load acting at 0, 0
+    m_y: float = 0.0  # Bending moment My
+    m_z: float = 0.0  # Bending moment Mz
+
+    # Solver settings and diagnostics
+    tolerance: float = 0.0
+    max_iter: int = 0
+    used_initial_tangent: bool = False
+    iterations: int = 0
+    converged: bool = False
+    residual: NDArray[np.float64] = field(
+        default_factory=lambda: np.zeros(3, dtype=float)
+    )
+
+    # Iteration history
+    residual_history: list[NDArray[np.float64]] = field(default_factory=list)
+    strain_history: list[NDArray[np.float64]] = field(default_factory=list)
+
+    # For context store the section
+    section: t.Any = None  # Note for future: if I want to type this I also have problem of circular import? #noqa E501
+    # The detailed result data structure
+    detailed_result: SectionDetailedResultState = None
+
+    @property
+    def residual_norm_history(self) -> t.List:
+        """Returns the history of residual norm."""
+        return [float(np.linalg.norm(x)) for x in self.residual_history]
+
+    @property
+    def delta_strain_history(self) -> t.List:
+        """Returns as a list the history of delta_strain."""
+        return [
+            self.strain_history[i] - self.strain_history[i - 1]
+            for i in range(1, len(self.strain_history))
+        ]
+
+    @property
+    def delta_strain_norm_history(self) -> t.List:
+        """Returns as a list the history of norm of delta_strain."""
+        return [float(np.linalg.norm(x)) for x in self.delta_strain_history]
+
+    @property
+    def response_history(self) -> t.List:
+        """Returns as a list the response (i.e. internal forces) history."""
+        loads = np.array([self.n_ext, self.m_y_ext, self.m_z_ext])
+        return [(loads - x) for x in self.residual_history]
+
+    @property
+    def strain_plane(self) -> NDArray[np.float64]:
+        """Returns the strain profile as a numpy array."""
+        return np.array([self.eps_a, self.chi_y, self.chi_z])
+
+    @property
+    def residual_norm(self) -> float:
+        """Returns the norm of the residual at last iteration."""
+        return float(np.linalg.norm(self.residual))
+
+    def to_list(self) -> t.List:
+        """Returns the strain profile coefficients in a list."""
+        return [self.eps_a, self.chi_y, self.chi_z]
 
     def create_detailed_result(self, num_points=1000):
         """Create the detailed result object.

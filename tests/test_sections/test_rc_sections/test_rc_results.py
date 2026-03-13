@@ -1,5 +1,7 @@
 """Testing section results for RC cross sections."""
 
+import math
+
 import numpy as np
 import pytest
 
@@ -275,7 +277,9 @@ def test_moment_curvature_result_point(simple_rc_section):
     # We know that the point (160, 160) is in the top reinforcement line
     y2, z2 = 160.0, 160.0
     stress = res.get_point_stress(y=y2, z=z2, group_label='bottom')
+    strain = res.get_point_strain(y=y2, z=z2, group_label='bottom')
     assert stress is None
+    assert strain is None
     stress = res.get_point_stress(y=y2, z=z2, group_label='top')
     assert isinstance(stress, np.ndarray)
 
@@ -340,3 +344,75 @@ def test_bending_strength_result(simple_rc_section):
     )
 
     assert np.isclose(stress_top, res.detailed_result.point_data['stress'][-1])
+
+
+@pytest.mark.parametrize(
+    'max_iter, tol, initial',
+    [
+        (10, 1e-6, False),
+        (20, 1e-8, False),
+        (100, 1e-6, True),
+    ],
+)
+def test_calc_strain_profile_results(
+    simple_rc_section, max_iter, tol, initial
+):
+    """Test that the calculate_strain_profile result."""
+    section = simple_rc_section
+
+    # External forces
+    n = 0
+    my = -175 * 1e6
+    mz = 0
+    f_ext = np.array([n, my, mz])
+
+    # Get the bending strength result
+    strain_res = section.section_calculator.calculate_strain_profile(
+        *f_ext, max_iter=max_iter, tol=tol, initial=initial
+    )
+
+    # Check from result that the residual = f_ext - f_int
+    f_int = np.array([strain_res.n, strain_res.m_y, strain_res.m_z])
+    assert np.allclose(
+        strain_res.residual, f_ext - f_int, rtol=1e-7, atol=1e-7
+    )
+
+    # Check the the correct data are stored from convergence
+    assert math.isclose(strain_res.tolerance, tol)
+    assert strain_res.max_iter == max_iter
+    assert strain_res.used_initial_tangent == initial
+
+    # check that length of residual_history is the same as iterations
+    assert len(strain_res.residual_history) == strain_res.iterations
+
+    assert len(strain_res.response_history) == strain_res.iterations
+    assert len(strain_res.strain_history) == strain_res.iterations
+    assert len(strain_res.residual_norm_history) == strain_res.iterations
+
+    # Check that length of delta_strain is iterations - 1
+    assert len(strain_res.delta_strain_history) == strain_res.iterations - 1
+    assert (
+        len(strain_res.delta_strain_norm_history) == strain_res.iterations - 1
+    )
+
+    # Check point stress and strain at the bottom reinforcement line
+    stress_bottom = strain_res.get_point_stress(
+        y=-160.0, z=-160.0, group_label='bottom'
+    )
+    strain_bottom = strain_res.get_point_strain(
+        y=-160.0, z=-160.0, group_label='bottom'
+    )
+
+    # Get detailed result
+    strain_res.create_detailed_result()
+
+    assert np.isclose(
+        stress_bottom, strain_res.detailed_result.point_data['stress'][0]
+    )
+    assert np.isclose(
+        stress_bottom,
+        strain_res.detailed_result.point_data['material'][0].fyd(),
+    )
+    assert np.isclose(
+        strain_bottom, strain_res.detailed_result.point_data['strain'][0]
+    )

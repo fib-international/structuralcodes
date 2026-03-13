@@ -1712,7 +1712,7 @@ class GenericSectionCalculator(SectionCalculator):
         initial: bool = False,
         max_iter: int = 10,
         tol: float = 1e-6,
-    ) -> t.List[float]:
+    ) -> s_res.StrainProfileResult:
         """Get the strain plane for a given axial force and biaxial bending.
 
         Args:
@@ -1727,8 +1727,10 @@ class GenericSectionCalculator(SectionCalculator):
                 increment.
 
         Returns:
-            List(float): 3 floats: Axial strain at (0,0), and curvatures of the
-            section around y and z axes.
+            StrainProfileResult: A custom object of class StrainProfileResult
+                that contains the results. Note that the to_list() method
+                returns as a list only the strain profile coefficients. These
+                can be for instanced passed to `integrate_strain_profile`.
         """
         # Get the gometry
         geom = self.section.geometry
@@ -1751,7 +1753,12 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Calculate strain plane with Newton Rhapson Iterative method
         num_iter = 0
-        strain = np.zeros(3)
+        strain = np.zeros(3, dtype=float)
+        residual = np.zeros(3, dtype=float)
+        converged = False
+
+        residual_history = []
+        strain_history = []
 
         # Factorize once the stiffness matrix if using initial
         if initial:
@@ -1768,6 +1775,10 @@ class GenericSectionCalculator(SectionCalculator):
             # Calculate response and residuals
             response = np.array(self.integrate_strain_profile(strain=strain))
             residual = loads - response
+
+            # Append to history variables
+            residual_history.append(residual.copy())
+            strain_history.append(strain.copy())
 
             if initial:
                 # Solve using the decomposed matrix
@@ -1786,14 +1797,37 @@ class GenericSectionCalculator(SectionCalculator):
                 # Solve using the current tangent stiffness
                 delta_strain = np.linalg.solve(stiffness_tangent, residual)
 
+            # Check for convergence:
+            if np.linalg.norm(delta_strain) < tol:
+                converged = True
+                break
+
             # Update the strain
             strain += delta_strain
 
             num_iter += 1
 
-            # Check for convergence:
-            if np.linalg.norm(delta_strain) < tol:
-                break
+        # Create the results object
+        res = s_res.StrainProfileResult(
+            eps_a=float(strain[0]),
+            chi_y=float(strain[1]),
+            chi_z=float(strain[2]),
+            n_ext=float(n),
+            m_y_ext=float(my),
+            m_z_ext=float(mz),
+            n=float(response[0]),
+            m_y=float(response[1]),
+            m_z=float(response[2]),
+            max_iter=max_iter,
+            tolerance=tol,
+            used_initial_tangent=initial,
+            iterations=num_iter + 1,
+            converged=converged,
+            residual=residual.copy(),
+            residual_history=residual_history.copy(),
+            strain_history=strain_history.copy(),
+            section=self.section,
+        )
 
         if num_iter >= max_iter:
             warnings.warn(
@@ -1804,4 +1838,4 @@ class GenericSectionCalculator(SectionCalculator):
                 category=NoConvergenceWarning,
             )
 
-        return strain.tolist()
+        return res
