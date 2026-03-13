@@ -7,7 +7,7 @@ import typing as t
 from dataclasses import dataclass, field, fields
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely import Point
 
 
@@ -697,6 +697,154 @@ class UltimateBendingMomentResults:
     section = None
 
     detailed_result: SectionDetailedResultState = None
+
+    def create_detailed_result(self, num_points=1000):
+        """Create the detailed result object.
+
+        Arguments:
+            num_points (int): Number of random points to sample for each
+                surface geometry (default = 1000).
+        """
+        self.detailed_result = SectionDetailedResultState(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            n=self.n,
+            m_y=self.m_y,
+            m_z=self.m_z,
+            num_points=num_points,
+        )
+
+    def get_point_strain(
+        self,
+        y: float,
+        z: float,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
+        case_sensitive: bool = True,
+        all_results: bool = False,
+    ) -> float:
+        """Return the strain at a given point (y,z).
+
+        Arguments:
+            y (float): The y-coordinate of the point.
+            z (float): The z-coordinate of the point.
+            name (str, optional): The name of the surface geometry to check.
+            group_label (str, optional): The group label of the surface
+                geometry to check.
+            case_sensitive (bool, optional): If True (default) the matching is
+                case sensitive.
+            all_results (bool): If True, return the strain for all geometries
+                that matches the filters, otherwise return the strain for the
+                first geometry that matches the filters (default False).
+
+        Returns:
+            float: The strain at the given point, or None if the point is not
+                within any of the geometries that match the filters.
+        """
+        return _get_point_response(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            y=y,
+            z=z,
+            response_type='strain',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
+        )
+
+    def get_point_stress(
+        self,
+        y: float,
+        z: float,
+        name: t.Optional[str] = None,
+        group_label: t.Optional[str] = None,
+        case_sensitive: bool = True,
+        all_results: bool = False,
+    ) -> float:
+        """Return the stress at a given point (y,z).
+
+        Arguments:
+            y (float): The y-coordinate of the point.
+            z (float): The z-coordinate of the point.
+            name (str, optional): The pattern for filtering the geometries by
+                their name.
+            group_label (str, optional): The pattern for filtering the
+                geometries by their group_label.
+            case_sensitive (bool, optional): If True (default) the matching is
+                case sensitive.
+            all_results (bool): If True, return the stress for all geometries
+                that matches the filters, otherwise return the stress for the
+                first geometry that matches the filters (default False).
+
+        Returns:
+            float: The strain at the given point, or None if the point is not
+                within any of the geometries that match the filters.
+        """
+        return _get_point_response(
+            section=self.section,
+            eps_a=self.eps_a,
+            chi_y=self.chi_y,
+            chi_z=self.chi_z,
+            y=y,
+            z=z,
+            response_type='stress',
+            name=name,
+            group_label=group_label,
+            case_sensitive=case_sensitive,
+            all_results=all_results,
+        )
+
+
+@dataclass(slots=True)
+class IntegrateStrainStiffnessResult:
+    """Class for storing the results from integrating modulus."""
+
+    # Input strain profile
+    eps_a: float = 0.0  # the axial strain at 0, 0
+    chi_y: float = 0.0  # the curvature respect y axes
+    chi_z: float = 0.0  # the curvature respect z axes
+
+    # Tangent
+    tangent: NDArray[np.float64] = field(
+        default_factory=lambda: np.zeros((3, 3), dtype=float)
+    )
+
+    def asarray(self, dtype=np.float64) -> NDArray:
+        """Return an array representation of the tangent."""
+        return np.asarray(self.tangent, dtype=dtype)
+
+
+@dataclass(slots=True)
+class IntegrateStrainForceResult:
+    """Class for storing the results from integrating stresses."""
+
+    # Input strain profile
+    eps_a: float = 0.0  # the axial strain at 0, 0
+    chi_y: float = 0.0  # the curvature respect y axes
+    chi_z: float = 0.0  # the curvature respect z axes
+
+    # Integrated loads
+    n: float = 0.0  # Axial load acting at 0, 0
+    m_y: float = 0.0  # Bending moment My
+    m_z: float = 0.0  # Bending moment Mz
+
+    # For context store the section
+    section: t.Any = None  # Note for future: if I want to type this I also have problem of circular import? #noqa E501
+    # The detailed result data structure
+    detailed_result: SectionDetailedResultState = None
+
+    def asarray(self, dtype=np.float64) -> NDArray:
+        """Return an array representation of the forces."""
+        return np.array([self.n, self.m_y, self.m_z], dtype=dtype)
+
+    def astuple(self) -> tuple[float, float, float]:
+        """Return a tuple representation of the forces."""
+        return (self.n, self.m_y, self.m_z)
 
     def create_detailed_result(self, num_points=1000):
         """Create the detailed result object.
