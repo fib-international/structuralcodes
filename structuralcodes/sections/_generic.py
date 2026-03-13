@@ -1534,29 +1534,26 @@ class GenericSectionCalculator(SectionCalculator):
             num_iter += 1
 
         # Create the results object
-        res = s_res.StrainProfileResult()
-        res.eps_a = float(strain[0])
-        res.chi_y = float(strain[1])
-        res.chi_z = float(strain[2])
-
-        res.n_ext = float(n)
-        res.m_y_ext = float(my)
-        res.m_z_ext = float(mz)
-
-        res.n = float(response[0])
-        res.m_y = float(response[1])
-        res.m_z = float(response[2])
-
-        res.max_iter = max_iter
-        res.tolerance = tol
-        res.used_initial_tangent = initial
-        res.iterations = num_iter + 1
-        res.converged = converged
-        res.residual = residual
-        res.residual_history = residual_history
-        res.strain_history = strain_history
-
-        res.section = self.section
+        res = s_res.StrainProfileResult(
+            eps_a=float(strain[0]),
+            chi_y=float(strain[1]),
+            chi_z=float(strain[2]),
+            n_ext=float(n),
+            m_y_ext=float(my),
+            m_z_ext=float(mz),
+            n=float(response[0]),
+            m_y=float(response[1]),
+            m_z=float(response[2]),
+            max_iter=max_iter,
+            tolerance=tol,
+            used_initial_tangent=initial,
+            iterations=num_iter + 1,
+            converged=converged,
+            residual=residual.copy(),
+            residual_history=residual_history.copy(),
+            strain_history=strain_history.copy(),
+            section=self.section,
+        )
 
         if num_iter >= max_iter:
             raise StopIteration('Maximum number of iterations reached.')
