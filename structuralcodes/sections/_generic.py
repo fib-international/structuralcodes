@@ -7,7 +7,7 @@ import typing as t
 import warnings
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import ArrayLike
 from scipy.linalg import lu_factor, lu_solve
 from shapely import MultiPolygon
 from shapely.ops import unary_union
@@ -835,11 +835,23 @@ class GenericSectionCalculator(SectionCalculator):
             )
         self.integration_data = rotated_integration_data
 
+    @t.overload
+    def integrate_strain_profile(
+        self, strain: ArrayLike, integrate: t.Literal['stress'] = 'stress'
+    ) -> s_res.IntegrateStrainForceResult: ...
+
+    @t.overload
+    def integrate_strain_profile(
+        self, strain: ArrayLike, integrate: t.Literal['modulus']
+    ) -> s_res.IntegrateStrainStiffnessResult: ...
+
     def integrate_strain_profile(
         self,
         strain: ArrayLike,
         integrate: t.Literal['stress', 'modulus'] = 'stress',
-    ) -> t.Union[t.Tuple[float, float, float], NDArray]:
+    ) -> t.Union[
+        s_res.IntegrateStrainForceResult, s_res.IntegrateStrainStiffnessResult
+    ]:
         """Integrate a strain profile returning stress resultants or tangent
         section stiffness matrix.
 
@@ -854,9 +866,11 @@ class GenericSectionCalculator(SectionCalculator):
                 tangent section stiffness matrix (default is 'stress').
 
         Returns:
-            Union(Tuple(float, float, float),NDArray): N, My and Mz when
-            `integrate='stress'`, or a numpy array representing the stiffness
-            matrix then `integrate='modulus'`.
+            IntegrateStrainForcesResult
+                When ``integrate="stress"``.
+
+            IntegrateStrainStiffnessResult
+                When ``integrate="modulus"``.
 
         Examples:
             result = self.integrate_strain_profile(strain,integrate='modulus')
@@ -889,9 +903,20 @@ class GenericSectionCalculator(SectionCalculator):
         #       (i.e. section stiff matrix, integration_data)
         # We need to return only forces or stifness
         # (without triangultion data)
-        if len(result) == 2:
-            return result[0]
-        return result[:-1]
+        if integrate == 'stress':
+            return s_res.IntegrateStrainForceResult(
+                eps_a=strain[0],
+                chi_y=strain[1],
+                chi_z=strain[2],
+                n=result[0],
+                m_y=result[1],
+                m_z=result[2],
+            )
+        if integrate == 'modulus':
+            return s_res.IntegrateStrainStiffnessResult(tangent=result[0])
+        raise Exception(
+            'integrate argument not valid. Valid options: stress and modulus'
+        )
 
     def calculate_bending_strength(
         self, theta=0, n=0, max_iter: int = 100, tol: float = 1e-2
@@ -1773,7 +1798,7 @@ class GenericSectionCalculator(SectionCalculator):
                 break
 
             # Calculate response and residuals
-            response = np.array(self.integrate_strain_profile(strain=strain))
+            response = self.integrate_strain_profile(strain=strain).asarray()
             residual = loads - response
 
             # Append to history variables
@@ -1785,14 +1810,9 @@ class GenericSectionCalculator(SectionCalculator):
                 delta_strain = lu_solve((lu, piv), residual)
             else:
                 # Calculate the current tangent stiffness
-                stiffness_tangent, _ = (
-                    self.integrator.integrate_strain_response_on_geometry(
-                        geom,
-                        strain,
-                        integrate='modulus',
-                        integration_data=self.integration_data,
-                    )
-                )
+                stiffness_tangent = self.integrate_strain_profile(
+                    strain=strain, integrate='modulus'
+                ).asarray()
 
                 # Solve using the current tangent stiffness
                 delta_strain = np.linalg.solve(stiffness_tangent, residual)

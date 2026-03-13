@@ -73,7 +73,7 @@ def test_rectangular_section():
     # Use integrate_strain_response
     N, My, Mz = sec.section_calculator.integrate_strain_profile(
         (res_marin.eps_a, res_marin.chi_y, res_marin.chi_z)
-    )
+    ).astuple()
 
     assert math.isclose(N, res_marin.n)
     assert math.isclose(My, res_marin.m_y)
@@ -174,7 +174,7 @@ def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     # compute stiffness matrix
     stiffness = sec.section_calculator.integrate_strain_profile(
         [0, 0, 0], 'modulus'
-    )
+    ).asarray()
     assert stiffness.shape == (3, 3)
     stiffness /= E
 
@@ -256,7 +256,7 @@ def test_rectangular_rc_section_initial_tangent_stiffness(
     # compute initial stiffness matrix (gross)
     stiffness = sec.section_calculator.integrate_strain_profile(
         [0, 0, 0], 'modulus'
-    )
+    ).asarray()
     assert stiffness.shape == (3, 3)
 
     assert math.isclose(EA_gross, stiffness[0, 0], rel_tol=1e-3)
@@ -351,7 +351,7 @@ def test_rectangular_rc_section_tangent_stiffness(
 
     stiffness = sec.section_calculator.integrate_strain_profile(
         [eps_a, chi_y, 0], 'modulus'
-    )
+    ).asarray()
 
     assert stiffness.shape == (3, 3)
 
@@ -396,7 +396,7 @@ def test_rectangular_rc_section_tangent_stiffness(
 
     stiffness2 = sec.section_calculator.integrate_strain_profile(
         [0, 0, 0], 'modulus'
-    )
+    ).asarray()
 
     assert np.allclose(
         stiffness,
@@ -1505,7 +1505,9 @@ def test_section_parallel_material_elastic():
     )
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 1e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 1e-5, 0)
+    ).asarray()
     M = res[1]
 
     # The same with a GenericMaterial with two parallel materials
@@ -1518,7 +1520,9 @@ def test_section_parallel_material_elastic():
     )
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 1e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 1e-5, 0)
+    ).asarray()
     M_p = res[1]
 
     # Check they are the same
@@ -1534,7 +1538,9 @@ def test_section_parallel_material_elastic():
     )
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 1e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 1e-5, 0)
+    ).asarray()
     M_p = res[1]
 
     # Check they are the same
@@ -1549,7 +1555,9 @@ def test_section_parallel_material_elasticplastic():
     geo = RectangularGeometry(width=100, height=100, material=mat)
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 3e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 3e-5, 0)
+    ).asarray()
     M = res[1]
 
     # The same with a GenericMaterial with two parallel materials
@@ -1560,7 +1568,9 @@ def test_section_parallel_material_elasticplastic():
     geo = RectangularGeometry(width=100, height=100, material=mat)
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 3e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 3e-5, 0)
+    ).asarray()
     M_p = res[1]
 
     # Check they are the same
@@ -1575,7 +1585,9 @@ def test_section_parallel_material_elasticplastic():
     geo = RectangularGeometry(width=100, height=100, material=mat)
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 3e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 3e-5, 0)
+    ).asarray()
     M_p = res[1]
 
     # Check they are the same
@@ -1597,13 +1609,17 @@ def test_section_parallel_marin_concrete_tension():
         geometry=geo, integrator='fiber', mesh_size=0.0001
     )
 
-    res = section.section_calculator.integrate_strain_profile((0, 4e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 4e-5, 0)
+    ).asarray()
     M_f = res[1]
 
     # Use marin integrator
     section = GenericSection(geometry=geo)
 
-    res = section.section_calculator.integrate_strain_profile((0, 4e-5, 0))
+    res = section.section_calculator.integrate_strain_profile(
+        (0, 4e-5, 0)
+    ).asarray()
     M_m = res[1]
 
     # Check they are the same
