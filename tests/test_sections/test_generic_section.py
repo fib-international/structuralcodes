@@ -920,10 +920,10 @@ def test_strain_plane_calculation_elastic_Nmm(n, my, mz, Ec, b, h):
 
     # Compare
     assert np.allclose(
-        np.array(strain_fiber), expected_strain, rtol=1e-2, atol=1e-8
+        strain_fiber.strain_plane, expected_strain, rtol=1e-2, atol=1e-8
     )
     assert np.allclose(
-        np.array(strain_marin), expected_strain, rtol=1e-2, atol=1e-8
+        strain_marin.strain_plane, expected_strain, rtol=1e-2, atol=1e-8
     )
 
 
@@ -994,10 +994,10 @@ def test_strain_plane_calculation_elastic_kNm(n, my, mz, Ec, b, h):
 
     # Compare
     assert np.allclose(
-        np.array(strain_fiber), expected_strain, rtol=5e-2, atol=1e-5
+        strain_fiber.strain_plane, expected_strain, rtol=5e-2, atol=1e-5
     )
     assert np.allclose(
-        np.array(strain_marin), expected_strain, rtol=5e-2, atol=1e-5
+        strain_marin.strain_plane, expected_strain, rtol=5e-2, atol=1e-5
     )
 
 
@@ -1049,24 +1049,26 @@ def test_strain_plane_calculation_rectangular_rc(n, my, mz, fck, b, h):
     strain_marin = section.section_calculator.calculate_strain_profile(
         n, my, mz, tol=1e-7
     )
-    strain_marin = np.array(strain_marin)
+    strain_marin_array = np.array(strain_marin.to_list())
 
     section = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
 
     strain_fiber = section.section_calculator.calculate_strain_profile(
         n, my, mz, tol=1e-7
     )
-    strain_fiber = np.array(strain_fiber)
+    strain_fiber_array = np.array(strain_fiber.to_list())
 
     # check that initial tangent gives the same solution at the end
     strain_fiber_initial = section.section_calculator.calculate_strain_profile(
         n, my, mz, tol=1e-7, initial=True, max_iter=80
     )
-    strain_fiber_initial = np.array(strain_fiber_initial)
+    strain_fiber_initial_array = np.array(strain_fiber_initial.to_list())
 
-    assert np.allclose(strain_marin, strain_fiber, rtol=2e-2, atol=1e-6)
     assert np.allclose(
-        strain_fiber, strain_fiber_initial, rtol=2e-2, atol=1e-6
+        strain_marin_array, strain_fiber_array, rtol=2e-2, atol=1e-6
+    )
+    assert np.allclose(
+        strain_fiber_array, strain_fiber_initial_array, rtol=2e-2, atol=1e-6
     )
 
 
