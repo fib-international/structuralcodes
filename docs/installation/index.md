@@ -1,7 +1,7 @@
 (installation)=
 # Installation
 
-`structuralcodes` is compatible with Python 3.9, 3.10, 3.11, 3.12, and 3.13, and is installed by typing:
+`structuralcodes` is compatible with [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/structuralcodes)](https://pypi.org/project/structuralcodes/) and is installed by typing:
 
 :::::{tab-set}
 ::::{tab-item} Python
