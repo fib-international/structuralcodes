@@ -1284,7 +1284,7 @@ class GenericSectionCalculator(SectionCalculator):
         type_5: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
         type_6: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
         complete_domain: bool = False,
-    ) -> s_res.NMInteractionDomain:
+    ) -> s_res.NMInteractionDomainResult:
         """Calculate the NM interaction domain.
 
         Arguments:
@@ -1326,7 +1326,7 @@ class GenericSectionCalculator(SectionCalculator):
             NMInteractionDomain: The calculation results.
         """
         # Prepare the results
-        res = s_res.NMInteractionDomain()
+        res = s_res.NMInteractionDomainResult()
         res.theta = theta
 
         # Process num if given.
@@ -1396,6 +1396,7 @@ class GenericSectionCalculator(SectionCalculator):
             forces[i, 2] = Mz
 
         # Save to results
+        res.num_points = len(strains)
         res.strains = strains
         res.forces = forces
         res.field_num = field_num
@@ -1563,7 +1564,7 @@ class GenericSectionCalculator(SectionCalculator):
 
     def calculate_nmm_interaction_domain(
         self,
-        num_theta: int = 32,
+        num_theta: int = 33,
         num_1: int = 1,
         num_2: int = 2,
         num_3: int = 15,
@@ -1577,12 +1578,12 @@ class GenericSectionCalculator(SectionCalculator):
         type_4: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
         type_5: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
         type_6: t.Literal['linear', 'geometric', 'quadratic'] = 'linear',
-    ) -> s_res.NMMInteractionDomain:
+    ) -> s_res.NMMInteractionDomainResult:
         """Calculates the NMM interaction domain.
 
         Arguments:
             num_theta (int): Number of discretization of angle of neutral axis
-                (Optional, Default = 32).
+                (Optional, Default = 33).
             num_1 (int): Number of strain profiles in field 1
                 (Optional, default = 1).
             num_2 (int): Number of strain profiles in field 2
@@ -1615,7 +1616,7 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             NMInteractionDomain: The calculation results.
         """
-        res = s_res.NMMInteractionDomain()
+        res = s_res.NMMInteractionDomainResult()
         res.num_theta = num_theta
 
         # Process num if given.
@@ -1630,6 +1631,7 @@ class GenericSectionCalculator(SectionCalculator):
         thetas = np.linspace(0, np.pi * 2, num_theta)
         # Initialize an empty array with the correct shape
         strains = np.empty((0, 3))
+        num_points = 0
         for theta in thetas:
             # Get ultimate strain profiles for theta angle
             strain, field_num = self._compute_ultimate_strain_profiles(
@@ -1647,6 +1649,12 @@ class GenericSectionCalculator(SectionCalculator):
                 type_5=type_5,
                 type_6=type_6,
             )
+            if num_points == 0:
+                num_points = len(strain)
+            if num_points != len(strain):
+                raise AssertionError(
+                    'All strain arrays should have the same number of points!'
+                )
             strains = np.vstack((strains, strain))
 
         # integrate all strain profiles
@@ -1666,6 +1674,7 @@ class GenericSectionCalculator(SectionCalculator):
             forces[i, 2] = Mz
 
         # Save to results
+        res.num_points = num_points
         res.strains = strains
         res.forces = forces
         res.field_num = field_num
@@ -1675,15 +1684,15 @@ class GenericSectionCalculator(SectionCalculator):
     def calculate_mm_interaction_domain(
         self,
         n: float = 0,
-        num_theta: int = 32,
+        num_theta: int = 33,
         max_iter: int = 100,
         tol: float = 1e-2,
-    ) -> s_res.MMInteractionDomain:
+    ) -> s_res.MMInteractionDomainResult:
         r"""Calculate the My-Mz interaction domain.
 
         Arguments:
             n (float): Axial force, default = 0.
-            n_theta (int): Number of discretization for theta, default = 32.
+            n_theta (int): Number of discretization for theta, default = 33.
             max_iter (int): the maximum number of iterations in the iterative
                 process (default = 10).
             tol (float): the tolerance for convergence test in terms of
@@ -1693,7 +1702,7 @@ class GenericSectionCalculator(SectionCalculator):
             MMInteractionDomain: The calculation results.
         """
         # Prepare the results
-        res = s_res.MMInteractionDomain()
+        res = s_res.MMInteractionDomainResult()
         res.num_theta = num_theta
         # Create array of thetas
         res.theta = np.linspace(0, np.pi * 2, num_theta)

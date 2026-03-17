@@ -1149,7 +1149,7 @@ class IntegrateStrainForceResult:
 
 
 @dataclass
-class InteractionDomain:
+class InteractionDomainResult:
     """Class for storing common data on all interaction domain results.
 
     Attributes:
@@ -1157,16 +1157,12 @@ class InteractionDomain:
             ky and kz.
         forces (numpy.Array): A numpy array with shape (n, 3) containing n, my
             and mz.
-        field_num (numpy.Array): a numpy array with shape (n,) containing a
-            number between 1 and 6 indicating the failure field.
     """
 
     # array with shape (n,3) containing ea, ky, kz:
-    strains: ArrayLike = None
+    strains: NDArray[np.float64] = None
     # array with shape(n,3) containing N, My, Mz
-    forces: ArrayLike = None
-    # array with shape(n,) containing the field number from 1 to 6
-    field_num: ArrayLike = None
+    forces: NDArray[np.float64] = None
 
     @property
     def n(self):
@@ -1190,46 +1186,78 @@ class InteractionDomain:
         return self.forces[:, 2]
 
     @property
-    def e_a(self):
-        """Return ea."""
+    def eps_a(self):
+        """Return eps_a (axial strain at 0, 0)."""
         if self.strains is None:
             return None
         return self.strains[:, 0]
 
     @property
-    def k_y(self):
-        """Return ky."""
+    def chi_y(self):
+        """Return chi_y (curvature about y-axis."""
         if self.strains is None:
             return None
         return self.strains[:, 1]
 
     @property
-    def k_z(self):
-        """Return kz."""
+    def chi_z(self):
+        """Return chi_z (curvature about z-axis)."""
         if self.strains is None:
             return None
         return self.strains[:, 2]
 
 
+class NMMInteractionDomainResult(InteractionDomainResult):
+    """Class for storing the NMM interaction domain results.
+
+    Attributes:
+        num_theta (int): the number of discretizations from 0 to 2pi.
+        field_num (numpy.Array): a numpy array with shape (n,) containing a
+            number between 1 and 6 indicating the failure field.
+    """
+
+    # number of discretizations along the angle
+    num_theta: int = 0
+
+    # number of points from discretization of ultimate strain profiles
+    num_points: int = 0
+
+    # array with shape(n,) containing the field number from 1 to 6
+    field_num: NDArray[np.float64] = None
+
+
 @dataclass
-class NMMInteractionDomain(InteractionDomain):
-    """Class for storing the NMM interaction domain results."""
+class NMInteractionDomainResult(InteractionDomainResult):
+    """Class for storing the NM interaction domain results.
 
-    num_theta: int = 0  # number of discretizations along the angle
-    num_axial: int = 0  # number of discretizations along axial load axis
+    Attributes:
+        theta (float): the inclination of n.a.
+        field_num (numpy.Array): a numpy array with shape (n,) containing a
+            number between 1 and 6 indicating the failure field.
+    """
+
+    # the inclination of n.a.
+    theta: float = 0
+
+    # number of points from discretization of ultimate strain profiles
+    num_points: int = 0
+
+    # array with shape(n,) containing the field number from 1 to 6
+    field_num: NDArray[np.float64] = None
 
 
 @dataclass
-class NMInteractionDomain(InteractionDomain):
-    """Class for storing the NM interaction domain results."""
-
-    theta: float = 0  # the inclination of n.a.
-    num_axial: float = 0  # number of discretizations along axial load axis
+class MMInteractionDomainResult(InteractionDomainResult):
+    """Class for storing the MM interaction domain results.
 
 
-@dataclass
-class MMInteractionDomain(InteractionDomain):
-    """Class for storing the MM interaction domain results."""
+    Attributes:
+        num_theta (int): the number of discretizations from 0 to 2pi.
+        theta (numpy.Array): a numpy array with shape (n,) the angle theta
+    """
 
-    num_theta: float = 0  # number of discretizations along the angle
-    theta: ArrayLike = None  # Array with shape (n,) containing the angle of NA
+    # number of discretizations along the angle
+    num_theta: float = 0
+
+    # Array with shape (n,) containing the angle of NA
+    theta: NDArray[np.float64] = None
