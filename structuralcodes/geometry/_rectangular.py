@@ -11,8 +11,7 @@ import typing as t
 from numpy.typing import ArrayLike
 from shapely import Polygon
 
-from structuralcodes.core.base import Material
-
+from ..core.base import Material
 from ._geometry import SurfaceGeometry
 
 
