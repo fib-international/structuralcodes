@@ -1173,44 +1173,44 @@ class InteractionDomainResult:
     @property
     def n(self):
         """Return axial force."""
-        if self.forces is None:
-            return None
-        return self.forces[:, 0]
+        if self.forces is not None:
+            return self.forces[:, 0]
+        raise ValueError('Forces are not available in this result object.')
 
     @property
     def m_y(self):
         """Return my."""
-        if self.forces is None:
-            return None
-        return self.forces[:, 1]
+        if self.forces is not None:
+            return self.forces[:, 1]
+        raise ValueError('Forces are not available in this result object.')
 
     @property
     def m_z(self):
         """Return mz."""
-        if self.forces is None:
-            return None
-        return self.forces[:, 2]
+        if self.forces is not None:
+            return self.forces[:, 2]
+        raise ValueError('Forces are not available in this result object.')
 
     @property
     def eps_a(self):
         """Return eps_a (axial strain at 0, 0)."""
-        if self.strains is None:
-            return None
-        return self.strains[:, 0]
+        if self.strains is not None:
+            return self.strains[:, 0]
+        raise ValueError('Strains are not available in this result object.')
 
     @property
     def chi_y(self):
         """Return chi_y (curvature about y-axis."""
-        if self.strains is None:
-            return None
-        return self.strains[:, 1]
+        if self.strains is not None:
+            self.strains[:, 1]
+        raise ValueError('Strains are not available in this result object.')
 
     @property
     def chi_z(self):
         """Return chi_z (curvature about z-axis)."""
-        if self.strains is None:
-            return None
-        return self.strains[:, 2]
+        if self.strains is not None:
+            return self.strains[:, 2]
+        raise ValueError('Strains are not available in this result object.')
 
 
 @dataclass(slots=True)
@@ -1231,6 +1231,14 @@ class NMMInteractionDomainResult(InteractionDomainResult):
 
     # array with shape(n,) containing the field number from 1 to 6
     field_num: NDArray[np.float64] = None
+
+    # TODO: in the future we could also add methods for returning the results
+    # as a structured mesh for easy plotting. Maybe for increasing values of
+    # N and for increasing values of theta (from 0 to 2pi), so having a nicely
+    # structured grid of points, and maybe also adding the possibility to
+    # the results as a dataframe, with columns for N, theta, field_num, etc.
+    # This would make it easier to analyze the results and to create custom
+    # plots.
 
 
 @dataclass(slots=True)
