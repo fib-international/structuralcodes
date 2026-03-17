@@ -912,6 +912,7 @@ class GenericSectionCalculator(SectionCalculator):
                 n=result[0],
                 m_y=result[1],
                 m_z=result[2],
+                section=self.section,
             )
         if integrate == 'modulus':
             return s_res.IntegrateStrainStiffnessResult(tangent=result[0])
