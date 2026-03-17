@@ -318,17 +318,13 @@ class MomentCurvatureResults:
 
     def next_step(self):
         """Advance to the next step in the detailed result."""
-        if self.detailed_result is None:
-            return
-        if self.current_step < len(self.m_y) - 1:
+        if self.detailed_result and self.current_step < len(self.m_y) - 1:
             self.current_step += 1
             self._create_detailed_result()
 
     def previous_step(self):
         """Go back to the previous step in the detailed result."""
-        if self.detailed_result is None:
-            return
-        if self.current_step > 0:
+        if self.detailed_result and self.current_step > 0:
             self.current_step -= 1
             self._create_detailed_result()
 
@@ -338,9 +334,7 @@ class MomentCurvatureResults:
         Arguments:
             step (int): the step to set for the datailed_result object.
         """
-        if self.detailed_result is None:
-            return
-        if 0 <= step < len(self.m_y):
+        if self.detailed_result and 0 <= step < len(self.m_y):
             self.current_step = step
             self._create_detailed_result()
 
