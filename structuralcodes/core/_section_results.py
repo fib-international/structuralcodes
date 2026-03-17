@@ -11,7 +11,7 @@ from numpy.typing import ArrayLike, NDArray
 from shapely import Point
 
 
-@dataclass
+@dataclass(slots=True)
 class SectionProperties:
     """Simple dataclass for storing section properties."""
 
@@ -143,8 +143,10 @@ class SectionProperties:
         if not isinstance(other, self.__class__):
             return NotImplemented
 
-        a = np.array(list(vars(self).values()))
-        b = np.array(list(vars(other).values()))
+        field_names = [f.name for f in fields(self)]
+        a = np.array([getattr(self, name) for name in field_names])
+        b = np.array([getattr(other, name) for name in field_names])
+
         return np.allclose(a, b, rtol=rtol, atol=atol)
 
 
@@ -267,7 +269,9 @@ def _get_point_response(
     return None
 
 
-@dataclass
+# TODO: to be able using slots = True we mush type annotate section, but this
+# would trigger a circular import @mortenengen
+@dataclass(slots=True)
 class MomentCurvatureResults:
     """Class for storing moment curvature results.
 
@@ -282,7 +286,7 @@ class MomentCurvatureResults:
     m_y: ArrayLike = None  # the moment
     m_z: ArrayLike = None  # the moment
 
-    section = None
+    section: t.Any = None
 
     _detailed_result: SectionDetailedResultState = None
     seed: int = None
@@ -681,7 +685,9 @@ class SectionDetailedResultState:
         return self._point_data
 
 
-@dataclass
+# TODO: to be able using slots = True we mush type annotate section, but this
+# would trigger a circular import @mortenengen
+@dataclass(slots=True)
 class UltimateBendingMomentResults:
     """Class for storing the ultimate bending moment computation for a given
     inclination of n.a. and axial load.
@@ -695,7 +701,7 @@ class UltimateBendingMomentResults:
     chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
 
-    section = None
+    section: t.Any = None
 
     _detailed_result: SectionDetailedResultState = None
 
@@ -1148,7 +1154,7 @@ class IntegrateStrainForceResult:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class InteractionDomainResult:
     """Class for storing common data on all interaction domain results.
 
@@ -1207,6 +1213,7 @@ class InteractionDomainResult:
         return self.strains[:, 2]
 
 
+@dataclass(slots=True)
 class NMMInteractionDomainResult(InteractionDomainResult):
     """Class for storing the NMM interaction domain results.
 
@@ -1226,7 +1233,7 @@ class NMMInteractionDomainResult(InteractionDomainResult):
     field_num: NDArray[np.float64] = None
 
 
-@dataclass
+@dataclass(slots=True)
 class NMInteractionDomainResult(InteractionDomainResult):
     """Class for storing the NM interaction domain results.
 
@@ -1246,7 +1253,7 @@ class NMInteractionDomainResult(InteractionDomainResult):
     field_num: NDArray[np.float64] = None
 
 
-@dataclass
+@dataclass(slots=True)
 class MMInteractionDomainResult(InteractionDomainResult):
     """Class for storing the MM interaction domain results.
 
