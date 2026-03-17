@@ -278,7 +278,7 @@ class MomentCurvatureResults:
     n: float = 0  # axial load - mantained constant during analysis
     chi_y: ArrayLike = None  # the curvatures
     chi_z: ArrayLike = None  # the curvatures
-    eps_axial: ArrayLike = 0  # the axial strain (at section 0,0)
+    eps_a: ArrayLike = None  # the axial strain (at section 0,0)
     m_y: ArrayLike = None  # the moment
     m_z: ArrayLike = None  # the moment
 
@@ -292,7 +292,7 @@ class MomentCurvatureResults:
     def _create_detailed_result(self):
         self.detailed_result = SectionDetailedResultState(
             section=self.section,
-            eps_a=self.eps_axial[self.current_step],
+            eps_a=self.eps_a[self.current_step],
             chi_y=self.chi_y[self.current_step],
             chi_z=self.chi_z[self.current_step],
             n=self.n,
@@ -368,7 +368,7 @@ class MomentCurvatureResults:
         """
         return _get_point_response(
             section=self.section,
-            eps_a=np.asarray(self.eps_axial),
+            eps_a=np.asarray(self.eps_a),
             chi_y=np.asarray(self.chi_y),
             chi_z=np.asarray(self.chi_z),
             y=y,
@@ -411,7 +411,7 @@ class MomentCurvatureResults:
         """
         return _get_point_response(
             section=self.section,
-            eps_a=np.asarray(self.eps_axial),
+            eps_a=np.asarray(self.eps_a),
             chi_y=np.asarray(self.chi_y),
             chi_z=np.asarray(self.chi_z),
             y=y,

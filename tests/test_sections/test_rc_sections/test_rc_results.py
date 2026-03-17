@@ -266,7 +266,7 @@ def test_moment_curvature_result_point(simple_rc_section):
     stress = res.get_point_stress(y=y1, z=z1, group_label='bottom')
     assert isinstance(stress, np.ndarray)
 
-    assert len(stress) == len(res.eps_axial)
+    assert len(stress) == len(res.eps_a)
 
     # Check that at the end the stress on the bar is the yield strength of
     # reinforcement.
@@ -283,7 +283,7 @@ def test_moment_curvature_result_point(simple_rc_section):
     stress = res.get_point_stress(y=y2, z=z2, group_label='top')
     assert isinstance(stress, np.ndarray)
 
-    assert len(stress) == len(res.eps_axial)
+    assert len(stress) == len(res.eps_a)
 
 
 def test_moment_curvature_result(simple_rc_section):

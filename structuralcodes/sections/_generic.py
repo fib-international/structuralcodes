@@ -1204,7 +1204,7 @@ class GenericSectionCalculator(SectionCalculator):
             self._rotate_integration_data(theta)
         res.chi_y = chi_y
         res.chi_z = chi_z
-        res.eps_axial = eps_a
+        res.eps_a = eps_a
         res.m_y = my
         res.m_z = mz
 
