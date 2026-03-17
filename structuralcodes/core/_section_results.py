@@ -284,13 +284,13 @@ class MomentCurvatureResults:
 
     section = None
 
-    detailed_result: SectionDetailedResultState = None
+    _detailed_result: SectionDetailedResultState = None
     seed: int = None
     current_step: int = None
     num_points: int = None
 
     def _create_detailed_result(self):
-        self.detailed_result = SectionDetailedResultState(
+        self._detailed_result = SectionDetailedResultState(
             section=self.section,
             eps_a=self.eps_a[self.current_step],
             chi_y=self.chi_y[self.current_step],
@@ -301,6 +301,13 @@ class MomentCurvatureResults:
             num_points=self.num_points,
             seed=self.seed,
         )
+
+    @property
+    def detailed_result(self) -> SectionDetailedResultState:
+        """Returns the detailed result."""
+        if self._detailed_result is None:
+            self.create_detailed_result()
+        return self._detailed_result
 
     def create_detailed_result(self, num_points=1000):
         """Create the detailed result object.
@@ -318,13 +325,13 @@ class MomentCurvatureResults:
 
     def next_step(self):
         """Advance to the next step in the detailed result."""
-        if self.detailed_result and self.current_step < len(self.m_y) - 1:
+        if self._detailed_result and self.current_step < len(self.m_y) - 1:
             self.current_step += 1
             self._create_detailed_result()
 
     def previous_step(self):
         """Go back to the previous step in the detailed result."""
-        if self.detailed_result and self.current_step > 0:
+        if self._detailed_result and self.current_step > 0:
             self.current_step -= 1
             self._create_detailed_result()
 
@@ -334,7 +341,7 @@ class MomentCurvatureResults:
         Arguments:
             step (int): the step to set for the datailed_result object.
         """
-        if self.detailed_result and 0 <= step < len(self.m_y):
+        if self._detailed_result and 0 <= step < len(self.m_y):
             self.current_step = step
             self._create_detailed_result()
 
@@ -690,7 +697,7 @@ class UltimateBendingMomentResults:
 
     section = None
 
-    detailed_result: SectionDetailedResultState = None
+    _detailed_result: SectionDetailedResultState = None
 
     def create_detailed_result(self, num_points=1000):
         """Create the detailed result object.
@@ -699,7 +706,7 @@ class UltimateBendingMomentResults:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
         """
-        self.detailed_result = SectionDetailedResultState(
+        self._detailed_result = SectionDetailedResultState(
             section=self.section,
             eps_a=self.eps_a,
             chi_y=self.chi_y,
@@ -709,6 +716,13 @@ class UltimateBendingMomentResults:
             m_z=self.m_z,
             num_points=num_points,
         )
+
+    @property
+    def detailed_result(self) -> SectionDetailedResultState:
+        """Returns the detailed result."""
+        if self._detailed_result is None:
+            self.create_detailed_result()
+        return self._detailed_result
 
     def get_point_strain(
         self,
@@ -830,7 +844,7 @@ class StrainProfileResult:
     # For context store the section
     section: t.Any = None  # Note for future: if I want to type this I also have problem of circular import? #noqa E501
     # The detailed result data structure
-    detailed_result: SectionDetailedResultState = None
+    _detailed_result: SectionDetailedResultState = None
 
     @property
     def residual_norm_history(self) -> t.List:
@@ -866,6 +880,13 @@ class StrainProfileResult:
         """Returns the norm of the residual at last iteration."""
         return float(np.linalg.norm(self.residual))
 
+    @property
+    def detailed_result(self) -> SectionDetailedResultState:
+        """Returns the detailed result."""
+        if self._detailed_result is None:
+            self.create_detailed_result()
+        return self._detailed_result
+
     def to_list(self) -> t.List:
         """Returns the strain profile coefficients in a list."""
         return [self.eps_a, self.chi_y, self.chi_z]
@@ -877,7 +898,7 @@ class StrainProfileResult:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
         """
-        self.detailed_result = SectionDetailedResultState(
+        self._detailed_result = SectionDetailedResultState(
             section=self.section,
             eps_a=self.eps_a,
             chi_y=self.chi_y,
@@ -1008,7 +1029,7 @@ class IntegrateStrainForceResult:
     # For context store the section
     section: t.Any = None  # Note for future: if I want to type this I also have problem of circular import? #noqa E501
     # The detailed result data structure
-    detailed_result: SectionDetailedResultState = None
+    _detailed_result: SectionDetailedResultState = None
 
     def asarray(self, dtype=np.float64) -> NDArray:
         """Return an array representation of the forces."""
@@ -1018,6 +1039,13 @@ class IntegrateStrainForceResult:
         """Return a tuple representation of the forces."""
         return (self.n, self.m_y, self.m_z)
 
+    @property
+    def detailed_result(self) -> SectionDetailedResultState:
+        """Returns the detailed result."""
+        if self._detailed_result is None:
+            self.create_detailed_result()
+        return self._detailed_result
+
     def create_detailed_result(self, num_points=1000):
         """Create the detailed result object.
 
@@ -1025,7 +1053,7 @@ class IntegrateStrainForceResult:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
         """
-        self.detailed_result = SectionDetailedResultState(
+        self._detailed_result = SectionDetailedResultState(
             section=self.section,
             eps_a=self.eps_a,
             chi_y=self.chi_y,
