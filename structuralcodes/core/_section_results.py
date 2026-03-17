@@ -319,6 +319,10 @@ class MomentCurvatureResults:
         Arguments:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
+
+        Notes:
+            It is called with default values when first accessing the property
+                `detailed_result`.
         """
         if self.seed is None:
             self.seed = np.random.randint(1, 100, 1)[0].item()
@@ -711,6 +715,10 @@ class UltimateBendingMomentResults:
         Arguments:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
+
+        Notes:
+            It is called with default values when first accessing the property
+                `detailed_result`.
         """
         self._detailed_result = SectionDetailedResultState(
             section=self.section,
@@ -903,6 +911,10 @@ class StrainProfileResult:
         Arguments:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
+
+        Notes:
+            It is called with default values when first accessing the property
+                `detailed_result`.
         """
         self._detailed_result = SectionDetailedResultState(
             section=self.section,
@@ -1058,6 +1070,10 @@ class IntegrateStrainForceResult:
         Arguments:
             num_points (int): Number of random points to sample for each
                 surface geometry (default = 1000).
+
+        Notes:
+            It is called with default values when first accessing the property
+                `detailed_result`.
         """
         self._detailed_result = SectionDetailedResultState(
             section=self.section,
