@@ -372,6 +372,9 @@ def test_calc_strain_profile_results(
     assert np.allclose(
         strain_res.residual, f_ext - f_int, rtol=1e-7, atol=1e-7
     )
+    assert math.isclose(
+        strain_res.residual_norm, np.linalg.norm(f_ext - f_int), abs_tol=1e-7
+    )
 
     # Check the the correct data are stored from convergence
     assert math.isclose(strain_res.tolerance, tol)
