@@ -7,9 +7,13 @@ import pytest
 from shapely import Polygon
 
 from structuralcodes.codes.ec2_2004 import reinforcement_duct_props
-from structuralcodes.core.errors import NoConvergenceWarning
+from structuralcodes.core.errors import (
+    InformationWarning,
+    NoConvergenceWarning,
+)
 from structuralcodes.geometry import (
     CircularGeometry,
+    CompoundGeometry,
     RectangularGeometry,
     SurfaceGeometry,
     add_reinforcement,
@@ -1993,3 +1997,27 @@ def test_section_mm_domain_warning(b, h, n_bars, diameter, fck, fyk):
 
     # Check that the results arrays have the same size
     assert len(res.m_y) == len(res_good.m_y)
+
+
+def test_perimeter_multipolygon():
+    """Test calculating the perimeter of a multipolygon.
+
+    This resoves issue #329.
+    """
+    mat = ElasticMaterial(E=210000, density=7850)
+    rect1 = SurfaceGeometry(
+        poly=Polygon([(0, 0), (100, 0), (100, 10), (0, 10)]),
+        material=mat,
+    )
+    rect2 = SurfaceGeometry(
+        poly=Polygon([(0, 200), (100, 200), (100, 210), (0, 210)]),
+        material=mat,
+    )
+
+    compound = CompoundGeometry([rect1, rect2])
+    section = GenericSection(compound, integrator='marin')
+
+    with pytest.warns(InformationWarning):
+        gp = section.gross_properties
+
+    assert math.isclose(gp.perimeter, 0)
