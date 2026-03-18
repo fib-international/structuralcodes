@@ -10,6 +10,8 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from shapely import Point
 
+from .base import Geometry, Section
+
 
 @dataclass
 class SectionProperties:
@@ -154,7 +156,7 @@ class SectionProperties:
 
 
 def _matching_geometries(
-    section,  # For now we can't type hint the Section or even GenericSection due to circular import. #noqa: E501
+    section: Section,
     name: t.Optional[str] = None,
     group_label: t.Optional[str] = None,
     case_sensitive: bool = True,
@@ -186,7 +188,7 @@ def _strain_from_kinematics(eps_a, chi_y, chi_z, y: float, z: float):
     return eps_a - chi_z * y + chi_y * z
 
 
-def _point_inside_geometry_surface(geo, y: float, z: float) -> bool:
+def _point_inside_geometry_surface(geo: Geometry, y: float, z: float) -> bool:
     """Check if a point is inside or on the boundary of a surface geometry."""
     p = Point(y, z)
     return geo.polygon.contains(p) or geo.polygon.touches(p)
@@ -205,7 +207,7 @@ def _point_matches_geometry_point(gp, y: float, z: float) -> bool:
 
 
 def _get_point_response(
-    section,  # For now we can't type hint the Section or even GenericSection due to circular import. #noqa: E501
+    section: Section,
     eps_a: float,
     chi_y: float,
     chi_z: float,
@@ -282,7 +284,7 @@ class MomentCurvatureResults:
     m_y: ArrayLike = None  # the moment
     m_z: ArrayLike = None  # the moment
 
-    section = None
+    section: Section = None
 
     detailed_result: SectionDetailedResultState = None
     seed: int = None

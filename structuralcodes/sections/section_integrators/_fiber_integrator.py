@@ -9,9 +9,9 @@ import triangle
 from numpy.typing import ArrayLike, NDArray
 from shapely import Polygon
 
-from structuralcodes.core.base import ConstitutiveLaw
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 
+from ...core.base import ConstitutiveLaw
 from ._section_integrator import SectionIntegrator
 
 

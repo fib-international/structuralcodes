@@ -3,7 +3,7 @@
 import abc
 import typing as t
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
+from ...core.base import ConstitutiveLaw, Material
 
 
 class Concrete(Material):

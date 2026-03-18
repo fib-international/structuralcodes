@@ -6,8 +6,7 @@ import typing as t
 import numpy as np
 from shapely import Point
 
-from structuralcodes.core.base import Material
-
+from ..core.base import Material
 from ._geometry import CompoundGeometry, PointGeometry, SurfaceGeometry
 
 

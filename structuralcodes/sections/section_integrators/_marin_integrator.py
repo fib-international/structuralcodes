@@ -11,13 +11,13 @@ from shapely import MultiLineString, MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
 
 from structuralcodes.core._marin_integration import marin_integration
-from structuralcodes.core.base import ConstitutiveLaw
 from structuralcodes.geometry import (
     CompoundGeometry,
     SurfaceGeometry,
     create_line_point_angle,
 )
 
+from ...core.base import ConstitutiveLaw
 from ._section_integrator import SectionIntegrator
 
 
