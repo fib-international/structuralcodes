@@ -13,8 +13,6 @@ from shapely import MultiPolygon
 from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
-from structuralcodes.core.base import Section, SectionCalculator
-from structuralcodes.core.errors import NoConvergenceWarning
 from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
@@ -22,6 +20,8 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.basic import ElasticMaterial
 
+from ..core.base import Section, SectionCalculator
+from ..core.errors import NoConvergenceWarning
 from .section_integrators import SectionIntegrator, integrator_factory
 
 

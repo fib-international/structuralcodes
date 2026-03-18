@@ -9,7 +9,7 @@ from shapely import (
 from shapely.affinity import rotate, translate
 from shapely.ops import split
 
-from structuralcodes.core._marin_integration import marin_integration
+from ...core._marin_integration import marin_integration
 
 
 class BaseProfile:
