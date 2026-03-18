@@ -272,8 +272,6 @@ def _get_point_response(
     return None
 
 
-# TODO: to be able using slots = True we mush type annotate section, but this
-# would trigger a circular import @mortenengen
 @dataclass(slots=True)
 class MomentCurvatureResults:
     """Class for storing moment curvature results.
@@ -692,8 +690,6 @@ class SectionDetailedResultState:
         return self._point_data
 
 
-# TODO: to be able using slots = True we mush type annotate section, but this
-# would trigger a circular import @mortenengen
 @dataclass(slots=True)
 class UltimateBendingMomentResults:
     """Class for storing the ultimate bending moment computation for a given
@@ -708,7 +704,7 @@ class UltimateBendingMomentResults:
     chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
 
-    section: Section = None
+    section: t.Optional[Section] = None
 
     _detailed_result: SectionDetailedResultState = None
 
@@ -859,7 +855,7 @@ class StrainProfileResult:
     strain_history: list[NDArray[np.float64]] = field(default_factory=list)
 
     # For context store the section
-    section: Section = None
+    section: t.Optional[Section] = None
     # The detailed result data structure
     _detailed_result: SectionDetailedResultState = None
 
@@ -1048,7 +1044,7 @@ class IntegrateStrainForceResult:
     m_z: float = 0.0  # Bending moment Mz
 
     # For context store the section
-    section: Section = None
+    section: t.Optional[Section] = None
     # The detailed result data structure
     _detailed_result: SectionDetailedResultState = None
 
