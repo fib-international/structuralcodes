@@ -230,7 +230,7 @@ def _get_point_response(
         return None
 
     surfaces, points = _matching_geometries(
-        section, name, group_label, case_sensitive
+        section.geometry, name, group_label, case_sensitive
     )
 
     if all_results:

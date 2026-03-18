@@ -62,17 +62,19 @@ def test_matching_geometries_intersection_case_sensitive(simple_rc_section):
     section = simple_rc_section
 
     # Case sensitive: "con*" matches "concrete" but "CON*" does not
-    surfaces, points = s_res._matching_geometries(section, name='con*')
+    surfaces, points = s_res._matching_geometries(
+        section.geometry, name='con*'
+    )
     assert len(surfaces) == 1
     assert surfaces[0].name == 'concrete'
     assert len(points) == 0
 
-    surfaces, _ = s_res._matching_geometries(section, name='CON*')
+    surfaces, _ = s_res._matching_geometries(section.geometry, name='CON*')
     assert len(surfaces) == 0
 
     # Case insensitive: "CON*" matches "concrete"
     surfaces, _ = s_res._matching_geometries(
-        section, name='CON*', case_sensitive=False
+        section.geometry, name='CON*', case_sensitive=False
     )
     assert len(surfaces) == 1
     assert surfaces[0].name == 'concrete'
