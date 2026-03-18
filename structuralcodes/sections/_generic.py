@@ -155,8 +155,8 @@ class GenericSectionCalculator(SectionCalculator):
                 'Perimiter computation for a multi polygon is not defined.',
                 category=InformationWarning,
             )
-
-        gp.perimeter = polygon.exterior.length
+        else:
+            gp.perimeter = polygon.exterior.length
 
         # Computation of area: this is taken directly from shapely
         gp.area = self.section.geometry.area
