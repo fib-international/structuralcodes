@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from shapely import Point
 
+from ..geometry import CompoundGeometry
 from .base import Geometry, Section
 
 
@@ -158,16 +159,16 @@ class SectionProperties:
 
 
 def _matching_geometries(
-    section: Section,
+    geometry: CompoundGeometry,
     name: t.Optional[str] = None,
     group_label: t.Optional[str] = None,
     case_sensitive: bool = True,
 ):
     """Return (surfaces, points) that match name/group filters."""
-    geometries_name = section.geometry.name_filter(
+    geometries_name = geometry.name_filter(
         name, return_mode='split', case_sensitive=case_sensitive
     )
-    geometries_group = section.geometry.group_filter(
+    geometries_group = geometry.group_filter(
         group_label, return_mode='split', case_sensitive=case_sensitive
     )
 
@@ -707,7 +708,7 @@ class UltimateBendingMomentResults:
     chi_z: float = 0  # the curvature corresponding to the ultimate moment
     eps_a: float = 0  # the axial strain at 0,0 corresponding to Mult
 
-    section: t.Any = None
+    section: Section = None
 
     _detailed_result: SectionDetailedResultState = None
 
@@ -858,7 +859,7 @@ class StrainProfileResult:
     strain_history: list[NDArray[np.float64]] = field(default_factory=list)
 
     # For context store the section
-    section: t.Any = None  # Note for future: if I want to type this I also have problem of circular import? #noqa E501
+    section: Section = None
     # The detailed result data structure
     _detailed_result: SectionDetailedResultState = None
 
@@ -1047,7 +1048,7 @@ class IntegrateStrainForceResult:
     m_z: float = 0.0  # Bending moment Mz
 
     # For context store the section
-    section: t.Any = None  # Note for future: if I want to type this I also have problem of circular import? #noqa E501
+    section: Section = None
     # The detailed result data structure
     _detailed_result: SectionDetailedResultState = None
 
