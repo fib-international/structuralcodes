@@ -14,7 +14,10 @@ from shapely.ops import unary_union
 
 import structuralcodes.core._section_results as s_res
 from structuralcodes.core.base import Section, SectionCalculator
-from structuralcodes.core.errors import NoConvergenceWarning
+from structuralcodes.core.errors import (
+    InformationWarning,
+    NoConvergenceWarning,
+)
 from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
@@ -149,7 +152,8 @@ class GenericSectionCalculator(SectionCalculator):
         if isinstance(polygon, MultiPolygon):
             gp.perimeter = 0.0
             warnings.warn(
-                'Perimiter computation for a multi polygon is not defined.'
+                'Perimiter computation for a multi polygon is not defined.',
+                category=InformationWarning,
             )
 
         gp.perimeter = polygon.exterior.length

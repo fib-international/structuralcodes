@@ -4,7 +4,7 @@ import warnings
 
 from . import codes, core, geometry, materials, sections
 from .codes import get_design_codes, set_design_code, set_national_annex
-from .core.errors import StructuralCodesWarning
+from .core.errors import InformationWarning, StructuralCodesWarning
 
 __version__ = '0.6.4'
 
@@ -20,3 +20,4 @@ __all__ = [
 ]
 
 warnings.filterwarnings(action='error', category=StructuralCodesWarning)
+warnings.filterwarnings(action='always', category=InformationWarning)
