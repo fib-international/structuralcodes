@@ -1217,7 +1217,7 @@ class InteractionDomainResult:
     def chi_y(self):
         """Return chi_y (curvature about y-axis."""
         if self.strains is not None:
-            self.strains[:, 1]
+            return self.strains[:, 1]
         raise ValueError('Strains are not available in this result object.')
 
     @property
