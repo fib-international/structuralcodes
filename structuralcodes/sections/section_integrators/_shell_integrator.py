@@ -47,7 +47,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         Returns:
             Tuple: (prepared_input, z_coords)
         """
-        strain = np.atleast_1d(strain)
+        strain = np.asarray(np.atleast_1d(strain), dtype='float64')
 
         layers = kwargs.get('layers')
         z_coords, dz = (None, None) if layers is None else layers
@@ -68,8 +68,11 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         # A positive in-plane strain gives tension
         # A positive curvature gives a negative strain for a positive z-value
+        # Note the factor 2 for in-plane shear strain due to twisting curvature
         for z in z_coords:
-            fiber_strain = strain[:3] - z * strain[3:]
+            fiber_strain = strain[:3].copy()
+            fiber_strain[:2] -= z * strain[3:5]
+            fiber_strain[2] -= 2 * z * strain[5]
             if integrate == 'stress':
                 integrand = material.constitutive_law.get_stress(fiber_strain)
             elif integrate == 'modulus':
@@ -81,23 +84,22 @@ class ShellFiberIntegrator(SectionIntegrator):
             z_list.append(z)
 
         for r in geo.reinforcement:
-            z_r = r.z
-            material = r.material
-
-            fiber_strain = strain[:3] - z_r * strain[3:]
+            fiber_strain = strain[:3].copy()
+            fiber_strain[:2] -= r.z * strain[3:5]
+            fiber_strain[2] -= 2 * r.z * strain[5]
             eps_sj = r.T @ fiber_strain
 
             if integrate == 'stress':
-                sig_sj = material.constitutive_law.get_stress(eps_sj[0])
+                sig_sj = r.material.constitutive_law.get_stress(eps_sj[0])
                 integrand = r.local_stress_to_global_force * sig_sj
             elif integrate == 'modulus':
-                mod = material.constitutive_law.get_secant(eps_sj[0])
+                mod = r.material.constitutive_law.get_secant(eps_sj[0])
                 integrand = r.local_modulus_to_global_stiffness * mod
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
 
             IA.append(integrand)
-            z_list.append(z_r)
+            z_list.append(r.z)
 
         MA = np.stack(IA, axis=0)
         prepared_input = [(z_list, MA)]
@@ -151,6 +153,9 @@ class ShellFiberIntegrator(SectionIntegrator):
             B -= z_i * C_layer
             D += z_i**2 * C_layer
 
+        # This is necessary because the twisting moment is assumed proportional
+        # to the double twisting curvature
+        D[-1, -1] *= 2
         return np.block([[A, B], [B, D]])
 
     def integrate_strain_response_on_geometry(

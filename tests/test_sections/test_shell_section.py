@@ -77,7 +77,7 @@ def test_integrate_strain_profile(
     Nxy = A_membrane_shear * eps_xy
     Mx = A_bending * (chi_x + nu * chi_y)
     My = A_bending * (chi_y + nu * chi_x)
-    Mxy = A_bending_shear * chi_xy
+    Mxy = A_bending_shear * 2 * chi_xy
 
     expected = np.array([Nx, Ny, Nxy, Mx, My, Mxy])
 
@@ -101,7 +101,7 @@ def test_integrate_strain_profile_stiffness_matrix(nu):
     A33 = E * t / (2 * (1 + nu))
     A44 = E * t**3 / 12 / (1 - nu**2)
     A14 = nu * A44
-    A55 = E * t**3 / 12 / (2 * (1 + nu))
+    A55 = E * t**3 / 12 / (2 * (1 + nu)) * 2
 
     A = np.array(
         [
@@ -159,10 +159,10 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     eps_x = (sig_x - nu * sig_y) / Ec
     eps_y = (sig_y - nu * sig_x) / Ec
     eps_xy = 2 * (1 + nu) * tau_xy / Ec
-    D = Ec * t**3 / 12
-    chi_x = (mx - nu * my) / D
-    chi_y = (my - nu * mx) / D
-    chi_xy = 2 * (1 + nu) * mxy / D
+    D = Ec * t**3 / (12 * (1 - nu**2))
+    chi_x = (mx - nu * my) / (D * (1 - nu**2))
+    chi_y = (my - nu * mx) / (D * (1 - nu**2))
+    chi_xy = mxy / (D * (1 - nu))
     expected = np.array([eps_x, eps_y, eps_xy, chi_x, chi_y, chi_xy])
 
     assert np.allclose(eps, expected)
