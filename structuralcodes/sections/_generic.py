@@ -1790,11 +1790,14 @@ class GenericSectionCalculator(SectionCalculator):
 
         # Calculate strain plane with Newton Rhapson Iterative method
         num_iter = 0
+        converged = False
         strain = np.zeros(3, dtype=float)
 
-        # The initial residual is equal to the loads
-        residual = loads.copy()
-        converged = False
+        # Calculate the initial response and residuals. Note that the initial
+        # residual might be different from the applied loads if any initial
+        # strain is present
+        response = self.integrate_strain_profile(strain=strain).asarray()
+        residual = loads - response
 
         residual_history = []
         strain_history = []
