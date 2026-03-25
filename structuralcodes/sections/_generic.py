@@ -1829,13 +1829,13 @@ class GenericSectionCalculator(SectionCalculator):
                 # Solve using the current tangent stiffness
                 delta_strain = np.linalg.solve(stiffness_tangent, residual)
 
+            # Update the strain
+            strain += delta_strain
+
             # Check for convergence:
             if np.linalg.norm(delta_strain) < tol:
                 converged = True
                 break
-
-            # Update the strain
-            strain += delta_strain
 
             num_iter += 1
 
