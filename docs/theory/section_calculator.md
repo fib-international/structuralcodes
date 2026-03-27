@@ -1,7 +1,6 @@
 (theory-section-calculator)=
 # Section calculator
 
-
 ## General concept
 Section calculators evaluate the structural response based on section properties and applied loads. They integrate results from the geometry and material models to provide insights into section performance by using a specific [*section integrator*](theory-section-integrators).
 

@@ -10,7 +10,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.concrete import create_concrete
 from structuralcodes.materials.reinforcement import create_reinforcement
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 
 # Set parameters
 height = 625
@@ -50,9 +50,7 @@ for z_value in (
         n=n_bars,
     )
 
-section = GenericSection(
-    concrete_geometry, integrator='fiber', mesh_size=0.001
-)
+section = BeamSection(concrete_geometry, integrator='fiber', mesh_size=0.001)
 
 # Perform the analyses and create the plot
 fig = plt.figure()

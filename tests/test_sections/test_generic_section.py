@@ -1,4 +1,4 @@
-"""Tests for the Generic Section."""
+"""Tests for the Beam Section."""
 
 import math
 
@@ -40,7 +40,7 @@ from structuralcodes.materials.reinforcement import (
     ReinforcementMC2010,
 )
 from structuralcodes.sections import (
-    GenericSection,
+    BeamSection,
     calculate_elastic_cracked_properties,
 )
 
@@ -62,8 +62,8 @@ def test_rectangular_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
-    sec = GenericSection(geo)
-    assert sec.name == 'GenericSection'
+    sec = BeamSection(geo)
+    assert sec.name == 'BeamSection'
 
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
@@ -89,7 +89,7 @@ def test_rectangular_section():
     )
 
     # Use fiber integration
-    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
     # Compute bending strength
@@ -170,8 +170,8 @@ def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     assert geo.polygon.centroid.coords[0][1] == 0
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
-    assert sec.name == 'GenericSection'
+    sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
+    assert sec.name == 'BeamSection'
 
     assert math.isclose(sec.gross_properties.area, b * h)
 
@@ -255,7 +255,7 @@ def test_rectangular_rc_section_initial_tangent_stiffness(
         EIzz_gross += Es * As * y[0] ** 2
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+    sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
 
     # compute initial stiffness matrix (gross)
     stiffness = sec.section_calculator.integrate_strain_profile(
@@ -346,7 +346,7 @@ def test_rectangular_rc_section_tangent_stiffness(
     EIyy += EA * (h / 2 - x) ** 2
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+    sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
 
     # compute tangent stiffness matrix (cracked)
     # for the given position of n.a. and a very small curvature
@@ -396,7 +396,7 @@ def test_rectangular_rc_section_tangent_stiffness(
     )
 
     # create this effective elastic section
-    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
+    sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
 
     stiffness2 = sec.section_calculator.integrate_strain_profile(
         [0, 0, 0], 'modulus'
@@ -435,8 +435,8 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
     assert geo.polygon.centroid.coords[0][1] == h / 2
 
     # Create the section with fiber integrator
-    sec = GenericSection(geo, integrator=integrator, mesh_size=0.0001)
-    assert sec.name == 'GenericSection'
+    sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
+    assert sec.name == 'BeamSection'
 
     assert math.isclose(sec.gross_properties.area, b * h)
 
@@ -491,13 +491,13 @@ def test_rectangular_section_parabola_rectangle(fck, fyk, ductility_class):
     geo = geo.translate(-100, -200)
 
     # Create the section with fiber integrator
-    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.001)
+    sec_fiber = BeamSection(geo, integrator='fiber', mesh_size=0.001)
 
     # Compute bending strength My-
     res_fiber = sec_fiber.section_calculator.calculate_bending_strength()
 
     # Create the section with default marin integrator
-    sec_marin = GenericSection(geo)
+    sec_marin = BeamSection(geo)
 
     # Compute bending strength My-
     res_marin = sec_marin.section_calculator.calculate_bending_strength()
@@ -519,7 +519,7 @@ def test_rectangular_section_mn_domain():
     geo = geo.translate(-100, -200)
 
     # Create the section (default Marin integrator)
-    sec_marin = GenericSection(geo)
+    sec_marin = BeamSection(geo)
 
     # Compute MN domain
     mn_res_marin = (
@@ -527,7 +527,7 @@ def test_rectangular_section_mn_domain():
     )
 
     # Use fiber integration
-    sec_fiber = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec_fiber = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
 
     # compute MN domain
     # Fast version
@@ -556,14 +556,14 @@ def test_rectangular_section_mm_domain():
     geo = geo.translate(-100, -200)
 
     # Create the section (default Marin integrator)
-    sec_marin = GenericSection(geo)
+    sec_marin = BeamSection(geo)
     # Compute MN domain
     mm_res_marin = (
         sec_marin.section_calculator.calculate_mm_interaction_domain(n=0)
     )
 
     # Use fiber integration
-    sec_fiber = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec_fiber = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
     # compute MN domain
     mm_res_fiber = (
         sec_fiber.section_calculator.calculate_mm_interaction_domain(n=0)
@@ -595,14 +595,14 @@ def test_rectangular_section_nmm_domain():
     geo = geo.translate(-100, -200)
 
     # Create the section (default Marin integrator)
-    sec_marin = GenericSection(geo)
+    sec_marin = BeamSection(geo)
     # Compute MN domain
     mm_res_marin = (
         sec_marin.section_calculator.calculate_nmm_interaction_domain()
     )
 
     # Use fiber integration
-    sec_fiber = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec_fiber = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
     # compute MN domain
     mm_res_fiber = (
         sec_fiber.section_calculator.calculate_nmm_interaction_domain()
@@ -641,7 +641,7 @@ def test_rectangular_section_Sargin():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
-    sec = GenericSection(geo)
+    sec = BeamSection(geo)
 
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
@@ -649,7 +649,7 @@ def test_rectangular_section_Sargin():
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     # Use fiber integration
-    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
     # Compute bending strength
@@ -681,8 +681,8 @@ def test_holed_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
-    sec = GenericSection(geo)
-    assert sec.name == 'GenericSection'
+    sec = BeamSection(geo)
+    assert sec.name == 'BeamSection'
 
     assert math.isclose(sec.gross_properties.area, 260000)
 
@@ -690,7 +690,7 @@ def test_holed_section():
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     # Use fiber integration
-    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
     assert math.isclose(sec.gross_properties.area, 260000)
 
     # Compute bending strength
@@ -727,8 +727,8 @@ def test_u_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
-    sec = GenericSection(geo)
-    assert sec.name == 'GenericSection'
+    sec = BeamSection(geo)
+    assert sec.name == 'BeamSection'
 
     assert math.isclose(sec.gross_properties.area, 230000)
 
@@ -736,7 +736,7 @@ def test_u_section():
     res_marin = sec.section_calculator.calculate_bending_strength(theta=0, n=0)
 
     # Use fiber integration
-    sec = GenericSection(geo, integrator='Fiber', mesh_size=0.0001)
+    sec = BeamSection(geo, integrator='Fiber', mesh_size=0.0001)
     assert math.isclose(sec.gross_properties.area, 230000)
 
     # Compute bending strength
@@ -759,7 +759,7 @@ def test_refined_moment_curvature():
     geo = geo.translate(-100, -200)
 
     # Create the section
-    sec = GenericSection(geo, integrator='fiber')
+    sec = BeamSection(geo, integrator='fiber')
 
     # Calculate default moment-curvature relation
     res_default = sec.section_calculator.calculate_moment_curvature()
@@ -798,7 +798,7 @@ def test_refined_mn_domain():
     geo = geo.translate(-100, -200)
 
     # Create the section
-    sec = GenericSection(geo, integrator='fiber')
+    sec = BeamSection(geo, integrator='fiber')
 
     # Calculate default moment-curvature relation
     res_default = sec.section_calculator.calculate_nm_interaction_domain()
@@ -847,7 +847,7 @@ def test_rectangular_section_biaxial_moment(theta):
     geo = geo.translate(-100, -200)
 
     # Create the section
-    sec = GenericSection(geo, integrator='fiber')
+    sec = BeamSection(geo, integrator='fiber')
 
     # Calculate default moment-curvature relation
     res = sec.section_calculator.calculate_bending_strength(theta=theta)
@@ -899,13 +899,13 @@ def test_strain_plane_calculation_elastic_Nmm(n, my, mz, Ec, b, h):
     )
 
     # Fiber
-    section = GenericSection(geom, integrator='fiber', mesh_size=0.001)
+    section = BeamSection(geom, integrator='fiber', mesh_size=0.001)
     strain_fiber = section.section_calculator.calculate_strain_profile(
         n=n, my=my, mz=mz, tol=1e-7
     )
 
     # Marin
-    section = GenericSection(geom)
+    section = BeamSection(geom)
     strain_marin = section.section_calculator.calculate_strain_profile(
         n=n, my=my, mz=mz, tol=1e-7
     )
@@ -973,13 +973,13 @@ def test_strain_plane_calculation_elastic_kNm(n, my, mz, Ec, b, h):
     )
 
     # Fiber
-    section = GenericSection(geom, integrator='fiber', mesh_size=0.001)
+    section = BeamSection(geom, integrator='fiber', mesh_size=0.001)
     strain_fiber = section.section_calculator.calculate_strain_profile(
         n=n, my=my, mz=mz, tol=1e-7
     )
 
     # Marin
-    section = GenericSection(geom)
+    section = BeamSection(geom)
     strain_marin = section.section_calculator.calculate_strain_profile(
         n=n, my=my, mz=mz, tol=1e-7
     )
@@ -1049,13 +1049,13 @@ def test_strain_plane_calculation_rectangular_rc(n, my, mz, fck, b, h):
     )
 
     # Check with given loads that both marin and fiber gives same result
-    section = GenericSection(geo)
+    section = BeamSection(geo)
     strain_marin = section.section_calculator.calculate_strain_profile(
         n, my, mz, tol=1e-7
     )
     strain_marin_array = np.array(strain_marin.to_list())
 
-    section = GenericSection(geo, integrator='fiber', mesh_size=0.0001)
+    section = BeamSection(geo, integrator='fiber', mesh_size=0.0001)
 
     strain_fiber = section.section_calculator.calculate_strain_profile(
         n, my, mz, tol=1e-7
@@ -1122,7 +1122,7 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
     )
 
     # Check that with given loads we don't reach convergence
-    section = GenericSection(geo)
+    section = BeamSection(geo)
     with pytest.warns(
         NoConvergenceWarning, match='Maximum number of iterations reached'
     ):
@@ -1162,10 +1162,10 @@ def test_moment_curvature_slender(
     )
 
     # Create fiber section
-    section_fiber = GenericSection(geometry=geometry, integrator='fiber')
+    section_fiber = BeamSection(geometry=geometry, integrator='fiber')
 
     # Create marin section
-    section_marin = GenericSection(
+    section_marin = BeamSection(
         geometry=geometry,
     )
 
@@ -1257,7 +1257,7 @@ def test_moment_curvature_large_circular_section():
         )
 
     # Section
-    section = GenericSection(geometry=shaft, integrator='fiber')
+    section = BeamSection(geometry=shaft, integrator='fiber')
 
     # Moment-curvature
     result = section.section_calculator.calculate_moment_curvature(n=-1e6)
@@ -1377,7 +1377,7 @@ def test_rotate_triangulation_data():
         )
 
     # geometry = geometry.translate(width/2, height/2)
-    section = GenericSection(
+    section = BeamSection(
         geometry=geometry,
         integrator='Fiber',
         mesh_size=0.001,
@@ -1388,7 +1388,7 @@ def test_rotate_triangulation_data():
     res1 = section.section_calculator.calculate_bending_strength(theta=np.pi)
 
     # geometry = geometry.translate(width/2, height/2)
-    section = GenericSection(
+    section = BeamSection(
         geometry=geometry,
         integrator='Fiber',
         mesh_size=0.001,
@@ -1449,13 +1449,13 @@ def test_rectangular_section_init_strain(fck, fyk, ductility_class):
     geo = geo.translate(-100, -200)
 
     # Create the section with fiber integrator
-    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.001)
+    sec_fiber = BeamSection(geo, integrator='fiber', mesh_size=0.001)
 
     # Compute bending strength My-
     res_fiber = sec_fiber.section_calculator.calculate_bending_strength()
 
     # Create the section with default marin integrator
-    sec_marin = GenericSection(geo)
+    sec_marin = BeamSection(geo)
 
     # Compute bending strength My-
     res_marin = sec_marin.section_calculator.calculate_bending_strength()
@@ -1483,13 +1483,13 @@ def test_rectangular_section_init_strain(fck, fyk, ductility_class):
     geo = geo.translate(-100, -200)
 
     # Create the section with fiber integrator
-    sec_fiber = GenericSection(geo, integrator='fiber', mesh_size=0.001)
+    sec_fiber = BeamSection(geo, integrator='fiber', mesh_size=0.001)
 
     # Compute bending strength My-
     res_fiber_i = sec_fiber.section_calculator.calculate_bending_strength()
 
     # Create the section with default marin integrator
-    sec_marin = GenericSection(geo)
+    sec_marin = BeamSection(geo)
 
     # Compute bending strength My-
     res_marin_i = sec_marin.section_calculator.calculate_bending_strength()
@@ -1507,7 +1507,7 @@ def test_section_parallel_material_elastic():
     geo = RectangularGeometry(
         width=100, height=100, material=ElasticMaterial(E=30000, density=2500)
     )
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 1e-5, 0)
@@ -1522,7 +1522,7 @@ def test_section_parallel_material_elastic():
     geo = RectangularGeometry(
         width=100, height=100, material=GenericMaterial(2500, const_law)
     )
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 1e-5, 0)
@@ -1540,7 +1540,7 @@ def test_section_parallel_material_elastic():
     geo = RectangularGeometry(
         width=100, height=100, material=GenericMaterial(2500, const_law)
     )
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 1e-5, 0)
@@ -1557,7 +1557,7 @@ def test_section_parallel_material_elasticplastic():
     const_law = ElasticPlastic(E=10000, fy=10, Eh=0, eps_su=2e-3)
     mat = GenericMaterial(constitutive_law=const_law, density=600)
     geo = RectangularGeometry(width=100, height=100, material=mat)
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 3e-5, 0)
@@ -1570,7 +1570,7 @@ def test_section_parallel_material_elasticplastic():
     const_law = Parallel([const_law_1, const_law_2])
     mat = GenericMaterial(constitutive_law=const_law, density=600)
     geo = RectangularGeometry(width=100, height=100, material=mat)
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 3e-5, 0)
@@ -1587,7 +1587,7 @@ def test_section_parallel_material_elasticplastic():
         constitutive_laws=[const_law_1, const_law_2], weights=[7.0, 3.0]
     )
     geo = RectangularGeometry(width=100, height=100, material=mat)
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 3e-5, 0)
@@ -1609,9 +1609,7 @@ def test_section_parallel_marin_concrete_tension():
     geo = RectangularGeometry(width=100, height=100, material=mat)
 
     # Use fiber integrator
-    section = GenericSection(
-        geometry=geo, integrator='fiber', mesh_size=0.0001
-    )
+    section = BeamSection(geometry=geo, integrator='fiber', mesh_size=0.0001)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 4e-5, 0)
@@ -1619,7 +1617,7 @@ def test_section_parallel_marin_concrete_tension():
     M_f = res[1]
 
     # Use marin integrator
-    section = GenericSection(geometry=geo)
+    section = BeamSection(geometry=geo)
 
     res = section.section_calculator.integrate_strain_profile(
         (0, 4e-5, 0)
@@ -1654,7 +1652,7 @@ def test_issue_cracked_properties():
     )
     pile_steel = pile_gross - pile_concrete
     pile_geometry = pile_steel + pile_concrete
-    pile_section = GenericSection(geometry=pile_geometry, integrator='fiber')
+    pile_section = BeamSection(geometry=pile_geometry, integrator='fiber')
 
     # Calculate cracked properties before
     cracked_properties_before = calculate_elastic_cracked_properties(
@@ -1710,7 +1708,7 @@ def test_mn_full_domain():
         )
 
     # Create section
-    section = GenericSection(geometry, integrator='fiber')
+    section = BeamSection(geometry, integrator='fiber')
 
     # Calculate interaction domain for theta = 0
     interaction_domain_0 = (
@@ -1786,7 +1784,7 @@ def test_issue_gross_props_after_calculation(integrator):
         n=4,
     )
 
-    section = GenericSection(geometry=geo, integrator=integrator)
+    section = BeamSection(geometry=geo, integrator=integrator)
     gp_before = section.gross_properties
 
     res = section.section_calculator.calculate_bending_strength()
@@ -1797,7 +1795,7 @@ def test_issue_gross_props_after_calculation(integrator):
     assert gp_before.isclose(gp_after, rtol=1e-3, atol=1e-6)
 
     # Now create a new section but compute first the strength
-    section = GenericSection(geometry=geo, integrator=integrator)
+    section = BeamSection(geometry=geo, integrator=integrator)
     res = section.section_calculator.calculate_bending_strength()
     m_2 = -res.m_y
 
@@ -1842,7 +1840,7 @@ def test_issue_gross_props_after_calculation(integrator):
         3,
     )
 
-    section = GenericSection(geometry=geometry, integrator=integrator)
+    section = BeamSection(geometry=geometry, integrator=integrator)
     gp_before = section.gross_properties
 
     res = section.section_calculator.calculate_moment_curvature()
@@ -1853,7 +1851,7 @@ def test_issue_gross_props_after_calculation(integrator):
     assert gp_before.isclose(gp_after, rtol=1e-3, atol=1e-6)
 
     # Now create a new section but compute first the strength
-    section = GenericSection(geometry=geometry, integrator=integrator)
+    section = BeamSection(geometry=geometry, integrator=integrator)
     res = section.section_calculator.calculate_moment_curvature()
     m_max2 = np.max(np.abs(res.m_y))
 
@@ -1893,7 +1891,7 @@ def test_section_strength_warning(b, h, n_bars, diameter, fck, fyk):
         material=steel,
         n=n_bars,
     )
-    section = GenericSection(geo)
+    section = BeamSection(geo)
 
     # Compute bending strength without reaching equilibrium
     # This is fictitiously tested forcing a low max_iter
@@ -1928,7 +1926,7 @@ def test_section_moment_curvature_warning(b, h, n_bars, diameter, fck, fyk):
         material=steel,
         n=n_bars,
     )
-    section = GenericSection(geo)
+    section = BeamSection(geo)
     n_u = section.section_calculator.calculate_limit_axial_load()[0]
     # Compute moment curvature with no warning
     res_good = section.section_calculator.calculate_moment_curvature(
@@ -1981,7 +1979,7 @@ def test_section_mm_domain_warning(b, h, n_bars, diameter, fck, fyk):
         material=steel,
         n=n_bars,
     )
-    section = GenericSection(geo)
+    section = BeamSection(geo)
     n_u = section.section_calculator.calculate_limit_axial_load()[0]
     # Compute moment curvature with no warning
     res_good = section.section_calculator.calculate_mm_interaction_domain(
@@ -2015,7 +2013,7 @@ def test_perimeter_multipolygon():
     )
 
     compound = CompoundGeometry([rect1, rect2])
-    section = GenericSection(compound, integrator='marin')
+    section = BeamSection(compound, integrator='marin')
 
     with pytest.warns(InformationWarning):
         gp = section.gross_properties

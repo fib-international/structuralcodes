@@ -9,7 +9,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.concrete import ConcreteEC2_2004
 from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 
 # Define parameters
 fck = 30
@@ -70,12 +70,12 @@ for y_coord in (
     )
 
 # Create a section
-section_not_translated = GenericSection(geometry=t_geom)
+section_not_translated = BeamSection(geometry=t_geom)
 
 # Use the centroid of the section, given in the gross properties, to re-allign
 # the geometry with the origin
 t_geom = t_geom.translate(dy=-section_not_translated.gross_properties.cz)
-section = GenericSection(geometry=t_geom)
+section = BeamSection(geometry=t_geom)
 
 # Calculate the bending strength
 bending_strength = section.section_calculator.calculate_bending_strength()

@@ -1,4 +1,4 @@
-"""Generic class section implemenetation."""
+"""Geometry classes for beam sections."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 

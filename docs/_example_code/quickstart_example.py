@@ -6,7 +6,7 @@ from structuralcodes import set_design_code
 from structuralcodes.geometry import SurfaceGeometry, add_reinforcement
 from structuralcodes.materials.concrete import create_concrete
 from structuralcodes.materials.reinforcement import create_reinforcement
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 
 # Set the active design code
 set_design_code('ec2_2004')
@@ -62,7 +62,7 @@ geometry = add_reinforcement(
 )
 
 # Create section
-section = GenericSection(geometry)
+section = BeamSection(geometry)
 
 # Calculate the moment-curvature response
 moment_curvature = section.section_calculator.calculate_moment_curvature()

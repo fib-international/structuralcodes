@@ -210,8 +210,8 @@ class FiberIntegrator(SectionIntegrator):
         integration_data = kwargs.get('integration_data')
         if integration_data is None:
             # No triangulation is provided, triangulate the section
-            # Fiber integrator for generic section uses delaunay triangulation
-            # for discretizing in fibers
+            # Fiber integrator for arbitrary shaped geometries uses delaunay
+            # triangulation for discretizing in fibers
 
             mesh_size = kwargs.get('mesh_size', 0.01)
             integration_data = self.triangulate(geo, mesh_size)

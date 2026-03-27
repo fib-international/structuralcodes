@@ -7,7 +7,7 @@ import pytest
 
 from structuralcodes.geometry import RectangularGeometry
 from structuralcodes.materials.basic import ElasticMaterial
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 
 width = 200
 height = 400
@@ -16,7 +16,7 @@ eps_u = 0.01
 
 
 @pytest.fixture
-def elastic_rec_section() -> GenericSection:
+def elastic_rec_section() -> BeamSection:
     """Create a simple rectangular section with known properties."""
     # Square section centered at (0, 0)
     mat = ElasticMaterial(E=E, density=700, ultimate_strain=eps_u)
@@ -26,7 +26,7 @@ def elastic_rec_section() -> GenericSection:
     # It should not be concrete
     assert not geo.concrete
 
-    return GenericSection(geo, integrator='marin')
+    return BeamSection(geo, integrator='marin')
 
 
 # Test the string representation of gross properties

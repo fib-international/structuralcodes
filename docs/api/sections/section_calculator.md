@@ -1,10 +1,10 @@
 (api-section-calculator)=
 # Section calculator
 
-## Generic section calculator
+## Beam section calculator
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.sections.GenericSectionCalculator
+.. autoclass:: structuralcodes.sections.BeamSectionCalculator
 
     .. autoproperty:: n_min
     .. autoproperty:: n_max

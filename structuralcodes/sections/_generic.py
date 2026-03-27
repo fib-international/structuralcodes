@@ -1,4 +1,4 @@
-"""Generic class section implemenetation."""
+"""Implementation of the beam section class."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
@@ -25,8 +25,8 @@ from ..core.errors import InformationWarning, NoConvergenceWarning
 from .section_integrators import SectionIntegrator, integrator_factory
 
 
-class GenericSection(Section):
-    """This is the implementation of the generic class section.
+class BeamSection(Section):
+    """This is the implementation of the beam section.
 
     The section is a 2D geometry where Y axis is horizontal while Z axis is
     vertical.
@@ -38,7 +38,7 @@ class GenericSection(Section):
         geometry (Union(SurfaceGeometry, CompoundGeometry)): The geometry of
             the section.
         name (str): The name of the section.
-        section_calculator (GenericSectionCalculator): The object responsible
+        section_calculator (BeamSectionCalculator): The object responsible
             for performing different calculations on the section (e.g. bending
             strength, moment curvature, etc.).
     """
@@ -52,7 +52,7 @@ class GenericSection(Section):
         integrator: t.Literal['marin', 'fiber'] = 'marin',
         **kwargs,
     ) -> None:
-        """Initialize a GenericSection.
+        """Initialize a BeamSection.
 
         Arguments:
             geometry (Union(SurfaceGeometry, CompoundGeometry)): The geometry
@@ -63,15 +63,15 @@ class GenericSection(Section):
                 section calculator.
 
         Note:
-            The GenericSection uses a GenericSectionCalculator for all
-            calculations. The GenericSectionCalculator uses a SectionIntegrator
+            The BeamSection uses a BeamSectionCalculator for all
+            calculations. The BeamSectionCalculator uses a SectionIntegrator
             for integrating over the section. Any additional keyword arguments
-            used when creating the GenericSection are passed on to the
+            used when creating the BeamSection are passed on to the
             SectionCalculator to customize the behaviour. See
-            GenericSectionCalculator for available keyword arguments.
+            BeamSectionCalculator for available keyword arguments.
         """
         if name is None:
-            name = 'GenericSection'
+            name = 'BeamSection'
         super().__init__(name)
         # Since only CompoundGeometry has the attribute geometries,
         # if a SurfaceGeometry is input, we create a CompoundGeometry
@@ -80,7 +80,7 @@ class GenericSection(Section):
         if isinstance(geometry, SurfaceGeometry):
             geometry = CompoundGeometry([geometry])
         self.geometry = geometry
-        self.section_calculator = GenericSectionCalculator(
+        self.section_calculator = BeamSectionCalculator(
             sec=self, integrator=integrator, **kwargs
         )
         self._gross_properties = None
@@ -95,22 +95,22 @@ class GenericSection(Section):
         return self._gross_properties
 
 
-class GenericSectionCalculator(SectionCalculator):
+class BeamSectionCalculator(SectionCalculator):
     """Calculator class implementing analysis algorithms for code checks."""
 
     integrator: SectionIntegrator
-    section: GenericSection
+    section: BeamSection
 
     def __init__(
         self,
-        sec: GenericSection,
+        sec: BeamSection,
         integrator: t.Literal['marin', 'fiber'] = 'marin',
         **kwargs,
     ) -> None:
-        """Initialize the GenericSectionCalculator.
+        """Initialize the BeamSectionCalculator.
 
         Arguments:
-            section (GenericSection): The section object.
+            section (BeamSection): The section object.
             integrator (str): The SectionIntegrator to be used for computations
                 (default = 'marin').
 
@@ -131,7 +131,7 @@ class GenericSectionCalculator(SectionCalculator):
         self._n_min = None
 
     def _calculate_gross_section_properties(self) -> s_res.SectionProperties:
-        """Calculates the gross section properties of the GenericSection.
+        """Calculates the gross section properties of the BeamSection.
 
         This function is private and called when the section is created.
         It stores the result into the result object.
@@ -139,7 +139,7 @@ class GenericSectionCalculator(SectionCalculator):
         Returns:
             SectionProperties: The gross properties of the section.
         """
-        # It will use the algorithms for generic sections
+        # It will use the algorithms for beam sections
         gp = s_res.SectionProperties()
 
         # Computation of perimeter using shapely
@@ -467,7 +467,7 @@ class GenericSectionCalculator(SectionCalculator):
                 dn_a = dn_c
             it += 1
         if it >= max_iter:
-            msg = 'GenericSectionCalculator::find_equilibrium_fixed_pivot\n\t'
+            msg = 'BeamSectionCalculator::find_equilibrium_fixed_pivot\n\t'
             msg += 'Maximum number of iterations reached.'
             msg += f' Last iteration reached a unbalance of {dn_c:.3e}'
             warnings.warn(
@@ -664,7 +664,7 @@ class GenericSectionCalculator(SectionCalculator):
 
         if it >= max_iter and not found:
             msg = (
-                'GenericSectionCalculator::'
+                'BeamSectionCalculator::'
                 '_prefind_range_curvature_equilibrium\n\t'
                 'Maximum number of iterations reached.'
                 f' Last iteration reached a unbalance of {dn_b:.3e} {suffix}'
@@ -748,7 +748,7 @@ class GenericSectionCalculator(SectionCalculator):
                 eps_0_a = eps_0_c
             it += 1
         if it >= max_iter:
-            msg = 'GenericSectionCalculator::find_equilibrium_fixed_curvature'
+            msg = 'BeamSectionCalculator::find_equilibrium_fixed_curvature'
             msg += '\n\tMaximum number of iterations reached. '
             msg += f' Last iteration reached a unbalance of {dn_c:.3e}'
             warnings.warn(
@@ -1012,7 +1012,7 @@ class GenericSectionCalculator(SectionCalculator):
             warn = w[0]
             if issubclass(warn.category, NoConvergenceWarning):
                 new_msg = (
-                    f'\nGenericSectionCalculator::calculate_moment_curvature'
+                    f'\nBeamSectionCalculator::calculate_moment_curvature'
                     f'\n\tNo convergence during computation of ultimate'
                     f' curvature. Please check results properly.\n'
                     f'{warn.message}'
@@ -1032,7 +1032,7 @@ class GenericSectionCalculator(SectionCalculator):
             warn = w[0]
             if issubclass(warn.category, NoConvergenceWarning):
                 new_msg = (
-                    f'\nGenericSectionCalculator::calculate_moment_curvature'
+                    f'\nBeamSectionCalculator::calculate_moment_curvature'
                     f'\n\tNo convergence during computation of yielding'
                     f' curvature. Please check results properly.\n'
                     f'{warn.message}'
@@ -1188,7 +1188,7 @@ class GenericSectionCalculator(SectionCalculator):
                 warn = w[0]
                 if issubclass(warn.category, NoConvergenceWarning):
                     new_msg = (
-                        f'\nGenericSectionCalculator::calculate_moment_curvature\n'
+                        f'\nBeamSectionCalculator::calculate_moment_curvature\n'
                         f'\tNo convergence during computation of step {i}.'
                         f' The computation is stopped at the current step\n'
                         f'{warn.message}'
@@ -1724,7 +1724,7 @@ class GenericSectionCalculator(SectionCalculator):
                 warn = w[0]
                 if issubclass(warn.category, NoConvergenceWarning):
                     new_msg = (
-                        '\nGenericSectionCalculator::'
+                        '\nBeamSectionCalculator::'
                         'calculate_mm_interaction_domain\n'
                         f'\tNo convergence during computation with theta {th}.'
                         f'\n{warn.message}'

@@ -12,7 +12,7 @@ from structuralcodes.geometry import (
 )
 from structuralcodes.materials.concrete import ConcreteMC2010
 from structuralcodes.materials.reinforcement import ReinforcementMC2010
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def simple_rc_section():
         group_label='top',
     )
 
-    return GenericSection(geo, integrator='fiber')
+    return BeamSection(geo, integrator='fiber')
 
 
 ## Test utility functions developed as non public
