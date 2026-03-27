@@ -1,6 +1,6 @@
 """Main entry point for sections."""
 
-from ._generic import BeamSection, BeamSectionCalculator
+from ._beam_section import BeamSection, BeamSectionCalculator
 from ._rc_utils import calculate_elastic_cracked_properties
 from .section_integrators import (
     FiberIntegrator,

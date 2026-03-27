@@ -27,7 +27,7 @@ from structuralcodes.materials.basic import (
 from structuralcodes.materials.constitutive_laws import (
     UserDefined,
 )
-from structuralcodes.sections._generic import BeamSection
+from structuralcodes.sections import BeamSection
 
 
 # Test steel I section

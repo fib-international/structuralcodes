@@ -16,7 +16,7 @@ from structuralcodes.geometry.profiles import (
 from structuralcodes.materials.basic import (
     ElasticMaterial,
 )
-from structuralcodes.sections._generic import BeamSection
+from structuralcodes.sections import BeamSection
 
 
 def load_w_profiles_data():
