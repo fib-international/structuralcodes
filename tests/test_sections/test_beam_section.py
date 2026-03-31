@@ -1730,16 +1730,16 @@ def test_mn_full_domain():
     # Combine theta = 0 and theta = 180 to obtain the full domain
     interaction_domain_full_combined_n = [
         *interaction_domain_0.n,
-        *interaction_domain_180.n[-2:0:-1],
+        *interaction_domain_180.n[-2::-1],
     ]
     interaction_domain_full_combined_my = [
         *interaction_domain_0.m_y,
-        *interaction_domain_180.m_y[-2:0:-1],
+        *interaction_domain_180.m_y[-2::-1],
     ]
 
     assert (
         len(interaction_domain_full.n)
-        == len(interaction_domain_0.n) + len(interaction_domain_180.n) - 2
+        == len(interaction_domain_0.n) + len(interaction_domain_180.n) - 1
     )
     assert np.allclose(
         interaction_domain_full.n, interaction_domain_full_combined_n

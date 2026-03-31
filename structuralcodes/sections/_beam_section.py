@@ -1374,9 +1374,9 @@ class BeamSectionCalculator(SectionCalculator):
                     type_6=type_6,
                 )
             )
-            strains = np.concatenate((strains, additional_strains[-2:0:-1]))
+            strains = np.concatenate((strains, additional_strains[-2::-1]))
             field_num = np.concatenate(
-                (field_num, additional_field_num[-2:0:-1])
+                (field_num, additional_field_num[-2::-1])
             )
 
         # integrate all strain profiles
