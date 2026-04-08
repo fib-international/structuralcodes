@@ -5,6 +5,7 @@ import typing as t
 from structuralcodes.codes import _use_design_code
 
 from ._reinforcement import Reinforcement
+from ._reinforcementACI318 import ReinforcementACI318
 from ._reinforcementEC2_2004 import ReinforcementEC2_2004
 from ._reinforcementEC2_2023 import ReinforcementEC2_2023
 from ._reinforcementMC2010 import ReinforcementMC2010
@@ -12,12 +13,14 @@ from ._reinforcementMC2010 import ReinforcementMC2010
 __all__ = [
     'create_reinforcement',
     'Reinforcement',
+    'ReinforcementACI318',
     'ReinforcementMC2010',
     'ReinforcementEC2_2004',
     'ReinforcementEC2_2023',
 ]
 
 REINFORCEMENTS: t.Dict[str, Reinforcement] = {
+    'ACI 318-19': ReinforcementACI318,
     'fib Model Code 2010': ReinforcementMC2010,
     'EUROCODE 2 1992-1-1:2004': ReinforcementEC2_2004,
     'EUROCODE 2 1992-1-1:2023': ReinforcementEC2_2023,
