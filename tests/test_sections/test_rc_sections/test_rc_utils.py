@@ -8,7 +8,7 @@ from structuralcodes.geometry import SurfaceGeometry, add_reinforcement
 from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import create_concrete
 from structuralcodes.materials.reinforcement import create_reinforcement
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 from structuralcodes.sections._rc_utils import (
     calculate_elastic_cracked_properties,
 )
@@ -58,7 +58,7 @@ def test_calculate_elastic_cracked_properties_comparison():
     )
 
     # Create section
-    section1 = GenericSection(geometry)
+    section1 = BeamSection(geometry)
     # endregion
 
     # region Create cracked section to compare (section2)
@@ -90,7 +90,7 @@ def test_calculate_elastic_cracked_properties_comparison():
         reinforcement,
     )
 
-    section2 = GenericSection(geometry_cracked)
+    section2 = BeamSection(geometry_cracked)
     # end region
 
     # Calculate cracked properties for both sections
@@ -130,7 +130,7 @@ def test_calculate_elastic_cracked_properties_comparison():
     # check if it works with multiples geometries
     geometry_dummy = SurfaceGeometry(poly=polygon, material=concrete)
     geometry += geometry_dummy
-    section1 = GenericSection(geometry, integrator='fiber')
+    section1 = BeamSection(geometry, integrator='fiber')
     result = calculate_elastic_cracked_properties(section1, 0)
     # check if it is not reinforced concrete
     section1.geometry._reinforced_concrete = False
@@ -182,7 +182,7 @@ def test_calculate_elastic_cracked_properties_return_geometry():
     )
 
     # Create section
-    section1 = GenericSection(geometry)
+    section1 = BeamSection(geometry)
     # endregion
 
     # check if works when geometry is required
@@ -195,7 +195,7 @@ def test_calculate_elastic_cracked_properties_return_geometry():
     # check if it works with multiples geometries
     geometry_dummy = SurfaceGeometry(poly=polygon, material=concrete)
     geometry += geometry_dummy
-    section1 = GenericSection(geometry, integrator='fiber')
+    section1 = BeamSection(geometry, integrator='fiber')
     result = calculate_elastic_cracked_properties(section1, 0)
     # check if it is not reinforced concrete
     section1.geometry._reinforced_concrete = False
@@ -220,7 +220,7 @@ def test_calculate_elastic_cracked_properties_no_reinforced_concrete():
         ]
     )
     geometry = SurfaceGeometry(poly=polygon, material=elastic)
-    section1 = GenericSection(geometry, integrator='fiber')
+    section1 = BeamSection(geometry, integrator='fiber')
 
     assert not section1.geometry.reinforced_concrete
     # Calculate cracked properties

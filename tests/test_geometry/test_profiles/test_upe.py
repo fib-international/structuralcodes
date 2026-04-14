@@ -16,7 +16,7 @@ from structuralcodes.geometry.profiles import (
 from structuralcodes.materials.basic import (
     ElasticMaterial,
 )
-from structuralcodes.sections._generic import GenericSection
+from structuralcodes.sections import BeamSection
 
 
 def load_upe_profiles_data():
@@ -300,7 +300,7 @@ def test_upe_massprops_polygon(
     # Create geometry
     geo = SurfaceGeometry(UPE.get_polygon(profile_name), material=steel)
     # Create the section
-    sec = GenericSection(geo)
+    sec = BeamSection(geo)
 
     # Get values from section
     a_section = sec.gross_properties.area

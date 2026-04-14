@@ -16,7 +16,7 @@ from structuralcodes.geometry.profiles import (
 from structuralcodes.materials.basic import (
     ElasticMaterial,
 )
-from structuralcodes.sections._generic import GenericSection
+from structuralcodes.sections import BeamSection
 
 
 def load_LI_profiles_data():
@@ -258,7 +258,7 @@ def test_L_massprops_polygon(
     # Create geometry
     geo = SurfaceGeometry(LI.get_polygon(profile_name), material=steel)
     # Create the section
-    sec = GenericSection(geo)
+    sec = BeamSection(geo)
 
     # Get values from section
     a_section = sec.gross_properties.area

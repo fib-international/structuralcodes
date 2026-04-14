@@ -6,7 +6,7 @@ import structuralcodes.core._section_results as s_res
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 from structuralcodes.materials.basic import ElasticMaterial, GenericMaterial
 from structuralcodes.materials.constitutive_laws import UserDefined
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 from structuralcodes.sections.section_integrators import FiberIntegrator
 
 
@@ -26,20 +26,20 @@ def _create_surface_geometries(polygons_list, material):
 
 
 def calculate_elastic_cracked_properties(
-    section: GenericSection,
+    section: BeamSection,
     theta: float = 0,
     return_cracked_section: bool = False,
 ) -> t.Union[
     s_res.SectionProperties, t.Tuple[s_res.SectionProperties, CompoundGeometry]
 ]:
     """Calculates the cracked section properties of a reinforced concrete
-    section. (GenericSection). Materials in surface geometries and point
+    section. (BeamSection). Materials in surface geometries and point
     geometries are elastic-linear in order to make the cracking properties
     independent of the stress state. Tension in all surface geometries is
     neglected.
 
     Args:
-        section (GenericSection): The section to use as basis for the
+        section (BeamSection): The section to use as basis for the
             calculation.
         theta (float): Angle of the neutral axis to the horizontal in radians.
             theta=0 implies upper compression block.
@@ -47,7 +47,7 @@ def calculate_elastic_cracked_properties(
             section.
 
     Returns:
-        t.Union[SectionProperties, t.Tuple[SectionProperties, GenericSection]]:
+        t.Union[SectionProperties, t.Tuple[SectionProperties, BeamSection]]:
         SectionProperties data of a cracked section (i.e cracked section
         properties) and (if return_cracked_section is True) the cracked
         section.
@@ -100,7 +100,7 @@ def calculate_elastic_cracked_properties(
 
     # Create a new temporary section
     geo = CompoundGeometry(geometries=processed_geometries)
-    elastic_section = GenericSection(
+    elastic_section = BeamSection(
         geo, integrator=integrator, mesh_size=mesh_size
     )
     rotated_geometry = elastic_section.geometry
@@ -131,7 +131,7 @@ def calculate_elastic_cracked_properties(
     cracked_geom = cut_geom.rotate(theta)
 
     # Define the cracked section
-    cracked_sec = GenericSection(
+    cracked_sec = BeamSection(
         cracked_geom, integrator=integrator, mesh_size=mesh_size
     )
 

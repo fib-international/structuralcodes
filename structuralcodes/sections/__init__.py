@@ -1,6 +1,7 @@
 """Main entry point for sections."""
 
-from ._generic import GenericSection, GenericSectionCalculator
+from ._beam_section import BeamSection, BeamSectionCalculator
+from ._generic import GenericSection
 from ._rc_utils import calculate_elastic_cracked_properties
 from ._shell_section import ShellSection, ShellSectionCalculator
 from .section_integrators import (
@@ -14,7 +15,8 @@ from .section_integrators import (
 
 __all__ = [
     'GenericSection',
-    'GenericSectionCalculator',
+    'BeamSection',
+    'BeamSectionCalculator',
     'SectionIntegrator',
     'FiberIntegrator',
     'MarinIntegrator',
