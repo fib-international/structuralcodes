@@ -24,7 +24,7 @@ from structuralcodes.materials.constitutive_laws import (
     ParabolaRectangle,
 )
 from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
-from structuralcodes.sections import GenericSection, ShellSection
+from structuralcodes.sections import BeamSection, ShellSection
 
 # Membrane and bending-strain parameter ranges
 eps_x = np.linspace(0.0, 1.0e-3, 2)
@@ -384,7 +384,7 @@ def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
     fyk = 500  # Steel yield strength
     Es = 200000  # Steel modulus of elasticity
 
-    # Create a GenericSection
+    # Create a BeamSection
     reinforcement = ReinforcementEC2_2004(
         fyk=fyk,
         Es=Es,
@@ -433,7 +433,7 @@ def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
             s=spacing,
         )
 
-    generic_sec = GenericSection(geometry=generic_geo, integrator='fiber')
+    generic_sec = BeamSection(geometry=generic_geo, integrator='fiber')
 
     # Create a ShellSection
     uniaxial_compression = ParabolaRectangle(fc=fc)
@@ -514,7 +514,7 @@ def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
         rel_tol=1e-4,
     )
 
-    # Compare GenericSection and ShellSection
+    # Compare BeamSection and ShellSection
     assert math.isclose(
         generic_strain.to_list()[0],
         shell_strain[0],
