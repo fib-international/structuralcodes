@@ -68,11 +68,8 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         # A positive in-plane strain gives tension
         # A positive curvature gives a negative strain for a positive z-value
-        # Note the factor 2 for in-plane shear strain due to twisting curvature
         for z in z_coords:
-            fiber_strain = strain[:3].copy()
-            fiber_strain[:2] -= z * strain[3:5]
-            fiber_strain[2] -= 2 * z * strain[5]
+            fiber_strain = strain[:3] - z * strain[3:]
             if integrate == 'stress':
                 integrand = material.constitutive_law.get_stress(fiber_strain)
             elif integrate == 'modulus':
@@ -84,9 +81,7 @@ class ShellFiberIntegrator(SectionIntegrator):
             z_list.append(z)
 
         for r in geo.reinforcement:
-            fiber_strain = strain[:3].copy()
-            fiber_strain[:2] -= r.z * strain[3:5]
-            fiber_strain[2] -= 2 * r.z * strain[5]
+            fiber_strain = strain[:3] - r.z * strain[3:]
             eps_sj = r.T @ fiber_strain
 
             if integrate == 'stress':
@@ -153,9 +148,6 @@ class ShellFiberIntegrator(SectionIntegrator):
             B -= z_i * C_layer
             D += z_i**2 * C_layer
 
-        # This is necessary because the twisting moment is assumed proportional
-        # to the double twisting curvature
-        D[-1, -1] *= 2
         return np.block([[A, B], [B, D]])
 
     def integrate_strain_response_on_geometry(
