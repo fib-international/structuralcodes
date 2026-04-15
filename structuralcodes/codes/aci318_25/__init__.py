@@ -11,6 +11,12 @@ from ._concrete_material_properties import (
     fr,
     lambda_factor,
 )
+from ._reinforcement_material_properties import (
+    Es,
+    epsyd,
+    fy_design,
+    reinforcement_grade_props,
+)
 from ._units import (
     FT_TO_MM,
     IN_TO_MM,
@@ -38,6 +44,10 @@ __all__ = [
     'fct',
     'fr',
     'lambda_factor',
+    'Es',
+    'epsyd',
+    'fy_design',
+    'reinforcement_grade_props',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',
