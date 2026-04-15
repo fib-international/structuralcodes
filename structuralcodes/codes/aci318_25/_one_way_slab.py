@@ -136,7 +136,8 @@ def max_bar_spacing_flexure(h: float) -> float:
 
 
 def max_bar_spacing_shrinkage(h: float) -> float:
-    """Maximum centre-to-centre spacing of shrinkage and temperature reinforcement.
+    """Maximum centre-to-centre spacing of shrinkage and temperature
+    reinforcement.
 
     ACI 318-25, Sec. 7.7.6.2.1:  ``s_max = min(5h, 450 mm)``.
 

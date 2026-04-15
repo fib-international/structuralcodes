@@ -2,7 +2,6 @@
 
 import math
 
-
 # ---------------------------------------------------------------------------
 # Equilibrium helpers
 # ---------------------------------------------------------------------------
@@ -14,7 +13,8 @@ def stress_block_depth_sr(
     fc: float,
     b: float,
 ) -> float:
-    """Depth of equivalent rectangular stress block for a singly-reinforced section.
+    """Depth of equivalent rectangular stress block for a singly-reinforced
+    section.
 
     ACI 318-25, Sec. 22.2.2.4.1.  Derived from horizontal force equilibrium:
     ``a = As * fy / (0.85 * fc * b)``.
@@ -39,7 +39,8 @@ def stress_block_depth_dr(
     fc: float,
     b: float,
 ) -> float:
-    """Depth of equivalent rectangular stress block for a doubly-reinforced section.
+    """Depth of equivalent rectangular stress block for a doubly-reinforced
+    section.
 
     ACI 318-25, Sec. 22.2.2.4.1.  Force equilibrium with compression steel:
     ``a = (As*fy - As'*fy') / (0.85 * fc * b)``.
@@ -48,7 +49,8 @@ def stress_block_depth_dr(
         As (float): Area of tension reinforcement in mm².
         As_prime (float): Area of compression reinforcement in mm².
         fy (float): Yield strength of tension reinforcement in MPa.
-        fy_prime (float): Yield (or stress) of compression reinforcement in MPa.
+        fy_prime (float): Yield (or stress) of compression reinforcement
+            in MPa.
         fc (float): Specified compressive strength of concrete in MPa.
         b (float): Width of compression face in mm.
 
@@ -114,7 +116,8 @@ def eps_s_prime(
             0.003 per Sec. 22.2.2.1.
 
     Returns:
-        float: Compression steel strain (dimensionless, positive in compression).
+        float: Compression steel strain (dimensionless, positive in
+            compression).
     """
     return eps_cu * (c - d_prime) / c
 
@@ -165,7 +168,8 @@ def Mn_doubly_reinforced(
     """Nominal flexural strength of a doubly-reinforced rectangular section.
 
     ACI 318-25, Sec. 22.3.2.1.  The caller is responsible for verifying that
-    compression steel has yielded (``fy_prime <= Es * eps_s_prime(c, d_prime)``)
+    compression steel has yielded
+    (``fy_prime <= Es * eps_s_prime(c, d_prime)``)
     before passing *fy_prime* as the compression-steel stress.
 
     ``Mn = (As*fy - As'*fy') * (d - a/2) + As'*fy' * (d - d')``
@@ -188,7 +192,9 @@ def Mn_doubly_reinforced(
         float: Nominal moment strength *Mn* in N·mm.
     """
     a = stress_block_depth_dr(As, As_prime, fy, fy_prime, fc, b)
-    return (As * fy - As_prime * fy_prime) * (d - a / 2.0) + As_prime * fy_prime * (d - d_prime)
+    return (As * fy - As_prime * fy_prime) * (
+        d - a / 2.0
+    ) + As_prime * fy_prime * (d - d_prime)
 
 
 # ---------------------------------------------------------------------------
@@ -265,7 +271,8 @@ def As_max_check(
     ``eps_t >= fy/Es + 0.003``.
 
     Args:
-        eps_t (float): Net tensile strain at extreme tension steel (dimensionless).
+        eps_t (float): Net tensile strain at extreme tension steel
+            (dimensionless).
         fy (float): Specified yield strength of reinforcement in MPa.
         Es (float): Modulus of elasticity of reinforcement in MPa. Defaults to
             200 000 MPa per Sec. 20.2.2.2.
@@ -314,10 +321,10 @@ def As_required(
         ValueError: If the discriminant is negative (section is undersized for
             the given moment).
     """
-    a_coeff = fy ** 2 / (1.7 * fc * b)
+    a_coeff = fy**2 / (1.7 * fc * b)
     b_coeff = -fy * d
     c_coeff = Mu / phi
-    discriminant = b_coeff ** 2 - 4.0 * a_coeff * c_coeff
+    discriminant = b_coeff**2 - 4.0 * a_coeff * c_coeff
     if discriminant < 0.0:
         raise ValueError(
             f'Discriminant is negative ({discriminant:.6g}): '

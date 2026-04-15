@@ -9,7 +9,7 @@ import pytest
 # Mock triangle module before importing structuralcodes
 sys.modules['triangle'] = type(sys)('triangle')
 
-from structuralcodes.materials.constitutive_laws._whitneyblock import (
+from structuralcodes.materials.constitutive_laws._whitneyblock import (  # noqa: E402
     WhitneyBlock,
 )
 
@@ -107,7 +107,7 @@ class TestMarin:
 
     def test_uniform_strain_in_active_zone(self, wb):
         """Uniform strain in active zone returns fc coefficient."""
-        strains, coeff = wb.__marin__([-.002, 0])
+        strains, coeff = wb.__marin__([-0.002, 0])
         assert strains is None
         assert len(coeff) == 1
         assert math.isclose(coeff[0][0], -23.44, rel_tol=1e-10)
@@ -172,7 +172,7 @@ class TestConstructor:
         assert wb.name == 'MyBlock'
 
     def test_fc_stored_negative(self):
-        """fc is stored as negative (compression)."""
+        """Fc is stored as negative (compression)."""
         wb = WhitneyBlock(fc=23.44, beta1=0.85)
         assert wb._fc < 0
         assert math.isclose(wb._fc, -23.44, rel_tol=1e-10)

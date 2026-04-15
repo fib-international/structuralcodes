@@ -29,7 +29,7 @@ class TestFyDesign:
         assert math.isclose(rmp.fy_design(420.0, phi=0.9), 378.0, rel_tol=1e-9)
 
     def test_invalid_fy_zero(self):
-        """fy = 0 should raise ValueError."""
+        """Fy = 0 should raise ValueError."""
         with pytest.raises(ValueError):
             rmp.fy_design(0.0)
 
@@ -39,12 +39,12 @@ class TestFyDesign:
             rmp.fy_design(-420.0)
 
     def test_invalid_phi_zero(self):
-        """phi = 0 should raise ValueError (must be > 0)."""
+        """Phi = 0 should raise ValueError (must be > 0)."""
         with pytest.raises(ValueError):
             rmp.fy_design(420.0, phi=0.0)
 
     def test_invalid_phi_above_one(self):
-        """phi > 1 should raise ValueError."""
+        """Phi > 1 should raise ValueError."""
         with pytest.raises(ValueError):
             rmp.fy_design(420.0, phi=1.1)
 
@@ -65,7 +65,7 @@ class TestEpsyd:
         assert math.isclose(rmp.epsyd(fy), expected, rel_tol=1e-9)
 
     def test_invalid_fy_zero(self):
-        """fy = 0 should raise ValueError."""
+        """Fy = 0 should raise ValueError."""
         with pytest.raises(ValueError):
             rmp.epsyd(0.0)
 

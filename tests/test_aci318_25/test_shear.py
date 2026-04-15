@@ -2,17 +2,15 @@
 
 import math
 
-import pytest
-
 from structuralcodes.codes.aci318_25 import _shear as sh
 
 # ---------------------------------------------------------------------------
 # Shared test constants
 # ---------------------------------------------------------------------------
-FC = 27.58      # MPa  (4 000 psi)
-BW = 305.0      # mm   (12 in)
-D = 227.0       # mm   (~8.94 in)
-RHO_W = 0.009   # longitudinal reinforcement ratio
+FC = 27.58  # MPa  (4 000 psi)
+BW = 305.0  # mm   (12 in)
+D = 227.0  # mm   (~8.94 in)
+RHO_W = 0.009  # longitudinal reinforcement ratio
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +24,7 @@ class TestLambdaS:
     def test_shallow_depth_capped_at_one(self):
         """d=227 mm is shallow enough that lambda_s should be capped at 1.0."""
         result = sh.lambda_s(D)
-        # d_in = 227/25.4 = 8.937 in  -> 2/(1+8.937/10) = 2/1.8937 = 1.056 -> capped at 1.0
+        # d_in = 227/25.4 = 8.937 in -> 2/(1+8.937/10) = 1.056 -> capped 1.0
         assert math.isclose(result, 1.0, rel_tol=1e-9)
 
     def test_deep_member(self):
@@ -76,8 +74,12 @@ class TestVcDetailed:
 
     def test_with_min_reinforcement_exceeds_without(self):
         """Providing minimum reinforcement gives Vc >= version without."""
-        Vc_no_rein = sh.Vc_detailed(FC, BW, D, RHO_W, Av_provided=0, Av_min=100)
-        Vc_with_rein = sh.Vc_detailed(FC, BW, D, RHO_W, Av_provided=200, Av_min=100)
+        Vc_no_rein = sh.Vc_detailed(
+            FC, BW, D, RHO_W, Av_provided=0, Av_min=100
+        )
+        Vc_with_rein = sh.Vc_detailed(
+            FC, BW, D, RHO_W, Av_provided=200, Av_min=100
+        )
         assert Vc_with_rein >= Vc_no_rein
 
     def test_vc_not_negative_with_large_tension(self):
@@ -91,7 +93,9 @@ class TestVcDetailed:
         """Vc must not exceed 5*lambda*sqrt(fc)*bw*d."""
         sqrt_fc = min(math.sqrt(FC), 8.3)
         cap = 5.0 * 1.0 * sqrt_fc * BW * D
-        result = sh.Vc_detailed(FC, BW, D, rho_w=1.0)  # extreme rho_w to try to exceed cap
+        result = sh.Vc_detailed(
+            FC, BW, D, rho_w=1.0
+        )  # extreme rho_w to try to exceed cap
         assert result <= cap + 1e-6
 
     def test_compressive_axial_increases_vc(self):
@@ -304,7 +308,7 @@ class TestMaxStirrupSpacing:
         assert math.isclose(result, 300.0, rel_tol=1e-9)
 
     def test_at_threshold_uses_lower_limit(self):
-        """Vs exactly at threshold uses the less-restrictive limit (d/2, 600)."""
+        """Vs at threshold uses the less-restrictive limit (d/2, 600)."""
         threshold = 4.0 * math.sqrt(FC) * BW * D
         result = sh.max_stirrup_spacing(D, threshold, FC, BW)
         assert math.isclose(result, D / 2.0, rel_tol=1e-9)
