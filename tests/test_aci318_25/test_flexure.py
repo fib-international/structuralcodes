@@ -262,7 +262,7 @@ class TestAsRequired:
 
     def test_negative_discriminant_raises(self):
         """Very large Mu relative to section capacity raises ValueError."""
-        with pytest.raises(ValueError, match='discriminant'):
+        with pytest.raises(ValueError, match='(?i)discriminant'):
             fl.As_required(1.0e15, 0.9, FY, FC, B, D)
 
     def test_phi_unity_gives_minimum_as(self):
