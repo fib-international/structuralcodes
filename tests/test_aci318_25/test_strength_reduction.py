@@ -46,7 +46,7 @@ class TestPhiFlexure:
         )
 
     def test_compression_controlled_other(self):
-        """eps_t = eps_ty with other transverse → compression-controlled 0.65."""
+        """eps_t = eps_ty with other transverse → compression-controlled."""
         eps_ty = 420.0 / 200000.0
         assert math.isclose(
             sr.phi_flexure(eps_ty, 420.0, transverse='other'),
@@ -55,7 +55,7 @@ class TestPhiFlexure:
         )
 
     def test_compression_controlled_spiral(self):
-        """eps_t = eps_ty with spiral transverse → compression-controlled 0.75."""
+        """eps_t = eps_ty with spiral transverse → compression-controlled."""
         eps_ty = 420.0 / 200000.0
         assert math.isclose(
             sr.phi_flexure(eps_ty, 420.0, transverse='spiral'),
@@ -88,7 +88,7 @@ class TestPhiFlexure:
         assert math.isclose(sr.phi_flexure(0.010, 550.0), 0.90, rel_tol=1e-9)
 
     def test_gr80_compression_controlled(self):
-        """Grade 80 (fy=550) at eps_ty with other → compression-controlled 0.65."""
+        """Grade 80 (fy=550) at eps_ty with other → compression-controlled."""
         eps_ty = 550.0 / 200000.0
         assert math.isclose(
             sr.phi_flexure(eps_ty, 550.0, transverse='other'),
@@ -97,7 +97,7 @@ class TestPhiFlexure:
         )
 
     def test_invalid_fy(self):
-        """fy <= 0 should raise ValueError."""
+        """Fy <= 0 should raise ValueError."""
         with pytest.raises(ValueError):
             sr.phi_flexure(0.005, 0.0)
 
@@ -113,20 +113,25 @@ class TestSectionClassification:
     def test_tension_controlled(self):
         """eps_t well above eps_ty + 0.003 → tension-controlled."""
         eps_ty = 420.0 / 200000.0
-        assert sr.section_classification(eps_ty + 0.005, 420.0) == 'tension-controlled'
+        assert (
+            sr.section_classification(eps_ty + 0.005, 420.0)
+            == 'tension-controlled'
+        )
 
     def test_tension_controlled_at_limit(self):
         """eps_t = eps_ty + 0.003 → tension-controlled (boundary inclusive)."""
         eps_ty = 420.0 / 200000.0
         assert (
-            sr.section_classification(eps_ty + 0.003, 420.0) == 'tension-controlled'
+            sr.section_classification(eps_ty + 0.003, 420.0)
+            == 'tension-controlled'
         )
 
     def test_compression_controlled(self):
         """eps_t = eps_ty → compression-controlled (boundary inclusive)."""
         eps_ty = 420.0 / 200000.0
         assert (
-            sr.section_classification(eps_ty, 420.0) == 'compression-controlled'
+            sr.section_classification(eps_ty, 420.0)
+            == 'compression-controlled'
         )
 
     def test_compression_controlled_below(self):
@@ -140,9 +145,11 @@ class TestSectionClassification:
     def test_transition(self):
         """eps_t between eps_ty and eps_ty + 0.003 → transition."""
         eps_ty = 420.0 / 200000.0
-        assert sr.section_classification(eps_ty + 0.0015, 420.0) == 'transition'
+        assert (
+            sr.section_classification(eps_ty + 0.0015, 420.0) == 'transition'
+        )
 
     def test_invalid_fy(self):
-        """fy <= 0 should raise ValueError."""
+        """Fy <= 0 should raise ValueError."""
         with pytest.raises(ValueError):
             sr.section_classification(0.005, 0.0)

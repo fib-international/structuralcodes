@@ -2,7 +2,6 @@
 
 import math
 
-
 # ---------------------------------------------------------------------------
 # Size-effect factor
 # ---------------------------------------------------------------------------
@@ -48,7 +47,8 @@ def Vc_detailed(
     - **With** minimum reinforcement (``Av_provided >= Av_min``):
       ``Vc = (8*lambda*(rho_w)^(1/3)*sqrt_fc + axial_term) * bw * d``
     - **Without** minimum reinforcement (``Av_provided < Av_min``):
-      ``Vc = (8*lambda_s(d)*lambda*(rho_w)^(1/3)*sqrt_fc + axial_term) * bw * d``
+      ``Vc = (8*lambda_s(d)*lambda*(rho_w)^(1/3)*sqrt_fc``
+      ``+ axial_term) * bw * d``
 
     Limits applied (Sec. 22.5.5.1.1):
 
@@ -84,10 +84,7 @@ def Vc_detailed(
     sqrt_fc = min(math.sqrt(fc), 8.3)
 
     # Axial-load term (Sec. 22.5.3.2)
-    if Ag > 0.0:
-        axial_term = min(Nu / (6.0 * Ag), 0.05 * fc)
-    else:
-        axial_term = 0.0
+    axial_term = min(Nu / (6.0 * Ag), 0.05 * fc) if Ag > 0.0 else 0.0
 
     # Reinforcement-ratio term
     rho_term = rho_w ** (1.0 / 3.0)
@@ -143,10 +140,7 @@ def Vc_simplified(
     """
     sqrt_fc = math.sqrt(fc)
 
-    if Ag > 0.0:
-        axial_term = min(Nu / (6.0 * Ag), 0.05 * fc)
-    else:
-        axial_term = 0.0
+    axial_term = min(Nu / (6.0 * Ag), 0.05 * fc) if Ag > 0.0 else 0.0
 
     return (2.0 * lambda_concrete * sqrt_fc + axial_term) * bw * d
 
@@ -294,5 +288,4 @@ def max_stirrup_spacing(
     threshold = 4.0 * math.sqrt(fc) * bw * d
     if Vs <= threshold:
         return min(d / 2.0, 600.0)
-    else:
-        return min(d / 4.0, 300.0)
+    return min(d / 4.0, 300.0)

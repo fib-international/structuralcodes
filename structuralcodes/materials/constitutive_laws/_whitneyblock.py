@@ -22,7 +22,8 @@ class WhitneyBlock(ConstitutiveLaw):
     the actual nonlinear concrete stress distribution at nominal strength.
     The specific parameters (stress intensity, depth factor, ultimate strain)
     are code-dependent and are supplied by the material class via the
-    constitutive law factory pattern (e.g., ConcreteACI318_25.__whitneyblock__()).
+    constitutive law factory pattern
+    (e.g., ConcreteACI318_25.__whitneyblock__()).
 
     For integration purposes, this is modeled as a piecewise-constant
     stress-strain function. In a linear strain profile with eps_cu at the
@@ -106,7 +107,7 @@ class WhitneyBlock(ConstitutiveLaw):
         return np.zeros_like(eps, dtype=float)
 
     def get_ultimate_strain(
-        self, yielding: bool = False
+        self, yielding: bool = False  # noqa: ARG002
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         return (self._eps_cu, 0.0)
