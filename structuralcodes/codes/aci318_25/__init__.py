@@ -48,6 +48,13 @@ from ._shear import (
     max_stirrup_spacing,
     shear_reinforcement_required,
 )
+from ._one_way_slab import (
+    As_shrinkage_temperature,
+    max_bar_spacing_flexure,
+    max_bar_spacing_shrinkage,
+    min_thickness,
+    shear_critical_section_offset,
+)
 from ._units import (
     FT_TO_MM,
     IN_TO_MM,
@@ -104,6 +111,11 @@ __all__ = [
     'Av_min_per_s',
     'shear_reinforcement_required',
     'max_stirrup_spacing',
+    'min_thickness',
+    'As_shrinkage_temperature',
+    'max_bar_spacing_flexure',
+    'max_bar_spacing_shrinkage',
+    'shear_critical_section_offset',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',
