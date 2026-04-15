@@ -11,12 +11,6 @@ from ._concrete_material_properties import (
     fr,
     lambda_factor,
 )
-from ._reinforcement_material_properties import (
-    Es,
-    epsyd,
-    fy_design,
-    reinforcement_grade_props,
-)
 from ._flexure import (
     As_max_check,
     As_min_beam,
@@ -30,12 +24,18 @@ from ._flexure import (
     stress_block_depth_dr,
     stress_block_depth_sr,
 )
-from ._strength_reduction import (
-    phi_bearing,
-    phi_flexure,
-    phi_shear,
-    phi_torsion,
-    section_classification,
+from ._one_way_slab import (
+    As_shrinkage_temperature,
+    max_bar_spacing_flexure,
+    max_bar_spacing_shrinkage,
+    min_thickness,
+    shear_critical_section_offset,
+)
+from ._reinforcement_material_properties import (
+    Es,
+    epsyd,
+    fy_design,
+    reinforcement_grade_props,
 )
 from ._shear import (
     Av_min_per_s,
@@ -48,12 +48,12 @@ from ._shear import (
     max_stirrup_spacing,
     shear_reinforcement_required,
 )
-from ._one_way_slab import (
-    As_shrinkage_temperature,
-    max_bar_spacing_flexure,
-    max_bar_spacing_shrinkage,
-    min_thickness,
-    shear_critical_section_offset,
+from ._strength_reduction import (
+    phi_bearing,
+    phi_flexure,
+    phi_shear,
+    phi_torsion,
+    section_classification,
 )
 from ._units import (
     FT_TO_MM,

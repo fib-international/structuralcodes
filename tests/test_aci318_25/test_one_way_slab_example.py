@@ -16,8 +16,14 @@ from structuralcodes.geometry import (
     PointGeometry,
     SurfaceGeometry,
 )
-from structuralcodes.materials.concrete._concreteACI318_25 import ConcreteACI318_25
-from structuralcodes.materials.reinforcement._reinforcementACI318_25 import ReinforcementACI318_25
+from structuralcodes.materials.concrete import create_concrete
+from structuralcodes.materials.concrete._concreteACI318_25 import (
+    ConcreteACI318_25,
+)
+from structuralcodes.materials.reinforcement import create_reinforcement
+from structuralcodes.materials.reinforcement._reinforcementACI318_25 import (
+    ReinforcementACI318_25,
+)
 from structuralcodes.sections import BeamSection
 
 FC = 27.58
@@ -32,13 +38,17 @@ def _reset_design_code():
     structuralcodes.set_design_code(None)
 
 
-class TestPathA_ClosedForm:
+class TestPathAClosedForm:
+    """Path A: closed-form ACI equations."""
+
     def test_min_thickness(self):
+        """Minimum slab thickness per ACI 318-25 Table 7.3.1.1."""
         h = aci318_25.min_thickness(SPAN, 'one_end_continuous')
         assert math.isclose(h, SPAN / 24, rel_tol=1e-6)
         assert h > 200
 
     def test_flexure_design(self):
+        """Flexure design gives phi*Mn >= Mu (tension-controlled section)."""
         h = 254.0  # 10 in.
         d = h - 19 - 16 / 2  # 227 mm
 
@@ -58,6 +68,7 @@ class TestPathA_ClosedForm:
         assert phi * Mn >= Mu
 
     def test_shear_check(self):
+        """Shear check confirms no stirrups required for the given Vu."""
         d = 227.0
         rho_w = 0.009
 
@@ -68,11 +79,19 @@ class TestPathA_ClosedForm:
         assert not aci318_25.shear_reinforcement_required(Vu, phi_Vc)
 
 
-class TestPathB_SectionIntegrator:
+class TestPathBSectionIntegrator:
+    """Path B: section integrator with ACI materials."""
+
     def test_section_analysis(self):
-        concrete = ConcreteACI318_25(fck=FC, constitutive_law='parabolarectangle')
+        """Section integrator returns positive gross area for valid section."""
+        concrete = ConcreteACI318_25(
+            fck=FC, constitutive_law='parabolarectangle'
+        )
         steel = ReinforcementACI318_25(
-            fyk=FY, Es=200000, ftk=550, epsuk=0.05,
+            fyk=FY,
+            Es=200000,
+            ftk=550,
+            epsuk=0.05,
             constitutive_law='elasticperfectlyplastic',
         )
 
@@ -87,9 +106,7 @@ class TestPathB_SectionIntegrator:
         assert props.area > 0
 
     def test_factory_round_trip(self):
-        from structuralcodes.materials.concrete import create_concrete
-        from structuralcodes.materials.reinforcement import create_reinforcement
-
+        """Factory functions return ACI 318-25 types under the ACI code."""
         structuralcodes.set_design_code('aci318_25')
         c = create_concrete(fck=FC)
         assert isinstance(c, ConcreteACI318_25)
@@ -99,6 +116,8 @@ class TestPathB_SectionIntegrator:
 
 
 class TestCrossCheck:
+    """Cross-check between paths."""
+
     def test_mn_agreement(self):
         """Closed-form Mn and integrator Mn should agree within 5%."""
         As = 400.0  # mm2
@@ -109,9 +128,14 @@ class TestCrossCheck:
         Mn_closed = aci318_25.Mn_singly_reinforced(As, FY, FC, B, d)
 
         # Path B
-        concrete = ConcreteACI318_25(fck=FC, constitutive_law='parabolarectangle')
+        concrete = ConcreteACI318_25(
+            fck=FC, constitutive_law='parabolarectangle'
+        )
         steel = ReinforcementACI318_25(
-            fyk=FY, Es=200000, ftk=550, epsuk=0.05,
+            fyk=FY,
+            Es=200000,
+            ftk=550,
+            epsuk=0.05,
             constitutive_law='elasticperfectlyplastic',
         )
 
@@ -124,10 +148,16 @@ class TestCrossCheck:
         section = BeamSection(section_geo, integrator='marin')
         calc = section.section_calculator
         strain = calc.find_equilibrium_fixed_pivot(
-            geom=section.geometry, n=0, yielding=True,
+            geom=section.geometry,
+            n=0,
+            yielding=True,
         )
-        N, My, Mz, data = calc.integrator.integrate_strain_response_on_geometry(
-            geo=section.geometry, strain=strain, integrate='stress',
+        N, My, Mz, data = (
+            calc.integrator.integrate_strain_response_on_geometry(
+                geo=section.geometry,
+                strain=strain,
+                integrate='stress',
+            )
         )
         Mn_integrator = abs(My)
 

@@ -4,7 +4,9 @@ import math
 
 import pytest
 
-from structuralcodes.codes.aci318_25 import _concrete_material_properties as cmp
+from structuralcodes.codes.aci318_25 import (
+    _concrete_material_properties as cmp,
+)
 
 
 class TestEc:
@@ -18,7 +20,7 @@ class TestEc:
         assert math.isclose(cmp.Ec(fc, wc), expected, rel_tol=1e-6)
 
     def test_normalweight_28mpa(self):
-        """fc = 28 MPa, default wc."""
+        """Fc = 28 MPa, default wc."""
         expected = (2320.0**1.5) * 0.043 * math.sqrt(28.0)
         assert math.isclose(cmp.Ec(28.0), expected, rel_tol=1e-6)
 
@@ -30,7 +32,7 @@ class TestEc:
         assert math.isclose(cmp.Ec(fc, wc), expected, rel_tol=1e-6)
 
     def test_invalid_fc_zero(self):
-        """fc = 0 should raise ValueError."""
+        """Fc = 0 should raise ValueError."""
         with pytest.raises(ValueError):
             cmp.Ec(0.0)
 
@@ -40,12 +42,12 @@ class TestEc:
             cmp.Ec(-10.0)
 
     def test_invalid_wc_too_low(self):
-        """wc below 1440 should raise ValueError."""
+        """Wc below 1440 should raise ValueError."""
         with pytest.raises(ValueError):
             cmp.Ec(28.0, wc=1400.0)
 
     def test_invalid_wc_too_high(self):
-        """wc above 2560 should raise ValueError."""
+        """Wc above 2560 should raise ValueError."""
         with pytest.raises(ValueError):
             cmp.Ec(28.0, wc=2600.0)
 
@@ -64,10 +66,12 @@ class TestFr:
         fc = 28.0
         lambda_s = 0.75
         expected = 0.62 * lambda_s * math.sqrt(fc)
-        assert math.isclose(cmp.fr(fc, lambda_s=lambda_s), expected, rel_tol=1e-6)
+        assert math.isclose(
+            cmp.fr(fc, lambda_s=lambda_s), expected, rel_tol=1e-6
+        )
 
     def test_invalid_fc(self):
-        """fc <= 0 should raise ValueError."""
+        """Fc <= 0 should raise ValueError."""
         with pytest.raises(ValueError):
             cmp.fr(0.0)
 
@@ -100,7 +104,7 @@ class TestBeta1:
         assert math.isclose(cmp.beta1(fc), expected, rel_tol=1e-6)
 
     def test_invalid_fc(self):
-        """fc <= 0 should raise ValueError."""
+        """Fc <= 0 should raise ValueError."""
         with pytest.raises(ValueError):
             cmp.beta1(0.0)
 
@@ -131,13 +135,16 @@ class TestFct:
         assert math.isclose(cmp.fct(fc), expected, rel_tol=1e-6)
 
     def test_invalid_fc(self):
-        """fc <= 0 should raise ValueError."""
+        """Fc <= 0 should raise ValueError."""
         with pytest.raises(ValueError):
             cmp.fct(0.0)
 
 
 class TestLambdaFactor:
-    """Tests for the lightweight concrete factor lambda_factor (Table 19.2.4.2)."""
+    """Tests for the lightweight concrete factor lambda_factor.
+
+    Reference: Table 19.2.4.2.
+    """
 
     @pytest.mark.parametrize(
         'concrete_type, expected',
@@ -149,7 +156,9 @@ class TestLambdaFactor:
     )
     def test_lambda_factor_parametric(self, concrete_type, expected):
         """Test lambda_factor for all defined concrete types."""
-        assert math.isclose(cmp.lambda_factor(concrete_type), expected, rel_tol=1e-9)
+        assert math.isclose(
+            cmp.lambda_factor(concrete_type), expected, rel_tol=1e-9
+        )
 
     def test_invalid_type(self):
         """Unknown concrete type should raise ValueError."""

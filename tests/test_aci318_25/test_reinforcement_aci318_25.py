@@ -8,12 +8,12 @@ import pytest
 # Mock triangle module to avoid optional dependency issues
 sys.modules['triangle'] = type(sys)('triangle')
 
-from structuralcodes.codes import set_design_code
-from structuralcodes.materials.constitutive_laws import (
+from structuralcodes.codes import set_design_code  # noqa: E402
+from structuralcodes.materials.constitutive_laws import (  # noqa: E402
     Elastic,
     ElasticPlastic,
 )
-from structuralcodes.materials.reinforcement import (
+from structuralcodes.materials.reinforcement import (  # noqa: E402
     ReinforcementACI318_25,
     create_reinforcement,
 )
@@ -169,7 +169,10 @@ class TestFactory:
     def test_create_via_factory(self):
         """Test creating reinforcement via factory with design_code string."""
         r = create_reinforcement(
-            fyk=420, Es=200000, ftk=550, epsuk=0.05,
+            fyk=420,
+            Es=200000,
+            ftk=550,
+            epsuk=0.05,
             design_code='aci318_25',
         )
         assert isinstance(r, ReinforcementACI318_25)
