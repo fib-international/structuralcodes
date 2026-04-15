@@ -1,15 +1,11 @@
 """Tests for WhitneyBlock constitutive law."""
 
 import math
-import sys
 
 import numpy as np
 import pytest
 
-# Mock triangle module before importing structuralcodes
-sys.modules['triangle'] = type(sys)('triangle')
-
-from structuralcodes.materials.constitutive_laws._whitneyblock import (  # noqa: E402
+from structuralcodes.materials.constitutive_laws._whitneyblock import (
     WhitneyBlock,
 )
 
