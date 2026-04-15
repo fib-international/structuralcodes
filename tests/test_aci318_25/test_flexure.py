@@ -9,12 +9,12 @@ from structuralcodes.codes.aci318_25 import _flexure as fl
 # ---------------------------------------------------------------------------
 # Shared test constants
 # ---------------------------------------------------------------------------
-FC = 27.58      # MPa  (4000 psi)
-FY = 420.0      # MPa  (~60 ksi)
-B = 305.0       # mm   (12 in)
-D = 227.0       # mm   (8.94 in)
-H = 254.0       # mm   (10 in)
-BETA1 = 0.85    # stress-block factor for fc = 4000 psi
+FC = 27.58  # MPa  (4000 psi)
+FY = 420.0  # MPa  (~60 ksi)
+B = 305.0  # mm   (12 in)
+D = 227.0  # mm   (8.94 in)
+H = 254.0  # mm   (10 in)
+BETA1 = 0.85  # stress-block factor for fc = 4000 psi
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ class TestStressBlockDepthDR:
         assert math.isclose(result, expected, rel_tol=1e-9)
 
     def test_equals_sr_when_no_compression_steel(self):
-        """With As'=0 the doubly-reinforced result equals the singly-reinforced."""
+        """With As'=0 the DR result equals the SR result."""
         As = 645.0
         dr = fl.stress_block_depth_dr(As, 0.0, FY, FY, FC, B)
         sr = fl.stress_block_depth_sr(As, FY, FC, B)
@@ -59,11 +59,13 @@ class TestNeutralAxisDepth:
     """Tests for neutral_axis_depth."""
 
     def test_known_value(self):
-        """c = a / beta1 for a=37.9, beta1=0.85."""
+        """C = a / beta1 for a=37.9, beta1=0.85."""
         a = 37.9
         beta1 = 0.85
         expected = a / beta1
-        assert math.isclose(fl.neutral_axis_depth(a, beta1), expected, rel_tol=1e-9)
+        assert math.isclose(
+            fl.neutral_axis_depth(a, beta1), expected, rel_tol=1e-9
+        )
 
     def test_value_exceeds_a(self):
         """Neutral-axis depth must be >= a (since beta1 <= 1)."""
@@ -96,7 +98,7 @@ class TestEpsSPrime:
         assert math.isclose(fl.eps_s_prime(c, d_prime), 0.0015, rel_tol=1e-9)
 
     def test_zero_when_d_prime_equals_c(self):
-        """When d' == c the compression steel sits at the neutral axis → 0."""
+        """When d' == c, compression steel is at the neutral axis → 0."""
         assert math.isclose(fl.eps_s_prime(80.0, 80.0), 0.0, abs_tol=1e-12)
 
 
@@ -128,12 +130,16 @@ class TestMnDoublyReinforced:
         """Verify formula for As=800, As'=200, d'=40."""
         As, As_prime, d_prime = 800.0, 200.0, 40.0
         a = fl.stress_block_depth_dr(As, As_prime, FY, FY, FC, B)
-        expected = (As * FY - As_prime * FY) * (D - a / 2.0) + As_prime * FY * (D - d_prime)
-        result = fl.Mn_doubly_reinforced(As, As_prime, FY, FY, FC, B, D, d_prime)
+        expected = (As * FY - As_prime * FY) * (
+            D - a / 2.0
+        ) + As_prime * FY * (D - d_prime)
+        result = fl.Mn_doubly_reinforced(
+            As, As_prime, FY, FY, FC, B, D, d_prime
+        )
         assert math.isclose(result, expected, rel_tol=1e-9)
 
     def test_exceeds_singly_reinforced(self):
-        """Adding compression steel increases Mn compared to tension steel only."""
+        """Adding compression steel increases Mn vs tension steel only."""
         Mn_sr = fl.Mn_singly_reinforced(800.0, FY, FC, B, D)
         Mn_dr = fl.Mn_doubly_reinforced(800.0, 200.0, FY, FY, FC, B, D, 40.0)
         assert Mn_dr > Mn_sr
@@ -149,8 +155,8 @@ class TestAsMinSlab:
 
     def test_grade60_ratio_0018(self):
         """Grade 60 (fy=420 MPa ~ 60 900 psi) -> ratio = 0.0018."""
-        # 420 MPa * 145.038 psi/MPa = 60 916 psi > 60 000 -> 0.0018 * 60000/60916
-        # but let's use exactly 413.7 MPa = 60 000 psi boundary for clarity;
+        # 420 MPa * 145.038 psi/MPa = 60 916 psi > 60 000 ->
+        # 0.0018 * 60000/60916; use exactly 413.7 MPa = 60 000 psi boundary;
         # 420 MPa sits > 60 000 psi, so use 413 MPa for grade-60 test.
         fy_60ksi = 413.685  # MPa corresponding to exactly 60 000 psi
         result = fl.As_min_slab(fy_60ksi, B, H)
@@ -165,7 +171,7 @@ class TestAsMinSlab:
         assert math.isclose(result, expected, rel_tol=1e-6)
 
     def test_grade80_lower_ratio(self):
-        """Grade 80 (fy=552 MPa, ~80 000 psi) -> ratio = max(0.0014, 0.0018*60000/fy_psi)."""
+        """Grade 80 -> ratio = max(0.0014, 0.0018*60000/fy_psi)."""
         fy_80ksi = 551.58  # MPa (80 000 psi)
         fy_psi = fy_80ksi * 145.038
         expected_ratio = max(0.0014, 0.0018 * 60000.0 / fy_psi)
@@ -255,7 +261,7 @@ class TestAsRequired:
         assert As > 0.0
 
     def test_negative_discriminant_raises(self):
-        """An extremely large Mu relative to section capacity must raise ValueError."""
+        """Very large Mu relative to section capacity raises ValueError."""
         with pytest.raises(ValueError, match='discriminant'):
             fl.As_required(1.0e15, 0.9, FY, FC, B, D)
 

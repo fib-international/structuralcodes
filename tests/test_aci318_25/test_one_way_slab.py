@@ -9,12 +9,12 @@ from structuralcodes.codes.aci318_25 import _one_way_slab as ows
 # ---------------------------------------------------------------------------
 # Shared test constants
 # ---------------------------------------------------------------------------
-SPAN = 6096.0   # mm  (20 ft)
-B = 305.0       # mm  (12 in)
-H = 254.0       # mm  (10 in)
+SPAN = 6096.0  # mm  (20 ft)
+B = 305.0  # mm  (12 in)
+H = 254.0  # mm  (10 in)
 FY_GR60 = 420.0  # MPa (~60 ksi)
 FY_GR80 = 552.0  # MPa (~80 ksi)
-D = 227.0       # mm
+D = 227.0  # mm
 
 
 # ---------------------------------------------------------------------------
@@ -26,25 +26,25 @@ class TestMinThickness:
     """Tests for min_thickness (Table 7.3.1.1)."""
 
     def test_simply_supported_gr60(self):
-        """h = span/20 for simply-supported slab with Gr 60 rebar."""
+        """H = span/20 for simply-supported slab with Gr 60 rebar."""
         result = ows.min_thickness(SPAN, 'simply_supported', fy=FY_GR60)
         expected = SPAN / 20
         assert math.isclose(result, expected, rel_tol=1e-9)
 
     def test_one_end_continuous(self):
-        """h = span/24 for one-end-continuous slab with Gr 60 rebar."""
+        """H = span/24 for one-end-continuous slab with Gr 60 rebar."""
         result = ows.min_thickness(SPAN, 'one_end_continuous', fy=FY_GR60)
         expected = SPAN / 24
         assert math.isclose(result, expected, rel_tol=1e-9)
 
     def test_both_ends_continuous(self):
-        """h = span/28 for both-ends-continuous slab with Gr 60 rebar."""
+        """H = span/28 for both-ends-continuous slab with Gr 60 rebar."""
         result = ows.min_thickness(SPAN, 'both_ends_continuous', fy=FY_GR60)
         expected = SPAN / 28
         assert math.isclose(result, expected, rel_tol=1e-9)
 
     def test_cantilever(self):
-        """h = span/10 for cantilever slab with Gr 60 rebar."""
+        """H = span/10 for cantilever slab with Gr 60 rebar."""
         result = ows.min_thickness(SPAN, 'cantilever', fy=FY_GR60)
         expected = SPAN / 10
         assert math.isclose(result, expected, rel_tol=1e-9)
@@ -60,7 +60,7 @@ class TestMinThickness:
 
     def test_invalid_support_condition(self):
         """ValueError raised for an unknown support condition."""
-        with pytest.raises(ValueError, match="Unknown support condition"):
+        with pytest.raises(ValueError, match='Unknown support condition'):
             ows.min_thickness(SPAN, 'fixed_fixed')
 
 
@@ -95,11 +95,15 @@ class TestMaxBarSpacingFlexure:
 
     def test_h150_governed_by_limit(self):
         """h=150 mm: 3*150=450 == 450, so result is 450."""
-        assert math.isclose(ows.max_bar_spacing_flexure(150.0), 450.0, rel_tol=1e-9)
+        assert math.isclose(
+            ows.max_bar_spacing_flexure(150.0), 450.0, rel_tol=1e-9
+        )
 
     def test_h200_governed_by_limit(self):
         """h=200 mm: 3*200=600 > 450, so result is capped at 450."""
-        assert math.isclose(ows.max_bar_spacing_flexure(200.0), 450.0, rel_tol=1e-9)
+        assert math.isclose(
+            ows.max_bar_spacing_flexure(200.0), 450.0, rel_tol=1e-9
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -112,11 +116,15 @@ class TestMaxBarSpacingShrinkage:
 
     def test_h100_governed_by_limit(self):
         """h=100 mm: 5*100=500 > 450, so result is capped at 450."""
-        assert math.isclose(ows.max_bar_spacing_shrinkage(100.0), 450.0, rel_tol=1e-9)
+        assert math.isclose(
+            ows.max_bar_spacing_shrinkage(100.0), 450.0, rel_tol=1e-9
+        )
 
     def test_h80_governed_by_3h(self):
         """h=80 mm: 5*80=400 < 450, so result is 400."""
-        assert math.isclose(ows.max_bar_spacing_shrinkage(80.0), 400.0, rel_tol=1e-9)
+        assert math.isclose(
+            ows.max_bar_spacing_shrinkage(80.0), 400.0, rel_tol=1e-9
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -129,4 +137,6 @@ class TestShearCriticalSectionOffset:
 
     def test_returns_d(self):
         """Critical section offset equals the effective depth d."""
-        assert math.isclose(ows.shear_critical_section_offset(D), D, rel_tol=1e-9)
+        assert math.isclose(
+            ows.shear_critical_section_offset(D), D, rel_tol=1e-9
+        )

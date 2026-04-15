@@ -55,9 +55,7 @@ def fr(fc: float, lambda_s: float = 1.0) -> float:
     if fc <= 0:
         raise ValueError(f'fc must be positive, got {fc}')
     if not (0 < lambda_s <= 1.0):
-        raise ValueError(
-            f'lambda_s must be in (0, 1], got {lambda_s}'
-        )
+        raise ValueError(f'lambda_s must be in (0, 1], got {lambda_s}')
     return 0.62 * lambda_s * math.sqrt(fc)
 
 

@@ -74,6 +74,7 @@ class ReinforcementACI318_25(Reinforcement):  # noqa: N801
             ValueError: If the provided constitutive law is not valid for
                 reinforcement.
         """
+        del kwargs
         if name is None:
             name = f'Reinforcement{round(fyk):d}'
 

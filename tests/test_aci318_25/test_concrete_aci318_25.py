@@ -117,10 +117,9 @@ class TestConstitutiveLaws:
 
     def test_parabolarectangle(self):
         """Test parabolarectangle constitutive law with correct ultimate
-        strain."""
-        c = ConcreteACI318_25(
-            fck=FCK, constitutive_law='parabolarectangle'
-        )
+        strain.
+        """
+        c = ConcreteACI318_25(fck=FCK, constitutive_law='parabolarectangle')
         assert c._constitutive_law is not None
         # Check that the ultimate strain is 0.003
         assert math.isclose(
@@ -131,9 +130,7 @@ class TestConstitutiveLaws:
 
     def test_bilinearcompression(self):
         """Test bilinearcompression constitutive law."""
-        c = ConcreteACI318_25(
-            fck=FCK, constitutive_law='bilinearcompression'
-        )
+        c = ConcreteACI318_25(fck=FCK, constitutive_law='bilinearcompression')
         assert c._constitutive_law is not None
 
 
