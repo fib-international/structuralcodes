@@ -17,6 +17,13 @@ from ._reinforcement_material_properties import (
     fy_design,
     reinforcement_grade_props,
 )
+from ._strength_reduction import (
+    phi_bearing,
+    phi_flexure,
+    phi_shear,
+    phi_torsion,
+    section_classification,
+)
 from ._units import (
     FT_TO_MM,
     IN_TO_MM,
@@ -48,6 +55,11 @@ __all__ = [
     'epsyd',
     'fy_design',
     'reinforcement_grade_props',
+    'phi_bearing',
+    'phi_flexure',
+    'phi_shear',
+    'phi_torsion',
+    'section_classification',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',
