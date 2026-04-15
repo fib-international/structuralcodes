@@ -37,6 +37,17 @@ from ._strength_reduction import (
     phi_torsion,
     section_classification,
 )
+from ._shear import (
+    Av_min_per_s,
+    Vc_detailed,
+    Vc_simplified,
+    Vn,
+    Vs,
+    check_cross_section,
+    lambda_s,
+    max_stirrup_spacing,
+    shear_reinforcement_required,
+)
 from ._units import (
     FT_TO_MM,
     IN_TO_MM,
@@ -84,6 +95,15 @@ __all__ = [
     'As_min_beam',
     'As_max_check',
     'As_required',
+    'lambda_s',
+    'Vc_detailed',
+    'Vc_simplified',
+    'Vs',
+    'Vn',
+    'check_cross_section',
+    'Av_min_per_s',
+    'shear_reinforcement_required',
+    'max_stirrup_spacing',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',
