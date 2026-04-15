@@ -2,6 +2,15 @@
 
 import typing as t
 
+from ._concrete_material_properties import (
+    Ec,
+    alpha1,
+    beta1,
+    eps_cu,
+    fct,
+    fr,
+    lambda_factor,
+)
 from ._units import (
     FT_TO_MM,
     IN_TO_MM,
@@ -22,6 +31,13 @@ from ._units import (
 )
 
 __all__ = [
+    'Ec',
+    'alpha1',
+    'beta1',
+    'eps_cu',
+    'fct',
+    'fr',
+    'lambda_factor',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',
