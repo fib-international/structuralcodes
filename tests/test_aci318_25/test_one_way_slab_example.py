@@ -5,32 +5,26 @@ Design per 12 in. strip.
 """
 
 import math
-import sys
 
 import pytest
+from shapely.geometry import Polygon
 
-sys.modules['triangle'] = type(sys)('triangle')
-
-from shapely.geometry import Polygon  # noqa: E402
-
-import structuralcodes  # noqa: E402
-from structuralcodes.codes import aci318_25  # noqa: E402
-from structuralcodes.geometry import (  # noqa: E402
+import structuralcodes
+from structuralcodes.codes import aci318_25
+from structuralcodes.geometry import (
     CompoundGeometry,
     PointGeometry,
     SurfaceGeometry,
 )
-from structuralcodes.materials.concrete import create_concrete  # noqa: E402
-from structuralcodes.materials.concrete._concreteACI318_25 import (  # noqa: E402
+from structuralcodes.materials.concrete import create_concrete
+from structuralcodes.materials.concrete._concreteACI318_25 import (
     ConcreteACI318_25,
 )
-from structuralcodes.materials.reinforcement import (  # noqa: E402
-    create_reinforcement,
-)
-from structuralcodes.materials.reinforcement._reinforcementACI318_25 import (  # noqa: E402
+from structuralcodes.materials.reinforcement import create_reinforcement
+from structuralcodes.materials.reinforcement._reinforcementACI318_25 import (
     ReinforcementACI318_25,
 )
-from structuralcodes.sections import BeamSection  # noqa: E402
+from structuralcodes.sections import BeamSection
 
 FC = 27.58
 FY = 420.0

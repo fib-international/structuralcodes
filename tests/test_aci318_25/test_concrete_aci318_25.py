@@ -1,14 +1,11 @@
 """Tests for the ConcreteACI318_25 material class."""
 
 import math
-import sys
 
 import pytest
 
-sys.modules['triangle'] = type(sys)('triangle')
-
-from structuralcodes.codes import aci318_25, set_design_code  # noqa: E402
-from structuralcodes.materials.concrete import (  # noqa: E402
+from structuralcodes.codes import aci318_25, set_design_code
+from structuralcodes.materials.concrete import (
     ConcreteACI318_25,
     create_concrete,
 )

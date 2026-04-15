@@ -1,19 +1,15 @@
 """Tests for the ReinforcementACI318_25 material class."""
 
 import math
-import sys
 
 import pytest
 
-# Mock triangle module to avoid optional dependency issues
-sys.modules['triangle'] = type(sys)('triangle')
-
-from structuralcodes.codes import set_design_code  # noqa: E402
-from structuralcodes.materials.constitutive_laws import (  # noqa: E402
+from structuralcodes.codes import set_design_code
+from structuralcodes.materials.constitutive_laws import (
     Elastic,
     ElasticPlastic,
 )
-from structuralcodes.materials.reinforcement import (  # noqa: E402
+from structuralcodes.materials.reinforcement import (
     ReinforcementACI318_25,
     create_reinforcement,
 )
