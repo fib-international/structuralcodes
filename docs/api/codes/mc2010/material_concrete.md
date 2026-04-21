@@ -11,6 +11,10 @@
 ```
 
 ```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.fctd
+```
+
+```{eval-rst}
 .. autofunction:: structuralcodes.codes.mc2010.fctm
 ```
 
