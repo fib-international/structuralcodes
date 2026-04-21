@@ -229,6 +229,23 @@ def test_fcd(fck, alpha_cc, gamma_c, expected):
 
 
 @pytest.mark.parametrize(
+    'fctk, alpha_ct, gamma_c, expected',
+    [
+        (2.2, 0.85, 1.5, 1.2467),
+        (2.7, 0.85, 1.5, 1.53),
+        (3.5, 0.85, 1.5, 1.9833),
+    ],
+)
+def test_fctd(fctk, alpha_ct, gamma_c, expected):
+    """Test fctd function."""
+    assert math.isclose(
+        _concrete_material_properties.fctd(fctk, alpha_ct, gamma_c),
+        expected,
+        rel_tol=10e-5,
+    )
+
+
+@pytest.mark.parametrize(
     'fck, expected',
     [
         (12, -1.9e-3),

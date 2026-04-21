@@ -327,6 +327,28 @@ def test_fcd(fck, alpha_cc, expected):
     assert math.isclose(fcd, expected, rel_tol=10e-5)
 
 
+@pytest.mark.parametrize(
+    'fck, fctk, alpha_ct, gamma_c, expected',
+    [
+        (35, 2.2, 0.85, 1.5, 1.2467),
+        (45, 2.7, 0.85, 1.5, 1.53),
+        (90, 3.5, 0.85, 1.5, 1.9833),
+    ],
+)
+def test_fctd(fck, fctk, alpha_ct, gamma_c, expected):
+    """Test calculating the design tensile strength."""
+    # Arrange
+    concrete = ConcreteMC2010(
+        fck, fctkmin=fctk, alpha_ct=alpha_ct, gamma_c=gamma_c
+    )
+
+    # Act
+    fctd = concrete.fctd()
+
+    # Assert
+    assert math.isclose(fctd, expected, rel_tol=10e-5)
+
+
 @fck_parametrized
 def test_eps_c1_getter(fck):
     """Test eps_c1 getter."""
