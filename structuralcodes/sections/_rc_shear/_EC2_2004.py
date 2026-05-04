@@ -80,32 +80,34 @@ def shearcap_rectangular_section(
             When a reduced shear force may be considered for the calculations,
             the unreduced shear force has to comply yo this value.
     """
+    # Parameters from section geometry
     srf_geoms = section.geometry.geometries[0]
     concretebounds = srf_geoms.polygon.bounds
     h = concretebounds[3] - concretebounds[1]
     bw = concretebounds[2] - concretebounds[0]
-
+    # Assume tensile reinforcement is in the lower half of the section
     reinf_bars = []
     for bar in section.geometry.point_geometries:
         if abs(concretebounds[1] - bar.point.bounds[1]) < abs(
             concretebounds[3] - bar.point.bounds[1]
         ):
             reinf_bars.append(bar)
-
+    # Calculate d as the average height of the tensile reinforcement
     avg_reinf_height = 0
     for bar in reinf_bars:
         avg_reinf_height += bar.point.bounds[1]
     avg_reinf_height /= len(reinf_bars)
     d = h + concretebounds[1] - avg_reinf_height
 
-    fck = srf_geoms.material.fck
-    fcd = srf_geoms.material.fcd()
-    gamma_c = srf_geoms.material.gamma_c
-
     Ac = section.gross_properties.area
     Asl = 0
     for bar in reinf_bars:
         Asl += bar.area
+
+    # Concrete parameters
+    fck = srf_geoms.material.fck
+    fcd = srf_geoms.material.fcd()
+    gamma_c = srf_geoms.material.gamma_c
 
     design_value = VRdc(
         fck,
@@ -166,18 +168,19 @@ def shearcap_reinf_rectangular_section(
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
         ValueError: The applied prestress exceeds the concrete design strength.
     """
+    # Parameters from section geometry
     srf_geoms = section.geometry.geometries[0]
     concretebounds = srf_geoms.polygon.bounds
     h = concretebounds[3] - concretebounds[1]
     bw = concretebounds[2] - concretebounds[0]
-
+    # Assume tensile reinforcement is in the lower half of the section
     reinf_bars = []
     for bar in section.geometry.point_geometries:
         if abs(concretebounds[1] - bar.point.bounds[1]) < abs(
             concretebounds[3] - bar.point.bounds[1]
         ):
             reinf_bars.append(bar)
-
+    # Calculate d as the average height of the tensile reinforcement
     avg_reinf_height = 0
     for bar in reinf_bars:
         avg_reinf_height += bar.point.bounds[1]
@@ -185,21 +188,22 @@ def shearcap_reinf_rectangular_section(
     d = h + concretebounds[1] - avg_reinf_height
     z = 0.9 * d
 
-    fck = srf_geoms.material.fck
-    fcd = srf_geoms.material.fcd()
-
     Ac = section.gross_properties.area
     Asl = 0
     for bar in reinf_bars:
         Asl += bar.area
 
-    Asw = shear_reinf.Asw
-    s = shear_reinf.s
-    alpha = shear_reinf.alpha
+    # Concrete parameters
+    fck = srf_geoms.material.fck
+    fcd = srf_geoms.material.fcd()
 
+    # Reinforcement parameters
     gamma_s = shear_reinf.material.gamma_s
     fyk = shear_reinf.material.fyk
 
+    # Shear reinforcment parameters
+    Asw = shear_reinf.Asw
+    s = shear_reinf.s
     alpha = shear_reinf.alpha
 
     shear_resistance_reinforcement = VRds(
@@ -264,17 +268,18 @@ def required_shear_reinf(
     Raises:
         ValueError: When theta < 21.8 degrees or theta > 45 degrees.
     """
+    # Parameters from section geometry
     srf_geoms = section.geometry.geometries[0]
     concretebounds = srf_geoms.polygon.bounds
     h = concretebounds[3] - concretebounds[1]
-
+    # Assume tensile reinforcement is in the lower half of the section
     reinf_bars = []
     for bar in section.geometry.point_geometries:
         if abs(concretebounds[1] - bar.point.bounds[1]) < abs(
             concretebounds[3] - bar.point.bounds[1]
         ):
             reinf_bars.append(bar)
-
+    # Calculate d as the average height of the tensile reinforcement
     avg_reinf_height = 0
     for bar in reinf_bars:
         avg_reinf_height += bar.point.bounds[1]
@@ -282,13 +287,10 @@ def required_shear_reinf(
     d = h + concretebounds[1] - avg_reinf_height
     z = 0.9 * d
 
-    Asl = 0
-    for bar in reinf_bars:
-        Asl += bar.area
-
+    # Shear reinforcement parameters
     gamma_s = material.gamma_s
-    fyk = material.fyk
-    fywd = fyk / gamma_s
+    fywk = material.fyk
+    fywd = fywk / gamma_s
 
     req_reinf = Asw_s_required(
         VEd,
@@ -300,7 +302,6 @@ def required_shear_reinf(
 
     s = (n * diameter**2 / 4 * np.pi) / req_reinf
 
-    # Need to guess (or use default values for diameter, s, n, and alpha.)
     return ShearReinforcement(
         diameter=diameter, s=s, material=material, n=n, alpha=alpha
     )
@@ -348,21 +349,15 @@ def shearcap_rectangular_uncracked_prestressed(
             prestressed element without shear reinfordement, determined from
             maximum allowable principle stress.
     """
+    # Parameters from section geometry
     srf_geoms = section.geometry.geometries[0]
     concretebounds = srf_geoms.polygon.bounds
     bw = concretebounds[2] - concretebounds[0]
-
-    gamma_c = srf_geoms.material.gamma_c
-    fctk_5 = srf_geoms.material.fctk_5
-    fctd = alpha_ct * fctk_5 / gamma_c  # Skal kunne hentes fra betongklassen
-
     Ac = section.gross_properties.area
-
     # Translate section so that coord (0,0) is aligned with centroid
     c = srf_geoms.centroid
     srf_geoms = srf_geoms.translate(-c[0], -c[1])
     section = BeamSection(srf_geoms)
-
     # Split section to obtain correct value for S
     split_poly = srf_geoms.split(((0, 0), 0))[0][0]
     split_geo = SurfaceGeometry(split_poly, srf_geoms.material)
@@ -370,6 +365,11 @@ def shearcap_rectangular_uncracked_prestressed(
 
     Iy = section.gross_properties.iyy
     S = split_sec.gross_properties.sy
+
+    # Concrete properties
+    gamma_c = srf_geoms.material.gamma_c
+    fctk_5 = srf_geoms.material.fctk_5
+    fctd = alpha_ct * fctk_5 / gamma_c  # Should be taken from concrete class
 
     return VRdc_prin_stress(
         Iy,
@@ -410,14 +410,17 @@ def max_area_shear_reinf(
     Raises:
         ValueError: The applied prestress exceeds the concrete design strength.
     """
+    # Parameters from section geometry
     srf_geoms = section.geometry.geometries[0]
     concretebounds = srf_geoms.polygon.bounds
     bw = concretebounds[2] - concretebounds[0]
     Ac = section.gross_properties.area
 
+    # Concrete parameters
     fck = srf_geoms.material.fck
     fcd = srf_geoms.material.fcd()
 
+    # Shear reinforcement parameters
     s = shear_reinf.s
     fywd = shear_reinf.material.fyd()
     alpha = shear_reinf.alpha
