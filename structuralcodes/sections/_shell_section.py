@@ -1,3 +1,7 @@
+"""Implementation of the shell section class."""
+
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import typing as t
 
 import numpy as np
@@ -10,13 +14,15 @@ from .section_integrators import ShellFiberIntegrator
 
 
 class ShellSection(Section):
-    """This is the implementation of the shell class section.
+    """This is the implementation of the shell section class.
 
     Attributes:
-        geometry ShellGeometry: The geometry of
-            the section.
+        geometry ShellGeometry: The geometry of the section.
         name (str): The name of the section.
     """
+
+    geometry: ShellGeometry
+    section_calculator: ShellSectionCalculator
 
     def __init__(
         self,
