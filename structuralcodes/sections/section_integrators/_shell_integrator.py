@@ -2,7 +2,6 @@
 discretization.
 """
 
-import math
 import typing as t
 
 import numpy as np
@@ -41,8 +40,8 @@ class ShellFiberIntegrator(SectionIntegrator):
 
         Keyword Arguments:
             z_coords (ArrayLike): The z-coordinates of the layers in the shell.
-            mesh_size (float): fraction of the total shell thickness for each
-                layer ([0,1]). Default is 0.01.
+            n_layers (int): Number of integration layers through the thickness.
+                Default is 100.
 
         Returns:
             Tuple: (prepared_input, z_coords)
@@ -53,10 +52,7 @@ class ShellFiberIntegrator(SectionIntegrator):
         z_coords, dz = (None, None) if layers is None else layers
         t_total = geo.thickness
         if z_coords is None and dz is None:
-            mesh_size = kwargs.get('mesh_size', 0.01)
-            if not (0 < mesh_size <= 1):
-                raise ValueError('mesh_size must be [0,1].')
-            n_layers = max(1, math.ceil(1 / mesh_size))
+            n_layers = kwargs.get('n_layers', 100)
             dz = t_total / n_layers
             z_coords = np.linspace(
                 -t_total / 2 + dz / 2, t_total / 2 - dz / 2, n_layers

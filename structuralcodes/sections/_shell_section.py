@@ -49,7 +49,7 @@ class ShellSectionCalculator(SectionCalculator):
     """A calculator for shell sections."""
 
     section: ShellSection
-    mesh_size: float
+    n_layers: int
 
     def __init__(
         self,
@@ -63,7 +63,7 @@ class ShellSectionCalculator(SectionCalculator):
         """
         super().__init__(section=section)
         self.integrator = ShellFiberIntegrator()
-        self.mesh_size = kwargs.get('mesh_size', 0.01)
+        self.n_layers = kwargs.get('n_layers', 100)
         self.layers: t.Optional[t.Tuple] = None
 
     def _calculate_gross_section_properties(self):
@@ -116,7 +116,7 @@ class ShellSectionCalculator(SectionCalculator):
             geo=self.section.geometry,
             strain=strain,
             integrate=integrate,
-            mesh_size=self.mesh_size,
+            n_layers=self.n_layers,
             layers=self.layers,
         )
 
@@ -170,7 +170,7 @@ class ShellSectionCalculator(SectionCalculator):
                 geom,
                 [0, 0, 0, 0, 0, 0],
                 integrate='modulus',
-                mesh_size=self.mesh_size,
+                n_layers=self.n_layers,
                 layers=self.layers,
             )
         )
