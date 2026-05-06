@@ -59,7 +59,7 @@ def test_integrate_strain_profile(
     """Elastic plate: strains → stress-resultants."""
     constitutive_law = Elastic2D(Ec, nu)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(thickness, material), mesh_size=1e-3)
+    shell = ShellSection(ShellGeometry(thickness, material), n_layers=1000)
 
     # Numerically integrated forces/moments
     R = shell.section_calculator.integrate_strain_profile(
@@ -91,7 +91,7 @@ def test_integrate_strain_profile_stiffness_matrix(nu):
     t = 200
     constitutive_law = Elastic2D(E, nu)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(t, material=material), mesh_size=1e-3)
+    shell = ShellSection(ShellGeometry(t, material=material), n_layers=1000)
     K = shell.section_calculator.integrate_strain_profile(
         np.array([1e-3] * 3 + [1e-6] * 3), integrate='modulus'
     )
@@ -148,7 +148,7 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     """Loads → strains for an isotropic plate."""
     constitutive_law = Elastic2D(Ec, nu)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(t, material=material), mesh_size=1e-3)
+    shell = ShellSection(ShellGeometry(t, material=material), n_layers=1000)
     eps = shell.section_calculator.calculate_strain_profile(
         nx, ny, nxy, mx, my, mxy
     )
@@ -168,8 +168,8 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
     assert np.allclose(eps, expected)
 
 
-def test_default_equals_explicit_mesh_size():
-    """Default mesh_size (0.01) equals explicit 0.01."""
+def test_default_equals_explicit_number_of_layers():
+    """Default n_layers (100) equals explicit 100."""
     t = 200
     constitutive_law = Elastic2D(30000, 0.20)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
@@ -177,24 +177,11 @@ def test_default_equals_explicit_mesh_size():
     K0 = shell_0.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )
-    shell_1 = ShellSection(ShellGeometry(t, material=material), mesh_size=0.01)
+    shell_1 = ShellSection(ShellGeometry(t, material=material), n_layers=100)
     K1 = shell_1.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )
     assert np.allclose(K0, K1)
-
-
-@pytest.mark.parametrize('invalid', [-0.2, 0.0, 1.5])
-def test_invalid_mesh_size_raises(invalid):
-    """mesh_size outside (0,1] → ValueError."""
-    t = 200
-    constitutive_law = Elastic2D(30000, 0.20)
-    material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
-    shell = ShellSection(ShellGeometry(t, material), mesh_size=invalid)
-    with pytest.raises(ValueError):
-        shell.section_calculator.integrate_strain_profile(
-            np.zeros(6), integrate='stress'
-        )
 
 
 @pytest.mark.parametrize(
@@ -244,7 +231,7 @@ def test_parabola_zero_initial_nu(nx, nxy, expected):
     Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
     Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
     geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
-    section = ShellSection(geo, mesh_size=0.5)
+    section = ShellSection(geo, n_layers=2)
     calculator = section.section_calculator
     strain = calculator.calculate_strain_profile(
         nx, 0, nxy, 0, 0, 0, max_iter=150
@@ -300,7 +287,7 @@ def test_parabola_initial_nu(nx, nxy, expected):
     Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
     Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
     geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
-    section = ShellSection(geo, mesh_size=0.5)
+    section = ShellSection(geo, n_layers=2)
     strain = section.section_calculator.calculate_strain_profile(
         nx,
         0,
@@ -467,7 +454,7 @@ def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
         # Add reinforcement to the shell geometry
         shell_geo.add_reinforcement([shell_rein_btm, shell_rein_top])
 
-    shell_sec = ShellSection(geometry=shell_geo, mesh_size=0.5)
+    shell_sec = ShellSection(geometry=shell_geo, n_layers=2)
 
     # Calculate "exact" solution
     if axial_force > 0:
