@@ -22,6 +22,7 @@ class ShellReinforcement(Geometry):
     _T: t.Optional[ArrayLike]
     _local_stress_to_global_force: t.Optional[ArrayLike]
     _local_modulus_to_global_stiffness: t.Optional[ArrayLike]
+    _transform_gen_strain_to_local: t.Optional[ArrayLike]
 
     def __init__(
         self,
@@ -52,6 +53,7 @@ class ShellReinforcement(Geometry):
         self._T = None
         self._local_stress_to_global_force = None
         self._local_modulus_to_global_stiffness = None
+        self._transform_gen_strain_to_local = None
 
     @property
     def z(self) -> float:
@@ -116,6 +118,16 @@ class ShellReinforcement(Geometry):
                 self.T.T @ np.diag([1, 0, 0]) @ self.T * self.area
             )
         return self._local_modulus_to_global_stiffness
+
+    def generalized_strain_to_longitudinal(self, strain: ArrayLike) -> float:
+        """Transform the array of generalized strains to the longitudinal
+        strain.
+        """
+        if self._transform_gen_strain_to_local is None:
+            self._transform_gen_strain_to_local = (
+                self.T @ np.block([np.eye(3), -self.z * np.eye(3)])
+            )[0, :]
+        return self._transform_gen_strain_to_local @ strain
 
     @property
     def area(self) -> float:
