@@ -333,6 +333,9 @@ def test_fcd(fck, alpha_cc, expected):
         (35, 2.2, 0.85, 1.5, 1.2467),
         (45, 2.7, 0.85, 1.5, 1.53),
         (90, 3.5, 0.85, 1.5, 1.9833),
+        (35, 2.2, None, 1.5, 1.4667),
+        (45, 2.7, None, 1.5, 1.8),
+        (90, 3.5, None, 1.5, 2.3333),
     ],
 )
 def test_fctd(fck, fctk, alpha_ct, gamma_c, expected):
