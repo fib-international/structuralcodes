@@ -397,3 +397,27 @@ def test_fcd(fck, alpha_cc, gamma_c, fcd):
         fcd,
         rel_tol=1e-4,
     )
+
+
+@pytest.mark.parametrize(
+    'fctk_5, alpha_ct, gamma_c, fctd',
+    [
+        (2.2, 0.85, 1.5, 1.2467),
+        (2.7, 0.85, 1.5, 1.53),
+        (3.2, 0.85, 1.5, 1.8133),
+        (3.5, 0.85, 1.5, 1.9833),
+        (2.2, 1.0, 1.5, 1.4667),
+        (2.7, 1.0, 1.5, 1.8),
+        (3.2, 1.0, 1.5, 2.1333),
+        (3.5, 1.0, 1.5, 2.3333),
+    ],
+)
+def test_fctd(fctk_5, alpha_ct, gamma_c, fctd):
+    """Test calculating the design tensile strength."""
+    assert math.isclose(
+        _concrete_material_properties.fctd(
+            fctk_5=fctk_5, alpha_ct=alpha_ct, gamma_c=gamma_c
+        ),
+        fctd,
+        rel_tol=1e-4,
+    )

@@ -44,6 +44,7 @@ class BeamSection(Section):
     """
 
     geometry: CompoundGeometry
+    section_calculator: BeamSectionCalculator
 
     def __init__(
         self,
