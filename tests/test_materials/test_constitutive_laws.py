@@ -742,3 +742,92 @@ def test_parallel_get_ultimate_strain(E1, fy1, eps_su1, E2, fy2, eps_su2):
     expected_ult_strain = max(eps_su1, eps_su2)
 
     assert math.isclose(ult_strain[1], expected_ult_strain)
+
+
+def _snap_with_isclose(law, eps):
+    """Reference snapping using the original ``np.isclose`` formulation.
+
+    Documents the tolerance that ``preprocess_strains_with_limits`` must
+    reproduce: ``np.isclose`` with ``atol=1e-6`` and the default
+    ``rtol=1e-5``.
+    """
+    eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+    eps_min, eps_max = law.get_ultimate_strain()
+    if np.isscalar(eps):
+        if np.isclose(eps, eps_max, atol=1e-6):
+            return eps_max
+        if np.isclose(eps, eps_min, atol=1e-6):
+            return eps_min
+        return eps
+    idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
+    eps[idxs] = eps_max
+    idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
+    eps[idxs] = eps_min
+    return eps
+
+
+_PREPROCESS_LAWS = [
+    Elastic(E=30000),
+    ElasticPlastic(E=200000, fy=500, eps_su=0.07),
+    ParabolaRectangle(fc=35),
+    ParabolaRectangle(fc=35, n=2.3),
+    BilinearCompression(fc=35, eps_c=-0.002, eps_cu=-0.0035),
+    Sargin(fc=38),
+    Popovics(fc=35),
+    UserDefined(x=[-0.0035, -0.002, 0.0, 0.001], y=[0.0, -35.0, 0.0, 3.0]),
+    InitialStrain(
+        constitutive_law=ElasticPlastic(E=200000, fy=500, eps_su=0.07),
+        initial_strain=1e-3,
+    ),
+    Parallel(
+        [
+            ElasticPlastic(E=200000, fy=450, eps_su=0.06),
+            ElasticPlastic(E=150000, fy=800, eps_su=0.01),
+        ]
+    ),
+]
+
+
+@pytest.mark.parametrize('law', _PREPROCESS_LAWS)
+def test_preprocess_strains_matches_isclose_tolerance(law):
+    """preprocess_strains_with_limits reproduces the np.isclose tolerance.
+
+    The optimized scalar-threshold implementation must give results that are
+    bit-identical to the documented ``np.isclose(atol=1e-6)`` behaviour for
+    every constitutive law.
+    """
+    eps_min, eps_max = law.get_ultimate_strain()
+    rng = np.random.default_rng(0)
+    eps = np.concatenate(
+        [
+            rng.uniform(eps_min, eps_max, 5000),
+            np.linspace(eps_min - 3e-6, eps_min + 3e-6, 2000),
+            np.linspace(eps_max - 3e-6, eps_max + 3e-6, 2000),
+            np.array([eps_min, eps_max, 0.0]),
+        ]
+    )
+    expected = _snap_with_isclose(law, eps.copy())
+    result = law.preprocess_strains_with_limits(eps.copy())
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize('law', _PREPROCESS_LAWS)
+def test_preprocess_strains_snaps_within_band(law):
+    """Strains within the tolerance band snap to the exact limit and
+    strains outside it are returned unchanged.
+    """
+    eps_min, eps_max = law.get_ultimate_strain()
+    tol_max = 1e-6 + 1e-5 * abs(eps_max)
+    tol_min = 1e-6 + 1e-5 * abs(eps_min)
+
+    # Just inside the band -> snapped to the exact limit.
+    assert law.preprocess_strains_with_limits(eps_max - 0.4 * tol_max) == (
+        eps_max
+    )
+    assert law.preprocess_strains_with_limits(eps_min + 0.4 * tol_min) == (
+        eps_min
+    )
+
+    # Clearly outside the band -> returned unchanged.
+    inside = eps_max - 10 * tol_max
+    assert law.preprocess_strains_with_limits(inside) == inside

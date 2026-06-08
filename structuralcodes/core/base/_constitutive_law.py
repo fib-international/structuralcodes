@@ -61,16 +61,21 @@ class ConstitutiveLaw(abc.ABC):
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         eps_min, eps_max = self.get_ultimate_strain()
 
+        # Absolute thresholds reproducing np.isclose(atol=1e-6) with the
+        # default rtol=1e-5, i.e. atol + rtol * abs(limit). Precomputing
+        # these scalars avoids the per-call np.isclose machinery and the
+        # zeros_like allocations, which are costly in the integration loop.
+        tol_max = 1e-6 + 1e-5 * abs(eps_max)
+        tol_min = 1e-6 + 1e-5 * abs(eps_min)
+
         if np.isscalar(eps):
-            if np.isclose(eps, eps_max, atol=1e-6):
+            if abs(eps - eps_max) <= tol_max:
                 return eps_max
-            if np.isclose(eps, eps_min, atol=1e-6):
+            if abs(eps - eps_min) <= tol_min:
                 return eps_min
             return eps
-        idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
-        eps[idxs] = eps_max
-        idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
-        eps[idxs] = eps_min
+        eps[np.abs(eps - eps_max) <= tol_max] = eps_max
+        eps[np.abs(eps - eps_min) <= tol_min] = eps_min
 
         return eps
 
