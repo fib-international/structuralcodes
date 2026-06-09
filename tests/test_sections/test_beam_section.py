@@ -2019,3 +2019,59 @@ def test_perimeter_multipolygon():
         gp = section.gross_properties
 
     assert math.isclose(gp.perimeter, 0)
+
+
+def test_wide_section():
+    """Test calculating the moment-curvature relation for a wide section.
+
+    Regression test for #362. Based on the geometry from the quickstart example
+    with an increased width.
+    """
+    # Create a concrete and a reinforcement
+    fck = 45
+    fyk = 500
+    ftk = 550
+    Es = 200000
+    epsuk = 0.07
+
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement = ReinforcementEC2_2004(fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk)
+
+    # Create a rectangular geometry
+    width = 1000
+    height = 500
+
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    # Add reinforcement
+    diameter_reinf = 25
+    cover = 50
+
+    geometry = add_reinforcement(
+        geometry,
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+    )  # The add_reinforcement function returns a CompoundGeometry
+    geometry = add_reinforcement(
+        geometry,
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+    )
+
+    # Create section
+    section = BeamSection(geometry)
+
+    # Calculate the moment-curvature response
+    moment_curvature = section.section_calculator.calculate_moment_curvature()
+
+    assert moment_curvature is not None
