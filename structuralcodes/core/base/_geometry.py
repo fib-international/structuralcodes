@@ -8,15 +8,56 @@ from fnmatch import fnmatchcase
 from ._material import Material
 
 
+class _GroupMixin:
+    """A mixin class for handling functionality related to group labels."""
+
+    _group_label: t.Optional[str] = None
+
+    @property
+    def group_label(self):
+        """Returns the group_label."""
+        return self._group_label
+
+    def _group_matches(
+        self, pattern: str, *, case_sensitive: bool = True
+    ) -> bool:
+        """Checks if the group_label matches a pattern.
+
+        Arguments:
+            pattern (str): the string pattern to be checked
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): if True (default) the check is
+                case sensitive.
+
+        Returns:
+            (bool): Returns True if the group_label matches the pattern.
+
+        Note:
+            The matching permits to use:
+                - "*" any chars
+                - "?" single char
+                - "[abc]" character set
+
+        Examples:
+            >>> geo.group_matches("nametos*")
+            >>> geo.group_matches("*pier*")
+            >>> geo.group_matches("Abutment??", case_senstive=False)
+        """
+        if self.group_label is None:
+            return False
+        if not case_sensitive:
+            return fnmatchcase(self.group_label.casefold(), pattern.casefold())
+        return fnmatchcase(self.group_label, pattern)
+
+
 class Geometry:
     """Base class for a geometry object."""
 
     _geometry_counter: t.ClassVar[int] = 0
     id: int
 
-    def __init__(
-        self, name: t.Optional[str] = None, group_label: t.Optional[str] = None
-    ) -> None:
+    def __init__(self, name: t.Optional[str] = None) -> None:
         """Initializes a geometry object.
 
         The name and grouplabel serve for filtering in a compound object. By
@@ -24,21 +65,14 @@ class Geometry:
 
         Arguments:
             name (Optional(str)): The name to be given to the object.
-            group_label (Optional(str)): A label for grouping several objects.
         """
         self.id = Geometry.return_global_counter_and_increase()
         self._name = name if name is not None else f'Geometry_{self.id}'
-        self._group_label = group_label
 
     @property
     def name(self):
         """Returns the name of the Geometry."""
         return self._name
-
-    @property
-    def group_label(self):
-        """Returns the group_label fo the Geometry."""
-        return self._group_label
 
     @classmethod
     def _increase_global_counter(cls):
@@ -91,35 +125,3 @@ class Geometry:
         if not case_sensitive:
             return fnmatchcase(self.name.casefold(), pattern.casefold())
         return fnmatchcase(self.name, pattern)
-
-    def _group_matches(
-        self, pattern: str, *, case_sensitive: bool = True
-    ) -> bool:
-        """Checks if the group_label matches a pattern.
-
-        Arguments:
-            pattern (str): the string pattern to be checked
-
-        Keyword Arguments:
-            case_sensitive (bool, optional): if True (default) the check is
-                case sensitive.
-
-        Returns:
-            (bool): Returns True if the group_label matches the pattern.
-
-        Note:
-            The matching permits to use:
-                - "*" any chars
-                - "?" single char
-                - "[abc]" character set
-
-        Examples:
-            >>> geo.group_matches("nametos*")
-            >>> geo.group_matches("*pier*")
-            >>> geo.group_matches("Abutment??", case_senstive=False)
-        """
-        if self.group_label is None:
-            return False
-        if not case_sensitive:
-            return fnmatchcase(self.group_label.casefold(), pattern.casefold())
-        return fnmatchcase(self.group_label, pattern)

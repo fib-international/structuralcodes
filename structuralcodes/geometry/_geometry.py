@@ -23,7 +23,7 @@ from shapely.ops import split
 from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import Concrete
 
-from ..core.base import Geometry, Material
+from ..core.base import Geometry, Material, _GroupMixin
 
 
 def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
@@ -59,7 +59,7 @@ def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
     return T_inv @ R_inv @ M @ R @ T
 
 
-class PointGeometry(Geometry):
+class PointGeometry(_GroupMixin, Geometry):
     """Class for a point geometry with material.
 
     Basically it is a wrapper for shapely Point including the material (and
@@ -88,7 +88,8 @@ class PointGeometry(Geometry):
             group_label (Optional(str)): A label for grouping several objects
                 (default is None).
         """
-        super().__init__(name, group_label)
+        super().__init__(name)
+        self._group_label = group_label
         # I check if point is a shapely Point or an ArrayLike object
         if not isinstance(point, Point):
             # It is an ArrayLike object -> create the Point given the
@@ -316,7 +317,7 @@ def create_line_point_angle(
     return LineString([(x1, y1), (x2, y2)])
 
 
-class SurfaceGeometry(Geometry):
+class SurfaceGeometry(_GroupMixin, Geometry):
     """Class for a surface geometry with material.
 
     Basically it is a wrapper for shapely polygon including the material (and
@@ -343,7 +344,8 @@ class SurfaceGeometry(Geometry):
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects.
         """
-        super().__init__(name=name, group_label=group_label)
+        super().__init__(name=name)
+        self._group_label = group_label
         # Check if inputs are of the correct type, otherwise return error
         if not isinstance(poly, Polygon):
             raise TypeError(
