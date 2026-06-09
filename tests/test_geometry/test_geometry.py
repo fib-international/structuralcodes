@@ -359,6 +359,42 @@ def test_compound_geometry():
     )
 
 
+def test_compound_geometry_lazy_geom():
+    """The svg ``geom`` MultiPolygon is built lazily and cached.
+
+    ``geom`` is only needed for the SVG representation, so it is computed on
+    first access rather than in ``__init__``. It must still contain one polygon
+    per surface geometry plus a buffered circle per point geometry, and a
+    transformed copy must recompute its own ``geom``.
+    """
+    C25 = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.03)
+
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, C25)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 20, steel, n=4)
+    assert len(geo.geometries) == 1
+    assert len(geo.point_geometries) == 4
+
+    # geom is not built until first access
+    assert geo._geom is None
+
+    # one polygon per surface geometry + one buffered circle per point geometry
+    n_expected = len(geo.geometries) + len(geo.point_geometries)
+    assert isinstance(geo.geom, MultiPolygon)
+    assert len(geo.geom.geoms) == n_expected
+
+    # the result is cached: repeated access returns the same object
+    assert geo._geom is not None
+    assert geo.geom is geo.geom
+
+    # a transformed copy starts unbuilt and recomputes its own geom
+    geo_r = geo.rotate(np.pi / 2)
+    assert geo_r._geom is None
+    assert isinstance(geo_r.geom, MultiPolygon)
+    assert len(geo_r.geom.geoms) == n_expected
+
+
 def test_add_geometries():
     """Test addition for different geometries."""
     polys = []

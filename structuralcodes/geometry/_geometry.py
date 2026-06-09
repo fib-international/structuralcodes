@@ -824,27 +824,42 @@ class CompoundGeometry(Geometry):
                 geometries, materials
             )
             self.point_geometries = []
-            # useful for representation in svg
-            geoms_representation = [g.polygon for g in self.geometries]
-            self.geom = MultiPolygon(geoms_representation)
+            # self.geom (svg representation) is built lazily, see the geom
+            # property.
+            self._geom = None
             return
         if isinstance(geometries, list):
             self.geometries, self.point_geometries = _process_geometries_list(
                 geometries
             )
-            # useful for representation in svg
-            geoms_representation = [g.polygon for g in self.geometries]
-            geoms_representation += [
-                pg.point.buffer(pg.diameter / 2)
-                for pg in self.point_geometries
-            ]
-            self.geom = MultiPolygon(geoms_representation)
+            # self.geom (svg representation) is built lazily, see the geom
+            # property.
+            self._geom = None
         self._reinforced_concrete = None
 
     # we can add here static methods like
     # from_dxf
     # from_ascii
     # ...
+
+    @property
+    def geom(self) -> MultiPolygon:
+        """MultiPolygon used for the SVG representation, built lazily.
+
+        Point geometries are represented as buffered circles. This is only
+        needed for display, so it is computed on first access rather than in
+        __init__ -- building it eagerly buffers every point geometry on every
+        construction (including every rotate()), which dominated the section
+        calculations.
+        """
+        if self._geom is None:
+            geoms_representation = [g.polygon for g in self.geometries]
+            geoms_representation += [
+                pg.point.buffer(pg.diameter / 2)
+                for pg in self.point_geometries
+            ]
+            self._geom = MultiPolygon(geoms_representation)
+        return self._geom
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
