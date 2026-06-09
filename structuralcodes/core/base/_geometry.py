@@ -57,7 +57,9 @@ class Geometry:
     _geometry_counter: t.ClassVar[int] = 0
     id: int
 
-    def __init__(self, name: t.Optional[str] = None) -> None:
+    def __init__(
+        self, name: t.Optional[str] = None, base_name: str = 'Geometry'
+    ) -> None:
         """Initializes a geometry object.
 
         The name and grouplabel serve for filtering in a compound object. By
@@ -65,9 +67,11 @@ class Geometry:
 
         Arguments:
             name (Optional(str)): The name to be given to the object.
+            base_name (str): If name is not given, use this argument together
+                with a global counter to create a unique name for the geometry.
         """
         self.id = Geometry.return_global_counter_and_increase()
-        self._name = name if name is not None else f'Geometry_{self.id}'
+        self._name = name if name is not None else f'{base_name}_{self.id}'
 
     @property
     def name(self):
