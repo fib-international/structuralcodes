@@ -40,8 +40,7 @@ class ParabolaRectangle(ConstitutiveLaw):
             n (float): Exponent for the pre-peak branch. Default value = 2.
             name (str): A name for the constitutive law.
         """
-        name = name if name is not None else 'ParabolaRectangleLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='ParabolaRectangleLaw')
         self._fc = -abs(fc)
         self._eps_0 = -abs(eps_0)
         self._eps_u = -abs(eps_u)

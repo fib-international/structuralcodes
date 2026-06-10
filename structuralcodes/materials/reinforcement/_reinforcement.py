@@ -29,13 +29,13 @@ class Reinforcement(Material):
         strain_compatibility: t.Optional[bool] = None,
     ) -> None:
         """Initializes an abstract reinforcement material."""
-        name = name if name is not None else 'Reinforcement'
         super().__init__(
             density=density,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
             strain_compatibility=strain_compatibility,
             name=name,
+            base_name='Reinforcement',
         )
 
         self._fyk = abs(fyk)

@@ -26,13 +26,13 @@ class Concrete(Material):
         strain_compatibility: t.Optional[bool] = None,
     ) -> None:
         """Initializes an abstract concrete material."""
-        name = name if name is not None else 'Concrete'
         super().__init__(
             density=density,
             initial_strain=initial_strain,
             initial_stress=initial_stress,
             strain_compatibility=strain_compatibility,
             name=name,
+            base_name='Concrete',
         )
 
         self._fck = abs(fck)

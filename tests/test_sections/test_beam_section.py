@@ -62,8 +62,9 @@ def test_rectangular_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
+    counter = BeamSection._section_counter
     sec = BeamSection(geo)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
@@ -170,8 +171,9 @@ def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     assert geo.polygon.centroid.coords[0][1] == 0
 
     # Create the section with fiber integrator
+    counter = BeamSection._section_counter
     sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, b * h)
 
@@ -435,8 +437,9 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
     assert geo.polygon.centroid.coords[0][1] == h / 2
 
     # Create the section with fiber integrator
+    counter = BeamSection._section_counter
     sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, b * h)
 
@@ -681,8 +684,9 @@ def test_holed_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
+    counter = BeamSection._section_counter
     sec = BeamSection(geo)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, 260000)
 
@@ -727,8 +731,9 @@ def test_u_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
+    counter = BeamSection._section_counter
     sec = BeamSection(geo)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, 230000)
 
@@ -2019,3 +2024,59 @@ def test_perimeter_multipolygon():
         gp = section.gross_properties
 
     assert math.isclose(gp.perimeter, 0)
+
+
+def test_wide_section():
+    """Test calculating the moment-curvature relation for a wide section.
+
+    Regression test for #362. Based on the geometry from the quickstart example
+    with an increased width.
+    """
+    # Create a concrete and a reinforcement
+    fck = 45
+    fyk = 500
+    ftk = 550
+    Es = 200000
+    epsuk = 0.07
+
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement = ReinforcementEC2_2004(fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk)
+
+    # Create a rectangular geometry
+    width = 1000
+    height = 500
+
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    # Add reinforcement
+    diameter_reinf = 25
+    cover = 50
+
+    geometry = add_reinforcement(
+        geometry,
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+    )  # The add_reinforcement function returns a CompoundGeometry
+    geometry = add_reinforcement(
+        geometry,
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+    )
+
+    # Create section
+    section = BeamSection(geometry)
+
+    # Calculate the moment-curvature response
+    moment_curvature = section.section_calculator.calculate_moment_curvature()
+
+    assert moment_curvature is not None

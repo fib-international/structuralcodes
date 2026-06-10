@@ -52,8 +52,7 @@ class Sargin(ConstitutiveLaw):
             If positive values are input for fc, eps_c1 and eps_cu1 are input,
             they will be assumed negative.
         """
-        name = name if name is not None else 'SarginLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='SarginLaw')
         self._fc = -abs(fc)
         self._eps_c1 = -abs(eps_c1)
         self._eps_cu1 = -abs(eps_cu1)

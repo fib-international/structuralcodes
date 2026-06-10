@@ -742,3 +742,180 @@ def test_parallel_get_ultimate_strain(E1, fy1, eps_su1, E2, fy2, eps_su2):
     expected_ult_strain = max(eps_su1, eps_su2)
 
     assert math.isclose(ult_strain[1], expected_ult_strain)
+
+
+def test_name_bilinear_compression():
+    """Test the name property of a bilinear compression law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = BilinearCompression(
+        fc=45, eps_c=1.75e-3, eps_cu=3.5e-3, name=given_name
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = BilinearCompression._constitutive_law_counter
+    law = BilinearCompression(
+        fc=45,
+        eps_c=1.75e-3,
+        eps_cu=3.5e-3,
+    )
+
+    assert law.name == f'BilinearCompressionLaw_{counter}'
+
+
+def test_name_parabola_rectangle():
+    """Test the name property of a parabola rectangle law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = ParabolaRectangle(fc=45, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = ParabolaRectangle._constitutive_law_counter
+    law = ParabolaRectangle(
+        fc=45,
+    )
+
+    assert law.name == f'ParabolaRectangleLaw_{counter}'
+
+
+def test_name_popovics():
+    """Test the name property of a popovics law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Popovics(fc=45, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Popovics._constitutive_law_counter
+    law = Popovics(
+        fc=45,
+    )
+
+    assert law.name == f'PopovicsLaw_{counter}'
+
+
+def test_name_sargin():
+    """Test the name property of a sargin law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Sargin(fc=45, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Sargin._constitutive_law_counter
+    law = Sargin(
+        fc=45,
+    )
+
+    assert law.name == f'SarginLaw_{counter}'
+
+
+def test_name_elastic():
+    """Test the name property of an elastic law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Elastic(E=30000, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Elastic._constitutive_law_counter
+    law = Elastic(E=30000)
+
+    assert law.name == f'ElasticLaw_{counter}'
+
+
+def test_name_elasticplastic():
+    """Test the name property of an elastic plastic law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = ElasticPlastic(E=200000, fy=355, Eh=0, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = ElasticPlastic._constitutive_law_counter
+    law = ElasticPlastic(E=200000, fy=355, Eh=0)
+
+    assert law.name == f'ElasticPlasticLaw_{counter}'
+
+
+def test_name_initial_strain():
+    """Test the name property of an initial strain law."""
+    # Create a base constitutive law
+    base_law = Elastic(E=30000)
+    initial_strain = 1e-3
+
+    # Create a law with a given name
+    given_name = 'A law'
+    law = InitialStrain(
+        constitutive_law=base_law,
+        initial_strain=initial_strain,
+        name=given_name,
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = InitialStrain._constitutive_law_counter
+    law = InitialStrain(
+        constitutive_law=base_law, initial_strain=initial_strain
+    )
+
+    assert law.name == f'InitialStrainLaw_{counter}'
+
+
+def test_name_parallel():
+    """Test the name property of a parallel law."""
+    # Create two base constitutive laws
+    base_law_1 = Elastic(E=30000)
+    base_law_2 = Elastic(E=30000)
+
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Parallel(
+        constitutive_laws=[base_law_1, base_law_2],
+        name=given_name,
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Parallel._constitutive_law_counter
+    law = Parallel(
+        constitutive_laws=[base_law_1, base_law_2],
+    )
+
+    assert law.name == f'ParallelLaw_{counter}'
+
+
+def test_name_userdefined():
+    """Test the name property of a user defined law."""
+    # Create arrays of strains and stresses
+    strains = np.linspace(-2e-3, 2e3)
+    stresses = 30e3 * strains
+
+    # Create a law with a given name
+    given_name = 'A law'
+    law = UserDefined(
+        x=strains,
+        y=stresses,
+        name=given_name,
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = UserDefined._constitutive_law_counter
+    law = UserDefined(
+        x=strains,
+        y=stresses,
+    )
+
+    assert law.name == f'UserDefinedLaw_{counter}'

@@ -13,13 +13,15 @@ class ConstitutiveLaw(abc.ABC):
     """Abstract base class for constitutive laws."""
 
     __materials__: t.Tuple[str] = ()
-    constitutive_law_counter: t.ClassVar[int] = 0
+    _constitutive_law_counter: t.ClassVar[int] = 0
+    id: int
 
-    def __init__(self, name: t.Optional[str] = None) -> None:
+    def __init__(
+        self, name: t.Optional[str] = None, base_name: str = 'ConstitutiveLaw'
+    ) -> None:
         """Initialize a ConstitutiveLaw object."""
-        self.id = self.constitutive_law_counter
-        self._name = name if name is not None else f'ConstitutiveLaw_{self.id}'
-        self._increase_global_counter()
+        self.id = ConstitutiveLaw.return_global_counter_and_increase()
+        self._name = name if name is not None else f'{base_name}_{self.id}'
 
     @property
     def name(self):
@@ -28,7 +30,14 @@ class ConstitutiveLaw(abc.ABC):
 
     @classmethod
     def _increase_global_counter(cls):
-        cls.constitutive_law_counter += 1
+        cls._constitutive_law_counter += 1
+
+    @classmethod
+    def return_global_counter_and_increase(cls):
+        """Returns the current counter and increases it by one."""
+        counter = cls._constitutive_law_counter
+        cls._increase_global_counter()
+        return counter
 
     @abc.abstractmethod
     def get_stress(

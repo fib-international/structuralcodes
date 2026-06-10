@@ -71,9 +71,7 @@ class BeamSection(Section):
             SectionCalculator to customize the behaviour. See
             BeamSectionCalculator for available keyword arguments.
         """
-        if name is None:
-            name = 'BeamSection'
-        super().__init__(name)
+        super().__init__(name=name, base_name='BeamSection')
         # Since only CompoundGeometry has the attribute geometries,
         # if a SurfaceGeometry is input, we create a CompoundGeometry
         # with only that geometry contained. After that all algorithms
@@ -559,7 +557,7 @@ class BeamSectionCalculator(SectionCalculator):
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [eps_0_b, curv, 0], tri=self.triangulated_data
+                geom, [eps_0_b, curv, 0], tri=self.integration_data
             )
             dn_b = n_int - n
             if dn_a * dn_b < 0:
@@ -595,7 +593,7 @@ class BeamSectionCalculator(SectionCalculator):
                 ) = self.integrator.integrate_strain_response_on_geometry(
                     geom,
                     [eps_0_attempts[j], curv, 0],
-                    tri=self.triangulated_data,
+                    tri=self.integration_data,
                 )
                 dn_attempts[j] = n_int - n
             if dn_a > 0:
