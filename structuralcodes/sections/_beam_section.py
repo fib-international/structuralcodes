@@ -324,52 +324,81 @@ class BeamSectionCalculator(SectionCalculator):
         # If it is, we need to obtain the "yield" strain of concrete
         # (-0.002 for default parabola-rectangle concrete)
         is_rc_section = self.section.geometry.reinforced_concrete
-        for g in geom.geometries + geom.point_geometries:
+
+        # Pre-process all data to avoid expensive calls in the double loop
+        # below
+        geom_strain_data = {}
+        all_geometries = geom.geometries + geom.point_geometries
+
+        for g in all_geometries:
+            # Initialize empty dict
+            geom_strain_data.setdefault(
+                g,
+                {
+                    'eps_p': None,
+                    'eps_n': None,
+                    'y_p': None,
+                    'y_n': None,
+                },
+            )
+
+            # Find ultimate strain given the 'yielding' arg to the function
+            geom_strain_data[g]['eps_p'] = (
+                g.material.constitutive_law.get_ultimate_strain(
+                    yielding=yielding
+                )[1]
+            )
+
+            # Find bounding coordinate
+            if isinstance(g, SurfaceGeometry):
+                geom_strain_data[g]['y_p'] = g.polygon.bounds[1]
+            elif isinstance(g, PointGeometry):
+                geom_strain_data[g]['y_p'] = g._point.coords[0][1]
+
+            if isinstance(g, SurfaceGeometry):
+                geom_strain_data[g]['y_n'] = g.polygon.bounds[3]
+            elif isinstance(g, PointGeometry):
+                geom_strain_data[g]['y_n'] = g._point.coords[0][1]
+
+            # If the geometry is not concrete, don't get the yield strain
+            # If it is not a reinforced concrete section, return
+            # the yield strain if asked.
+            is_concrete_geom = isinstance(g, SurfaceGeometry) and g.concrete
+
+            use_yielding = (
+                yielding
+                if (
+                    (is_rc_section and is_concrete_geom) or (not is_rc_section)
+                )
+                else False
+            )
+
+            geom_strain_data[g]['eps_n'] = (
+                g.material.constitutive_law.get_ultimate_strain(
+                    yielding=use_yielding
+                )[0]
+            )
+        for g, this_geom_strain_data in geom_strain_data.items():
             # This is left on purpose: even if tempted we should not do
             # this check:
             # if g != other_g:
-            eps_p = g.material.constitutive_law.get_ultimate_strain(
-                yielding=yielding
-            )[1]
-            if isinstance(g, SurfaceGeometry):
-                y_p = g.polygon.bounds[1]
-            elif isinstance(g, PointGeometry):
-                y_p = g._point.coords[0][1]
-            for other_g in geom.geometries + geom.point_geometries:
-                # If the geometry is not concrete, don't get the yield strain
-                # If it is not a reinforced concrete section, return
-                # the yield strain if asked.
-                is_concrete_geom = (
-                    isinstance(other_g, SurfaceGeometry) and other_g.concrete
-                )
-
-                use_yielding = (
-                    yielding
-                    if (
-                        (is_rc_section and is_concrete_geom)
-                        or (not is_rc_section)
-                    )
-                    else False
-                )
-
-                eps_n = other_g.material.constitutive_law.get_ultimate_strain(
-                    yielding=use_yielding
-                )[0]
-
-                if isinstance(other_g, SurfaceGeometry):
-                    y_n = other_g.polygon.bounds[3]
-                elif isinstance(other_g, PointGeometry):
-                    y_n = other_g._point.coords[0][1]
+            eps_p = this_geom_strain_data['eps_p']
+            y_p = this_geom_strain_data['y_p']
+            for _, other_geom_strain_data in geom_strain_data.items():
+                eps_n = other_geom_strain_data['eps_n']
+                y_n = other_geom_strain_data['y_n']
                 if y_p >= y_n:
                     continue
                 chi = -(eps_p - eps_n) / (y_p - y_n)
-                # print(y_p,eps_p,y_n,eps_n,chi)
+
                 if chi < chi_min:
                     chi_min = chi
                     eps_0 = eps_n + chi_min * y_n
                     y_n_min = y_n
                     y_p_min = y_p
+
         y_p, y_n = y_p_min, y_n_min
+
         # In standard CRS negative curvature stretches bottom fiber
         strain = [eps_0, -chi_min, 0]
         return (y_n, y_p, strain)
