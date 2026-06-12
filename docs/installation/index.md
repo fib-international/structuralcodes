@@ -43,6 +43,6 @@ py -m pip install --upgrade structuralcodes
 
 :::{tip}
 
-If you are on Windows, we recommend using [Python install manager]() for installing and managing Python runtimes. Install the Python install manager with `winget` by typing `winget install python.pythoninstallmanager`.
+If you are on Windows, we recommend using [Python install manager](https://docs.python.org/3/using/windows.html#python-install-manager) for installing and managing Python runtimes. Install the Python install manager with `winget` by typing `winget install python.pythoninstallmanager`.
 
 :::
