@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import typing as t
 
+# ACI 318-19, Table 20.2.1.3(a), SI equivalents for ASTM A615
+# reinforcement grades recognized by the code.
 REINFORCEMENT_GRADES = {
     '40': {'fy': 280.0, 'fu': 420.0},
     '60': {'fy': 420.0, 'fu': 550.0},
@@ -23,33 +25,25 @@ def Es() -> float:
     return 200000.0
 
 
-def fy_design(fy: float, phi: float = 1.0) -> float:
+def fy_design(fy: float) -> float:
     """The design yield strength of reinforcement.
 
     ACI 318-19 applies strength reduction factors (phi) at the
-    member capacity level, not the material level. The default
-    phi=1.0 returns the unreduced yield strength, which is the
-    standard ACI convention for material properties.
+    member capacity level, not the material level. This function
+    therefore returns the unreduced yield strength.
 
     Args:
         fy (float): The specified yield strength in MPa.
-
-    Keyword Args:
-        phi (float): Optional strength reduction factor.
-            Default is 1.0 (no reduction).
 
     Returns:
         float: The design yield strength in MPa.
 
     Raises:
         ValueError: If fy is not positive.
-        ValueError: If phi is not in (0, 1].
     """
     if fy <= 0:
         raise ValueError(f'fy={fy} must be positive')
-    if phi <= 0 or phi > 1.0:
-        raise ValueError(f'phi={phi} must be in the range (0, 1]')
-    return phi * fy
+    return fy
 
 
 def epsyd(fy: float, _Es: float = 200000.0) -> float:
@@ -78,7 +72,7 @@ def reinforcement_grade_props(
 ) -> t.Dict[str, float]:
     """Return the minimum specified properties for a reinforcement grade.
 
-    ACI 318-19, Table 20.2.2.4a (SI equivalents).
+    ACI 318-19, Table 20.2.1.3(a) (SI equivalents).
 
     Args:
         grade (str): The ASTM reinforcement grade designation.
@@ -87,6 +81,12 @@ def reinforcement_grade_props(
     Returns:
         Dict[str, float]: A dict with keys 'fy' (yield strength in
         MPa) and 'fu' (ultimate strength in MPa).
+
+    Note:
+        ACI 318-19 Table 20.2.1.3(a) does not provide a single
+        grade-level ultimate strain. Applicable elongation requirements
+        depend on the reinforcement specification and bar size, so they
+        are not returned here.
 
     Raises:
         ValueError: If the grade is not recognized.

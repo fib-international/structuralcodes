@@ -5,7 +5,7 @@ import typing as t
 from structuralcodes.codes import _use_design_code
 
 from ._concrete import Concrete
-from ._concreteACI318 import ConcreteACI318
+from ._concreteACI318_19 import ConcreteACI318_19
 from ._concreteEC2_2004 import ConcreteEC2_2004
 from ._concreteEC2_2023 import ConcreteEC2_2023
 from ._concreteMC2010 import ConcreteMC2010
@@ -13,14 +13,14 @@ from ._concreteMC2010 import ConcreteMC2010
 __all__ = [
     'create_concrete',
     'Concrete',
-    'ConcreteACI318',
+    'ConcreteACI318_19',
     'ConcreteMC2010',
     'ConcreteEC2_2023',
     'ConcreteEC2_2004',
 ]
 
 CONCRETES: t.Dict[str, Concrete] = {
-    'ACI 318-19': ConcreteACI318,
+    'ACI 318-19': ConcreteACI318_19,
     'fib Model Code 2010': ConcreteMC2010,
     'EUROCODE 2 1992-1-1:2004': ConcreteEC2_2004,
     'EUROCODE 2 1992-1-1:2023': ConcreteEC2_2023,

@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from structuralcodes.codes.aci318 import _reinforcement_material_properties
+from structuralcodes.codes.aci318_19 import _reinforcement_material_properties
 
 
 def test_Es():
@@ -22,16 +22,9 @@ def test_Es():
     ],
 )
 def test_fy_design_default(fy, expected):
-    """Test design yield strength with default phi=1.0."""
+    """Test design yield strength returns unreduced fy."""
     assert math.isclose(
         _reinforcement_material_properties.fy_design(fy), expected
-    )
-
-
-def test_fy_design_with_phi():
-    """Test design yield strength with explicit phi."""
-    assert math.isclose(
-        _reinforcement_material_properties.fy_design(420, phi=0.9), 378
     )
 
 
@@ -39,12 +32,6 @@ def test_fy_design_invalid_fy():
     """Test fy_design raises for non-positive fy."""
     with pytest.raises(ValueError):
         _reinforcement_material_properties.fy_design(-1)
-
-
-def test_fy_design_invalid_phi():
-    """Test fy_design raises for phi outside (0, 1]."""
-    with pytest.raises(ValueError):
-        _reinforcement_material_properties.fy_design(420, phi=1.5)
 
 
 @pytest.mark.parametrize(
