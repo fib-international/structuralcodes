@@ -240,7 +240,15 @@ class MarinIntegrator(SectionIntegrator):
             z.append(reinf_data[1])
             IA.append(integrand * reinf_data[2])
 
-        input.append((1, np.array(y), np.array(z), np.array(IA)))
+        try:
+            # This is necessary if there is more than one constitutive law for
+            # the point geometries, and there is an unequal number of point
+            # geometries for each constitutive law
+            input.append((1, np.hstack(y), np.hstack(z), np.hstack(IA)))
+        except ValueError:
+            # If there are no point geometries np.hstack fails and raises a
+            # ValueError
+            input.append((1, np.array(y), np.array(z), np.array(IA)))
         return integration_data
 
     def prepare_input(
