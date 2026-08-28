@@ -283,9 +283,13 @@ class BeamSectionCalculator(SectionCalculator):
             eigres = np.linalg.eig(np.array([[iyy, iyz], [iyz, izz]]))
             max_idx = np.argmax(eigres[0])
             min_idx = 0 if max_idx == 1 else 1
-            i11 = eigres[0][max_idx]
-            i22 = eigres[0][min_idx]
-            theta = np.arccos(np.dot(np.array([1, 0]), eigres[1][:, max_idx]))
+            # The principal values are cast to real type to ensure no imaginary
+            # part is present
+            i11 = np.real(eigres[0][max_idx])
+            i22 = np.real(eigres[0][min_idx])
+            theta = np.real(
+                np.arccos(np.dot(np.array([1, 0]), eigres[1][:, max_idx]))
+            )
             return i11, i22, theta
 
         gp.i11, gp.i22, gp.theta = find_principal_axes_moments(
