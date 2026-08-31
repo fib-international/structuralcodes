@@ -223,9 +223,6 @@ class MarinIntegrator(SectionIntegrator):
             )
         # Now use the integration data (either just created or passed as
         # argument) to fill the input
-        y = []
-        z = []
-        IA = []
         for reinf_data in integration_data:
             # All have the same constitutive law
             strains = strain[0] + strain[1] * reinf_data[1]
@@ -236,19 +233,17 @@ class MarinIntegrator(SectionIntegrator):
                 integrand = reinf_data[3].get_tangent(strains)
             else:
                 raise ValueError(f'Unknown integrate type: {integrate}')
-            y.append(reinf_data[0])
-            z.append(reinf_data[1])
-            IA.append(integrand * reinf_data[2])
+            # Append integration data to prepared input
+            input.append(
+                (
+                    1,
+                    reinf_data[0],  # The y-coordinate
+                    reinf_data[1],  # The z-coordinate
+                    integrand
+                    * reinf_data[2],  # The integrand multiplied with the area
+                )
+            )
 
-        try:
-            # This is necessary if there is more than one constitutive law for
-            # the point geometries, and there is an unequal number of point
-            # geometries for each constitutive law
-            input.append((1, np.hstack(y), np.hstack(z), np.hstack(IA)))
-        except ValueError:
-            # If there are no point geometries np.hstack fails and raises a
-            # ValueError
-            input.append((1, np.array(y), np.array(z), np.array(IA)))
         return integration_data
 
     def prepare_input(

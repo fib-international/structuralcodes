@@ -2117,8 +2117,7 @@ def test_marin_integrator_two_reinforcement_materials():
     n_bars_top = 2
     n_bars_bot = 4
 
-    geometry = add_reinforcement_line(
-        geometry,
+    coords_bottom_reinf = (
         (
             -width / 2 + cover + diameter_reinf / 2,
             -height / 2 + cover + diameter_reinf / 2,
@@ -2127,32 +2126,64 @@ def test_marin_integrator_two_reinforcement_materials():
             width / 2 - cover - diameter_reinf / 2,
             -height / 2 + cover + diameter_reinf / 2,
         ),
+    )
+    coords_top_reinf = (
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            height / 2 - cover - diameter_reinf / 2,
+        ),
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            height / 2 - cover - diameter_reinf / 2,
+        ),
+    )
+
+    geometry_one_material = add_reinforcement_line(
+        geometry,
+        *coords_bottom_reinf,
         diameter_reinf,
         reinforcement_1,
         n_bars_bot,
     )
-    geometry = add_reinforcement_line(
+    geometry_one_material = add_reinforcement_line(
+        geometry_one_material,
+        *coords_top_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_top,
+    )
+    geometry_two_materials = add_reinforcement_line(
         geometry,
-        (
-            -width / 2 + cover + diameter_reinf / 2,
-            height / 2 - cover - diameter_reinf / 2,
-        ),
-        (
-            width / 2 - cover - diameter_reinf / 2,
-            height / 2 - cover - diameter_reinf / 2,
-        ),
+        *coords_bottom_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_bot,
+    )
+    geometry_two_materials = add_reinforcement_line(
+        geometry_two_materials,
+        *coords_top_reinf,
         diameter_reinf,
         reinforcement_2,
         n_bars_top,
     )
 
     # Create section, make sure that the Marin integrator is used
-    section = BeamSection(geometry, integrator='marin')
+    section_one_material = BeamSection(
+        geometry_one_material, integrator='marin'
+    )
+    section_two_materials = BeamSection(
+        geometry_two_materials, integrator='marin'
+    )
 
     # Trigger formulation of integration data by integrating a dummy strain
     # profile
-    integration_result = section.section_calculator.integrate_strain_profile(
-        np.zeros(3)
-    )
+    bending_strength_one_material = (
+        section_one_material.section_calculator.calculate_bending_strength()
+    ).m_y
+    bending_strength_two_materials = (
+        section_two_materials.section_calculator.calculate_bending_strength()
+    ).m_y
 
-    assert integration_result is not None
+    assert math.isclose(
+        bending_strength_one_material, bending_strength_two_materials
+    )
