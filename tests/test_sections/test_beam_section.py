@@ -2080,3 +2080,110 @@ def test_wide_section():
     moment_curvature = section.section_calculator.calculate_moment_curvature()
 
     assert moment_curvature is not None
+
+
+def test_marin_integrator_two_reinforcement_materials():
+    """Test using Marin integrator on a geometry with two different
+    reinforcement materials present.
+
+    Regression test for #368. Based on geometry from quickstart example.
+    """
+    # Create a concrete and a reinforcement
+    fck = 45
+    fyk = 500
+    ftk = 550
+    Es = 200000
+    epsuk = 0.07
+
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement_1 = ReinforcementEC2_2004(
+        fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk
+    )
+    reinforcement_2 = ReinforcementEC2_2004(
+        fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk
+    )
+
+    # Create a rectangular geometry
+    width = 250
+    height = 500
+
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    # Add reinforcement
+    diameter_reinf = 25
+    cover = 50
+    n_bars_top = 2
+    n_bars_bot = 4
+
+    coords_bottom_reinf = (
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+    )
+    coords_top_reinf = (
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            height / 2 - cover - diameter_reinf / 2,
+        ),
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            height / 2 - cover - diameter_reinf / 2,
+        ),
+    )
+
+    geometry_one_material = add_reinforcement_line(
+        geometry,
+        *coords_bottom_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_bot,
+    )
+    geometry_one_material = add_reinforcement_line(
+        geometry_one_material,
+        *coords_top_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_top,
+    )
+    geometry_two_materials = add_reinforcement_line(
+        geometry,
+        *coords_bottom_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_bot,
+    )
+    geometry_two_materials = add_reinforcement_line(
+        geometry_two_materials,
+        *coords_top_reinf,
+        diameter_reinf,
+        reinforcement_2,
+        n_bars_top,
+    )
+
+    # Create section, make sure that the Marin integrator is used
+    section_one_material = BeamSection(
+        geometry_one_material, integrator='marin'
+    )
+    section_two_materials = BeamSection(
+        geometry_two_materials, integrator='marin'
+    )
+
+    # Trigger formulation of integration data by integrating a dummy strain
+    # profile
+    bending_strength_one_material = (
+        section_one_material.section_calculator.calculate_bending_strength()
+    ).m_y
+    bending_strength_two_materials = (
+        section_two_materials.section_calculator.calculate_bending_strength()
+    ).m_y
+
+    assert math.isclose(
+        bending_strength_one_material, bending_strength_two_materials
+    )
