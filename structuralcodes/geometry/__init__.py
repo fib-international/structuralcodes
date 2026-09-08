@@ -15,6 +15,7 @@ from ._reinforcement import (
     add_reinforcement_circle,
     add_reinforcement_line,
 )
+from ._shell_geometry import ShellGeometry, ShellReinforcement
 
 __all__ = [
     'Geometry',
@@ -28,4 +29,6 @@ __all__ = [
     'CircularGeometry',
     'add_reinforcement_circle',
     'RectangularGeometry',
+    'ShellGeometry',
+    'ShellReinforcement',
 ]
