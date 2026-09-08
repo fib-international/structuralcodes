@@ -1132,7 +1132,7 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
         NoConvergenceWarning, match='Maximum number of iterations reached'
     ):
         section.section_calculator.calculate_strain_profile(
-            n, my, mz, tol=1e-7
+            n, my, mz, tol=1e-7, max_iter=10
         )
 
 
