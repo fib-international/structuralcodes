@@ -1779,8 +1779,8 @@ class BeamSectionCalculator(SectionCalculator):
         my,
         mz,
         initial: bool = False,
-        max_iter: int = 10,
-        tol: float = 1e-6,
+        max_iter: int = 15,
+        tol: float = 1e-7,
     ) -> s_res.StrainProfileResult:
         """Get the strain plane for a given axial force and biaxial bending.
 
@@ -1791,9 +1791,9 @@ class BeamSectionCalculator(SectionCalculator):
             initial (bool): If True the modified newton with initial tangent is
                 used (default = False).
             max_iter (int): the maximum number of iterations in the iterative
-                process (default = 10).
+                process (default = 15).
             tol (float): the tolerance for convergence test in terms of strain
-                increment.
+                increment (default = 1e-7).
 
         Returns:
             StrainProfileResult: A custom object of class StrainProfileResult

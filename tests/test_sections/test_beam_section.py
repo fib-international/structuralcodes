@@ -1132,7 +1132,7 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
         NoConvergenceWarning, match='Maximum number of iterations reached'
     ):
         section.section_calculator.calculate_strain_profile(
-            n, my, mz, tol=1e-7
+            n, my, mz, tol=1e-7, max_iter=10
         )
 
 
@@ -2187,3 +2187,86 @@ def test_marin_integrator_two_reinforcement_materials():
     assert math.isclose(
         bending_strength_one_material, bending_strength_two_materials
     )
+
+
+def test_section_with_web_reinforcement():
+    """Test a section with web reinforcement.
+
+    Calculating the strain plane of this section with the convergence criterion
+    and tolerance of v0.7.1 does not give equilibrium.
+    """
+    # Set parameters
+    fck = 45
+    fyk = 500
+    ftk = fyk * 1.08
+    Es = 200000
+    epsuk = 0.07
+
+    gamma_c = 1.5
+    alpha_cc = 0.85
+    gamma_s = 1.15
+
+    # Geometri
+    width = 400
+    height = 1200
+
+    # Armering - lengde
+    cover = 50
+
+    phi_s = 16
+    # s_l = 100
+    n_s = 11
+
+    # Create materials
+    concrete = ConcreteEC2_2004(
+        fck=fck, alpha_cc=alpha_cc, gamma_c=gamma_c, constitutive_law='sargin'
+    )
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk, gamma_s=gamma_s
+    )
+
+    # Create geometry
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    z_bar = -height / 2 + cover + phi_s / 2
+    x_bar = -width / 2 + cover + phi_s / 2
+    for x in (x_bar, -x_bar):
+        geometry = add_reinforcement_line(
+            geometry,
+            (x, z_bar),
+            (x, -z_bar),
+            diameter=phi_s,
+            material=reinforcement,
+            n=n_s,
+        )
+
+    geometry
+
+    # Create section
+    section = BeamSection(geometry=geometry, integrator='fiber')
+
+    # Calculate the bending strength
+    bending_strength = section.section_calculator.calculate_bending_strength(
+        theta=np.pi
+    )
+    strain_plane_bending_strength = np.array(
+        [
+            bending_strength.eps_a,
+            bending_strength.chi_y,
+            bending_strength.chi_z,
+        ]
+    )
+
+    # Calculate the strain plane corresponding to the bending strength
+    strain_plane_iterative = np.array(
+        section.section_calculator.calculate_strain_profile(
+            n=bending_strength.n,
+            my=bending_strength.m_y,
+            mz=bending_strength.m_z,
+        ).to_list()
+    )
+
+    # Assert
+    assert np.allclose(strain_plane_bending_strength, strain_plane_iterative)
