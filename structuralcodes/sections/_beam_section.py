@@ -71,9 +71,7 @@ class BeamSection(Section):
             SectionCalculator to customize the behaviour. See
             BeamSectionCalculator for available keyword arguments.
         """
-        if name is None:
-            name = 'BeamSection'
-        super().__init__(name)
+        super().__init__(name=name, base_name='BeamSection')
         # Since only CompoundGeometry has the attribute geometries,
         # if a SurfaceGeometry is input, we create a CompoundGeometry
         # with only that geometry contained. After that all algorithms
@@ -285,9 +283,13 @@ class BeamSectionCalculator(SectionCalculator):
             eigres = np.linalg.eig(np.array([[iyy, iyz], [iyz, izz]]))
             max_idx = np.argmax(eigres[0])
             min_idx = 0 if max_idx == 1 else 1
-            i11 = eigres[0][max_idx]
-            i22 = eigres[0][min_idx]
-            theta = np.arccos(np.dot(np.array([1, 0]), eigres[1][:, max_idx]))
+            # The principal values are cast to real type to ensure no imaginary
+            # part is present
+            i11 = np.real(eigres[0][max_idx])
+            i22 = np.real(eigres[0][min_idx])
+            theta = np.real(
+                np.arccos(np.dot(np.array([1, 0]), eigres[1][:, max_idx]))
+            )
             return i11, i22, theta
 
         gp.i11, gp.i22, gp.theta = find_principal_axes_moments(
@@ -320,56 +322,85 @@ class BeamSectionCalculator(SectionCalculator):
             rotated frame y*z* it is a case of uniaxial bending).
         """
         chi_min = 1e10
-        for g in geom.geometries + geom.point_geometries:
-            for other_g in geom.geometries + geom.point_geometries:
-                # This is left on purpose: even if tempted we should not do
-                # this check:
-                # if g != other_g:
-                eps_p = g.material.constitutive_law.get_ultimate_strain(
+        # Check if the section is a reinforced concrete section:
+        # If it is, we need to obtain the "yield" strain of concrete
+        # (-0.002 for default parabola-rectangle concrete)
+        is_rc_section = self.section.geometry.reinforced_concrete
+
+        # Pre-process all data to avoid expensive calls in the double loop
+        # below
+        geom_strain_data = {}
+        all_geometries = geom.geometries + geom.point_geometries
+
+        for g in all_geometries:
+            # Initialize empty dict
+            geom_strain_data.setdefault(
+                g,
+                {
+                    'eps_p': None,
+                    'eps_n': None,
+                    'y_p': None,
+                    'y_n': None,
+                },
+            )
+
+            # Find ultimate strain given the 'yielding' arg to the function
+            geom_strain_data[g]['eps_p'] = (
+                g.material.constitutive_law.get_ultimate_strain(
                     yielding=yielding
                 )[1]
-                if isinstance(g, SurfaceGeometry):
-                    y_p = g.polygon.bounds[1]
-                elif isinstance(g, PointGeometry):
-                    y_p = g._point.coords[0][1]
-                # Check if the section is a reinforced concrete section:
-                # If it is, we need to obtain the "yield" strain of concrete
-                # (-0.002 for default parabola-rectangle concrete)
-                # If the geometry is not concrete, don't get the yield strain
-                # If it is not a reinforced concrete section, return
-                # the yield strain if asked.
-                is_rc_section = self.section.geometry.reinforced_concrete
-                is_concrete_geom = (
-                    isinstance(other_g, SurfaceGeometry) and other_g.concrete
-                )
+            )
 
-                use_yielding = (
-                    yielding
-                    if (
-                        (is_rc_section and is_concrete_geom)
-                        or (not is_rc_section)
-                    )
-                    else False
-                )
+            # Find bounding coordinate
+            if isinstance(g, SurfaceGeometry):
+                geom_strain_data[g]['y_p'] = g.polygon.bounds[1]
+            elif isinstance(g, PointGeometry):
+                geom_strain_data[g]['y_p'] = g._point.coords[0][1]
 
-                eps_n = other_g.material.constitutive_law.get_ultimate_strain(
+            if isinstance(g, SurfaceGeometry):
+                geom_strain_data[g]['y_n'] = g.polygon.bounds[3]
+            elif isinstance(g, PointGeometry):
+                geom_strain_data[g]['y_n'] = g._point.coords[0][1]
+
+            # If the geometry is not concrete, don't get the yield strain
+            # If it is not a reinforced concrete section, return
+            # the yield strain if asked.
+            is_concrete_geom = isinstance(g, SurfaceGeometry) and g.concrete
+
+            use_yielding = (
+                yielding
+                if (
+                    (is_rc_section and is_concrete_geom) or (not is_rc_section)
+                )
+                else False
+            )
+
+            geom_strain_data[g]['eps_n'] = (
+                g.material.constitutive_law.get_ultimate_strain(
                     yielding=use_yielding
                 )[0]
-
-                if isinstance(other_g, SurfaceGeometry):
-                    y_n = other_g.polygon.bounds[3]
-                elif isinstance(other_g, PointGeometry):
-                    y_n = other_g._point.coords[0][1]
+            )
+        for g, this_geom_strain_data in geom_strain_data.items():
+            # This is left on purpose: even if tempted we should not do
+            # this check:
+            # if g != other_g:
+            eps_p = this_geom_strain_data['eps_p']
+            y_p = this_geom_strain_data['y_p']
+            for _, other_geom_strain_data in geom_strain_data.items():
+                eps_n = other_geom_strain_data['eps_n']
+                y_n = other_geom_strain_data['y_n']
                 if y_p >= y_n:
                     continue
                 chi = -(eps_p - eps_n) / (y_p - y_n)
-                # print(y_p,eps_p,y_n,eps_n,chi)
+
                 if chi < chi_min:
                     chi_min = chi
                     eps_0 = eps_n + chi_min * y_n
                     y_n_min = y_n
                     y_p_min = y_p
+
         y_p, y_n = y_p_min, y_n_min
+
         # In standard CRS negative curvature stretches bottom fiber
         strain = [eps_0, -chi_min, 0]
         return (y_n, y_p, strain)
@@ -559,7 +590,7 @@ class BeamSectionCalculator(SectionCalculator):
                 _,
                 _,
             ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [eps_0_b, curv, 0], tri=self.triangulated_data
+                geom, [eps_0_b, curv, 0], tri=self.integration_data
             )
             dn_b = n_int - n
             if dn_a * dn_b < 0:
@@ -595,7 +626,7 @@ class BeamSectionCalculator(SectionCalculator):
                 ) = self.integrator.integrate_strain_response_on_geometry(
                     geom,
                     [eps_0_attempts[j], curv, 0],
-                    tri=self.triangulated_data,
+                    tri=self.integration_data,
                 )
                 dn_attempts[j] = n_int - n
             if dn_a > 0:
@@ -1748,8 +1779,8 @@ class BeamSectionCalculator(SectionCalculator):
         my,
         mz,
         initial: bool = False,
-        max_iter: int = 10,
-        tol: float = 1e-6,
+        max_iter: int = 15,
+        tol: float = 1e-7,
     ) -> s_res.StrainProfileResult:
         """Get the strain plane for a given axial force and biaxial bending.
 
@@ -1760,9 +1791,9 @@ class BeamSectionCalculator(SectionCalculator):
             initial (bool): If True the modified newton with initial tangent is
                 used (default = False).
             max_iter (int): the maximum number of iterations in the iterative
-                process (default = 10).
+                process (default = 15).
             tol (float): the tolerance for convergence test in terms of strain
-                increment.
+                increment (default = 1e-7).
 
         Returns:
             StrainProfileResult: A custom object of class StrainProfileResult

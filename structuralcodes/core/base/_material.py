@@ -15,6 +15,8 @@ class Material(abc.ABC):
     _initial_strain: t.Optional[float] = None
     _initial_stress: t.Optional[float] = None
     _strain_compatibility: t.Optional[bool] = None
+    _material_counter: t.ClassVar[int] = 0
+    id: int
 
     def __init__(
         self,
@@ -23,6 +25,7 @@ class Material(abc.ABC):
         initial_stress: t.Optional[float] = None,
         strain_compatibility: t.Optional[bool] = None,
         name: t.Optional[str] = None,
+        base_name: str = 'Material',
     ) -> None:
         """Initializes an instance of a new material.
 
@@ -37,7 +40,9 @@ class Material(abc.ABC):
                 True, the material deforms with the geometry. If False, the
                 stress in the material upon loading is kept constant
                 corresponding to the initial strain.
-            name (Optional[str]): descriptive name of the material
+            name (Optional[str]): Descriptive name of the material
+            base_name (str): If name is not given, use this argument together
+                with a global counter to create a unique name for the material.
 
         Raise:
             ValueError: if both initial_strain and initial_stress are provided
@@ -50,7 +55,8 @@ class Material(abc.ABC):
         self._initial_strain = initial_strain
         self._initial_stress = initial_stress
         self._strain_compatibility = strain_compatibility
-        self._name = name if name is not None else 'Material'
+        self.id = Material.return_global_counter_and_increase()
+        self._name = name if name is not None else f'{base_name}_{self.id}'
 
     @property
     def constitutive_law(self) -> ConstitutiveLaw:
@@ -61,6 +67,17 @@ class Material(abc.ABC):
     def name(self):
         """Returns the name of the material."""
         return self._name
+
+    @classmethod
+    def _increase_global_counter(cls):
+        cls._material_counter += 1
+
+    @classmethod
+    def return_global_counter_and_increase(cls):
+        """Returns the current counter and increases it by one."""
+        counter = cls._material_counter
+        cls._increase_global_counter()
+        return counter
 
     @property
     def density(self):

@@ -4,8 +4,12 @@ import math
 
 import pytest
 
-from structuralcodes.materials.basic import ElasticMaterial, GenericMaterial
-from structuralcodes.materials.constitutive_laws import UserDefined
+from structuralcodes.materials.basic import (
+    ElasticMaterial,
+    ElasticPlasticMaterial,
+    GenericMaterial,
+)
+from structuralcodes.materials.constitutive_laws import Elastic, UserDefined
 
 
 @pytest.mark.parametrize(
@@ -235,3 +239,57 @@ def test_userdefined_set_ultimate_strain_tuple(E, fy, eps_su):
     assert math.isclose(
         material.constitutive_law.get_ultimate_strain()[1], max(eps_su)
     )
+
+
+def test_name_elastic():
+    """Test the name property of an elastic material."""
+    # Create a material with a given name
+    given_name = 'A material'
+    material = ElasticMaterial(E=30000, density=2500, name=given_name)
+
+    assert material.name == given_name
+
+    # Create a material with a default name
+    counter = ElasticMaterial._material_counter
+    material = ElasticMaterial(E=30000, density=2500)
+
+    assert material.name == f'ElasticMaterial_{counter}'
+
+
+def test_name_elasticplastic():
+    """Test the name property of an elastic plastic material."""
+    # Create a material with a given name
+    given_name = 'A material'
+    material = ElasticPlasticMaterial(
+        E=210000, fy=355, density=7850, name=given_name
+    )
+
+    assert material.name == given_name
+
+    # Create a material with a default name
+    counter = ElasticPlasticMaterial._material_counter
+    material = ElasticPlasticMaterial(E=210000, fy=355, density=7850)
+
+    assert material.name == f'ElasticPlasticMaterial_{counter}'
+
+
+def test_name_generic():
+    """Test the name property of a generic material."""
+    # Create a constitutive law
+    constitutive_law = Elastic(E=30000)
+    # Create a material with a given name
+    given_name = 'A material'
+    material = GenericMaterial(
+        constitutive_law=constitutive_law, density=2500, name=given_name
+    )
+
+    assert material.name == given_name
+
+    # Create a material with a default name
+    counter = GenericMaterial._material_counter
+    material = GenericMaterial(
+        constitutive_law=constitutive_law,
+        density=2500,
+    )
+
+    assert material.name == f'GenericMaterial_{counter}'

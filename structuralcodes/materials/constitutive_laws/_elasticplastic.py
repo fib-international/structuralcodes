@@ -37,8 +37,7 @@ class ElasticPlastic(ConstitutiveLaw):
             eps_su (float, optional): The ultimate strain.
             name (str, optional): A descriptive name for the constitutive law.
         """
-        name = name if name is not None else 'ElasticPlasticLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='ElasticPlasticLaw')
         if E > 0:
             self._E = E
         else:

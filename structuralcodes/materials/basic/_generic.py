@@ -37,7 +37,8 @@ class GenericMaterial(Material):
             initial_strain=initial_strain,
             initial_stress=initial_stress,
             strain_compatibility=strain_compatibility,
-            name=name if name else 'GenericMaterial',
+            name=name,
+            base_name='GenericMaterial',
         )
         self._constitutive_law = constitutive_law
         self._apply_initial_strain()

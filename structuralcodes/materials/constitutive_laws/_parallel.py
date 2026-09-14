@@ -39,8 +39,7 @@ class Parallel(ConstitutiveLaw):
             weights (List[float], optional): List of weights for each
                 constitutive law. If None (Default), all weights are set to 1.
         """
-        name = name if name is not None else 'ParallelLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='ParallelLaw')
         for idx, law in enumerate(constitutive_laws):
             if not isinstance(law, ConstitutiveLaw):
                 raise TypeError(

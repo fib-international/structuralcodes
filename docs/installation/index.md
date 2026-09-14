@@ -12,7 +12,7 @@ python -m pip install structuralcodes
 :::
 ::::
 
-::::{tab-item} Python launcher
+::::{tab-item} Python install manager
 :sync: py
 
 :::{code-block} pwsh
@@ -32,7 +32,7 @@ python -m pip install --upgrade structuralcodes
 :::
 ::::
 
-::::{tab-item} Python launcher
+::::{tab-item} Python install manager
 :sync: py
 
 :::{code-block} pwsh
@@ -40,3 +40,9 @@ py -m pip install --upgrade structuralcodes
 :::
 ::::
 :::::
+
+:::{tip}
+
+If you are on Windows, we recommend using [Python install manager](https://docs.python.org/3/using/windows.html#python-install-manager) for installing and managing Python runtimes. Install the Python install manager with `winget` by typing `winget install python.pythoninstallmanager`.
+
+:::

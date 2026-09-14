@@ -37,8 +37,7 @@ class Elastic(ConstitutiveLaw):
                 and positive strains. If a tuple is provided, it should be
                 given as (negative, positive). Default value = None.
         """
-        name = name if name is not None else 'ElasticLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='ElasticLaw')
         self._E = E
         if E <= 0:
             raise ValueError('Elastic modulus should be greater than 0')
