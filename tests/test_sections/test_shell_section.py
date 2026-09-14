@@ -169,7 +169,7 @@ def test_elastic_strain_profile(Ec, nu, t, nx, ny, nxy, mx, my, mxy):
 
 
 def test_default_equals_explicit_number_of_layers():
-    """Default n_layers (100) equals explicit 100."""
+    """Default n_layers (20) equals explicit 20."""
     t = 200
     constitutive_law = Elastic2D(30000, 0.20)
     material = GenericMaterial(density=2500, constitutive_law=constitutive_law)
@@ -177,7 +177,7 @@ def test_default_equals_explicit_number_of_layers():
     K0 = shell_0.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )
-    shell_1 = ShellSection(ShellGeometry(t, material=material), n_layers=100)
+    shell_1 = ShellSection(ShellGeometry(t, material=material), n_layers=20)
     K1 = shell_1.section_calculator.integrate_strain_profile(
         np.zeros(6), integrate='modulus'
     )

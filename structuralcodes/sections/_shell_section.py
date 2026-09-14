@@ -69,7 +69,7 @@ class ShellSectionCalculator(SectionCalculator):
         """
         super().__init__(section=section)
         self.integrator = ShellFiberIntegrator()
-        self.n_layers = kwargs.get('n_layers', 100)
+        self.n_layers = kwargs.get('n_layers', 20)
         self.layers: t.Optional[t.Tuple] = None
 
     def _calculate_gross_section_properties(self):
@@ -147,7 +147,7 @@ class ShellSectionCalculator(SectionCalculator):
         my: float,
         mxy: float,
         initial: bool = False,
-        max_iter: int = 10,
+        max_iter: int = 50,
         tol: float = 1e-6,
     ) -> t.List[float]:
         """Computes the strain profile for a given set of stress resultants.
