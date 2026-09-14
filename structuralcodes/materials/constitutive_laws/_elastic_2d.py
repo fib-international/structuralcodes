@@ -3,10 +3,8 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ._elastic import Elastic
 
-
-class Elastic2D(Elastic):
+class Elastic2D:
     """Class for elastic constitutive law for 2D operations."""
 
     __materials__: t.Tuple[str] = (
@@ -19,16 +17,14 @@ class Elastic2D(Elastic):
         self,
         E: float,
         nu: float,
-        name: t.Optional[str] = None,
     ) -> None:
         """Initialize an Elastic2D Material.
 
         Arguments:
             E (float): The elastic modulus.
             nu (float): Poisson's ratio.
-            name (str, optional): A descriptive name for the constitutive law.
         """
-        super().__init__(E=E, name=name)
+        self._E = E
         self._nu = nu
 
         self._stiffness_matrix: t.Optional[ArrayLike] = None

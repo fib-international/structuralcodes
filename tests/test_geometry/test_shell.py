@@ -9,7 +9,6 @@ from structuralcodes.geometry import (
     ShellReinforcement,
 )
 from structuralcodes.materials.basic import GenericMaterial
-from structuralcodes.materials.concrete import ConcreteEC2_2004
 from structuralcodes.materials.constitutive_laws import (
     Elastic2D,
 )
@@ -22,13 +21,13 @@ def test_shell_geometry():
     const = Elastic2D(E=200000, nu=0.2)
 
     # Create a material to use
-    concrete = ConcreteEC2_2004(fck=35, constitutive_law=const)
+    concrete = GenericMaterial(constitutive_law=const, density=2500)
 
     shell = ShellGeometry(
         thickness=200, material=concrete, name='Shell', group_label='Group1'
     )
     assert shell.thickness == 200
-    assert isinstance(shell.material, ConcreteEC2_2004)
+    assert isinstance(shell.material, GenericMaterial)
     assert shell.name == 'Shell'
     assert shell.group_label == 'Group1'
 
