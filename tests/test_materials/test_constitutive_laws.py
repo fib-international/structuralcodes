@@ -326,7 +326,7 @@ def test_concrete_smeared_cracking(fc, eps_0, eps_u, strain, stress):
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
     mat = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )
@@ -354,7 +354,7 @@ def test_get_secant_shape(strain, nu):
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
     mat = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )
@@ -411,7 +411,7 @@ def test_get_secant(fc, eps_0, eps_u, nu, strain, expected):
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
     mat = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )

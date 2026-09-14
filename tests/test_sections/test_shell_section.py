@@ -210,7 +210,7 @@ def test_parabola_zero_initial_nu(nx, nxy, expected):
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=0)
     parabola_rectangle = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )
@@ -266,7 +266,7 @@ def test_parabola_initial_nu(nx, nxy, expected):
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
     parabola_rectangle = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )
@@ -307,7 +307,7 @@ def test_exceed_max_iterations():
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=0)
     parabola_rectangle = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )
@@ -427,7 +427,7 @@ def test_compare_uniaxial_with_generic_section_reinforcement(  # noqa: PLR0915
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
     smeared_cracking = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )
@@ -531,7 +531,7 @@ def test_compare_constitutive_law_and_section(strain, nu):
     strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
     poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
     constitutive_law = ConcreteSmearedCracking(
-        uniaxial_compression=uniaxial_compression,
+        uniaxial_law=uniaxial_compression,
         strength_reduction_lateral_cracking=strength_reduction,
         poisson_reduction=poisson_reduction,
     )

@@ -27,20 +27,20 @@ class ConcreteSmearedCracking:
 
     _initial_modulus_compression: t.Optional[float] = None
     _initial_modulus_tension: t.Optional[float] = None
-    _uniaxial_compression: ConstitutiveLaw
+    _uniaxial_law: ConstitutiveLaw
     _strength_reduction_lateral_cracking: StrengthReductionLateralCracking
     _poisson_reduction: PoissonReduction
     _cracking_criterion: CrackingCriterion
 
     def __init__(
         self,
-        uniaxial_compression: ConstitutiveLaw,
+        uniaxial_law: ConstitutiveLaw,
         strength_reduction_lateral_cracking: StrengthReductionLateralCracking,
         poisson_reduction: PoissonReduction,
         cracking_criterion: t.Optional[CrackingCriterion] = None,
     ):
         """Initialize the model."""
-        self._uniaxial_compression = uniaxial_compression
+        self._uniaxial_law = uniaxial_law
         self._strength_reduction_lateral_cracking = (
             strength_reduction_lateral_cracking
         )
@@ -68,8 +68,8 @@ class ConcreteSmearedCracking:
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking.reduction(eps_pf)
 
-        # Compute the principal stresses from the uniaxial compression law.
-        sig_p = self.uniaxial_compression.get_stress(eps_pf)
+        # Compute the principal stresses from the uniaxial law.
+        sig_p = self.uniaxial_law.get_stress(eps_pf)
 
         # Apply the compressive-strength reduction factor
         sig_p[sig_p < 0] *= beta
@@ -94,7 +94,7 @@ class ConcreteSmearedCracking:
         cracked = self.cracking_criterion.cracked(eps_p=eps_pf)
 
         # Establish the diagonal of material stiffness matrix
-        D = self.uniaxial_compression.get_secant(eps_pf)
+        D = self.uniaxial_law.get_secant(eps_pf)
 
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking.reduction(eps_pf)
@@ -153,9 +153,9 @@ class ConcreteSmearedCracking:
         return self.poisson_reduction.poisson_matrix(cracked=True) @ eps_p
 
     @property
-    def uniaxial_compression(self) -> ConstitutiveLaw:
-        """Return the constitutive law for uniaxial compression."""
-        return self._uniaxial_compression
+    def uniaxial_law(self) -> ConstitutiveLaw:
+        """Return the uniaxial constitutive law."""
+        return self._uniaxial_law
 
     @property
     def strength_reduction_lateral_cracking(
@@ -178,8 +178,8 @@ class ConcreteSmearedCracking:
     def initial_modulus_compression(self) -> float:
         """Return the initial modulus in uniaxial compression."""
         if self._initial_modulus_compression is None:
-            self._initial_modulus_compression = (
-                self.uniaxial_compression.get_tangent(0.0)
+            self._initial_modulus_compression = self.uniaxial_law.get_tangent(
+                0.0
             )
 
         return self._initial_modulus_compression
