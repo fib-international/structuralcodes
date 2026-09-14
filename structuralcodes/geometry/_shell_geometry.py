@@ -5,11 +5,11 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ..core.base import Material
+from ..core.base import Material, _GroupMixin
 from ._geometry import Geometry
 
 
-class ShellReinforcement(Geometry):
+class ShellReinforcement(_GroupMixin, Geometry):
     """A class for representing reinforcement in a shell geometry."""
 
     _z: float
@@ -36,7 +36,8 @@ class ShellReinforcement(Geometry):
         group_label: t.Optional[str] = None,
     ) -> None:
         """Initialize a shell reinforcement."""
-        super().__init__(name, group_label)
+        super().__init__(name)
+        self._group_label = group_label
 
         if not isinstance(material, Material):
             raise TypeError(
@@ -146,7 +147,7 @@ class ShellReinforcement(Geometry):
         raise NotImplementedError
 
 
-class ShellGeometry(Geometry):
+class ShellGeometry(_GroupMixin, Geometry):
     """A class for a shell with a thickness and material."""
 
     _reinforcement: t.List[ShellReinforcement]
@@ -159,7 +160,8 @@ class ShellGeometry(Geometry):
         group_label: t.Optional[str] = None,
     ) -> None:
         """Initialize a shell geometry."""
-        super().__init__(name=name, group_label=group_label)
+        super().__init__(name=name)
+        self._group_label = group_label
 
         if thickness <= 0:
             raise ValueError('Shell thickness must be positive.')
