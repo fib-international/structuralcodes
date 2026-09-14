@@ -31,7 +31,7 @@ class Elastic2D(Elastic):
         super().__init__(E=E, name=name)
         self._nu = nu
 
-        self._C_matrix: t.Optional[ArrayLike] = None
+        self._stiffness_matrix: t.Optional[ArrayLike] = None
 
     @property
     def E(self) -> float:
@@ -49,13 +49,13 @@ class Elastic2D(Elastic):
         return self._nu
 
     @property
-    def C_matrix(self) -> np.ndarray:
+    def stiffness_matrix(self) -> np.ndarray:
         """Return the 2D constitutive matrix."""
-        if self._C_matrix is None:
+        if self._stiffness_matrix is None:
             E = self.E
             nu = self.nu
 
-            self._C_matrix = (
+            self._stiffness_matrix = (
                 E
                 / (1 - nu**2)
                 * np.array(
@@ -66,7 +66,7 @@ class Elastic2D(Elastic):
                     ]
                 )
             )
-        return self._C_matrix
+        return self._stiffness_matrix
 
     def get_stress(self, eps: ArrayLike) -> np.ndarray:
         """Return a 2D stress vector [sigma_x, sigma_y, tau_xy]
@@ -74,7 +74,7 @@ class Elastic2D(Elastic):
         """
         eps = np.atleast_1d(eps)
         try:
-            return self.C_matrix @ eps
+            return self.stiffness_matrix @ eps
         except ValueError as e:
             raise ValueError(
                 'The input strain vector must have a length of 3.'
@@ -83,4 +83,4 @@ class Elastic2D(Elastic):
     def get_secant(self, *args, **kwargs) -> np.ndarray:
         """Return the 2D secant stiffness matrix."""
         del args, kwargs
-        return self.C_matrix
+        return self.stiffness_matrix
