@@ -575,7 +575,7 @@ The final result is represented by the data structure collecting for all points 
 <span class="n">d1</span> <span class="o">=</span> <span class="n">cover</span> <span class="o">+</span> <span class="n">diameter_rebars</span> <span class="o">/</span> <span class="mi">2</span>
 
 <span class="c1"># Materials</span>
-<span class="n">set_design_code</span><span class="p">(</span><span class="s1">&#39;ec2_2004&#39;</span><span class="p">)</span>
+<span class="n">set_design_code</span><span class="p">(</span><span class="s1">'ec2_2004'</span><span class="p">)</span>
 <span class="n">concrete</span> <span class="o">=</span> <span class="n">create_concrete</span><span class="p">(</span><span class="n">fcd</span><span class="p">)</span>
 <span class="n">reinforcement</span> <span class="o">=</span> <span class="n">create_reinforcement</span><span class="p">(</span>
     <span class="n">fyk</span><span class="o">=</span><span class="n">fyd_rebars</span><span class="p">,</span> <span class="n">Es</span><span class="o">=</span><span class="n">Es</span><span class="p">,</span> <span class="n">ftk</span><span class="o">=</span><span class="n">ftd_rebars</span><span class="p">,</span> <span class="n">epsuk</span><span class="o">=</span><span class="n">eps_ud</span>
@@ -599,11 +599,11 @@ The final result is represented by the data structure collecting for all points 
         <span class="n">n</span><span class="o">=</span><span class="n">n_bars</span><span class="p">,</span>
     <span class="p">)</span>
 
-<span class="n">section</span> <span class="o">=</span> <span class="n">BeamSection</span><span class="p">(</span><span class="n">concrete_geometry</span><span class="p">,</span> <span class="n">integrator</span><span class="o">=</span><span class="s1">&#39;fiber&#39;</span><span class="p">,</span> <span class="n">mesh_size</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+<span class="n">section</span> <span class="o">=</span> <span class="n">BeamSection</span><span class="p">(</span><span class="n">concrete_geometry</span><span class="p">,</span> <span class="n">integrator</span><span class="o">=</span><span class="s1">'fiber'</span><span class="p">,</span> <span class="n">mesh_size</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
 
 <span class="c1"># Perform the analyses and create the plot</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">'3d'</span><span class="p">)</span>
 <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
     <span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">n_min</span><span class="p">,</span> <span class="n">section</span><span class="o">.</span><span class="n">section_calculator</span><span class="o">.</span><span class="n">n_max</span><span class="p">,</span> <span class="mi">25</span>
 <span class="p">)</span>
@@ -619,9 +619,9 @@ The final result is represented by the data structure collecting for all points 
 <span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=-</span><span class="mi">600</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_zlim</span><span class="p">(</span><span class="n">zmin</span><span class="o">=-</span><span class="mi">600</span><span class="p">,</span> <span class="n">zmax</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;N [kN]&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;My [kNm]&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Mz [kNm]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'N [kN]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'My [kNm]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">'Mz [kNm]'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

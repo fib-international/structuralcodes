@@ -342,9 +342,9 @@
 <span class="n">fck</span> <span class="o">=</span> <span class="mi">45</span>
 <span class="n">fyk</span> <span class="o">=</span> <span class="mi">500</span>
 <span class="n">Es</span> <span class="o">=</span> <span class="mi">200000</span>
-<span class="n">ductility_class</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span>
+<span class="n">ductility_class</span> <span class="o">=</span> <span class="s1">'C'</span>
 
-<span class="n">set_design_code</span><span class="p">(</span><span class="s1">&#39;ec2_2004&#39;</span><span class="p">)</span>
+<span class="n">set_design_code</span><span class="p">(</span><span class="s1">'ec2_2004'</span><span class="p">)</span>
 <span class="n">concrete</span> <span class="o">=</span> <span class="n">create_concrete</span><span class="p">(</span><span class="n">fck</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">alpha_cc</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span> <span class="n">gamma_c</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 <span class="n">reinforcement</span> <span class="o">=</span> <span class="n">create_reinforcement</span><span class="p">(</span>
     <span class="n">fyk</span><span class="o">=</span><span class="n">fyk</span><span class="p">,</span>
@@ -391,7 +391,7 @@
 <span class="sd-summary-icon"><svg version="1.1" width="1.0em" height="1.0em" class="sd-octicon sd-octicon-code" viewBox="0 0 16 16" aria-hidden="true"><path d="m11.28 3.22 4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L13.94 8l-3.72-3.72a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215Zm-6.56 0a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L2.06 8l3.72 3.72a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L.47 8.53a.75.75 0 0 1 0-1.06Z"></path></svg></span><span class="sd-summary-text">Syntax</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <div class="literal-block-wrapper docutils container" id="id3">
 <div class="code-block-caption"><span class="caption-text">Override default values in a concrete object.</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">concrete</span> <span class="o">=</span> <span class="n">ConcreteEC2_2004</span><span class="p">(</span><span class="n">fck</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">fcm</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">constitutive_law</span><span class="o">=</span><span class="s1">&#39;sargin&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">concrete</span> <span class="o">=</span> <span class="n">ConcreteEC2_2004</span><span class="p">(</span><span class="n">fck</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">fcm</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">constitutive_law</span><span class="o">=</span><span class="s1">'sargin'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -466,12 +466,12 @@
 <span class="c1"># Plot stress-strain relation</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strains</span><span class="p">,</span> <span class="n">stresses</span><span class="p">,</span> <span class="s1">&#39;-k&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strains</span><span class="p">,</span> <span class="n">stresses</span><span class="p">,</span> <span class="s1">'-k'</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmax</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymax</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\epsilon$ [-]&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma$ [MPa]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$\epsilon$ [-]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$\sigma$ [MPa]'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -498,7 +498,7 @@
 <span class="c1"># Create a concrete object, and a constitutive law</span>
 <span class="n">concrete</span> <span class="o">=</span> <span class="n">ConcreteEC2_2004</span><span class="p">(</span><span class="n">fck</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">gamma_c</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha_cc</span><span class="o">=</span><span class="mf">0.85</span><span class="p">)</span>
 <span class="n">constitutive_law</span> <span class="o">=</span> <span class="n">create_constitutive_law</span><span class="p">(</span>
-    <span class="n">constitutive_law_name</span><span class="o">=</span><span class="s1">&#39;bilinearcompression&#39;</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">concrete</span>
+    <span class="n">constitutive_law_name</span><span class="o">=</span><span class="s1">'bilinearcompression'</span><span class="p">,</span> <span class="n">material</span><span class="o">=</span><span class="n">concrete</span>
 <span class="p">)</span>
 </pre></div>
 </div>
