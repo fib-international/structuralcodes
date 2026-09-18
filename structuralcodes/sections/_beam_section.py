@@ -325,7 +325,7 @@ class BeamSectionCalculator(SectionCalculator):
         # when a constitutive law reports no real limit (+/-inf) on a side:
         # the final equilibrium is still found from the real stress-strain
         # response, this value only avoids a non-finite/empty bracket.
-        large_strain = 1.0
+        LARGE_STRAIN = 1.0
         chi_min = np.inf
         y_p_min = None
         # Check if the section is a reinforced concrete section:
@@ -397,9 +397,9 @@ class BeamSectionCalculator(SectionCalculator):
                 y_n = other_geom_strain_data['y_n']
                 if y_p >= y_n:
                     continue
-                eps_p_bracket = eps_p if np.isfinite(eps_p) else large_strain
+                eps_p_bracket = eps_p if np.isfinite(eps_p) else LARGE_STRAIN
                 eps_n_bracket = (
-                    eps_n if np.isfinite(eps_n) else -large_strain
+                    eps_n if np.isfinite(eps_n) else -LARGE_STRAIN
                 )
                 chi = -(eps_p_bracket - eps_n_bracket) / (y_p - y_n)
 
