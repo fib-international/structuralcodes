@@ -40,11 +40,73 @@ class ConstitutiveLaw(abc.ABC):
         return counter
 
     @abc.abstractmethod
+    def get_stress(self, eps: ArrayLike) -> ArrayLike:
+        """Each constitutive law should provide a method to return the
+        stress given the strain level.
+        """
+
+    @abc.abstractmethod
+    def get_tangent(self, eps: ArrayLike) -> ArrayLike:
+        """Each constitutive law should provide a method to return the
+        tangent at a given strain level.
+        """
+
+    @abc.abstractmethod
+    def get_secant(self, eps: ArrayLike) -> ArrayLike:
+        """Each constitutive law should provide a method to return the
+        secant at a given strain level.
+        """
+
+
+class ConstitutiveLaw2D(ConstitutiveLaw):
+    """Abstract base class for 2D constitutive laws."""
+
+    @abc.abstractmethod
+    def get_stress(self, eps: np.ndarray) -> np.ndarray:
+        """Each constitutive law should provide a method to return the
+        stress given the strain level.
+
+        The input strain should be an Array with the strain components
+        epsilon_x, epsilon_y, and gamma_xy. The method should return
+        corresponding stresses sigma_x, sigma_y, and tau_xy.
+        """
+
+    @abc.abstractmethod
+    def get_tangent(self, eps: np.ndarray) -> np.ndarray:
+        """Each constitutive law should provide a method to return the
+        tangent given the strain level.
+
+        The input strain should be an Array with the strain components
+        epsilon_x, epsilon_y, and gamma_xy. The method should return
+        the corresponding 3x3 tangent constitutive matrix.
+        """
+
+    @abc.abstractmethod
+    def get_secant(self, eps: np.ndarray) -> np.ndarray:
+        """Each constitutive law should provide a method to return the
+        secant given the strain level.
+
+        The input strain should be an Array with the strain components
+        epsilon_x, epsilon_y, and gamma_xy. The method should return
+        the corresponding 3x3 secant constitutive matrix.
+        """
+
+
+class ConstitutiveLaw1D(ConstitutiveLaw):
+    """Abstract base class for 1D constitutive laws."""
+
+    @abc.abstractmethod
     def get_stress(
         self, eps: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
         """Each constitutive law should provide a method to return the
         stress given the strain level.
+
+        The input strain can either be a float, or an ArrayLike of floats. If a
+        scalar is input, the method should return a scalar. If an ArrayLike is
+        input, the method should return an Array of the same shape and where
+        each item in the Array is an evaluation of the corresponding item in
+        the input.
         """
 
     @abc.abstractmethod
@@ -53,6 +115,12 @@ class ConstitutiveLaw(abc.ABC):
     ) -> t.Union[float, ArrayLike]:
         """Each constitutive law should provide a method to return the
         tangent at a given strain level.
+
+        The input strain can either be a float, or an ArrayLike of floats. If a
+        scalar is input, the method should return a scalar. If an ArrayLike is
+        input, the method should return an Array of the same shape and where
+        each item in the Array is an evaluation of the corresponding item in
+        the input.
         """
 
     @abc.abstractmethod
@@ -155,7 +223,14 @@ class ConstitutiveLaw(abc.ABC):
     def get_secant(
         self, eps: t.Union[float, ArrayLike]
     ) -> t.Union[float, ArrayLike]:
-        """Method to return the secant at a given strain level."""
+        """Method to return the secant at a given strain level.
+
+        The input strain can either be a float, or an ArrayLike of floats. If a
+        scalar is input, the method should return a scalar. If an ArrayLike is
+        input, the method should return an Array of the same shape and where
+        each item in the Array is an evaluation of the corresponding item in
+        the input.
+        """
         # Adjust eps if it is not scalar
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
 

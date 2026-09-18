@@ -11,7 +11,7 @@ from ._constitutive_law import ConstitutiveLaw
 class Material(abc.ABC):
     """Abstract base class for materials."""
 
-    _constitutive_law = None
+    _constitutive_law: t.Optional[ConstitutiveLaw] = None
     _initial_strain: t.Optional[float] = None
     _initial_stress: t.Optional[float] = None
     _strain_compatibility: t.Optional[bool] = None

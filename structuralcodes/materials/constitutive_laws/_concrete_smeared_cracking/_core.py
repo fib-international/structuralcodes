@@ -7,7 +7,7 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from structuralcodes.core.base import ConstitutiveLaw
+from structuralcodes.core.base import ConstitutiveLaw1D, ConstitutiveLaw2D
 
 from ._cracking_criterion import CrackingCriterion, NoTension
 from ._poisson_reduction import PoissonReduction
@@ -20,26 +20,28 @@ from ._utils import (
 )
 
 
-class ConcreteSmearedCracking:
+class ConcreteSmearedCracking(ConstitutiveLaw2D):
     """A plane stress model representing smeared cracking in reinforced
     concrete.
     """
 
     _initial_modulus_compression: t.Optional[float] = None
     _initial_modulus_tension: t.Optional[float] = None
-    _uniaxial_law: ConstitutiveLaw
+    _uniaxial_law: ConstitutiveLaw1D
     _strength_reduction_lateral_cracking: StrengthReductionLateralCracking
     _poisson_reduction: PoissonReduction
     _cracking_criterion: CrackingCriterion
 
     def __init__(
         self,
-        uniaxial_law: ConstitutiveLaw,
+        uniaxial_law: ConstitutiveLaw1D,
         strength_reduction_lateral_cracking: StrengthReductionLateralCracking,
         poisson_reduction: PoissonReduction,
         cracking_criterion: t.Optional[CrackingCriterion] = None,
+        name: t.Optional[str] = None,
     ):
         """Initialize the model."""
+        super().__init__(name=name, base_name='ConcreteSmearedCracking')
         self._uniaxial_law = uniaxial_law
         self._strength_reduction_lateral_cracking = (
             strength_reduction_lateral_cracking
@@ -153,7 +155,7 @@ class ConcreteSmearedCracking:
         return self.poisson_reduction.poisson_matrix(cracked=True) @ eps_p
 
     @property
-    def uniaxial_law(self) -> ConstitutiveLaw:
+    def uniaxial_law(self) -> ConstitutiveLaw1D:
         """Return the uniaxial constitutive law."""
         return self._uniaxial_law
 

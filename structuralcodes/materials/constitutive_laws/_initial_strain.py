@@ -7,10 +7,10 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ...core.base import ConstitutiveLaw
+from ...core.base import ConstitutiveLaw1D
 
 
-class InitialStrain(ConstitutiveLaw):
+class InitialStrain(ConstitutiveLaw1D):
     """Class for initial strain Constitutive Law."""
 
     _strain_compatibility: bool = True
@@ -21,11 +21,11 @@ class InitialStrain(ConstitutiveLaw):
         'concrete',
     )
 
-    _wrapped_law: ConstitutiveLaw = None
+    _wrapped_law: ConstitutiveLaw1D = None
 
     def __init__(
         self,
-        constitutive_law: ConstitutiveLaw,
+        constitutive_law: ConstitutiveLaw1D,
         initial_strain: float,
         strain_compatibility: bool = True,
         name: t.Optional[str] = None,
@@ -36,7 +36,7 @@ class InitialStrain(ConstitutiveLaw):
         that assigns an initial strain.
 
         Arguments:
-            constitutive_law (ConstitutiveLaw): Wrapped constitutive law.
+            constitutive_law (ConstitutiveLaw1D): Wrapped constitutive law.
             initial_strain (float): The initial strain to be applied.
             strain_compatibility (bool): If True, the strain compatibility is
                 enforced, otherwise the strain compatibility is released. This
@@ -44,9 +44,9 @@ class InitialStrain(ConstitutiveLaw):
                 Default value True.
         """
         super().__init__(name=name, base_name='InitialStrainLaw')
-        if not isinstance(constitutive_law, ConstitutiveLaw):
+        if not isinstance(constitutive_law, ConstitutiveLaw1D):
             raise TypeError(
-                f'Expected a ConstitutiveLaw instance, '
+                f'Expected a ConstitutiveLaw1D instance, '
                 f'got {type(constitutive_law)}'
             )
         self._wrapped_law = constitutive_law
@@ -60,7 +60,7 @@ class InitialStrain(ConstitutiveLaw):
         return self._strain_compatibility
 
     @property
-    def wrapped_law(self) -> ConstitutiveLaw:
+    def wrapped_law(self) -> ConstitutiveLaw1D:
         """Return the wrapped constitutive law."""
         return self._wrapped_law
 
