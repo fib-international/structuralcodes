@@ -51,7 +51,7 @@ def As_min_y(
         fyk (float): Characteristic yield strength of steel in MPa.
 
     Returns:
-        tuple(float, float): The minimum tensile reinforcement to avoid
+        Tuple(float, float): The minimum tensile reinforcement to avoid
         yielding of steel on the most tensioned fibre of the rectangle
         (As_min_y1) in cm2, and the minimum tensile reinforcement to avoid
         yielding of steel on the most tensioned fibre of the rectangle
@@ -323,3 +323,226 @@ def delta_simpl(
         kS = 455 * rho_l**2 - 35 * rho_l + 1.6
         kI = zeta * Ig_Icr + (1 - zeta)
     return kI * (delta_loads + kS * delta_shr)
+
+
+def rho_p_eff(As: float, xi1: float, Ap: float, Ac_eff: float) -> float:
+    """Effective bond ratio between areas.
+
+    EN 1992-1-1:2023, Eq. (9.12).
+
+    Args:
+        As (float): Steel area in mm2.
+        xi1 (float): The adjusted ratio of bond according to expression (9.6).
+        Ap (float): The area in mm2 of post-tensioned tendons in ac_eff.
+        Ac_eff (float): Effective area of concrete in tension surrounding the
+            reinforcement or prestressing tendons of depth hc_eff.
+
+    Returns:
+        float: With the retio between areas.
+
+    Raises:
+        ValueError: If any of As, xi1, Ap or Ac_eff is less than 0.
+    """
+    if As < 0:
+        raise ValueError(f'As={As} cannot be less than 0')
+    if xi1 < 0:
+        raise ValueError(f'xi1={xi1} cannot be less than 0')
+    if Ap < 0:
+        raise ValueError(f'Ap={Ap} cannot be less than 0')
+    if Ac_eff < 0:
+        raise ValueError(f'Ac_eff={Ac_eff} cannot be less than 0')
+
+    return (As + xi1**2 * Ap) / Ac_eff
+
+
+def xi1(xi: float, phi_p: float, phi_s: float) -> float:
+    """Computes the adjusted ratio of bond strength taking into account
+    the different diameters of prestressing and reinforcing steel.
+
+    EN 1992-1-1:2023, Eq. (9.6).
+
+    Args:
+        xi (float): ratio of bond strength of prestressing and reinforcing
+            steel, according to Table 10.1 in 10.3(2)
+        phi_p (float): largest bar diameter in mm of reinforcing steel.
+            Equal to 0 if only reinforced steel is used in control cracking.
+        phi_s (float): equivalent diameter in mm of tendon acoording
+            to 9.19.
+
+    Returns:
+        float: With the value of the ratio.
+
+    Raises:
+        ValueError: If diameters phi_s or phi_p are lower than 0. If ratio of
+            bond strength xi is less than 0.15 or larger than 0.8.
+    """
+    if phi_p == 0:
+        return 0
+    if phi_p < 0:
+        raise ValueError(f'phi_p={phi_p} cannot be less than 0')
+    if phi_s < 0:
+        raise ValueError(f'phi_s={phi_s} cannot be less than 0')
+    if xi < 0.15:
+        raise ValueError(f'The minimum value for xi={xi} is 0.15')
+    if xi > 0.8:
+        raise ValueError(f'The maximum value for xi={xi} is 0.8')
+
+    return ((xi * phi_s / phi_p) ** 0.5) if phi_s > 0 else xi**0.5
+
+
+def _lower_circular_segment_area(d, x):
+    """Calculates the area of the lower circular segment cut by a horizontal
+    line at a height `x` from the top of the circle.
+
+    Args:
+        d (float): Diameter of the circle. Must be greater than 0.
+        x (float): Vertical distance from the top edge of the circle to the
+                   horizontal chord. Must satisfy 0 < x < d.
+
+    Returns:
+        float: Area of the circular segment below the chord.
+
+    Raises:
+        ValueError: If `x` is not in the range (0, d).
+    """
+    if x < 0 or x > d:
+        raise ValueError(
+            'x must be between 0 and d (the diameter of the circle).'
+        )
+
+    r = d / 2
+    y = r - x  # vertical distance from the center to the chord
+    theta = math.acos(y / r)  # central angle in radians
+    upper_area = r**2 * theta - y * math.sqrt(r**2 - y**2)
+    return r**2 * math.pi - upper_area  # lower area
+
+
+def Ac_eff(  # noqa: PLR0912, PLR0915
+    x: float,
+    ay,
+    phi,
+    h: float = None,
+    b: float = None,
+    diameter: float = None,
+    n: int = 1,
+    sy: float = None,
+    loading_type: str = 'bending',
+    section_type: str = 'rectangular',
+    bar_spacing: float = None,
+    ax: float = None,
+) -> Tuple[float, float]:
+    """Returns the effective area of concrete in tension surrounding the
+    reinforcement or prestressing tendons.
+
+    EN 1992-1-1:2023, Figure 9.3 (a to f).
+
+    Args:
+        x (float): distance in mm to the zero tensile stress line.
+        ay (float): distance from extreme fibre of concrete to centroid of
+                    reinforcement bars in mm.
+        phi (float): diameter of the tensioned bars in mm.
+        h (float): total heigth of the rectangular section in mm.
+        b (float): total width of the rectangular section in mm.
+        diameter (float): diameter of the circular section in mm.
+        n (int): Number of layers. Default is 1.
+        sy (float): Spacing of the layers in mm. Default is None.
+        loading_type (str): Type of loading. Default is 'bending'. Can be
+                            bending' or 'tension'.
+        section_type (str): Type of section. Default is 'rectangular'.
+                            Can be 'rectangular' or 'circular'.
+        bar_spacing (float): Spacing of the bars in mm. Default is less than 10
+                             times phi.
+        ax (float): distance from extreme fibre of concrete to centroid of
+                    reinforcement bars in mm (Figure 9.3 f).
+
+    Returns:
+        Tuple: (Ac_eff, hc_eff)
+            Ac_eff (float): The effective area in mm2.
+            hc_eff (float): The effective height in mm.
+
+    Raises:
+        ValueError: If any of h, ay or x is lower than zero.
+        ValueError: If x is greater than h.
+        ValueError: If ay is greater than h.
+        ValueError: If phi is lower than zero.
+        ValueError: If n is lower than 1.
+        ValueError: If sy is None and n > 1.
+        ValueError: If loading_type is not 'bending' or 'tension'.
+        ValueError: If section_type is not 'rectangular' or 'circular'.
+        ValueError: If missing a parameter gor rectangular or circular section.
+    """
+    if section_type not in ['rectangular', 'circular']:
+        raise ValueError(
+            (
+                f'section_type={section_type} not implemented. '
+                'It should be "rectangular" or "circular for this method"'
+            )
+        )
+    if section_type == 'rectangular':
+        if b is None:
+            raise ValueError('b must be provided for rectangular sections')
+        if h is None:
+            raise ValueError('h must be provided for rectangular sections')
+        if h < 0:
+            raise ValueError(f'h={h} cannot be less than 0')
+        if b < 0:
+            raise ValueError(f'b={b} cannot be less than 0')
+        if ay > h:
+            raise ValueError(f'ay={ay} cannot be larger than h={h}')
+        if x > h:
+            raise ValueError(f'x={x} cannot be larger than h={h}')
+        bc_eff = (
+            b if bar_spacing is None else min(b, 10 * phi / bar_spacing * b)
+        )
+    if section_type == 'circular':
+        if diameter is None:
+            raise ValueError('diameter must be provided for circular sections')
+        if diameter < 0:
+            raise ValueError(f'diameter={diameter} cannot be less than 0')
+        if ay > diameter:
+            raise ValueError(f'ay={ay} cannot be larger than D={diameter}')
+        if x > diameter:
+            raise ValueError(f'x={x} cannot be larger than D={diameter}')
+
+    if ay < 0:
+        raise ValueError(f'ay={ay} cannot be less than 0')
+    if x < 0:
+        raise ValueError(f'x={x} cannot be less than zero')
+    if phi < 0:
+        raise ValueError(f'phi={phi} cannot be less than 0')
+    if n < 1:
+        raise ValueError(f'n={n} cannot be less than 1')
+    if sy is None and n > 1:
+        raise ValueError(f'sy cannot be None if n={n} > 1')
+    if loading_type not in ['bending', 'tension']:
+        raise ValueError(
+            f'loading_type={loading_type} is not valid. It should be "bending"'
+            'or "tension"'
+        )
+
+    if section_type == 'rectangular' and loading_type == 'bending':
+        if n == 1:
+            hc_eff = min(ay + 5 * phi, 10 * phi, 3.5 * ay, h - x, h / 2)
+        else:
+            hc_eff = min(
+                min(ay + 5 * phi, 10 * phi, 3.5 * ay) + (n - 1) * sy,
+                h - x,
+                h / 2,
+            )
+        Ac_eff = bc_eff * hc_eff
+    if section_type == 'circular' and loading_type == 'bending':
+        hc_eff = min(ay + 5 * phi, 10 * phi, 3.5 * ay)
+        Ac_eff = _lower_circular_segment_area(
+            diameter, x
+        ) - _lower_circular_segment_area(
+            diameter - hc_eff * 2, max(0, x - hc_eff)
+        )
+    if section_type == 'rectangular' and loading_type == 'tension':  # d,e,f
+        hc_eff = min(ay + 5 * phi, 10 * phi, 3.5 * ay, h / 2)
+        if ax is not None:  # f
+            bc_eff = min(ax + 5 * phi, 10 * phi, 3.5 * ax, b / 2)
+            Ac_eff = h * b - (b - 2 * bc_eff) * (h - 2 * hc_eff)
+        else:  # d,e
+            Ac_eff = bc_eff * hc_eff
+
+    return (Ac_eff, hc_eff)
