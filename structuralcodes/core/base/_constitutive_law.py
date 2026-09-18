@@ -98,6 +98,7 @@ class ConstitutiveLaw(abc.ABC):
             return None
 
         eps_min, eps_max = self.get_ultimate_strain()
+        eps_min = max(eps_min, -1)
         eps_max = min(eps_max, 1)
         # Analise positive branch
         eps = np.linspace(0, eps_max, 10000)
@@ -124,8 +125,8 @@ class ConstitutiveLaw(abc.ABC):
 
         eps = np.concatenate((eps_neg, eps_pos))
         sig = self.get_stress(eps)
-        from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
-            UserDefined,
+        from structuralcodes.materials.constitutive_laws import (
+            UserDefined,  # noqa: PLC0415
         )
 
         return UserDefined(eps, sig)

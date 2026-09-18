@@ -106,20 +106,6 @@ class ElasticFragileTension(ConstitutiveLaw):
         tangent[(eps > 0) & (eps <= self._eps_ct_u)] = self._Ec
         return tangent
 
-    def __marin__(
-        self, strain: t.Tuple[float, float]
-    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
-        raise NotImplementedError(
-            'Marin integration is not implemented for ElasticFragileTension.'
-        )
-
-    def __marin_tangent__(
-        self, strain: t.Tuple[float, float]
-    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
-        raise NotImplementedError(
-            'Marin tangent integration is not implemented for ElasticFragileTension.'
-        )
-
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive).
 

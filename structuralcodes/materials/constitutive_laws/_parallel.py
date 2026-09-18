@@ -194,7 +194,7 @@ class Parallel(ConstitutiveLaw):
         # Apply interval merging with piecewise polynomial combination
         laws_marin = []
         for law in self.wrapped_laws:
-            laws_marin.append(law.__marin__(strain))
+            laws_marin.append(law.__marin__(strain=strain))
 
         return self._split_marin(laws_marin)
 
@@ -215,7 +215,7 @@ class Parallel(ConstitutiveLaw):
         # Apply interval merging with piecewise polynomial combination
         laws_marin = []
         for law in self.wrapped_laws:
-            laws_marin.append(law.__marin_tangent__(strain))
+            laws_marin.append(law.__marin_tangent__(strain=strain))
 
         return self._split_marin(laws_marin)
 
