@@ -54,6 +54,9 @@ class ConcreteSmearedCracking:
 
         Arguments:
             eps (ArrayLike): The strains epsilon_x, epsilon_y and gamma_xy.
+            return_global (bool): Flag to indicate to calculate the stresses
+                transformed to global coordinates (True) or in the coordinate
+                system of the principal strains (False). Default is True.
 
         """
         # Calculate principal strains and principal strain direction
@@ -80,9 +83,13 @@ class ConcreteSmearedCracking:
         # Transform back to global coords
         return T.T @ np.array([*sig_p, 0])
 
-    def get_secant(
-        self, eps: ArrayLike, return_global: bool = True
+    def _get_constitutive_matrix(
+        self,
+        eps: ArrayLike,
+        return_global: bool = True,
+        mode: t.Literal['secant', 'tangent'] = 'tangent',
     ) -> np.ndarray:
+        """Internal method for establishing the constitutive matrix."""
         # Calculate principal strains and principal strain direction
         eps_p, phi = calculate_principal_strains(strain=eps)
 
@@ -94,7 +101,10 @@ class ConcreteSmearedCracking:
         cracked = self.cracking_criterion.cracked(eps_p=eps_pf)
 
         # Establish the diagonal of material stiffness matrix
-        D = self.uniaxial_law.get_secant(eps_pf)
+        if mode.lower().startswith('secant'):
+            D = self.uniaxial_law.get_secant(eps_pf)
+        elif mode.lower().startswith('tangent'):
+            D = self.uniaxial_law.get_tangent(eps_pf)
 
         # Compressive-strength reduction factor due to lateral tension.
         beta = self.strength_reduction_lateral_cracking.reduction(eps_pf)
@@ -129,8 +139,39 @@ class ConcreteSmearedCracking:
 
         return T.T @ Cp @ T
 
-    def get_tangent():
-        pass
+    def get_secant(
+        self, eps: ArrayLike, return_global: bool = True
+    ) -> np.ndarray:
+        """Calculate the 2D secant constitutive matrix.
+
+        Arguments:
+            eps (ArrayLike): The strains epsilon_x, epsilon_y and gamma_xy.
+            return_global (bool): Flag to indicate to calculate the
+                constitutive matrix transformed to global coordinates (True) or
+                in the coordinate system of the principal strains (False).
+                Default is True.
+
+        """
+        return self._get_constitutive_matrix(
+            eps=eps, return_global=return_global, mode='secant'
+        )
+
+    def get_tangent(
+        self, eps: ArrayLike, return_global: bool = True
+    ) -> np.ndarray:
+        """Calculate the 2D tangent constitutive matrix.
+
+        Arguments:
+            eps (ArrayLike): The strains epsilon_x, epsilon_y and gamma_xy.
+            return_global (bool): Flag to indicate to calculate the
+                constitutive matrix transformed to global coordinates (True) or
+                in the coordinate system of the principal strains (False).
+                Default is True.
+
+        """
+        return self._get_constitutive_matrix(
+            eps=eps, return_global=return_global, mode='tangent'
+        )
 
     def calculate_effective_principal_strains(
         self, eps_p: ArrayLike
