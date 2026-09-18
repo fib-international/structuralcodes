@@ -250,5 +250,5 @@ class ParabolaRectangle(ConstitutiveLaw):
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (self._eps_0, 100)
-        return (self._eps_u, 100)
+            return (self._eps_0, np.inf)
+        return (self._eps_u, np.inf)

@@ -127,4 +127,4 @@ class ElasticFragileTension(ConstitutiveLaw):
         In compression it resists nothing, and reports zero
         """
         del kwargs
-        return (0.0, self._eps_ct_u)
+        return (-np.inf, self._eps_ct_u)

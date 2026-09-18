@@ -321,7 +321,13 @@ class BeamSectionCalculator(SectionCalculator):
             axial strain, curvature y*, curvature z* (assumed zero since in the
             rotated frame y*z* it is a case of uniaxial bending).
         """
-        chi_min = 1e10
+        # Large but finite strain used only to bootstrap the pivot search
+        # when a constitutive law reports no real limit (+/-inf) on a side:
+        # the final equilibrium is still found from the real stress-strain
+        # response, this value only avoids a non-finite/empty bracket.
+        large_strain = 1.0
+        chi_min = np.inf
+        y_p_min = None
         # Check if the section is a reinforced concrete section:
         # If it is, we need to obtain the "yield" strain of concrete
         # (-0.002 for default parabola-rectangle concrete)
@@ -391,11 +397,15 @@ class BeamSectionCalculator(SectionCalculator):
                 y_n = other_geom_strain_data['y_n']
                 if y_p >= y_n:
                     continue
-                chi = -(eps_p - eps_n) / (y_p - y_n)
+                eps_p_bracket = eps_p if np.isfinite(eps_p) else large_strain
+                eps_n_bracket = (
+                    eps_n if np.isfinite(eps_n) else -large_strain
+                )
+                chi = -(eps_p_bracket - eps_n_bracket) / (y_p - y_n)
 
                 if chi < chi_min:
                     chi_min = chi
-                    eps_0 = eps_n + chi_min * y_n
+                    eps_0 = eps_n_bracket + chi_min * y_n
                     y_n_min = y_n
                     y_p_min = y_p
 
