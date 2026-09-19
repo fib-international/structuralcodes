@@ -106,6 +106,82 @@ class ElasticFragileTension(ConstitutiveLaw):
         tangent[(eps > 0) & (eps <= self._eps_ct_u)] = self._Ec
         return tangent
 
+    def __marin__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration in a
+        simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
+            if strain[0] <= 0:
+                # We are in the non-resisting (compression) branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] <= self._eps_ct_u:
+                # We are in the elastic branch
+                strains = None
+                a0 = self._Ec * strain[0]
+                a1 = self._Ec * strain[1]
+                coeff.append((a0, a1))
+            else:
+                # Cracked: no stress carried
+                strains = None
+                coeff.append((0.0,))
+        else:
+            strains.append((0, self._eps_ct_u))
+            a0 = self._Ec * strain[0]
+            a1 = self._Ec * strain[1]
+            coeff.append((a0, a1))
+        return strains, coeff
+
+    def __marin_tangent__(
+        self, strain: t.Tuple[float, float]
+    ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
+        """Returns coefficients and strain limits for Marin integration of
+        tangent in a simply formatted way.
+
+        Arguments:
+            strain (float, float): Tuple defining the strain profile: eps =
+                strain[0] + strain[1]*y.
+
+        Example:
+            [(0, -0.002), (-0.002, -0.003)]
+            [(a0, a1, a2), (a0)]
+        """
+        strains = []
+        coeff = []
+        if strain[1] == 0:
+            # Uniform strain equal to strain[0]
+            strain[0] = self.preprocess_strains_with_limits(strain[0])
+            if strain[0] <= 0:
+                # We are in the non-resisting (compression) branch
+                strains = None
+                coeff.append((0.0,))
+            elif strain[0] <= self._eps_ct_u:
+                # We are in the elastic branch
+                strains = None
+                coeff.append((self._Ec,))
+            else:
+                # Cracked: no stiffness
+                strains = None
+                coeff.append((0.0,))
+        else:
+            strains.append((0, self._eps_ct_u))
+            coeff.append((self._Ec,))
+        return strains, coeff
+
     def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive).
 
