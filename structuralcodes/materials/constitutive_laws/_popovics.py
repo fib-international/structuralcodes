@@ -128,5 +128,5 @@ class Popovics(ConstitutiveLaw):
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (self._eps_c, 100)
-        return (self._eps_cu, 100)
+            return (self._eps_c, np.inf)
+        return (self._eps_cu, np.inf)

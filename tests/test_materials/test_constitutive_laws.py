@@ -660,11 +660,11 @@ def test_sargin(fc, eps_c1, eps_cu1, k):
     # Test getting ultimate strain
     eps_min, eps_max = law.get_ultimate_strain()
     assert math.isclose(eps_min, eps_cu1)
-    assert math.isclose(eps_max, 100)
+    assert math.isclose(eps_max, np.inf)
 
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, eps_c1)
-    assert math.isclose(eps_max, 100)
+    assert math.isclose(eps_max, np.inf)
 
 
 @pytest.mark.parametrize(
@@ -720,11 +720,11 @@ def test_popovics(fc, eps_c, eps_cu):
     # Test getting ultimate strain
     eps_min, eps_max = law.get_ultimate_strain()
     assert math.isclose(eps_min, -eps_cu)
-    assert math.isclose(eps_max, 100)
+    assert math.isclose(eps_max, np.inf)
 
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
-    assert math.isclose(eps_max, 100)
+    assert math.isclose(eps_max, np.inf)
 
 
 @pytest.mark.parametrize(
@@ -781,11 +781,11 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     # Test getting ultimate strain
     eps_min, eps_max = law.get_ultimate_strain()
     assert math.isclose(eps_min, -eps_cu)
-    assert math.isclose(eps_max, 100)
+    assert math.isclose(eps_max, np.inf)
 
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
-    assert math.isclose(eps_max, 100)
+    assert math.isclose(eps_max, np.inf)
 
 
 @pytest.mark.parametrize(
