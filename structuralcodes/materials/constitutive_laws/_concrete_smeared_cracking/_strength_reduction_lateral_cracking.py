@@ -52,7 +52,7 @@ class GeneralVecchioCollins(StrengthReductionLateralCracking):
         """Calculate the strength reduction based on a set of principal
         strains.
 
-        beta = 1 / (c_1 + c_2 * eps_1)
+        beta = 1 / (c_1 + c_2 * eps_1) <= 1.0
         """
         beta = 1 / (self.c_1 + self.c_2 * max(strains))
 
