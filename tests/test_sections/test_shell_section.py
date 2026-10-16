@@ -301,6 +301,60 @@ def test_parabola_initial_nu(nx, nxy, expected):
     assert np.allclose(strain, expected)
 
 
+@pytest.mark.parametrize(
+    'nx,ny,nxy,mx,my,mxy',
+    [
+        (-500, 100, 100, 50e3, 20e3, 10e3),
+        (-1000, -500, 0, 80e3, 0, 0),
+    ],
+)
+def test_parabola_initial_nu_equilibrium(nx, ny, nxy, mx, my, mxy):
+    """Test equilibrium of the strain profile with nu = 0.2."""
+    uniaxial_compression = ParabolaRectangle(fc=45)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
+    parabola_rectangle = ConcreteSmearedCracking(
+        uniaxial_law=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    elastic_plastic = ElasticPlastic(200000, 500)
+    concrete = GenericMaterial(
+        density=2500, constitutive_law=parabola_rectangle
+    )
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=500,
+        epsuk=3e-2,
+        constitutive_law=elastic_plastic,
+    )
+    geo = ShellGeometry(350, concrete)
+    Asx1 = ShellReinforcement(-132, 1, 200, 16, reinforcement, 0)
+    Asx2 = ShellReinforcement(132, 1, 200, 16, reinforcement, 0)
+    Asy1 = ShellReinforcement(-118, 1, 200, 12, reinforcement, np.pi / 2)
+    Asy2 = ShellReinforcement(118, 1, 200, 12, reinforcement, np.pi / 2)
+    geo.add_reinforcement([Asx1, Asx2, Asy1, Asy2])
+    section = ShellSection(geo)
+    strain = section.section_calculator.calculate_strain_profile(
+        nx,
+        ny,
+        nxy,
+        mx,
+        my,
+        mxy,
+        max_iter=200,
+        tol=1e-10,
+    )
+    stress_resultants = section.section_calculator.integrate_strain_profile(
+        strain
+    )
+
+    assert np.allclose(
+        stress_resultants, [nx, ny, nxy, mx, my, mxy], rtol=1e-4, atol=1e-3
+    )
+
+
 def test_exceed_max_iterations():
     """Test that the maximum number of iterations is exceeded."""
     uniaxial_compression = ParabolaRectangle(fc=45)

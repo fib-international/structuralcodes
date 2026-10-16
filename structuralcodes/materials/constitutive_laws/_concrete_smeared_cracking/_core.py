@@ -102,11 +102,12 @@ class ConcreteSmearedCracking:
         # Scale down compressive stiffness with strength reduction factor
         D[eps_pf < 0] *= beta
 
-        # Correct for the poisson effect
-        C = self.poisson_reduction.poisson_matrix(cracked=cracked) @ np.diag(D)
-
-        # Ensure symmetry
-        C = 0.5 * (C + C.T)
+        # Correct for the poisson effect. The principal stresses are
+        # calculated as sig_p = D * eps_pf, where eps_pf = P * eps_p are the
+        # effective principal strains. The secant stiffness relating the
+        # principal strains to the principal stresses is therefore D * P.
+        # Note that this matrix is in general not symmetric when D_1 != D_2.
+        C = np.diag(D) @ self.poisson_reduction.poisson_matrix(cracked=cracked)
 
         # Shear modulus
         G_value = D.mean() / (
