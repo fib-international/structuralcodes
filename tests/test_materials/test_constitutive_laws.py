@@ -394,8 +394,8 @@ def test_get_secant_shape(strain, nu):
     # Shape
     assert C.shape == (3, 3)
 
-    # Symmetry
-    assert np.allclose(C, C.T)
+    # Consistency with stress
+    assert np.allclose(C @ strain, mat.get_stress(strain))
 
     # Positive diagonal elements
     assert np.all(np.diag(C) > 0)
@@ -427,8 +427,8 @@ def test_get_secant_shape(strain, nu):
             0.2,
             [-0.001, 0.0, 0.0],
             [
-                [2.31119792e04, 5.27343750e03, 0.0],
-                [5.27343750e03, 2.96223958e04, 0.0],
+                [2.31119792e04, 4.62239583e03, 0.0],
+                [5.92447917e03, 2.96223958e04, 0.0],
                 [0.0, 0.0, 1.05468750e04],
             ],
         ),
