@@ -62,3 +62,12 @@ def test_duct_class_props(ductility_class, exp_ratio, exp_strain):
     # Assert
     assert math.isclose(props['ftk'] / fyk, exp_ratio)
     assert math.isclose(props['epsuk'], exp_strain)
+
+
+@pytest.mark.parametrize(
+    'epsuk, gamma_eps', [(0.07, 1.15), (-0.07, 0.9), (-0.07, 1.15)]
+)
+def test_epsud_raises_errors(epsuk, gamma_eps):
+    """Test epsud function raises errors."""
+    with pytest.raises(ValueError):
+        _reinforcement_material_properties.epsud(epsuk, gamma_eps)

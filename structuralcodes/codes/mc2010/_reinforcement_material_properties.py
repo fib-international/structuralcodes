@@ -25,7 +25,7 @@ DUCTILITY_CLASSES = {
 def fyd(fyk: float, gamma_s: float = 1.15) -> float:
     """Calculate the design value of the reinforcement yield strength.
 
-    fib Model Code 2010, Sec. 4.5.2.2.3
+    fib Model Code 2010, Sec. 4.5.2.2.3.
 
     Args:
         fyk (float): The characteristic yield strength in MPa.
@@ -35,8 +35,8 @@ def fyd(fyk: float, gamma_s: float = 1.15) -> float:
         float: The design yield strength in MPa.
 
     Raises:
-        ValueError: if fyk is less than 0
-        ValueError: if gamma_s is less than 1
+        ValueError: If fyk is less than 0.
+        ValueError: If gamma_s is less than 1.
     """
     if fyk < 0:
         raise ValueError(f'fyk={fyk} cannot be less than 0')
@@ -48,18 +48,18 @@ def fyd(fyk: float, gamma_s: float = 1.15) -> float:
 def epsud(epsuk: float, gamma_eps: float = 0.9) -> float:
     """Calculate the design value of the reinforcement ultimate strain.
 
-    fib Model Code 2010, Sec. 7.2.3.2
+    fib Model Code 2010, Sec. 7.2.3.2.
 
     Args:
-        epsuk (float): The characteristic ultimate strain
+        epsuk (float): The characteristic ultimate strain.
         gamma_eps (float): The partial factor. Default value 0.9.
 
     Returns:
-        float: The design ultimate strain
+        float: The design ultimate strain.
 
     Raises:
-        ValueError: if epsuk is less than 0
-        ValueError: if gamma_eps is greater than 1
+        ValueError: If epsuk is less than 0.
+        ValueError: If gamma_eps is greater than 1.
     """
     if epsuk < 0:
         raise ValueError(f'epsuk={epsuk} cannot be less than 0')
@@ -77,7 +77,7 @@ def reinforcement_duct_props(
     """Return a dict with the minimum characteristic ductility properties for
     reinforcement ductility class.
 
-    fib Model Code 2010, Sec. 5.2.5.4
+    fib Model Code 2010, Sec. 5.2.5.4.
 
     Args:
         fyk (float): The characteristic yield strength.
@@ -90,8 +90,8 @@ def reinforcement_duct_props(
         (ftk).
 
     Raises:
-        ValueError: when the ductility_class does not define a valid ductility
-            class
+        ValueError: When the ductility_class does not define a valid ductility
+            class.
     """
     duct_props = DUCTILITY_CLASSES.get(ductility_class.upper(), None)
     if duct_props is None:
