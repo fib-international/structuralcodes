@@ -87,3 +87,22 @@ def test_use_design_code_none():
     # Assert
     assert isinstance(code_to_use, types.ModuleType)
     assert code_to_use.__title__ == expected_design_code_title
+
+
+def test_set_design_code_module():
+    """Test passing a module to set_design_code."""
+    # Arrange
+    expected_design_code_title = structuralcodes.codes.ec2_2004.__title__
+
+    # Act
+    structuralcodes.codes.set_design_code(structuralcodes.codes.ec2_2004)
+
+    # Assert
+    assert structuralcodes.codes._CODE is not None
+    assert structuralcodes.codes._CODE.__title__ == expected_design_code_title
+
+
+def test_set_design_code_invalid_module():
+    """Test passing an invalid module to set_design_code."""
+    with pytest.raises(ValueError):
+        structuralcodes.codes.set_design_code(pytest)

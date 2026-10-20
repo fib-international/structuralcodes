@@ -33,27 +33,32 @@ def create_reinforcement(
     name: t.Optional[str] = None,
     density: float = 7850,
     design_code: t.Optional[str] = None,
+    **kwargs,
 ) -> t.Optional[Reinforcement]:
     """A factory function to create the correct type of reinforcement based on
     the desired design code.
 
-    Args:
+    Arguments:
         fyk (float): Characteristic yield strength in MPa.
         Es (float): The Young's modulus in MPa.
         ftk (float): Characteristic ultimate strength in MPa.
         epsuk (float): The characteristik strain at the ultimate stress level.
 
-    Keyword Args:
+    Keyword Arguments:
         gamma_s (Optional(float)): The partial factor for reinforcement.
         density (float): Density of the material in kg/m3 (default: 7850)
         design_code (str): Optional string (default: None) indicating the
             desired standard. If None (default) the globally used design
             standard will be adopted. Otherwise the design standard specified
             will be used for the instance of the material.
+        **kwargs: Other valid keyword arguments that are collected and passed
+            to the specific reinforcement material. Please inspect the
+            documentation of the other reinforcement materials to see valid
+            arguments.
 
     Raises:
-        ValueError: if the design code is not valid or does not cover
-        reinforcement as a material.
+        ValueError: If the design code is not valid or does not cover
+            reinforcement as a material.
     """
     # Get the code from the global variable
     _code = _use_design_code(design_code)
@@ -80,5 +85,6 @@ def create_reinforcement(
             ftk=ftk,
             epsuk=epsuk,
             gamma_s=gamma_s,
+            **kwargs,
         )
     return None

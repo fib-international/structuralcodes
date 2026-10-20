@@ -3,8 +3,7 @@
 import abc
 import typing as t
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
-from structuralcodes.materials.constitutive_laws import ParabolaRectangle
+from ...core.base import ConstitutiveLaw, Material
 
 
 class Concrete(Material):
@@ -13,7 +12,7 @@ class Concrete(Material):
     _fck: float
     _gamma_c: t.Optional[float] = None
     _existing: bool
-    _constitutive_law: t.Optional[ConstitutiveLaw] = None
+    _constitutive_law: t.Optional[ConstitutiveLaw]
 
     def __init__(
         self,
@@ -22,10 +21,19 @@ class Concrete(Material):
         density: float = 2400,
         gamma_c: t.Optional[float] = None,
         existing: t.Optional[bool] = False,
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
     ) -> None:
         """Initializes an abstract concrete material."""
-        name = name if name is not None else 'Concrete'
-        super().__init__(density=density, name=name)
+        super().__init__(
+            density=density,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
+            name=name,
+            base_name='Concrete',
+        )
 
         self._fck = abs(fck)
         if existing:
@@ -34,44 +42,11 @@ class Concrete(Material):
             )
         self._existing = existing
         self._gamma_c = gamma_c
-        self._constitutive_law = None
 
     @property
     def fck(self) -> float:
         """Returns fck in MPa."""
         return self._fck
-
-    @fck.setter
-    def fck(self, fck: float) -> None:
-        """Setter for fck (in MPa)."""
-        self._fck = abs(fck)
-        self._reset_attributes()
-
-    @abc.abstractmethod
-    def _reset_attributes(self):
-        """Each concrete should define its own _reset_attributes method
-        This is because fck setting, reset the object arguments.
-        """
-
-    @property
-    def constitutive_law(self) -> ConstitutiveLaw:
-        """Returns the constitutive law object."""
-        if self._constitutive_law is None:
-            self._constitutive_law = ParabolaRectangle(
-                self.fcd(), name=self.name + '_ConstLaw'
-            )
-        return self._constitutive_law
-
-    @constitutive_law.setter
-    def constitutive_law(self, constitutive_law: ConstitutiveLaw) -> None:
-        """Setter for constitutive law."""
-        if 'concrete' in constitutive_law.__materials__:
-            self._constitutive_law = constitutive_law
-        else:
-            raise ValueError(
-                'The constitutive law selected is not suitable '
-                'for being used with a concrete material.'
-            )
 
     @property
     @abc.abstractmethod
