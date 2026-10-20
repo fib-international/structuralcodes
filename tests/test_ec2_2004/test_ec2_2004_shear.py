@@ -118,6 +118,27 @@ def test_VRdc(fck, d, Asl, bw, Ned, Ac, k1, gamma_c, expected):
     )
 
 
+@pytest.mark.parametrize('NEd', (500e3, 200e3, 0, -200e3, -500e3))
+def test_VRdc_not_negative(NEd):
+    """Test if VRdc always returns a non-negative number."""
+    fck = 35
+    gamma_c = 1.5
+    assert (
+        shear.VRdc(
+            fck=fck,
+            d=250,
+            Asl=400,
+            bw=100,
+            NEd=NEd,
+            Ac=30000,
+            fcd=fcd(fck=fck, alpha_cc=0.85, gamma_c=gamma_c),
+            k1=0.15,
+            gamma_c=gamma_c,
+        )
+        >= 0
+    )
+
+
 @pytest.mark.parametrize(
     'Iy, bw, S, fctd, NEd, Ac, L_x, L_pt2, expected',
     [
@@ -219,6 +240,23 @@ def test_VRds(Asw, s, z, theta, fyk, alpha, gamma_s, expected):
         assert str(exc_info.value).startswith(
             'Wrong value for theta is chosen.'
         )
+
+
+@pytest.mark.parametrize(
+    'Ved, z, theta, fywd, expected',
+    [
+        (100e3, 300, 45, 500 / 1.15, 0.76666),
+        (150e3, 300, 45, 500 / 1.15, 1.14999),
+        (200e3, 350, 30, 500 / 1.15, 0.75880),
+        (250e3, 350, 45, 500 / 1.15, 1.64285),
+        (120e3, 400, 45, 500 / 1.15, 0.68999),
+        (180e3, 350, 35, 500 / 1.15, 0.82824),
+    ],
+)
+def test_Asw_s_required(Ved, z, theta, fywd, expected):
+    """Test the Asw_s_required function."""
+    result = shear.Asw_s_required(Ved, z, theta, fywd)
+    assert math.isclose(result, expected, rel_tol=0.01)
 
 
 @pytest.mark.parametrize(

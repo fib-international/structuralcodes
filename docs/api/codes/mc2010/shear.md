@@ -61,11 +61,59 @@
 ## Punching
 
 ```{eval-rst}
-.. autofunction:: structuralcodes.codes.mc2010.v_rd_punching
+.. autofunction:: structuralcodes.codes.mc2010.b_0
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.b_s
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.b_sr
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.k_dg
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.k_psi
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.m_ed
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.psi_punching
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.psi_punching_level_one
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.psi_punching_level_three
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.psi_punching_level_two
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.r_s
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.sigma_swd
 ```
 
 ```{eval-rst}
 .. autofunction:: structuralcodes.codes.mc2010.v_rd_max_punching
+```
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.mc2010.v_rd_punching
 ```
 
 ```{eval-rst}
@@ -76,17 +124,7 @@
 .. autofunction:: structuralcodes.codes.mc2010.v_rds_punching
 ```
 
-```{eval-rst}
-.. autofunction:: structuralcodes.codes.mc2010.b_0
-```
 
-```{eval-rst}
-.. autofunction:: structuralcodes.codes.mc2010.m_ed
-```
-
-```{eval-rst}
-.. autofunction:: structuralcodes.codes.mc2010.psi_punching
-```
 
 ## Torsion
 
