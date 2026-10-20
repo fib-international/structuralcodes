@@ -240,6 +240,6 @@ def test_delta_dur_red_2():
 )
 def test_delta_dur_abr(xm_class, expected):
     """Test addition of minimum cover for abrasion based on XM class."""
-    assert (
-        _section6_durability.delta_dur_abr(xm_class) == expected
-    ), f'Expected addition of {expected} mm for XM class {xm_class}.'
+    assert _section6_durability.delta_dur_abr(xm_class) == expected, (
+        f'Expected addition of {expected} mm for XM class {xm_class}.'
+    )
