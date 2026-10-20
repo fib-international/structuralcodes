@@ -112,11 +112,11 @@ class ShellSectionCalculator(SectionCalculator):
 
             result = self.integrate_strain_profile(strain)
             # `result` will be a tuple containing section forces (Nx, Ny, Nxy,
-               Mx, My, Mxy)
+            Mx, My, Mxy)
 
         Raises:
             ValueError: If a unkown value is passed to the `integrate`
-            parameter.
+                parameter.
         """
         result = self.integrator.integrate_strain_response_on_geometry(
             geo=self.section.geometry,
