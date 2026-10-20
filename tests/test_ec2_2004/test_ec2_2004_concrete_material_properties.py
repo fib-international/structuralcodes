@@ -208,6 +208,40 @@ def test_eps_cu1(test_input, expect):
 @pytest.mark.parametrize(
     'test_input, expect',
     [
+        (12, 2.55),
+        (16, 2.41),
+        (20, 2.25),
+        (25, 2.07),
+        (30, 2.01),
+        (35, 1.87),
+        (40, 1.76),
+        (45, 1.71),
+        (50, 1.64),
+        (55, 1.58),
+        (60, 1.57),
+        (70, 1.49),
+        (80, 1.40),
+        (90, 1.32),
+    ],
+)
+def test_k(test_input, expect):
+    """Test the k function."""
+    # compute
+    fcm = _concrete_material_properties.fcm(test_input)
+    eps_c1 = _concrete_material_properties.eps_c1(fcm)
+    Ecm = _concrete_material_properties.Ecm(fcm)
+
+    # act
+    assert math.isclose(
+        _concrete_material_properties.k_sargin(Ecm, fcm, eps_c1),
+        expect,
+        rel_tol=2.8e-2,
+    )
+
+
+@pytest.mark.parametrize(
+    'test_input, expect',
+    [
         (12, 2.0e-3),
         (16, 2.0e-3),
         (20, 2.0e-3),
@@ -361,5 +395,29 @@ def test_fcd(fck, alpha_cc, gamma_c, fcd):
             fck=fck, alpha_cc=alpha_cc, gamma_c=gamma_c
         ),
         fcd,
+        rel_tol=1e-4,
+    )
+
+
+@pytest.mark.parametrize(
+    'fctk_5, alpha_ct, gamma_c, fctd',
+    [
+        (2.2, 0.85, 1.5, 1.2467),
+        (2.7, 0.85, 1.5, 1.53),
+        (3.2, 0.85, 1.5, 1.8133),
+        (3.5, 0.85, 1.5, 1.9833),
+        (2.2, 1.0, 1.5, 1.4667),
+        (2.7, 1.0, 1.5, 1.8),
+        (3.2, 1.0, 1.5, 2.1333),
+        (3.5, 1.0, 1.5, 2.3333),
+    ],
+)
+def test_fctd(fctk_5, alpha_ct, gamma_c, fctd):
+    """Test calculating the design tensile strength."""
+    assert math.isclose(
+        _concrete_material_properties.fctd(
+            fctk_5=fctk_5, alpha_ct=alpha_ct, gamma_c=gamma_c
+        ),
+        fctd,
         rel_tol=1e-4,
     )

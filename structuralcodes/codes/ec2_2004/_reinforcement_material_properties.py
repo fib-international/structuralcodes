@@ -48,6 +48,8 @@ def epsud(epsuk: float, gamma_eps: float = 0.9) -> float:
 
     Args:
         epsuk (float): The characteristic ultimate strain
+
+    Keyword Args:
         gamma_eps (float): The partial factor specified in NA.
             Default value 0.9.
 
