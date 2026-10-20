@@ -56,6 +56,10 @@ The following functions are related to calculation of material properties of con
 .. autofunction:: structuralcodes.codes.ec2_2023.eps_cu1
 ```
 
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.ec2_2023.k_sargin
+```
+
 ## Miscellaneous properties
 
 ```{eval-rst}
