@@ -766,10 +766,7 @@ def check_anchorage_headed_bars_in_tension(
     if not (ax >= 2 * ay + 1.2 * phi_h):
         return False
 
-    if not (sx >= 4 * ay):
-        return False
-
-    return True
+    return sx >= 4 * ay
 
 
 def kh_A(phi_h: float, phi: float) -> float:
