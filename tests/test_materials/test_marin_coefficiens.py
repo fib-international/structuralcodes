@@ -9,7 +9,9 @@ from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
     ElasticPlastic,
+    InitialStrain,
     ParabolaRectangle,
+    Parallel,
     UserDefined,
 )
 
@@ -280,6 +282,65 @@ def test_marin_elasticplastic_uniform_strain(eps_0, E, fy, Eh, eps_su):
     if abs(eps_0) <= eps_y:
         expected = (None, (E,))
     elif abs(eps_0) <= eps_su_p:
+        expected = (None, (Eh,))
+    else:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin_tangent__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+
+@pytest.mark.parametrize('eps_0', eps0)
+@pytest.mark.parametrize('init_strain', [0.0, 0.001])
+@pytest.mark.parametrize(
+    'E, fy, Eh, eps_su',
+    [
+        (200000, 450, 0.0, 0.0675),
+        (200000, 500, 2000.0, 0.0675),
+        (200000, 500, 0.0, 0.0675),
+    ],
+)
+def test_marin_init_strain_uniform_strain(
+    eps_0, E, fy, Eh, eps_su, init_strain
+):
+    """Test the marin coefficients for a strain plane of pure tension or
+    compression for InitialStrain constitutive law.
+    """
+    base_law = ElasticPlastic(E, fy, Eh, eps_su)
+    law = InitialStrain(base_law, init_strain)
+
+    eps_y = base_law._eps_sy
+    _, eps_su_p = law.get_ultimate_strain()
+
+    delta_sigma = fy * (1 - Eh / E)
+
+    # Check marin coefficients for stress integration
+    sign = 1 if eps_0 >= 0 else -1
+    if abs(eps_0 + init_strain) <= eps_y:
+        expected = (None, (E * (eps_0 + init_strain), 0.0))
+    elif abs(eps_0 + init_strain) <= eps_su_p:
+        expected = (
+            None,
+            (Eh * (eps_0 + init_strain) + sign * delta_sigma, 0.0),
+        )
+    else:
+        expected = (None, (0.0,))
+
+    strain, coeffs = law.__marin__([eps_0, 0])
+
+    assert strain == expected[0]
+    assert len(coeffs[0]) == len(expected[1])
+    for i in range(len(coeffs[0])):
+        assert math.isclose(coeffs[0][i], expected[1][i])
+
+    # Check marin coefficients for modulus integration
+    if abs(eps_0 + init_strain) <= eps_y:
+        expected = (None, (E,))
+    elif abs(eps_0 + init_strain) <= eps_su_p:
         expected = (None, (Eh,))
     else:
         expected = (None, (0.0,))
@@ -619,3 +680,119 @@ def test_marin_userdefined_axial_bending_strain(eps_0, eps_min, x, y, h):
         assert len(coeff) == len(expect)
         for i in range(len(coeff)):
             assert math.isclose(coeff[i], expect[i])
+
+
+def test_parallel_marin_elastic():
+    """Test marin coefficients for Parallel constitutive law."""
+    law = Elastic(200000)
+
+    law1 = Elastic(150000)
+    law2 = Elastic(50000)
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = law.__marin__([0, 1e-5])
+
+    strainsP, coeffsP = lawP.__marin__([0, 1e-5])
+
+    assert strains == strainsP
+    assert coeffs == coeffsP
+
+    # Test with different weights
+    lawP = Parallel([law, law], weights=[0.25, 0.75])
+    strainsP, coeffsP = lawP.__marin__([0, 1e-5])
+
+    assert strains == strainsP
+    assert coeffs == coeffsP
+
+
+def test_parallel_marin_elasticplastic():
+    """Test marin coefficients for Parallel constitutive law."""
+    law1 = ElasticPlastic(E=1, fy=1, Eh=0, eps_su=2.0)
+    law2 = ElasticPlastic(E=0.5, fy=0.7, Eh=0, eps_su=3.0)
+
+    strains_1, coeffs_1 = law1.__marin__([0, 1e-5])
+    strains_2, coeffs_2 = law2.__marin__([0, 1e-5])
+
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = lawP.__marin__([0, 1e-5])
+
+    # We should have 7 ranges
+    assert len(strains) == 7
+    assert len(coeffs) == 7
+
+    # Check the central range
+    assert math.isclose(strains[3][0], -1.0)
+    assert math.isclose(strains[3][1], 1.0)
+
+    assert math.isclose(coeffs[3][0], coeffs_1[1][0] + coeffs_2[1][0])
+    assert math.isclose(coeffs[3][1], coeffs_1[1][1] + coeffs_2[1][1])
+
+
+def test_parallel_marin_elastic_tangent():
+    """Test marin coefficients for Parallel constitutive law."""
+    law = Elastic(200000)
+
+    law1 = Elastic(150000)
+    law2 = Elastic(50000)
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = law.__marin_tangent__([0, 1e-5])
+
+    strainsP, coeffsP = lawP.__marin_tangent__([0, 1e-5])
+
+    assert strains == strainsP
+    assert coeffs == coeffsP
+
+    # Test with different weights
+    lawP = Parallel([law, law], weights=[0.25, 0.75])
+    strainsP, coeffsP = lawP.__marin_tangent__([0, 1e-5])
+
+    assert strains == strainsP
+    assert coeffs == coeffsP
+
+
+def test_parallel_marin_elasticplastic_tangent():
+    """Test marin coefficients for Parallel constitutive law."""
+    law1 = ElasticPlastic(E=1, fy=1, Eh=0, eps_su=2.0)
+    law2 = ElasticPlastic(E=0.5, fy=0.7, Eh=0, eps_su=3.0)
+
+    strains_1, coeffs_1 = law1.__marin_tangent__([0, 1e-5])
+    strains_2, coeffs_2 = law2.__marin_tangent__([0, 1e-5])
+
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = lawP.__marin_tangent__([0, 1e-5])
+
+    # We should have 7 ranges
+    assert len(strains) == 7
+    assert len(coeffs) == 7
+
+    # Check the central range
+    assert math.isclose(strains[3][0], -1.0)
+
+    assert math.isclose(coeffs[3][0], coeffs_1[1][0] + coeffs_2[1][0])
+
+
+def test_parallel_marin_elastic_elasticplastic():
+    """Test marin coefficients for Parallel constitutive law."""
+    law1 = Elastic(E=1)
+    law2 = ElasticPlastic(E=0.5, fy=0.7, Eh=0, eps_su=3.0)
+
+    strains_1, coeffs_1 = law1.__marin__([0, 1e-5])
+    strains_2, coeffs_2 = law2.__marin__([0, 1e-5])
+
+    lawP = Parallel([law1, law2])
+
+    strains, coeffs = lawP.__marin__([0, 1e-5])
+
+    # We should have 3 ranges
+    assert len(strains) == 3
+    assert len(coeffs) == 3
+
+    # Check the central range
+    assert math.isclose(strains[1][0], -1.4)
+    assert math.isclose(strains[1][1], 1.4)
+
+    assert math.isclose(coeffs[1][0], coeffs_1[0][0] + coeffs_2[1][0])
+    assert math.isclose(coeffs[1][1], coeffs_1[0][1] + coeffs_2[1][1])

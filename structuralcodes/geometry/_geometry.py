@@ -1,11 +1,13 @@
-"""Generic class section implemenetation."""
+"""Geometry classes for beam sections."""
 
 from __future__ import annotations  # To have clean hints of ArrayLike in docs
 
 import typing as t
 import warnings
+from math import atan2
 
 import numpy as np
+import triangle
 from numpy.typing import ArrayLike
 from shapely import affinity
 from shapely.geometry import (
@@ -18,69 +20,46 @@ from shapely.geometry import (
 )
 from shapely.ops import split
 
-from structuralcodes.core.base import ConstitutiveLaw, Material
+from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import Concrete
-from structuralcodes.materials.constitutive_laws import Elastic
+
+from ..core.base import Geometry, Material, _GroupMixin
 
 
-class Geometry:
-    """Base class for a geometry object."""
+def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
+    if not isinstance(axis, LineString):
+        raise TypeError('axis should be a shapely LineString object')
 
-    section_counter: t.ClassVar[int] = 0
+    (x1, y1), (x2, y2) = axis.coords
 
-    def __init__(
-        self, name: t.Optional[str] = None, group_label: t.Optional[str] = None
-    ) -> None:
-        """Initializes a geometry object.
+    # angle of the line with respect to the horizontal axis
+    dx, dy = x2 - x1, y2 - y1
+    theta = atan2(dy, dx)
 
-        The name and grouplabel serve for filtering in a compound object. By
-        default it creates a new name each time.
+    # Translation matrix T (move line start to origin)
+    T = np.array([[1, 0, -x1], [0, 1, -y1], [0, 0, 1]])
 
-        Arguments:
-            name (Optional(str)): The name to be given to the object.
-            group_label (Optional(str)): A label for grouping several objects.
-        """
-        if name is not None:
-            self._name = name
-        else:
-            counter = Geometry.return_global_counter_and_increase()
-            self._name = f'Geometry_{counter}'
-        self._group_label = group_label
+    # Rotation matrix R (align line with x-axis)
+    R = np.array(
+        [
+            [np.cos(theta), np.sin(theta), 0],
+            [-np.sin(theta), np.cos(theta), 0],
+            [0, 0, 1],
+        ]
+    )
 
-    @property
-    def name(self):
-        """Returns the name of the Geometry."""
-        return self._name
+    # Mirror across x-axis
+    M = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]])
 
-    @property
-    def group_label(self):
-        """Returns the group_label fo the Geometry."""
-        return self._group_label
+    # Inverses of T and R
+    T_inv = np.linalg.inv(T)
+    R_inv = np.linalg.inv(R)
 
-    @classmethod
-    def _increase_global_counter(cls):
-        """Increases the global counter by one."""
-        cls.section_counter += 1
-
-    @classmethod
-    def return_global_counter_and_increase(cls):
-        """Returns the current counter and increases it by one."""
-        counter = cls.section_counter
-        cls._increase_global_counter()
-        return counter
-
-    @staticmethod
-    def from_geometry(
-        geo: Geometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
-    ) -> Geometry:
-        """Create a new geometry with a different material."""
-        raise NotImplementedError(
-            'This method should be implemented by subclasses'
-        )
+    # Final transformation matrix
+    return T_inv @ R_inv @ M @ R @ T
 
 
-class PointGeometry(Geometry):
+class PointGeometry(_GroupMixin, Geometry):
     """Class for a point geometry with material.
 
     Basically it is a wrapper for shapely Point including the material (and
@@ -91,8 +70,7 @@ class PointGeometry(Geometry):
         self,
         point: t.Union[Point, ArrayLike],
         diameter: float,
-        material: t.Union[Material, ConstitutiveLaw],
-        density: t.Optional[float] = None,
+        material: Material,
         name: t.Optional[str] = None,
         group_label: t.Optional[str] = None,
     ):
@@ -105,17 +83,13 @@ class PointGeometry(Geometry):
             point (Union(Point, ArrayLike)): A couple of coordinates or a
                 shapely Point object.
             diameter (float): The diameter of the point.
-            material (Union(Material, ConstitutiveLaw)): The material for the
-                point (this can be a Material or a ConstitutiveLaw).
-            density (Optional(float)): When a ConstitutiveLaw is passed as
-                material, the density can be providen by this argument. When
-                the material is a Material object the density is taken from the
-                material.
+            material (Material): The material for the point.
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects
                 (default is None).
         """
-        super().__init__(name, group_label)
+        super().__init__(name)
+        self._group_label = group_label
         # I check if point is a shapely Point or an ArrayLike object
         if not isinstance(point, Point):
             # It is an ArrayLike object -> create the Point given the
@@ -131,22 +105,12 @@ class PointGeometry(Geometry):
                 warn_str += ' discarded'
                 warnings.warn(warn_str)
             point = Point(coords)
-        if not isinstance(material, Material) and not isinstance(
-            material, ConstitutiveLaw
-        ):
+        if not isinstance(material, Material):
             raise TypeError(
-                f'mat should be a valid structuralcodes.base.Material \
-                or structuralcodes.base.ConstitutiveLaw object. \
+                f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(material)}'
             )
-        # Pass a constitutive law to the PointGeometry
-        self._density = density
-        if isinstance(material, Material):
-            self._density = material.density
-            self._material = material.constitutive_law
-        elif isinstance(material, ConstitutiveLaw):
-            self._material = material
-
+        self._material = material
         self._point = point
         self._diameter = diameter
         self._area = np.pi * diameter**2 / 4.0
@@ -162,14 +126,14 @@ class PointGeometry(Geometry):
         return self._area
 
     @property
-    def material(self) -> ConstitutiveLaw:
+    def material(self) -> Material:
         """Returns the point material."""
         return self._material
 
     @property
     def density(self) -> float:
         """Returns the density."""
-        return self._density
+        return self.material.density
 
     @property
     def x(self) -> float:
@@ -204,7 +168,6 @@ class PointGeometry(Geometry):
             point=affinity.translate(self._point, dx, dy),
             diameter=self._diameter,
             material=self._material,
-            density=self._density,
             name=self._name,
             group_label=self._group_label,
         )
@@ -231,7 +194,31 @@ class PointGeometry(Geometry):
             ),
             diameter=self._diameter,
             material=self._material,
-            density=self._density,
+            name=self._name,
+            group_label=self._group_label,
+        )
+
+    def mirror(self, axis: LineString) -> PointGeometry:
+        """Returns a new PointGeometry that is mirrored with respect to the
+        axis.
+
+        Arguments:
+            axis (LineString): The axis to mirror about.
+
+        Returns:
+            PointGeometry: The mirrored PointGeometry.
+        """
+        if not isinstance(axis, LineString):
+            raise TypeError('axis should be a shapely LineString object')
+
+        # Build the transformation matrix
+        A = _mirror_about_axis_matrix(axis)
+        # Apply the transformation to the point
+        params = [A[0, 0], A[0, 1], A[1, 0], A[1, 1], A[0, 2], A[1, 2]]
+        return PointGeometry(
+            point=affinity.affine_transform(self._point, params),
+            diameter=self._diameter,
+            material=self._material,
             name=self._name,
             group_label=self._group_label,
         )
@@ -239,16 +226,15 @@ class PointGeometry(Geometry):
     @staticmethod
     def from_geometry(
         geo: PointGeometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> PointGeometry:
         """Create a new PointGeometry with a different material.
 
         Arguments:
             geo (PointGeometry): The geometry.
-            new_material (Optional(Union(Material, ConstitutiveLaw))): A new
-                material to be applied to the geometry. If new_material is
-                None an Elastic material with same stiffness as the original
-                material is created.
+            new_material (Optional(Material)): A new material to be applied to
+                the geometry. If new_material is None an Elastic material with
+                same stiffness as the original material is created.
 
         Returns:
             PointGeometry: The new PointGeometry.
@@ -261,27 +247,35 @@ class PointGeometry(Geometry):
             raise TypeError('geo should be a PointGeometry')
         if new_material is not None:
             # provided a new_material
-            if not isinstance(new_material, Material) and not isinstance(
-                new_material, ConstitutiveLaw
-            ):
+            if not isinstance(new_material, Material):
                 raise TypeError(
                     f'new_material should be a valid structuralcodes.base.\
-                    Material or structuralcodes.base.ConstitutiveLaw object. \
+                    Material object. \
                     {repr(new_material)}'
                 )
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0))
+            new_material = ElasticMaterial.from_material(geo.material)
 
         return PointGeometry(
             point=geo._point,
             diameter=geo._diameter,
             material=new_material,
-            density=geo._density,
             name=geo._name,
             group_label=geo._group_label,
         )
+
+    def __add__(self, other: Geometry) -> CompoundGeometry:
+        """Add operator "+" for geometries.
+
+        Arguments:
+            other (Geometry): The other geometry to add.
+
+        Returns:
+            CompoundGeometry: A new CompoundGeometry.
+        """
+        return CompoundGeometry([self, other])
 
 
 def create_line_point_angle(
@@ -323,7 +317,7 @@ def create_line_point_angle(
     return LineString([(x1, y1), (x2, y2)])
 
 
-class SurfaceGeometry(Geometry):
+class SurfaceGeometry(_GroupMixin, Geometry):
     """Class for a surface geometry with material.
 
     Basically it is a wrapper for shapely polygon including the material (and
@@ -331,13 +325,12 @@ class SurfaceGeometry(Geometry):
     holes.
     """
 
-    _material: ConstitutiveLaw
+    _material: Material
 
     def __init__(
         self,
         poly: Polygon,
-        material: t.Union[Material, ConstitutiveLaw],
-        density: t.Optional[float] = None,
+        material: Material,
         concrete: bool = False,
         name: t.Optional[str] = None,
         group_label: t.Optional[str] = None,
@@ -346,40 +339,28 @@ class SurfaceGeometry(Geometry):
 
         Arguments:
             poly (shapely.Polygon): A Shapely polygon.
-            material (Union(Material, ConstitutiveLaw)): A Material or
-                ConsitutiveLaw class applied to the geometry.
-            density (Optional(float)): When a ConstitutiveLaw is passed as mat,
-                the density can be provided by this argument. When mat is a
-                Material object the density is taken from the material.
+            material (Material): A Material applied to the geometry.
             concrete (bool): Flag to indicate if the geometry is concrete.
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects.
         """
-        super().__init__(name=name, group_label=group_label)
+        super().__init__(name=name)
+        self._group_label = group_label
         # Check if inputs are of the correct type, otherwise return error
         if not isinstance(poly, Polygon):
             raise TypeError(
                 f'poly need to be a valid shapely.geometry.Polygon object. \
                 {repr(poly)}'
             )
-        if not isinstance(material, Material) and not isinstance(
-            material, ConstitutiveLaw
-        ):
+        if not isinstance(material, Material):
             raise TypeError(
-                f'mat should be a valid structuralcodes.base.Material \
-                or structuralcodes.base.ConstitutiveLaw object. \
+                f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(material)}'
             )
         self._polygon = poly
-        # Pass a constitutive law to the SurfaceGeometry
-        self._density = density
-        if isinstance(material, Material):
-            self._density = material.density
-            if isinstance(material, Concrete):
-                concrete = True
-            material = material.constitutive_law
-
         self._material = material
+        if isinstance(material, Concrete):
+            concrete = True
         self._concrete = concrete
 
     @property
@@ -403,11 +384,11 @@ class SurfaceGeometry(Geometry):
     @property
     def density(self) -> float:
         """Returns the density."""
-        return self._density
+        return self.material.density
 
     @property
-    def material(self) -> ConstitutiveLaw:
-        """Returns the Constitutive law."""
+    def material(self) -> Material:
+        """Returns the material."""
         return self._material
 
     @property
@@ -419,6 +400,101 @@ class SurfaceGeometry(Geometry):
     def polygon(self) -> Polygon:
         """Returns the Shapely Polygon."""
         return self._polygon
+
+    def random_points_within(
+        self, num_points: int = 100, seed: int = None
+    ) -> np.ndarray:
+        """Returns coordinates of random points within the polygon.
+
+        Arguments:
+            num_points (int): Number of random points to generate.
+            seed (int): Seed for the random number generator.
+
+        Returns:
+            x, y (ndarray, ndarray): Arrays with the x and y coordinates of the
+            random points within the polygon.
+        """
+
+        def _prepare_triangulation_data(poly: Polygon) -> dict[str:ArrayLike]:
+            # Create the tri dictionary
+            tri: dict[str:ArrayLike] = {}
+            # 1. External boundary process
+            # 1a. Get vertices, skipping the last one
+            vertices = np.column_stack(poly.exterior.xy)[:-1, :]
+            n_vertices = vertices.shape[0]
+            # 1b. Create segments
+            node_i = np.arange(n_vertices)
+            node_j = np.roll(node_i, -1)
+            segments = np.column_stack((node_i, node_j))
+
+            # 2. Process holes
+            holes = []
+            for interior in poly.interiors:
+                # 2a. Get vertices, skipping the last one
+                vertices_int = np.column_stack(interior.xy)[:-1, :]
+                n_vertices_int = vertices_int.shape[0]
+                # 2b. Create segments
+                node_i = np.arange(n_vertices_int) + n_vertices
+                node_j = np.roll(node_i, -1)
+                segments_int = np.column_stack((node_i, node_j))
+                c = Polygon(interior)
+                holes.append([c.centroid.x, c.centroid.y])
+                # Append to the global arrays
+                vertices = np.vstack((vertices, vertices_int))
+                segments = np.vstack((segments, segments_int))
+                n_vertices += n_vertices_int
+            # Return the dictionary with data for triangulate
+            tri['vertices'] = vertices
+            tri['segments'] = segments
+            if len(holes) > 0:
+                tri['holes'] = holes
+            return tri
+
+        tri = _prepare_triangulation_data(self.polygon)
+        triangles = triangle.triangulate(tri, 'p')
+
+        xs = np.array([])
+        ys = np.array([])
+        # Manage reproducibility of random points:
+        # seeds must be random in the triangles loop
+        n_tr = len(triangles['triangles'])
+        rng = np.random.default_rng(seed)
+        seeds = rng.integers(1, 300, n_tr)
+        for tr, s in zip(triangles['triangles'], seeds):
+            # Get vertices for the triangle
+            Ax = triangles['vertices'][tr[0]][0]
+            Ay = triangles['vertices'][tr[0]][1]
+            Bx = triangles['vertices'][tr[1]][0]
+            By = triangles['vertices'][tr[1]][1]
+            Cx = triangles['vertices'][tr[2]][0]
+            Cy = triangles['vertices'][tr[2]][1]
+            # area of the triangle
+            a = Ax * By - Ay * Bx
+            a += Bx * Cy - By * Cx
+            a += Cx * Ay - Cy * Ax
+            a = abs(a) * 0.5
+            # number of points in this triangle (at least 1)
+            n = max(1, int(num_points * a / self.area))
+            # generate random points in the triangle
+            rng = np.random.default_rng(s)
+            r1 = rng.uniform(0, 1, n)
+            r2 = rng.uniform(0, 1, n)
+            x = (
+                (1 - np.sqrt(r1)) * Ax
+                + (np.sqrt(r1) * (1 - r2)) * Bx
+                + (r2 * np.sqrt(r1)) * Cx
+            )
+            y = (
+                (1 - np.sqrt(r1)) * Ay
+                + (np.sqrt(r1) * (1 - r2)) * By
+                + (r2 * np.sqrt(r1)) * Cy
+            )
+
+            # Concatenate the new points
+            xs = np.concatenate((xs, x))
+            ys = np.concatenate((ys, y))
+
+        return xs, ys
 
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of SurfaceGeometry.
@@ -527,7 +603,6 @@ class SurfaceGeometry(Geometry):
             SurfaceGeometry: The resulting SurfaceGeometry.
         """
         material = self.material
-        density = self._density
 
         # if we subtract a point from a surface we obtain the same surface
         sub_polygon = self.polygon
@@ -540,9 +615,7 @@ class SurfaceGeometry(Geometry):
             for g in other.geometries:
                 sub_polygon = sub_polygon - g.polygon
 
-        return SurfaceGeometry(
-            poly=sub_polygon, material=material, density=density
-        )
+        return SurfaceGeometry(poly=sub_polygon, material=material)
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
@@ -561,8 +634,9 @@ class SurfaceGeometry(Geometry):
         return SurfaceGeometry(
             poly=affinity.translate(self.polygon, dx, dy),
             material=self.material,
-            density=self._density,
             concrete=self.concrete,
+            name=self.name,
+            group_label=self.group_label,
         )
 
     def rotate(
@@ -589,23 +663,47 @@ class SurfaceGeometry(Geometry):
                 self.polygon, angle, origin=point, use_radians=use_radians
             ),
             material=self.material,
-            density=self._density,
             concrete=self.concrete,
+            name=self.name,
+            group_label=self.group_label,
+        )
+
+    def mirror(self, axis: LineString) -> SurfaceGeometry:
+        """Returns a new SurfaceGeometry that is mirrored about the given axis.
+
+        Arguments:
+            axis (LineString): The axis to mirror about.
+
+        Returns:
+            SurfaceGeometry: The mirrored SurfaceGeometry.
+        """
+        if not isinstance(axis, LineString):
+            raise TypeError('axis should be a shapely LineString object')
+        # Build the transformation matrix
+        A = _mirror_about_axis_matrix(axis)
+        # Apply transformation matrix A
+        # Apply the transformation to the polygon
+        params = [A[0, 0], A[0, 1], A[1, 0], A[1, 1], A[0, 2], A[1, 2]]
+        return SurfaceGeometry(
+            poly=affinity.affine_transform(self.polygon, params),
+            material=self.material,
+            concrete=self.concrete,
+            name=self.name,
+            group_label=self.group_label,
         )
 
     @staticmethod
     def from_geometry(
         geo: SurfaceGeometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> SurfaceGeometry:
         """Create a new SurfaceGeometry with a different material.
 
         Arguments:
             geo (SurfaceGeometry): The geometry.
-            new_material: (Optional(Union(Material, ConstitutiveLaw))): A new
-                material to be applied to the geometry. If new_material is None
-                an Elastic material with same stiffness of the original
-                material is created.
+            new_material: (Optional(Material)): A new material to be applied to
+                the geometry. If new_material is None an Elastic material with
+                same stiffness of the original material is created.
 
         Returns:
             SurfaceGeometry: The new SurfaceGeometry.
@@ -618,21 +716,21 @@ class SurfaceGeometry(Geometry):
             raise TypeError('geo should be a SurfaceGeometry')
         if new_material is not None:
             # provided a new_material
-            if not isinstance(new_material, Material) and not isinstance(
-                new_material, ConstitutiveLaw
-            ):
+            if not isinstance(new_material, Material):
                 raise TypeError(
                     f'new_material should be a valid structuralcodes.base.\
-                    Material or structuralcodes.base.ConstitutiveLaw object. \
+                    Material object. \
                     {repr(new_material)}'
                 )
         else:
             # new_material not provided, assume elastic material with same
             # elastic modulus
-            new_material = Elastic(E=geo.material.get_tangent(eps=0))
+            new_material = ElasticMaterial.from_material(geo.material)
 
         return SurfaceGeometry(
-            poly=geo.polygon, material=new_material, density=geo._density
+            poly=geo.polygon,
+            material=new_material,
+            group_label=geo.group_label,
         )
 
     # here we can also add static methods like:
@@ -641,24 +739,22 @@ class SurfaceGeometry(Geometry):
     # from_surface_geometry
     # from_dxf
     # from_ascii
-    # ...
-    # we could also add methods wrapping shapely function, like:
-    # mirror, translation, rotation, etc.
 
 
 def _process_geometries_multipolygon(
     geometries: MultiPolygon,
-    materials: t.Optional[
-        t.Union[t.List[Material], Material, ConstitutiveLaw]
-    ],
+    materials: t.Optional[t.Union[t.List[Material], Material]],
 ) -> list[Geometry]:
     """Process geometries for initialization."""
     checked_geometries = []
     # a MultiPolygon is provided
-    if isinstance(materials, (ConstitutiveLaw, Material)):
+    if isinstance(materials, Material):
         for g in geometries.geoms:
             checked_geometries.append(
-                SurfaceGeometry(poly=g, material=materials)
+                SurfaceGeometry(
+                    poly=g,
+                    material=materials,
+                )
             )
     elif isinstance(materials, list):
         # the list of materials is provided, one for each polygon
@@ -667,7 +763,12 @@ def _process_geometries_multipolygon(
                 'geometries and materials should have the same length'
             )
         for g, m in zip(geometries.geoms, materials):
-            checked_geometries.append(SurfaceGeometry(poly=g, material=m))
+            checked_geometries.append(
+                SurfaceGeometry(
+                    poly=g,
+                    material=m,
+                )
+            )
     return checked_geometries
 
 
@@ -698,20 +799,23 @@ class CompoundGeometry(Geometry):
     properties.
     """
 
-    geometries: t.List[Geometry]
+    geometries: t.List[t.Union[SurfaceGeometry, PointGeometry]]
 
     def __init__(
         self,
-        geometries: t.Union[t.List[Geometry], MultiPolygon],
+        geometries: t.Union[
+            t.List[t.Union[SurfaceGeometry, PointGeometry, CompoundGeometry]],
+            MultiPolygon,
+        ],
         materials: t.Optional[t.Union[t.List[Material], Material]] = None,
     ) -> None:
         """Creates a compound geometry.
 
         Arguments:
             geometries (Union(List(Geometry), MultiPolygon)): A list of
-                Geometry objects (i.e. PointGeometry or SurfaceGeometry) or a
-                shapely MultiPolygon object (in this latter case also a list of
-                materials should be given).
+                Geometry objects (i.e. PointGeometry, SurfaceGeometry or
+                CompoundGeometry) or a shapely MultiPolygon object (in this
+                latter case also a list of materials should be given).
             materials (Optional(List(Material), Material)): A material (applied
                 to all polygons) or a list of materials. In this case the
                 number of polygons should match the number of materials.
@@ -722,27 +826,42 @@ class CompoundGeometry(Geometry):
                 geometries, materials
             )
             self.point_geometries = []
-            # useful for representation in svg
-            geoms_representation = [g.polygon for g in self.geometries]
-            self.geom = MultiPolygon(geoms_representation)
+            # self.geom (svg representation) is built lazily, see the geom
+            # property.
+            self._geom = None
             return
         if isinstance(geometries, list):
             self.geometries, self.point_geometries = _process_geometries_list(
                 geometries
             )
-            # useful for representation in svg
-            geoms_representation = [g.polygon for g in self.geometries]
-            geoms_representation += [
-                pg.point.buffer(pg.diameter / 2)
-                for pg in self.point_geometries
-            ]
-            self.geom = MultiPolygon(geoms_representation)
+            # self.geom (svg representation) is built lazily, see the geom
+            # property.
+            self._geom = None
         self._reinforced_concrete = None
 
     # we can add here static methods like
     # from_dxf
     # from_ascii
     # ...
+
+    @property
+    def geom(self) -> MultiPolygon:
+        """MultiPolygon used for the SVG representation, built lazily.
+
+        Point geometries are represented as buffered circles. This is only
+        needed for display, so it is computed on first access rather than in
+        __init__ -- building it eagerly buffers every point geometry on every
+        construction (including every rotate()), which dominated the section
+        calculations.
+        """
+        if self._geom is None:
+            geoms_representation = [g.polygon for g in self.geometries]
+            geoms_representation += [
+                pg.point.buffer(pg.diameter / 2)
+                for pg in self.point_geometries
+            ]
+            self._geom = MultiPolygon(geoms_representation)
+        return self._geom
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""
@@ -766,6 +885,33 @@ class CompoundGeometry(Geometry):
         for geo in self.geometries:
             area += geo.area
         return area
+
+    def get_point_geometries(
+        self, group_label: t.Optional[str] = None
+    ) -> t.Tuple[np.ndarray, t.List[Material]]:
+        """Returns the coordinates and the material of the point geometries.
+         The coordinates are returned as a numpy array.
+
+        Arguments:
+            group_label (Optional(str)): If provided, only point geometries
+                with the given group_label are returned.
+
+        Returns:
+            Tuple[ndarray, List[Material]]: Coordinates array of shape (n, 2)
+            and list of materials.
+
+        """
+        coords = []
+        materials = []
+
+        for pg in self.point_geometries:
+            if group_label is None or pg.group_label == group_label:
+                coords.append([pg.x, pg.y])
+                materials.append(pg.material)
+
+        if len(coords) == 0:
+            return None, None
+        return np.array(coords), materials
 
     def calculate_extents(self) -> t.Tuple[float, float, float, float]:
         """Calculate extents of CompundGeometry.
@@ -834,6 +980,23 @@ class CompoundGeometry(Geometry):
             processed_geoms.append(pg.rotate(angle, point, use_radians))
         return CompoundGeometry(geometries=processed_geoms)
 
+    def mirror(self, axis: LineString) -> CompoundGeometry:
+        """Returns a new CompoundGeometry that is mirrored about the given
+        axis.
+
+        Arguments:
+            axis (LineString): The axis to mirror about.
+
+        Returns:
+            CompoundGeometry: The mirrored CompoundGeometry.
+        """
+        processed_geoms = []
+        for g in self.geometries:
+            processed_geoms.append(g.mirror(axis))
+        for pg in self.point_geometries:
+            processed_geoms.append(pg.mirror(axis))
+        return CompoundGeometry(geometries=processed_geoms)
+
     def __add__(self, other: Geometry) -> CompoundGeometry:
         """Add operator "+" for geometries.
 
@@ -868,7 +1031,7 @@ class CompoundGeometry(Geometry):
     @staticmethod
     def from_geometry(
         geo: CompoundGeometry,
-        new_material: t.Optional[t.Union[Material, ConstitutiveLaw]] = None,
+        new_material: t.Optional[Material] = None,
     ) -> CompoundGeometry:
         """Create a new CompoundGeometry with a different material.
 
@@ -894,3 +1057,140 @@ class CompoundGeometry(Geometry):
                 PointGeometry.from_geometry(geo=pg, new_material=new_material)
             )
         return CompoundGeometry(geometries=processed_geoms)
+
+    def name_filter(
+        self,
+        pattern: t.Optional[str],
+        *,
+        case_sensitive: bool = True,
+        return_mode: t.Literal['flat', 'split'] = 'flat',
+    ) -> t.Union[t.List[Geometry], t.Dict[str, t.List[Geometry]]]:
+        """Filter geometries by name using a pattern.
+
+        This method returns the geometries whose name matches a given pattern.
+
+        Arguments:
+            pattern (str | None, optional): Pattern used to match geometry
+                names. If ``None``, all geometries are returned.
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): If ``True`` (default), the match
+                is case-sensitive.
+            return_mode (str, optional): Controls the return format. ``"flat"``
+                (default): return a single list containing both
+                ``SurfaceGeometry`` and ``PointGeometry`` objects. ``"split"``:
+                return a dictionary separating the two types.
+
+        Returns:
+            list[Geometry] | dict[str, list[Geometry]]: The filtered
+            geometries. If ``return_mode="flat"``, a single list containing
+            both ``SurfaceGeometry`` and ``PointGeometry`` objects is returned.
+            If ``return_mode="split"``, a dictionary with keys ``"surfaces"``
+            and ``"points"`` is returned.
+
+        Note:
+            The pattern supports simple wildcard matching:
+
+            * ``*`` matches any sequence of characters
+            * ``?`` matches a single character
+            * ``[abc]`` matches any character in the set
+
+        Examples:
+            Match geometries whose name starts with ``"nametos"``:
+
+            >>> geo.name_filter("nametos*")
+
+            Match geometries containing ``"pier"``:
+
+            >>> geo.name_filter("*pier*")
+
+            Case-insensitive match:
+
+            >>> geo.name_filter("Abutment??", case_sensitive=False)
+        """
+        surfaces = self.geometries
+        points = self.point_geometries
+
+        if pattern:
+            surfaces = [
+                g
+                for g in surfaces
+                if g._name_matches(pattern, case_sensitive=case_sensitive)
+            ]
+            points = [
+                g
+                for g in points
+                if g._name_matches(pattern, case_sensitive=case_sensitive)
+            ]
+        if return_mode == 'flat':
+            return [*surfaces, *points]
+        return {'surfaces': surfaces, 'points': points}
+
+    def group_filter(
+        self,
+        pattern: t.Optional[str],
+        *,
+        case_sensitive: bool = True,
+        return_mode: t.Literal['flat', 'split'] = 'flat',
+    ) -> t.Union[t.List[Geometry], t.Dict[str, t.List[Geometry]]]:
+        """Filter geometries by group_label using a pattern.
+
+        This method returns the geometries whose group_label matches a given
+        pattern.
+
+        Arguments:
+            pattern (str | None, optional): Pattern used to match geometry
+                group labels. If ``None``, all geometries are returned.
+
+        Keyword Arguments:
+            case_sensitive (bool, optional): If ``True`` (default), the match
+                is case-sensitive.
+            return_mode (str, optional): Controls the return format. ``"flat"``
+                (default): return a single list containing both
+                `SurfaceGeometry`` and ``PointGeometry`` objects. ``"split"``:
+                return a dictionary separating the two types.
+
+        Returns:
+            list[Geometry] | dict[str, list[Geometry]]: The filtered
+            geometries. If ``return_mode="flat"``, a single list containing
+            both ``SurfaceGeometry`` and ``PointGeometry`` objects is returned.
+            If ``return_mode="split"``, a dictionary with keys ``"surfaces"``
+            and ``"points"`` is returned.
+
+        Note:
+            The pattern supports simple wildcard matching:
+
+            * ``*`` matches any sequence of characters
+            * ``?`` matches a single character
+            * ``[abc]`` matches any character in the set
+
+        Examples:
+            Match geometries whose group_label starts with ``"grouptos"``:
+
+            >>> geo.group_filter("grouptos*")
+
+            Match geometries containing ``"pier"``:
+
+            >>> geo.group_filter("*pier*")
+
+            Case-insensitive match:
+
+            >>> geo.group_filter("Abutment??", case_sensitive=False)
+        """
+        surfaces = self.geometries
+        points = self.point_geometries
+
+        if pattern:
+            surfaces = [
+                g
+                for g in surfaces
+                if g._group_matches(pattern, case_sensitive=case_sensitive)
+            ]
+            points = [
+                g
+                for g in points
+                if g._group_matches(pattern, case_sensitive=case_sensitive)
+            ]
+        if return_mode == 'flat':
+            return [*surfaces, *points]
+        return {'surfaces': surfaces, 'points': points}

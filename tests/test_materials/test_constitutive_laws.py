@@ -8,9 +8,15 @@ from numpy.testing import assert_allclose
 
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
+    ConcreteSmearedCracking,
+    ConstantPoissonReduction,
     Elastic,
+    Elastic2D,
     ElasticPlastic,
+    GeneralVecchioCollins,
+    InitialStrain,
     ParabolaRectangle,
+    Parallel,
     Popovics,
     Sargin,
     UserDefined,
@@ -44,8 +50,7 @@ def test_elastic_floats(E, strain, expected):
 )
 def test_elastic_set_ultimate_strain_float(E, eps_su):
     """Test elastic material set ultimate strain with a float."""
-    material = Elastic(E)
-    material.set_ultimate_strain(eps_su)
+    material = Elastic(E, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
     assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
@@ -60,8 +65,7 @@ def test_elastic_set_ultimate_strain_float(E, eps_su):
 )
 def test_elastic_set_ultimate_strain_tuple(E, eps_su):
     """Test elastic material set ultimate strain with a tuple."""
-    material = Elastic(E)
-    material.set_ultimate_strain(eps_su=eps_su)
+    material = Elastic(E, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
     assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
@@ -78,9 +82,8 @@ def test_elastic_set_ultimate_strain_tuple(E, eps_su):
 )
 def test_elastic_set_ultimate_strain_tuple_error(E, eps_su):
     """Test elastic material set ultimate strain raise error."""
-    material = Elastic(E)
     with pytest.raises(ValueError):
-        material.set_ultimate_strain(eps_su)
+        Elastic(E, eps_u=eps_su)
 
 
 def test_elastic_numpy():
@@ -90,6 +93,129 @@ def test_elastic_numpy():
     sig_expected = E * strain
     sig = Elastic(E).get_stress(strain)
     assert np.allclose(sig, sig_expected)
+
+
+@pytest.mark.parametrize(
+    'E, nu, strain, expected',
+    [
+        (
+            200000,
+            0.25,
+            [0.001, 0.0, 0.0],
+            [
+                200000 / (1 - 0.25**2) * (0.001 + 0.25 * 0.0),
+                200000 / (1 - 0.25**2) * (0.25 * 0.001 + 0.0),
+                200000 / (2 * (1 + 0.25)) * 0.0,
+            ],
+        ),
+        (
+            200000,
+            0.3,
+            [0.001, 0.0005, 0.0],
+            [
+                200000 / (1 - 0.3**2) * (0.001 + 0.3 * 0.0005),
+                200000 / (1 - 0.3**2) * (0.3 * 0.001 + 0.0005),
+                200000 / (2 * (1 + 0.3)) * 0.0,
+            ],
+        ),
+        (
+            210000,
+            0.25,
+            [0.001, 0.0005, 0.002],
+            [
+                210000 / (1 - 0.25**2) * (0.001 + 0.25 * 0.0005),
+                210000 / (1 - 0.25**2) * (0.25 * 0.001 + 0.0005),
+                210000 / (2 * (1 + 0.25)) * 0.002,
+            ],
+        ),
+        (
+            210000,
+            0.3,
+            [0.0, 0.0, 0.003],
+            [
+                210000 / (1 - 0.3**2) * (0.0 + 0.3 * 0.0),
+                210000 / (1 - 0.3**2) * (0.3 * 0.0 + 0.0),
+                210000 / (2 * (1 + 0.3)) * 0.003,
+            ],
+        ),
+    ],
+)
+def test_elastic2d_stress(E, nu, strain, expected):
+    """Test the get_stress method of Elastic2D."""
+    mat = Elastic2D(E, nu)
+    stress = mat.get_stress(strain)
+    assert np.allclose(stress, expected)
+
+
+def test_strain_input_for_stress():
+    """Test the get_stress method of Elastic2D with invalid strain input."""
+    mat = Elastic2D(200000, 0.25)
+    with pytest.raises(ValueError):
+        mat.get_stress([0.001, 0.002])
+
+
+@pytest.mark.parametrize(
+    'E, nu, expected',
+    [
+        (
+            200000,
+            0.3,
+            200000
+            / (1 - 0.3**2)
+            * np.array(
+                [
+                    [1.0, 0.3, 0.0],
+                    [0.3, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.3) / 2.0],
+                ]
+            ),
+        ),
+        (
+            210000,
+            0.25,
+            210000
+            / (1 - 0.25**2)
+            * np.array(
+                [
+                    [1.0, 0.25, 0.0],
+                    [0.25, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.25) / 2.0],
+                ]
+            ),
+        ),
+        (
+            200000,
+            0.25,
+            200000
+            / (1 - 0.25**2)
+            * np.array(
+                [
+                    [1.0, 0.25, 0.0],
+                    [0.25, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.25) / 2.0],
+                ]
+            ),
+        ),
+        (
+            210000,
+            0.3,
+            210000
+            / (1 - 0.3**2)
+            * np.array(
+                [
+                    [1.0, 0.3, 0.0],
+                    [0.3, 1.0, 0.0],
+                    [0.0, 0.0, (1 - 0.3) / 2.0],
+                ]
+            ),
+        ),
+    ],
+)
+def test_elastic2d_secant(E, nu, expected):
+    """Test the get_secant method of Elastic2D."""
+    mat = Elastic2D(E, nu)
+    secant = mat.get_secant()
+    assert np.allclose(secant, expected)
 
 
 @pytest.mark.parametrize(
@@ -152,6 +278,144 @@ def test_parabola_rectangle_floats(fc, eps_0, eps_u, strain, stress, tangent):
     mat = ParabolaRectangle(fc, eps_0, eps_u)
     assert math.isclose(mat.get_stress(strain), stress)
     assert math.isclose(mat.get_tangent(strain), tangent)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, strain, stress',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            [-0.0015, 0.0, 0.001],
+            [-27.26236979, -7.34049479, 6.640625],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.003, 0.002, 0],
+            [-45, 0, 0],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            [-0.002, -0.0035, -0.001],
+            [-41.22113162, -3.77886838, 12.48075442],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.001, -0.0015, -0.0045],
+            [-11.20993578, -32.37821129, -19.05144796],
+        ),
+        (
+            -45,
+            -0.002,
+            -0.0035,
+            [0.02, 0.0, -0.01],
+            [-0.67731096, -12.153852, -2.86913526],
+        ),
+    ],
+)
+def test_concrete_smeared_cracking(fc, eps_0, eps_u, strain, stress):
+    """Test the concrete smeared cracking material."""
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0, eps_u=eps_u)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
+    mat = ConcreteSmearedCracking(
+        uniaxial_law=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    assert np.allclose(mat.get_stress(strain), stress, atol=1e-3)
+
+
+@pytest.mark.parametrize('nu', (0.0, 0.2))
+@pytest.mark.parametrize(
+    'strain',
+    (
+        (0.0, 0.0, 0.0),
+        (-1.5e-3, 0.0, 0.0),
+        (-1.5e-3, -1.5e-3, 0.0),
+        (0.0, -1.5e-3, 0.0),
+        (-1.5e-3, 0.0, 0.75e-3),
+        (-1.5e-3, -1.5e-3, 0.75e-3),
+        (0.0, -1.5e-3, 0.75e-3),
+    ),
+)
+def test_get_secant_shape(strain, nu):
+    """Test the secant stiffness matrix shape of the concrete smeared cracking
+    material.
+    """
+    uniaxial_compression = ParabolaRectangle(fc=45.0)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    mat = ConcreteSmearedCracking(
+        uniaxial_law=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    C = mat.get_secant(strain)
+
+    # Shape
+    assert C.shape == (3, 3)
+
+    # Consistency with stress
+    assert np.allclose(C @ strain, mat.get_stress(strain))
+
+    # Positive diagonal elements
+    assert np.all(np.diag(C) > 0)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_0, eps_u, nu, strain, expected',
+    [
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            0.0,
+            [-0.001, -0.001, 0.0],
+            [[22500, 0.0, 0.0], [0.0, 22500, 0.0], [0.0, 0.0, 0.5 * 22500]],
+        ),
+        (
+            -45.0,
+            -0.002,
+            -0.0035,
+            0.2,
+            [-0.003, 0.002, 0],
+            [[15000, 0, 0], [0, 0, 0], [0, 0, 3750]],
+        ),
+        (
+            -30.0,
+            -0.002,
+            -0.0035,
+            0.2,
+            [-0.001, 0.0, 0.0],
+            [
+                [2.31119792e04, 4.62239583e03, 0.0],
+                [5.92447917e03, 2.96223958e04, 0.0],
+                [0.0, 0.0, 1.05468750e04],
+            ],
+        ),
+    ],
+)
+def test_get_secant(fc, eps_0, eps_u, nu, strain, expected):
+    """Test the secant stiffness matrix of the concrete smeared cracking
+    material.
+    """
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0, eps_u=eps_u)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=nu)
+    mat = ConcreteSmearedCracking(
+        uniaxial_law=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+    assert np.allclose(mat.get_secant(strain), expected)
 
 
 @pytest.mark.parametrize(
@@ -299,8 +563,7 @@ def test_userdefined_set_ultimate_strain_float(E, fy, eps_su):
     """Test UserDefined material set ultimate strain with a float."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
-    material.set_ultimate_strain(eps_su)
+    material = UserDefined(x=x, y=y, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], -eps_su)
     assert math.isclose(material.get_ultimate_strain()[1], eps_su)
 
@@ -317,8 +580,7 @@ def test_userdefined_set_ultimate_strain_tuple(E, fy, eps_su):
     """Test UserDefined material set ultimate strain with a tuple."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
-    material.set_ultimate_strain(eps_su=eps_su)
+    material = UserDefined(x=x, y=y, eps_u=eps_su)
     assert math.isclose(material.get_ultimate_strain()[0], min(eps_su))
     assert math.isclose(material.get_ultimate_strain()[1], max(eps_su))
 
@@ -337,9 +599,8 @@ def test_userdefined_set_ultimate_strain_tuple_error(E, fy, eps_su):
     """Test UserDefined material set ultimate strain raise error."""
     x = [-3 * fy / E, 0, 3 * fy / E]
     y = [-fy, 0, fy]
-    material = UserDefined(x=x, y=y)
     with pytest.raises(ValueError):
-        material.set_ultimate_strain(eps_su)
+        UserDefined(x=x, y=y, eps_u=eps_su)
 
 
 @pytest.mark.parametrize(
@@ -525,3 +786,401 @@ def test_bilinearcompression(fc, eps_c, eps_cu):
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
+
+
+@pytest.mark.parametrize(
+    'fy, eps_su',
+    [
+        (350, 0.07),
+        (250, 0.03),
+        (355, 0.002),
+    ],
+)
+@pytest.mark.parametrize(
+    'initial_strain', [0.0, 0.001, 0.005, 0.01, -0.001, -0.005]
+)
+def test_initstrain(fy, eps_su, initial_strain):
+    """Test InitStrain constitutive law."""
+    base_law = ElasticPlastic(fy=fy, E=200000, eps_su=eps_su)
+    law = InitialStrain(
+        constitutive_law=base_law, initial_strain=initial_strain
+    )
+
+    ult_strain_base = base_law.get_ultimate_strain()
+    ult_strain = law.get_ultimate_strain()
+    assert math.isclose(
+        ult_strain_base[0] - initial_strain,
+        ult_strain[0],
+    )
+    assert math.isclose(
+        ult_strain_base[1] - initial_strain,
+        ult_strain[1],
+    )
+
+    strain = np.linspace(-eps_su * 1.1, eps_su * 1.1, 100)
+
+    # Test stresses
+    sig_expected = base_law.get_stress(strain + initial_strain)
+    sig_computed = law.get_stress(strain)
+
+    assert_allclose(sig_computed, sig_expected)
+
+    # Test tangents
+    tan_expected = base_law.get_tangent(strain + initial_strain)
+    tan_computed = law.get_tangent(strain)
+
+    assert_allclose(tan_computed, tan_expected)
+
+
+def test_initial_strain_not_constitutive_law():
+    """Test if TypeError is raised if an InitialStrain law is initialized
+    without a ConstitutiveLaw.
+    """
+    with pytest.raises(TypeError):
+        InitialStrain(constitutive_law=None, initial_strain=1e-3)
+
+
+def test_initial_strain_strain_compatibility_property():
+    """Test the strain_compatibility property."""
+    # Arrange
+    constitutive_law = Elastic(E=30000)
+    initial_strain_value = 2e-3
+
+    initial_strain_no_strain_compatibility = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=False,
+    )
+
+    initial_strain_strain_compatibility = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=True,
+    )
+
+    # Act and assert
+    assert not initial_strain_no_strain_compatibility.strain_compatibility
+    assert initial_strain_strain_compatibility.strain_compatibility
+
+
+def test_initial_strain_get_stress_tangent_no_strain_compatibility():
+    """Test the get_stress and get_tangent methods without strain
+    compatibility.
+    """
+    # Arrange
+    constitutive_law = Elastic(E=30000)
+    initial_strain_value = 2e-3
+
+    initial_strain = InitialStrain(
+        constitutive_law=constitutive_law,
+        initial_strain=initial_strain_value,
+        strain_compatibility=False,
+    )
+
+    initial_stress = constitutive_law.get_stress(initial_strain_value)
+    initial_tangent = constitutive_law.get_tangent(0)
+
+    strains = np.linspace(-2e-3, 2e-3, 10)
+
+    # Act
+    stresses = initial_strain.get_stress(strains)
+    tangents = initial_strain.get_tangent(strains)
+
+    # Assert
+    assert np.allclose(stresses, initial_stress)
+    assert np.allclose(tangents, initial_tangent * 1e-6)
+
+
+@pytest.mark.parametrize(
+    'eps',
+    (-1e-3, 1.5e-3, 0, [-0.5e-3, 0.0e-3, 2.1e-3]),
+)
+def test_get_secant_in_base(eps):
+    """Test the get_secant method in the base constitutive law."""
+    # Arrange
+    constitutive_law = ParabolaRectangle(fc=45)
+    if np.isscalar(eps):
+        expected_secant = (
+            constitutive_law.get_stress(eps) / eps
+            if eps != 0
+            else constitutive_law.get_tangent(0)
+        )
+    else:
+        eps = np.atleast_1d(eps)
+        expected_secant = np.zeros_like(eps)
+        expected_secant[eps != 0] = (
+            constitutive_law.get_stress(eps[eps != 0]) / eps[eps != 0]
+        )
+        expected_secant[eps == 0] = constitutive_law.get_tangent(0)
+
+    # Act, note that we force calling the get_secant method on the parent class
+    secant = super(ParabolaRectangle, constitutive_law).get_secant(eps)
+
+    # Assert
+    assert np.allclose(secant, expected_secant)
+
+
+@pytest.mark.parametrize(
+    'E1, E2 , eps',
+    [
+        (200000, 150000, [0, 0.001, 0.002]),
+        (210000, 100000, [-0.001, 0, 0.001]),
+        (300000, 200000, 0.002),
+        (10000, 20000, 0.001),
+    ],
+)
+def test_parallel_constitutive_law(E1, E2, eps):
+    """Test parallel constitutive law."""
+    mat1 = Elastic(E1)
+    mat2 = Elastic(E2)
+
+    matP = Parallel([mat1, mat2])
+
+    expected_stiffness = mat1.get_tangent(0) + mat2.get_tangent(0)
+    assert math.isclose(matP.get_tangent(0), expected_stiffness)
+
+    if isinstance(eps, float):
+        expected_stress = expected_stiffness * eps
+        assert math.isclose(expected_stress, matP.get_stress(eps))
+    else:
+        expected_stress = expected_stiffness * np.atleast_1d(eps)
+        assert np.allclose(expected_stress, matP.get_stress(eps))
+
+
+@pytest.mark.parametrize(
+    'E1, E2 , w1, w2, eps',
+    [
+        (200000, 150000, 1, 1, [0, 0.001, 0.002]),
+        (200000, 150000, 0.5, 0.5, [0, 0.001, 0.002]),
+        (210000, 100000, 0.9, 0.1, [-0.001, 0, 0.001]),
+        (300000, 200000, 0.5, 0.5, 0.002),
+        (10000, 20000, 0.2, 0.8, 0.001),
+    ],
+)
+def test_parallel_constitutive_law_weights(E1, E2, w1, w2, eps):
+    """Test parallel constitutive law with weights."""
+    mat1 = Elastic(E1)
+    mat2 = Elastic(E2)
+
+    matP = Parallel([mat1, mat2], weights=[w1, w2])
+
+    expected_stiffness = mat1.get_tangent(0) * w1 + mat2.get_tangent(0) * w2
+    assert math.isclose(matP.get_tangent(0), expected_stiffness)
+
+    if isinstance(eps, float):
+        expected_stress = expected_stiffness * eps
+        assert math.isclose(expected_stress, matP.get_stress(eps))
+    else:
+        expected_stress = expected_stiffness * np.atleast_1d(eps)
+        assert np.allclose(expected_stress, matP.get_stress(eps))
+
+
+def test_paralell_constitutive_law_wrong_args():
+    """Test parallel law with wrong arguments."""
+    mat1 = Elastic(200000)
+    mat2 = Elastic(100000)
+
+    # If we don't pass a proper material
+    with pytest.raises(TypeError):
+        Parallel([mat1, 210000])
+
+    # If we pass wrong number of weigths
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], weights=[2.0, 1.0, 0.5])
+
+
+@pytest.mark.parametrize(
+    'E1, fy1, eps_su1, E2, fy2, eps_su2',
+    [
+        (200000, 450, 0.06, 150000, 800, 0.01),
+        (10000, 10, 0.01, 20000, 20, 0.03),
+    ],
+)
+def test_parallel_get_ultimate_strain(E1, fy1, eps_su1, E2, fy2, eps_su2):
+    """Test get_ultimate_strain for parallel constitutive law."""
+    mat1 = ElasticPlastic(E=E1, fy=fy1, Eh=0, eps_su=eps_su1)
+    mat2 = ElasticPlastic(E=E2, fy=fy2, Eh=0, eps_su=eps_su2)
+
+    matP = Parallel([mat1, mat2])
+
+    ult_strain = matP.get_ultimate_strain()
+    expected_ult_strain = max(eps_su1, eps_su2)
+
+    assert math.isclose(ult_strain[1], expected_ult_strain)
+
+
+def test_name_bilinear_compression():
+    """Test the name property of a bilinear compression law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = BilinearCompression(
+        fc=45, eps_c=1.75e-3, eps_cu=3.5e-3, name=given_name
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = BilinearCompression._constitutive_law_counter
+    law = BilinearCompression(
+        fc=45,
+        eps_c=1.75e-3,
+        eps_cu=3.5e-3,
+    )
+
+    assert law.name == f'BilinearCompressionLaw_{counter}'
+
+
+def test_name_parabola_rectangle():
+    """Test the name property of a parabola rectangle law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = ParabolaRectangle(fc=45, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = ParabolaRectangle._constitutive_law_counter
+    law = ParabolaRectangle(
+        fc=45,
+    )
+
+    assert law.name == f'ParabolaRectangleLaw_{counter}'
+
+
+def test_name_popovics():
+    """Test the name property of a popovics law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Popovics(fc=45, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Popovics._constitutive_law_counter
+    law = Popovics(
+        fc=45,
+    )
+
+    assert law.name == f'PopovicsLaw_{counter}'
+
+
+def test_name_sargin():
+    """Test the name property of a sargin law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Sargin(fc=45, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Sargin._constitutive_law_counter
+    law = Sargin(
+        fc=45,
+    )
+
+    assert law.name == f'SarginLaw_{counter}'
+
+
+def test_name_elastic():
+    """Test the name property of an elastic law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Elastic(E=30000, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Elastic._constitutive_law_counter
+    law = Elastic(E=30000)
+
+    assert law.name == f'ElasticLaw_{counter}'
+
+
+def test_name_elasticplastic():
+    """Test the name property of an elastic plastic law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = ElasticPlastic(E=200000, fy=355, Eh=0, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = ElasticPlastic._constitutive_law_counter
+    law = ElasticPlastic(E=200000, fy=355, Eh=0)
+
+    assert law.name == f'ElasticPlasticLaw_{counter}'
+
+
+def test_name_initial_strain():
+    """Test the name property of an initial strain law."""
+    # Create a base constitutive law
+    base_law = Elastic(E=30000)
+    initial_strain = 1e-3
+
+    # Create a law with a given name
+    given_name = 'A law'
+    law = InitialStrain(
+        constitutive_law=base_law,
+        initial_strain=initial_strain,
+        name=given_name,
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = InitialStrain._constitutive_law_counter
+    law = InitialStrain(
+        constitutive_law=base_law, initial_strain=initial_strain
+    )
+
+    assert law.name == f'InitialStrainLaw_{counter}'
+
+
+def test_name_parallel():
+    """Test the name property of a parallel law."""
+    # Create two base constitutive laws
+    base_law_1 = Elastic(E=30000)
+    base_law_2 = Elastic(E=30000)
+
+    # Create a law with a given name
+    given_name = 'A law'
+    law = Parallel(
+        constitutive_laws=[base_law_1, base_law_2],
+        name=given_name,
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = Parallel._constitutive_law_counter
+    law = Parallel(
+        constitutive_laws=[base_law_1, base_law_2],
+    )
+
+    assert law.name == f'ParallelLaw_{counter}'
+
+
+def test_name_userdefined():
+    """Test the name property of a user defined law."""
+    # Create arrays of strains and stresses
+    strains = np.linspace(-2e-3, 2e3)
+    stresses = 30e3 * strains
+
+    # Create a law with a given name
+    given_name = 'A law'
+    law = UserDefined(
+        x=strains,
+        y=stresses,
+        name=given_name,
+    )
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = UserDefined._constitutive_law_counter
+    law = UserDefined(
+        x=strains,
+        y=stresses,
+    )
+
+    assert law.name == f'UserDefinedLaw_{counter}'

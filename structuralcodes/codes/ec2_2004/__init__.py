@@ -31,6 +31,10 @@ from ._concrete_creep_and_shrinkage import (
 )
 from ._concrete_material_properties import (
     Ecm,
+    Ecm_time,
+    beta_cc,
+    beta_ct,
+    beta_E,
     eps_c1,
     eps_c2,
     eps_c3,
@@ -39,11 +43,18 @@ from ._concrete_material_properties import (
     eps_cu3,
     fcd,
     fcm,
+    fcm_time,
+    fctd,
     fctk_5,
     fctk_95,
     fctm,
+    fctm_time,
     k_sargin,
     n_parabolic_rectangular,
+    s_time_development,
+)
+from ._cracking_restraint_imposed_deformations import (
+    eps_sm_eps_cm_restraint_end,
 )
 from ._reinforcement_material_properties import (
     epsud,
@@ -78,6 +89,7 @@ from ._section_7_3_crack_control import (
 )
 from .shear import (
     Asw_max,
+    Asw_s_required,
     VEdmax_unreinf,
     VRdc,
     VRdc_prin_stress,
@@ -90,8 +102,10 @@ __all__ = [
     'As_min_2',
     'As_min_p',
     'Asw_max',
+    'Asw_s_required',
     'alpha_e',
     'eps_sm_eps_cm',
+    'eps_sm_eps_cm_restraint_end',
     'hc_eff',
     'k',
     'k1',
@@ -113,6 +127,7 @@ __all__ = [
     'wk',
     'xi1',
     'fcd',
+    'fctd',
     'fcm',
     'fctm',
     'fctk_5',
@@ -158,6 +173,13 @@ __all__ = [
     'phi_RH',
     't0_adj',
     't_T',
+    'beta_cc',
+    'beta_ct',
+    'beta_E',
+    's_time_development',
+    'fcm_time',
+    'fctm_time',
+    'Ecm_time',
 ]
 
 __title__: str = 'EUROCODE 2 1992-1-1:2004'

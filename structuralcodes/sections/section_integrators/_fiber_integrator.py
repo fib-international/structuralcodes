@@ -9,9 +9,9 @@ import triangle
 from numpy.typing import ArrayLike, NDArray
 from shapely import Polygon
 
-from structuralcodes.core.base import ConstitutiveLaw
 from structuralcodes.geometry import CompoundGeometry, SurfaceGeometry
 
+from ...core.base import ConstitutiveLaw
 from ._section_integrator import SectionIntegrator
 
 
@@ -88,7 +88,7 @@ class FiberIntegrator(SectionIntegrator):
             max_area = g.area * mesh_size
             # triangulate the geometry getting back the mesh
             mesh = triangle.triangulate(tri, f'pq{30:.1f}Aa{max_area}o1')
-            mat = g.material
+            constitutive_law = g.material.constitutive_law
             # Get x and y coordinates (centroid) and area for each fiber
             x = []
             y = []
@@ -128,7 +128,7 @@ class FiberIntegrator(SectionIntegrator):
 
             # return back the triangulation data
             triangulated_data.append(
-                (np.array(x), np.array(y), np.array(area), mat)
+                (np.array(x), np.array(y), np.array(area), constitutive_law)
             )
         # For the reinforcement
         # Tentative proposal for managing reinforcement (PointGeometry)
@@ -139,19 +139,27 @@ class FiberIntegrator(SectionIntegrator):
             x = x[0]
             y = y[0]
             area = pg.area
-            mat = pg.material
-            if reinf_data.get(mat) is None:
-                reinf_data[mat] = [
+            constitutive_law = pg.material.constitutive_law
+            if reinf_data.get(constitutive_law) is None:
+                reinf_data[constitutive_law] = [
                     np.array(x),
                     np.array(y),
                     np.array(area),
                 ]
             else:
-                reinf_data[mat][0] = np.hstack((reinf_data[mat][0], x))
-                reinf_data[mat][1] = np.hstack((reinf_data[mat][1], y))
-                reinf_data[mat][2] = np.hstack((reinf_data[mat][2], area))
-        for mat, value in reinf_data.items():
-            triangulated_data.append((value[0], value[1], value[2], mat))
+                reinf_data[constitutive_law][0] = np.hstack(
+                    (reinf_data[constitutive_law][0], x)
+                )
+                reinf_data[constitutive_law][1] = np.hstack(
+                    (reinf_data[constitutive_law][1], y)
+                )
+                reinf_data[constitutive_law][2] = np.hstack(
+                    (reinf_data[constitutive_law][2], area)
+                )
+        for constitutive_law, value in reinf_data.items():
+            triangulated_data.append(
+                (value[0], value[1], value[2], constitutive_law)
+            )
 
         return triangulated_data
 
@@ -199,19 +207,19 @@ class FiberIntegrator(SectionIntegrator):
 
         prepared_input = []
 
-        triangulated_data = kwargs.get('tri')
-        if triangulated_data is None:
+        integration_data = kwargs.get('integration_data')
+        if integration_data is None:
             # No triangulation is provided, triangulate the section
-            # Fiber integrator for generic section uses delaunay triangulation
-            # for discretizing in fibers
+            # Fiber integrator for arbitrary shaped geometries uses delaunay
+            # triangulation for discretizing in fibers
 
             mesh_size = kwargs.get('mesh_size', 0.01)
-            triangulated_data = self.triangulate(geo, mesh_size)
+            integration_data = self.triangulate(geo, mesh_size)
 
         y = []
         z = []
         IA = []  # integrand (stress or tangent) * area
-        for tr in triangulated_data:
+        for tr in integration_data:
             # All have the same material
             strains = strain[0] - strain[2] * tr[0] + strain[1] * tr[1]
             # compute stresses in all materials
@@ -226,7 +234,7 @@ class FiberIntegrator(SectionIntegrator):
             IA.append(integrand * tr[2])
         prepared_input = [(np.hstack(y), np.hstack(z), np.hstack(IA))]
 
-        return prepared_input, triangulated_data
+        return prepared_input, integration_data
 
     def integrate_stress(
         self,
@@ -320,13 +328,13 @@ class FiberIntegrator(SectionIntegrator):
             parameter.
         """
         # Prepare the general input based on the geometry and the input strains
-        prepared_input, triangulated_data = self.prepare_input(
+        prepared_input, integration_data = self.prepare_input(
             geo, strain, integrate, **kwargs
         )
 
         # Return the calculated response
         if integrate == 'stress':
-            return *self.integrate_stress(prepared_input), triangulated_data
+            return *self.integrate_stress(prepared_input), integration_data
         if integrate == 'modulus':
-            return self.integrate_modulus(prepared_input), triangulated_data
+            return self.integrate_modulus(prepared_input), integration_data
         raise ValueError(f'Unknown integrate type: {integrate}')

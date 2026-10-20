@@ -18,6 +18,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
     _fctk_95: t.Optional[float] = None
     _Ecm: t.Optional[float] = None
     _alpha_cc: t.Optional[float] = None
+    _alpha_ct: t.Optional[float] = None
     _eps_c1: t.Optional[float] = None
     _eps_cu1: t.Optional[float] = None
     _k_sargin: t.Optional[float] = None
@@ -34,6 +35,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         density: float = 2400,
         gamma_c: t.Optional[float] = None,
         alpha_cc: t.Optional[float] = None,
+        alpha_ct: t.Optional[float] = None,
         constitutive_law: t.Optional[
             t.Union[
                 t.Literal[
@@ -46,6 +48,9 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
                 ConstitutiveLaw,
             ]
         ] = 'parabolarectangle',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         fcm: t.Optional[float] = None,
         fctm: t.Optional[float] = None,
         fctk_5: t.Optional[float] = None,
@@ -75,11 +80,21 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             alpha_cc (float, optional): A factor for considering long-term
                 effects on the strength, and effects that arise from the way
                 the load is applied.
+            alpha_ct (float, optional): A factor for considering long-term
+                effects on the tensile strength, and effects that arise from
+                the way the load is applied.
             consitutive_law (ConstitutiveLaw | str): A valid ConstitutiveLaw
                 object for concrete or a string defining a valid constitutive
                 law type for concrete. (valid options for string: 'elastic',
                 'parabolarectangle', 'bilinearcompression', 'sargin',
                 'popovics').
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             fcm (float, optional): The mean compressive strength.
             fctm (float, optional): The mean tensile strength.
             fctk_5 (float, optional): The 5% fractile for the tensile strength.
@@ -130,8 +145,12 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             density=density,
             existing=False,
             gamma_c=gamma_c,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._alpha_cc = alpha_cc
+        self._alpha_ct = alpha_ct
         self._fcm = abs(fcm) if fcm is not None else None
         self._fctm = abs(fctm) if fctm is not None else None
         self._fctk_5 = abs(fctk_5) if fctk_5 is not None else None
@@ -165,6 +184,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             raise ValueError(
                 'The provided constitutive law is not valid for concrete.'
             )
+        self._apply_initial_strain()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
@@ -340,6 +360,18 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
         )
 
+    def fctd(self) -> float:
+        """Return the design tensile strength in MPa.
+
+        Returns:
+            float: The design tensile strength of concrete in MPa.
+        """
+        # This method should perhaps become a property, but is left as a method
+        # for now, to be consistent with other concretes.
+        return ec2_2004.fctd(
+            self.fctk_5, alpha_ct=self.alpha_ct, gamma_c=self.gamma_c
+        )
+
     @property
     def gamma_c(self) -> float:
         """The partial factor for concrete."""
@@ -353,6 +385,13 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._alpha_cc or 1.0
+
+    @property
+    def alpha_ct(self) -> float:
+        """The alpha_ct factor."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._alpha_ct or 1.0
 
     @property
     def eps_c1(self) -> float:
@@ -378,11 +417,11 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
             float: The maximum strength at failure of concrete.
 
         Note:
-            The returned value is derived from fcm if eps_cu1 is not manually
+            The returned value is derived from fck if eps_cu1 is not manually
             provided when initializing the object.
         """
         if self._eps_cu1 is None:
-            return ec2_2004.eps_cu1(self.fcm)
+            return ec2_2004.eps_cu1(self.fck)
         return self._eps_cu1
 
     @property
@@ -507,7 +546,7 @@ class ConcreteEC2_2004(Concrete):  # noqa: N801
     def __sargin__(self) -> dict:
         """Returns kwargs for creating a Sargin const law."""
         return {
-            'fc': self.fcd(),
+            'fc': self.fcm,
             'eps_c1': self.eps_c1,
             'eps_cu1': self.eps_cu1,
             'k': self.k_sargin,

@@ -20,6 +20,7 @@ class ConcreteMC2010(Concrete):
     _fctkmax: t.Optional[float] = None
     _Gf: t.Optional[float] = None
     _alpha_cc: t.Optional[float] = None
+    _alpha_ct: t.Optional[float] = None
     _eps_c1: t.Optional[float] = None
     _eps_cu1: t.Optional[float] = None
     _k_sargin: t.Optional[float] = None
@@ -36,6 +37,7 @@ class ConcreteMC2010(Concrete):
         density: float = 2400.0,
         gamma_c: t.Optional[float] = None,
         alpha_cc: t.Optional[float] = None,
+        alpha_ct: t.Optional[float] = None,
         constitutive_law: t.Optional[
             t.Union[
                 t.Literal[
@@ -48,6 +50,9 @@ class ConcreteMC2010(Concrete):
                 ConstitutiveLaw,
             ]
         ] = 'parabolarectangle',
+        initial_strain: t.Optional[float] = None,
+        initial_stress: t.Optional[float] = None,
+        strain_compatibility: t.Optional[bool] = None,
         fcm: t.Optional[float] = None,
         fctm: t.Optional[float] = None,
         fctkmin: t.Optional[float] = None,
@@ -77,6 +82,21 @@ class ConcreteMC2010(Concrete):
             alpha_cc (float, optional): A factor for considering long-term
                 effects on the strength, and effects that arise from the way
                 the load is applied.
+            alpha_ct (float, optional): A factor for considering long-term
+                effects on the strength, and effects that arise from the way
+                the load is applied.
+            consitutive_law (ConstitutiveLaw | str): A valid ConstitutiveLaw
+                object for concrete or a string defining a valid constitutive
+                law type for concrete. (valid options for string: 'elastic',
+                'parabolarectangle', 'bilinearcompression', 'sargin',
+                'popovics').
+            initial_strain (Optional[float]): Initial strain of the material.
+            initial_stress (Optional[float]): Initial stress of the material.
+            strain_compatibility (Optional[bool]): Only relevant if
+                initial_strain or initial_stress are different from zero. If
+                True, the material deforms with the geometry. If False, the
+                stress in the material upon loading is kept constant
+                corresponding to the initial strain.
             fcm (float, optional): The mean compressive strength.
             fctm (float, optional): The mean tensile strength.
             fctkmin (float, optional): The minimum tensile strength.
@@ -126,8 +146,12 @@ class ConcreteMC2010(Concrete):
             name=name,
             density=density,
             gamma_c=gamma_c,
+            initial_strain=initial_strain,
+            initial_stress=initial_stress,
+            strain_compatibility=strain_compatibility,
         )
         self._alpha_cc = alpha_cc
+        self._alpha_ct = alpha_ct
         self._fcm = abs(fcm) if fcm is not None else None
         self._fctm = abs(fctm) if fctm is not None else None
         self._fctkmin = abs(fctkmin) if fctkmin is not None else None
@@ -162,6 +186,7 @@ class ConcreteMC2010(Concrete):
             raise ValueError(
                 'The provided constitutive law is not valid for concrete.'
             )
+        self._apply_initial_strain()
 
     def __post_init__(self):
         """Validator for the attributes that are set in the constructor."""
@@ -367,12 +392,31 @@ class ConcreteMC2010(Concrete):
             self.fck, alpha_cc=self.alpha_cc, gamma_c=self.gamma_c
         )
 
+    def fctd(self) -> float:
+        """Return the design tensile strength in MPa.
+
+        Returns:
+            float: The design tensile strength of concrete in MPa.
+        """
+        # This method should perhaps become a property, but is left as a method
+        # for now, to be consistent with other concretes.
+        return mc2010.fctd(
+            self.fctkmin, alpha_ct=self.alpha_ct, gamma_c=self.gamma_c
+        )
+
     @property
     def alpha_cc(self) -> float:
         """The alpha_cc factor."""
         # Here we should implement the interaction with the globally set
         # national annex. For now, we simply return the default value.
         return self._alpha_cc or 1.0
+
+    @property
+    def alpha_ct(self) -> float:
+        """The alpha_ct factor."""
+        # Here we should implement the interaction with the globally set
+        # national annex. For now, we simply return the default value.
+        return self._alpha_ct or 1.0
 
     @property
     def eps_c1(self) -> float:
@@ -523,7 +567,7 @@ class ConcreteMC2010(Concrete):
     def __sargin__(self) -> dict:
         """Returns kwargs for creating a Sargin const law."""
         return {
-            'fc': self.fcd(),
+            'fc': self.fcm,
             'eps_c1': self.eps_c1,
             'eps_cu1': self.eps_cu1,
             'k': self.k_sargin,

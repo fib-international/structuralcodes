@@ -60,8 +60,7 @@ class Popovics(ConstitutiveLaw):
             If positive values are input for fc, eps_c and eps_cu are input,
             they will be assumed negative.
         """
-        name = name if name is not None else 'PopovicsLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='PopovicsLaw')
         self._fc = -abs(fc)
         self._eps_c = -abs(eps_c)
         self._eps_cu = -abs(eps_cu)

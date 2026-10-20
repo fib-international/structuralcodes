@@ -6,22 +6,20 @@ import numpy as np
 import pytest
 
 from structuralcodes.geometry import CircularGeometry, add_reinforcement_circle
+from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import ConcreteMC2010
-from structuralcodes.materials.constitutive_laws import Elastic
 from structuralcodes.materials.reinforcement import ReinforcementMC2010
 
 
 # Test create a circular geometry
 @pytest.mark.parametrize(
-    'diameter, n_points',
-    [(100, 20), (200, 20), (300, 20), (300, 30), (400, 40), (500, 24)],
+    'diameter',
+    [100, 200, 300, 400, 500],
 )
-def test_create_circular_geometry(diameter, n_points):
+def test_create_circular_geometry(diameter):
     """Test creating a CircularGeometry."""
-    mat = Elastic(300000)
-    circle = CircularGeometry(diameter, mat, n_points)
-
-    assert len(circle.polygon.exterior.coords) == n_points + 2
+    mat = ElasticMaterial(E=300000, density=2450)
+    circle = CircularGeometry(diameter, mat)
 
     assert math.isclose(circle.diameter, diameter)
     assert math.isclose(circle.radius, diameter / 2.0)
@@ -35,7 +33,7 @@ def test_create_circular_geometry(diameter, n_points):
 @pytest.mark.parametrize('wrong_diameter', [-100, 0])
 def test_create_circular_geometry_exception(wrong_diameter):
     """Test raising exception when inputing wrong value."""
-    mat = Elastic(300000)
+    mat = ElasticMaterial(E=300000, density=2450)
     with pytest.raises(ValueError):
         CircularGeometry(wrong_diameter, mat)
 
@@ -48,7 +46,7 @@ def test_create_circular_geometry_exception(wrong_diameter):
 def test_circle_with_origin(origin):
     """Test creating a circle with an origin."""
     # Arrange
-    mat = Elastic(300000)
+    mat = ElasticMaterial(E=300000, density=2450)
     diameter = 100
 
     # Act and assert

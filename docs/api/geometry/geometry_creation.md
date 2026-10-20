@@ -1,15 +1,7 @@
 (api-geometry-creation)=
 # Geometry creation
 
-```{eval-rst}
-.. autoclass:: structuralcodes.geometry.Geometry
-
-    .. automethod:: __init__
-
-    .. autoproperty:: name
-    .. autoproperty:: group_label
-
-```
+## Point geometry
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.geometry.PointGeometry
@@ -23,12 +15,17 @@
     .. autoproperty:: x
     .. autoproperty:: y
     .. autoproperty:: point
+    .. autoproperty:: group_label
 
     .. automethod:: translate
     .. automethod:: rotate
+    .. automethod:: mirror
+
     .. automethod:: from_geometry
 
 ```
+
+## Surface geometry
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.geometry.SurfaceGeometry
@@ -38,16 +35,21 @@
     .. autoproperty:: area
     .. autoproperty:: centroid
     .. autoproperty:: density
+    .. autoproperty:: group_label
+
+    .. automethod:: translate
+    .. automethod:: rotate
+    .. automethod:: mirror
 
     .. automethod:: calculate_extents
     .. automethod:: split
     .. automethod:: split_two_lines
-    .. automethod:: translate
-    .. automethod:: rotate
 
     .. automethod:: from_geometry
 
 ```
+
+## Compound geometry
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.geometry.CompoundGeometry
@@ -57,18 +59,32 @@
     .. autoproperty:: reinforced_concrete
     .. autoproperty:: area
 
-    .. automethod:: calculate_extents
     .. automethod:: translate
     .. automethod:: rotate
+    .. automethod:: mirror
+
+    .. automethod:: calculate_extents
+    
+    .. automethod:: name_filter
+    .. automethod:: group_filter
+
     .. automethod:: from_geometry
 
 
 ```
 
+## Line object
+
 ```{eval-rst}
 .. autofunction:: structuralcodes.geometry.create_line_point_angle
 
 ```
+
+:::{note}
+
+This function is useful for creating a line which can be used with the {func}`split() <structuralcodes.geometry.SurfaceGeometry.split>` and {func}`split_two_lines() <structuralcodes.geometry.SurfaceGeometry.split_two_lines>` methods.
+
+:::
 
 ## Common geometries
 
@@ -81,6 +97,7 @@ In this section the classes and methods for creating special and common geometri
 
     .. autoproperty:: height
     .. autoproperty:: width
+    .. autoproperty:: group_label
 
 ```
 
@@ -91,6 +108,7 @@ In this section the classes and methods for creating special and common geometri
 
     .. autoproperty:: radius
     .. autoproperty:: diameter
+    .. autoproperty:: group_label
 
 ```
 
@@ -108,5 +126,16 @@ In this section the classes and methods for creating special and common geometri
 
 ```{eval-rst}
 .. autofunction:: structuralcodes.geometry.add_reinforcement_circle
+
+```
+
+## Base geometry class
+
+```{eval-rst}
+.. autoclass:: structuralcodes.geometry.Geometry
+
+    .. automethod:: __init__
+
+    .. autoproperty:: name
 
 ```
