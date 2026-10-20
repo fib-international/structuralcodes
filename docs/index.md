@@ -8,7 +8,7 @@
 
 Installation <installation/index>
 Quickstart <quickstart/index>
-Examples <examples/index>
+Usage guide <usage/index>
 API reference <api/index>
 Theory reference <theory/index>
 Contributing <contributing/index>
@@ -16,7 +16,7 @@ Versioning <versioning/index>
 
 :::
 
-StructuralCodes is a Python library for structural engineering calculations. If you are new to StructuralCodes, you should check out our {ref}`quickstart <quickstart>`, our {ref}`examples <examples>`, and the {ref}`library structure <api-structure>`.
+StructuralCodes is a Python library for structural engineering calculations. If you are new to StructuralCodes, you should check out our {ref}`quickstart <quickstart>`, our {ref}`usage guide <usage>`, and the {ref}`library structure <api-structure>`.
 
 <hr>
 
@@ -38,12 +38,12 @@ How to install StructuralCodes.
 Get started in 5 minutes.
 :::
 
-:::{grid-item-card} Examples
-:link: examples
+:::{grid-item-card} Usage guide
+:link: usage
 :link-type: ref
 :margin: 2 2 auto auto
 :class-title: sd-fs-5
-Examples are step-by-step instructions on how to do specific tasks.
+The usage guide walks through the library and demonstrates core functionality while solving specific problems.
 :::
 
 :::{grid-item-card} API reference

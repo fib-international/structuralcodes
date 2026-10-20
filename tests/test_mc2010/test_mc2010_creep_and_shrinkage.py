@@ -107,35 +107,23 @@ def test_warning_env_temp():
 
 
 @pytest.mark.parametrize(
-    't0, T_cur, dt, expected',
+    'T_cur, dt, expected',
     [
-        (1, 20, None, 0.99812),
-        (7, 20, None, 6.98687),
-        (14, [20, 25], [7, 7], 15.7723),
-        (28, 20, [7, 7, 7, 7], None),  # raises ValueError.
-        (28, [20, 25], [7, 7], None),  # raises ValueError.
-        (28, [20, 25], [28, 28], None),  # raises ValueError.
+        ([20, 25], [7, 7], 15.7723),
+        (20, [7, 7, 7, 7], None),  # raises ValueError
     ],
 )
-def test_t_T(t0, T_cur, dt, expected):
+def test_t_T(T_cur, dt, expected):
     """Test t_T function."""
-    try:
+    if expected is not None:
         assert np.isclose(
-            _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt),
+            _concrete_creep_and_shrinkage.t_T(T_cur, dt),
             expected,
             rtol=1e-5,
         )
-    except ValueError:
-        with pytest.raises(ValueError) as exc_info:
-            assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value).startswith('Dimensions of T_cur') or str(
-            exc_info.value
-        ).startswith('Curing time')
-
-    except TypeError:
-        with pytest.raises(TypeError) as exc_info:
-            assert _concrete_creep_and_shrinkage.t_T(t0, T_cur, dt) == expected
-        assert str(exc_info.value) == 'T_cur has to be provided as list.'
+    else:
+        with pytest.raises(ValueError):
+            _concrete_creep_and_shrinkage.t_T(T_cur, dt)
 
 
 @pytest.mark.parametrize(  # Complete test cases

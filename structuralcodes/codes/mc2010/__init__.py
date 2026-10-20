@@ -47,6 +47,7 @@ from ._concrete_material_properties import (
     eps_cu3,
     fcd,
     fcm,
+    fctd,
     fctkmax,
     fctkmin,
     fctm,
@@ -55,8 +56,17 @@ from ._concrete_material_properties import (
 )
 from ._concrete_punching import (
     b_0,
+    b_s,
+    b_sr,
+    k_dg,
+    k_psi,
     m_ed,
     psi_punching,
+    psi_punching_level_one,
+    psi_punching_level_three,
+    psi_punching_level_two,
+    r_s,
+    sigma_swd,
     v_rd_max_punching,
     v_rd_punching,
     v_rdc_punching,
@@ -81,6 +91,18 @@ from ._concrete_shear import (
     v_rds,
 )
 from ._concrete_torsion import t_rd, t_rd_max, v_ed_ti
+from ._interface_concrete_steel_rebar import (
+    K_tr,
+    eta_2,
+    f_stm,
+    s_1,
+    s_2,
+    s_3,
+    s_tau_bu_split,
+    tau_bmax,
+    tau_bu_split,
+    tau_yield,
+)
 from ._reinforcement_material_properties import (
     epsud,
     fyd,
@@ -93,6 +115,7 @@ __all__ = [
     'fctkmin',
     'fctkmax',
     'fcd',
+    'fctd',
     'Gf',
     'eps_c1',
     'eps_cu1',
@@ -162,6 +185,25 @@ __all__ = [
     'tau_edi',
     'tau_rdi_with_reinforcement',
     'tau_rdi_without_reinforcement',
+    'eta_2',
+    'tau_bu_split',
+    'K_tr',
+    'tau_bmax',
+    's_1',
+    's_2',
+    's_3',
+    's_tau_bu_split',
+    'f_stm',
+    'tau_yield',
+    'b_s',
+    'b_sr',
+    'k_dg',
+    'k_psi',
+    'r_s',
+    'psi_punching_level_one',
+    'psi_punching_level_two',
+    'psi_punching_level_three',
+    'sigma_swd',
 ]
 
 __title__: str = 'fib Model Code 2010'
