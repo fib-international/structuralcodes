@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+from structuralcodes.codes import mc2010
 from structuralcodes.materials.concrete import ConcreteMC2010, create_concrete
 
 # Series of tests using the factory function
@@ -43,20 +44,10 @@ def test_create_concrete_wrong_code():
 )
 def test_update_attributes(fck, fcm):
     """Test update_attributes function."""
-    c = create_concrete(fck=fck, design_code='mc2010')
-    c.update_attributes({'fcm': fcm})
-    # Test a warning is raised when a not valid key is inputted
-    with pytest.warns(UserWarning):
-        c.update_attributes({'not_valid_key': fcm})
+    c = ConcreteMC2010(fck=fck, design_code='mc2010', fcm=fcm)
 
     assert c.fcm is not None
     assert c.fcm == fcm
-
-
-def test_not_implemented_existing_error():
-    """Test existing not implemented function."""
-    with pytest.raises(NotImplementedError):
-        create_concrete(fck=25, design_code='mc2010', existing=True)
 
 
 # Series of tests using ConcreteMC2010 class
@@ -76,8 +67,7 @@ def test_fck_getter(fck):
 @fck_parametrized
 def test_fck_setter(fck):
     """Test fck setter."""
-    c = ConcreteMC2010(fck)
-    c.fck = fck + 5
+    c = ConcreteMC2010(fck=fck + 5)
 
     assert c.fck == fck + 5
 
@@ -91,19 +81,15 @@ def test_properties_initialized_to_none():
     assert c._fctkmin is None
     assert c._fctkmax is None
     assert c._Gf is None
-
-
-def test_reset_properties():
-    """Test _reset_attributes function."""
-    c = ConcreteMC2010(fck=25)
-
-    c._reset_attributes()
-
-    assert c._fcm is None
-    assert c._fctm is None
-    assert c._fctkmin is None
-    assert c._fctkmax is None
-    assert c._Gf is None
+    assert c._Eci is None
+    assert c._eps_c1 is None
+    assert c._eps_cu1 is None
+    assert c._k_sargin is None
+    assert c._eps_c2 is None
+    assert c._eps_cu2 is None
+    assert c._n_parabolic_rectangular is None
+    assert c._eps_c3 is None
+    assert c._eps_cu3 is None
 
 
 fcm_parametrized = pytest.mark.parametrize(
@@ -120,10 +106,9 @@ def test_fcm_getter(test_input, expected):
 
 
 @fcm_parametrized
-def test_fcm_setter(test_input, expected):
-    """Test the fcm setter."""
-    c = ConcreteMC2010(fck=test_input)
-    c.fcm = expected
+def test_fcm_specified(test_input, expected):
+    """Test specifying fcm."""
+    c = ConcreteMC2010(fck=test_input, fcm=expected)
 
     assert math.isclose(c.fcm, expected)
 
@@ -132,11 +117,32 @@ def test_fcm_setter(test_input, expected):
     'test_input',
     [12, 35, 55, 90, 120],
 )
-def test_fcm_setter_exception(test_input):
-    """Test the fcm setter with a wrong value."""
-    c = ConcreteMC2010(fck=test_input)
+def test_specify_fcm_exception(test_input):
+    """Test specifying an invalid fcm."""
     with pytest.raises(ValueError):
-        c.fcm = test_input - 1
+        ConcreteMC2010(fck=test_input, fcm=test_input - 1)
+
+
+def test_Eci_getter():
+    """Test the getter for Eci."""
+    fck = 45
+    fcm = mc2010.fcm(fck=fck)
+    expected = mc2010.Eci(fcm=fcm)
+    assert ConcreteMC2010(fck=fck).Eci == expected
+
+
+def test_Eci_specified():
+    """Test specifying a value for Eci."""
+    fck = 45
+    excepted = 30000
+    assert ConcreteMC2010(fck=fck, Eci=excepted).Eci == excepted
+
+
+@pytest.mark.parametrize('Eci', (0.5e4, 2e5))
+def test_Eci_specified_warning(Eci):
+    """Test specifying Eci with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteMC2010(fck=45, Eci=Eci)
 
 
 fctm_parmetrized = pytest.mark.parametrize(
@@ -171,23 +177,20 @@ def test_fctm_getter(test_input, expected):
 
 
 @fctm_parmetrized
-def test_fctm_setter(test_input, expected):
-    """Test the fctm setter function."""
-    c = ConcreteMC2010(fck=test_input)
-    c.fctm = expected
+def test_fctm_specified(test_input, expected):
+    """Test specifying fctm."""
+    c = ConcreteMC2010(fck=test_input, fctm=expected)
 
     assert math.isclose(c.fctm, expected)
 
 
 @pytest.mark.parametrize('test_input', [10, 15, 20, 25, 30, 35])
-def test_fctm_setter_warning(test_input):
-    """Test the fctm setter function. Check that a warning is raised when
-    trying to set a value higher than 0.5 times fck.
+def test_specifying_fctm_warning(test_input):
+    """Test specifying fctm . Check that a warning is raised when trying to set
+    a value higher than 0.5 times fck.
     """
-    c = ConcreteMC2010(fck=test_input)
-
     with pytest.warns(UserWarning):
-        c.fctm = test_input * 0.5 + 1
+        ConcreteMC2010(fck=test_input, fctm=test_input * 0.5 + 1)
 
 
 fctkmin_parametrized = pytest.mark.parametrize(
@@ -222,10 +225,9 @@ def test_fctkmin_getter(test_input, expected):
 
 
 @fctkmin_parametrized
-def test_fctkmin_setter(test_input, expected):
-    """Test the fctkmin setter function."""
-    c = ConcreteMC2010(fck=test_input)
-    c.fctkmin = expected
+def test_fctkmin_specified(test_input, expected):
+    """Test specifying fctkmin."""
+    c = ConcreteMC2010(fck=test_input, fctkmin=expected)
 
     assert math.isclose(c.fctkmin, expected)
 
@@ -262,10 +264,9 @@ def test_fctkmax_getter(test_input, expected):
 
 
 @fctkmax_parmetrized
-def test_fctkmax_setter(test_input, expected):
-    """Test the fctkmax setter function."""
-    c = ConcreteMC2010(fck=test_input)
-    c.fctkmax = expected
+def test_fctkmax_specified(test_input, expected):
+    """Test specifying fctkmax."""
+    c = ConcreteMC2010(fck=test_input, fctkmax=expected)
 
     assert math.isclose(c.fctkmax, expected)
 
@@ -290,10 +291,9 @@ def test_Gf_getter(test_input, expected):
 
 
 @gf_parametrized
-def test_Gf_setter(test_input, expected):
-    """Test the Gf setter function."""
-    c = ConcreteMC2010(fck=test_input)
-    c.Gf = expected
+def test_Gf_specified(test_input, expected):
+    """Test specifying Gf."""
+    c = ConcreteMC2010(fck=test_input, Gf=expected)
 
     assert math.isclose(c.Gf, expected)
 
@@ -325,3 +325,233 @@ def test_fcd(fck, alpha_cc, expected):
 
     # Assert
     assert math.isclose(fcd, expected, rel_tol=10e-5)
+
+
+@pytest.mark.parametrize(
+    'fck, fctk, alpha_ct, gamma_c, expected',
+    [
+        (35, 2.2, 0.85, 1.5, 1.2467),
+        (45, 2.7, 0.85, 1.5, 1.53),
+        (90, 3.5, 0.85, 1.5, 1.9833),
+        (35, 2.2, None, 1.5, 1.4667),
+        (45, 2.7, None, 1.5, 1.8),
+        (90, 3.5, None, 1.5, 2.3333),
+    ],
+)
+def test_fctd(fck, fctk, alpha_ct, gamma_c, expected):
+    """Test calculating the design tensile strength."""
+    # Arrange
+    concrete = ConcreteMC2010(
+        fck, fctkmin=fctk, alpha_ct=alpha_ct, gamma_c=gamma_c
+    )
+
+    # Act
+    fctd = concrete.fctd()
+
+    # Assert
+    assert math.isclose(fctd, expected, rel_tol=10e-5)
+
+
+@fck_parametrized
+def test_eps_c1_getter(fck):
+    """Test eps_c1 getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.eps_c1(fck=fck)
+    assert math.isclose(c.eps_c1, expected, rel_tol=1e-6)
+
+
+eps_c1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.8), (35, 2.25), (55, 2.5), (90, 2.8)],
+)
+
+
+@eps_c1_parametrized
+def test_eps_c1_specified(test_input, expected):
+    """Test specifying eps_c1."""
+    c = ConcreteMC2010(fck=test_input, eps_c1=expected * 1e-3)
+
+    assert math.isclose(c.eps_c1, expected * 1e-3)
+
+
+@pytest.mark.parametrize(
+    'strain_limit',
+    ('eps_c1', 'eps_cu1', 'eps_c2', 'eps_cu2', 'eps_c3', 'eps_cu3'),
+)
+def test_strain_limits_specified_warning(strain_limit):
+    """Test specifying strain limits with a wrong value."""
+    kwargs = {strain_limit: 0.15}
+    with pytest.warns(UserWarning):
+        ConcreteMC2010(fck=45, **kwargs)
+
+
+@fck_parametrized
+def test_eps_cu1_getter(fck):
+    """Test eps_cu1 getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.eps_cu1(fck=fck)
+    assert math.isclose(c.eps_cu1, expected, rel_tol=1e-6)
+
+
+eps_cu1_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.2), (90, 2.8)],
+)
+
+
+@eps_cu1_parametrized
+def test_eps_cu1_specified(test_input, expected):
+    """Test specifying eps_cu1."""
+    c = ConcreteMC2010(fck=test_input, eps_cu1=expected * 1e-3)
+
+    assert math.isclose(c.eps_cu1, expected * 1e-3)
+
+
+@fck_parametrized
+def test_k_getter(fck):
+    """Test k getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.k_sargin(fck=fck)
+    assert math.isclose(c.k_sargin, expected, rel_tol=1e-6)
+
+
+k_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.4), (35, 1.6), (55, 1.3), (90, 1.2)],
+)
+
+
+@k_parametrized
+def test_k_specified(test_input, expected):
+    """Test specifying k_sargin."""
+    c = ConcreteMC2010(fck=test_input, k_sargin=expected)
+
+    assert math.isclose(c.k_sargin, expected)
+
+
+def test_k_specified_warning():
+    """Test specifying k_sargin with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteMC2010(fck=45, k_sargin=-1.0)
+
+
+@fck_parametrized
+def test_eps_c2_getter(fck):
+    """Test eps_c2 getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.eps_c2(fck=fck)
+    assert math.isclose(c.eps_c2, expected, rel_tol=1e-6)
+
+
+eps_c2_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 2.0), (35, 2.0), (55, 2.2), (90, 2.6)],
+)
+
+
+@eps_c2_parametrized
+def test_eps_c2_specified(test_input, expected):
+    """Test specifying eps_c2."""
+    c = ConcreteMC2010(fck=test_input, eps_c2=expected * 1e-3)
+
+    assert math.isclose(c.eps_c2, expected * 1e-3)
+
+
+@fck_parametrized
+def test_eps_cu2_getter(fck):
+    """Test eps_cu2 getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.eps_cu2(fck=fck)
+    assert math.isclose(c.eps_cu2, expected, rel_tol=1e-6)
+
+
+eps_cu2_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.1), (90, 2.6)],
+)
+
+
+@eps_cu2_parametrized
+def test_eps_cu2_specified(test_input, expected):
+    """Test specifying eps_cu2."""
+    c = ConcreteMC2010(fck=test_input, eps_cu2=expected * 1e-3)
+
+    assert math.isclose(c.eps_cu2, expected * 1e-3)
+
+
+@fck_parametrized
+def test_n_getter(fck):
+    """Test n getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.n_parabolic_rectangular(fck=fck)
+    assert math.isclose(c.n_parabolic_rectangular, expected, rel_tol=1e-6)
+
+
+n_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 2), (35, 2), (55, 1.75), (90, 1.4)],
+)
+
+
+@n_parametrized
+def test_n_specified(test_input, expected):
+    """Test specifying n_parabolic_rettangular."""
+    c = ConcreteMC2010(fck=test_input, n_parabolic_rectangular=expected)
+
+    assert math.isclose(c.n_parabolic_rectangular, expected)
+
+
+def test_n_specified_error():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.raises(ValueError):
+        ConcreteMC2010(fck=45, n_parabolic_rectangular=-1)
+
+
+def test_n_specified_warning():
+    """Test specifying n_parabolic_rectangular with a wrong value."""
+    with pytest.warns(UserWarning):
+        ConcreteMC2010(fck=45, n_parabolic_rectangular=6)
+
+
+@fck_parametrized
+def test_eps_c3_getter(fck):
+    """Test eps_c3 getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.eps_c3(fck=fck)
+    assert math.isclose(c.eps_c3, expected, rel_tol=1e-6)
+
+
+eps_c3_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 1.75), (35, 1.75), (55, 1.8), (90, 2.3)],
+)
+
+
+@eps_c3_parametrized
+def test_eps_c3_specified(test_input, expected):
+    """Test specifying eps_c3."""
+    c = ConcreteMC2010(fck=test_input, eps_c3=expected * 1e-3)
+
+    assert math.isclose(c.eps_c3, expected * 1e-3)
+
+
+@fck_parametrized
+def test_eps_cu3_getter(fck):
+    """Test eps_cu3 getter."""
+    c = ConcreteMC2010(fck=fck)
+    expected = mc2010.eps_cu3(fck=fck)
+    assert math.isclose(c.eps_cu3, expected, rel_tol=1e-6)
+
+
+eps_cu3_parametrized = pytest.mark.parametrize(
+    'test_input, expected',
+    [(12, 3.5), (35, 3.5), (55, 3.1), (90, 2.6)],
+)
+
+
+@eps_cu3_parametrized
+def test_eps_cu3_specified(test_input, expected):
+    """Test specifying eps_cu3."""
+    c = ConcreteMC2010(fck=test_input, eps_cu3=expected * 1e-3)
+
+    assert math.isclose(c.eps_cu3, expected * 1e-3)
