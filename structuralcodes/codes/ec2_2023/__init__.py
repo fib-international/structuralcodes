@@ -38,6 +38,20 @@ from ._section5_materials import (
     weight_c,
     weight_s,
 )
+from ._section6_durability import (
+    c_min,
+    c_min_dur_carb,
+    c_min_dur_chlo,
+    c_nom,
+    delta_c_min_30,
+    delta_c_min_exc,
+    delta_c_min_p,
+    delta_dur_abr,
+    delta_dur_red_1,
+    delta_dur_red_2,
+    get_exposure_class_description,
+    get_exposure_classes,
+)
 from ._section9_sls import (
     As_min_y,
     Ec_eff,
@@ -52,6 +66,18 @@ from ._section9_sls import (
 )
 
 __all__ = [
+    'c_min',
+    'delta_c_min_30',
+    'delta_c_min_exc',
+    'delta_c_min_p',
+    'delta_dur_abr',
+    'delta_dur_red_1',
+    'delta_dur_red_2',
+    'c_nom',
+    'c_min_dur_carb',
+    'c_min_dur_chlo',
+    'get_exposure_class_description',
+    'get_exposure_classes',
     'A_phi_correction_exp',
     'alpha_c_th',
     'alpha_s_th',
