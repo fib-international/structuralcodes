@@ -7,6 +7,7 @@
 .. autofunction:: structuralcodes.materials.concrete.create_concrete
 ```
 
+(api-concrete-ec2-2004)=
 ## Eurocode 2 (2004)
 
 ```{eval-rst}
@@ -15,6 +16,7 @@
    .. automethod:: __init__
 
    .. automethod:: fcd
+   .. automethod:: fctd
    .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: fctm
@@ -23,6 +25,7 @@
    .. autoproperty:: Ecm
    .. autoproperty:: gamma_c
    .. autoproperty:: alpha_cc
+   .. autoproperty:: alpha_ct
    .. autoproperty:: eps_c1
    .. autoproperty:: eps_cu1
    .. autoproperty:: k_sargin
@@ -36,6 +39,7 @@
    .. autoproperty:: density
 ```
 
+(api-concrete-mc2010)=
 ## _fib_ Model Code 2010
 
 ```{eval-rst}
@@ -44,6 +48,7 @@
    .. automethod:: __init__
    
    .. automethod:: fcd
+   .. automethod:: fctd
    .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: Eci
@@ -53,6 +58,7 @@
    .. autoproperty:: Gf
    .. autoproperty:: gamma_c
    .. autoproperty:: alpha_cc
+   .. autoproperty:: alpha_ct
    .. autoproperty:: eps_c1
    .. autoproperty:: eps_cu1
    .. autoproperty:: k_sargin
@@ -66,6 +72,7 @@
    .. autoproperty:: density
 ```
 
+(api-concrete-ec2-2023)=
 ## Eurocode 2 (2023)
 
 ```{eval-rst}

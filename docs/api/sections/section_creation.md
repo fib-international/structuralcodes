@@ -1,10 +1,10 @@
 (api-section-creation)=
 # Section creation
 
-## The generic section
+## The beam section
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.sections.GenericSection
+.. autoclass:: structuralcodes.sections.BeamSection
 
     .. automethod:: __init__
 
