@@ -214,14 +214,14 @@ def cmin_b_precast(
             return 3.0 * phi_p
         if s > 2 * phi_p:
             return 2.5 * phi_p
-        raise ValueError(f's should be larger or equal than {2*phi_p}')
+        raise ValueError(f's should be larger or equal than {2 * phi_p}')
 
     # If indented_wire
     if s == 2 * phi_p:
         return 4.5 * phi_p
     if s > 2 * phi_p:
         return 4.0 * phi_p
-    raise ValueError(f's should be larger or eequal than {2*phi_p}')
+    raise ValueError(f's should be larger or eequal than {2 * phi_p}')
 
 
 def lpt_precast(
