@@ -469,3 +469,113 @@ def test_delta_simpl(
         expected,
         rel_tol=0.01,
     )
+
+
+@pytest.mark.parametrize(
+    'As, xi1, Ap, Ac_eff, expected',
+    [
+        (495.9, 0, 0, 126000, 0.00394),
+        (319.2, 0, 319.2, 126000, 0.00253),
+        (493.9, 0.89, 493.9, 126000, 0.00702),
+        (205.1, 0.489, 205.1, 126000, 0.00202),
+        (806.2, 0.707, 0, 126000, 0.0064),
+    ],
+)
+def test_rho_p_eff(As, xi1, Ap, Ac_eff, expected):
+    """Test for rho_p_eff."""
+    result = _section9_sls.rho_p_eff(As, xi1, Ap, Ac_eff)
+    assert math.isclose(result, expected, rel_tol=0.01)
+
+
+@pytest.mark.parametrize(
+    'xi, phi_p, phi_s, expected',
+    [
+        (0.8, 20, 0, 0.894427),
+        (0.6, 25, 10, 0.489898),
+        (0.5, 10, 10, 0.707107),
+        (0.5, 10, 10, 0.707107),
+        (0.5, 10, 10, 0.707107),
+    ],
+)
+def test_xi1(xi, phi_p, phi_s, expected):
+    """Test for xi1."""
+    result = _section9_sls.xi1(xi, phi_p, phi_s)
+    assert math.isclose(result, expected, rel_tol=0.01)
+
+
+@pytest.mark.parametrize(
+    'd, x, expected', [(500, 100, 168394), (114, 0, 10207), (300, 300, 0)]
+)
+def test__lower_circular_segment_area(d, x, expected):
+    """Test for _lower_circular_segment_area."""
+    result = _section9_sls._lower_circular_segment_area(d, x)
+    assert math.isclose(result, expected, rel_tol=0.01)
+
+
+@pytest.mark.parametrize(
+    'x, ay, phi, h, b, diameter, n, sy, loading_type, section_type,'
+    'bar_spacing, ax, expected',
+    [
+        (
+            100,
+            68,
+            25,
+            400,
+            400,
+            None,
+            1,
+            None,
+            'bending',
+            'rectangular',
+            None,
+            None,
+            77200,
+        ),
+        (
+            100,
+            68,
+            25,
+            None,
+            None,
+            500,
+            1,
+            None,
+            'bending',
+            'circular',
+            None,
+            None,
+            158187,
+        ),
+    ],
+)
+def test_Ac_eff(
+    x,
+    ay,
+    phi,
+    h,
+    b,
+    diameter,
+    n,
+    sy,
+    loading_type,
+    section_type,
+    bar_spacing,
+    ax,
+    expected,
+):
+    """Test for Ac_eff."""
+    result = _section9_sls.Ac_eff(
+        x,
+        ay,
+        phi,
+        h,
+        b,
+        diameter,
+        n,
+        sy,
+        loading_type,
+        section_type,
+        bar_spacing,
+        ax,
+    )
+    assert math.isclose(result[0], expected, rel_tol=0.01)
