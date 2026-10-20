@@ -1,15 +1,12 @@
 (contributing)=
 # Contributing
 
-[![Build](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/format.json)](https://github.com/charliermarsh/ruff)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/charliermarsh/ruff)
 
-## General
-
-For the moment, the core team has completed an initial structure for the two lowest levels, i.e. how to structure the models from the structural design codes, and how to create classes that represent materials and sections. Contributions that seek to add content to the lowest level are highly appreciated.
-
-We have defined a set of [milestones](https://github.com/fib-international/structuralcodes/milestones) that indicate our priorities. Issues are linked to each milesstone, and some of the issues include a to-do list and have linked pull requests. Contributions related to the milestones are highly appreciated. For the moment, our first priority is to add code related to _fib_ Model Code 2020, but other contributions are of course also welcome!
+[![Tests](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/build.yaml)
+[![Publish](https://github.com/fib-international/structuralcodes/actions/workflows/create-release.yml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/create-release.yml)
+[![Docs](https://github.com/fib-international/structuralcodes/actions/workflows/sphinx.yml/badge.svg)](https://github.com/fib-international/structuralcodes/actions/workflows/sphinx.yml)
 
 ## Contribution guidelines
 
@@ -17,7 +14,7 @@ Here is how to get started.
 
 _First_
 
-- Take a look at the milestones, find one that suits your interests, and navigate to a related issue. Create a comment in the issue indicating the topic that you wish to contribute. Make sure that the topic is not already started by someone else.
+- Take a look at the [milestones](https://github.com/fib-international/structuralcodes/milestones), find one that suits your interests, and navigate to a related issue. Create a comment in the issue indicating the topic that you wish to contribute. Make sure that the topic is not already started by someone else.
 - If you didn't find a suitable milestone or issue, please create a new issue where you describe your request or feature idea. Make sure that you get a GO from the core team before continuing your contribution, so that you do not waste your time duplicating the work of someone else. We promise to provide feedback as soon as we can.
 
 _Then_
