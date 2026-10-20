@@ -1,7 +1,7 @@
 (installation)=
 # Installation
 
-`structuralcodes` is compatible with Python 3.9, 3.10, 3.11, 3.12, and 3.13, and is installed by typing:
+`structuralcodes` is compatible with [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/structuralcodes)](https://pypi.org/project/structuralcodes/) and is installed by typing:
 
 :::::{tab-set}
 ::::{tab-item} Python
@@ -12,7 +12,7 @@ python -m pip install structuralcodes
 :::
 ::::
 
-::::{tab-item} Python launcher
+::::{tab-item} Python install manager
 :sync: py
 
 :::{code-block} pwsh
@@ -32,7 +32,7 @@ python -m pip install --upgrade structuralcodes
 :::
 ::::
 
-::::{tab-item} Python launcher
+::::{tab-item} Python install manager
 :sync: py
 
 :::{code-block} pwsh
@@ -40,3 +40,9 @@ py -m pip install --upgrade structuralcodes
 :::
 ::::
 :::::
+
+:::{tip}
+
+If you are on Windows, we recommend using [Python install manager](https://docs.python.org/3/using/windows.html#python-install-manager) for installing and managing Python runtimes. Install the Python install manager with `winget` by typing `winget install python.pythoninstallmanager`.
+
+:::

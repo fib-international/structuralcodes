@@ -55,7 +55,7 @@ Add reinforcement to the geometry:
 :lines: 41-62
 :::
 
-Create a {class}`GenericSection <structuralcodes.sections.GenericSection>` based on the geometry:
+Create a {class}`BeamSection <structuralcodes.sections.BeamSection>` based on the geometry:
 
 :::{literalinclude} ../_example_code/quickstart_example.py
 :lines: 64-65
@@ -65,7 +65,7 @@ Create a {class}`GenericSection <structuralcodes.sections.GenericSection>` based
 {ref}`Section reference <api-sections>`
 :::
 
-Call the {func}`.calculate_moment_curvature() <structuralcodes.sections.GenericSectionCalculator.calculate_moment_curvature>` method on the {class}`GenericSectionCalculator <structuralcodes.sections.GenericSectionCalculator>` to calculate the moment-curvature relation:
+Call the {func}`.calculate_moment_curvature() <structuralcodes.sections.BeamSectionCalculator.calculate_moment_curvature>` method on the {class}`BeamSectionCalculator <structuralcodes.sections.BeamSectionCalculator>` to calculate the moment-curvature relation:
 
 :::{literalinclude} ../_example_code/quickstart_example.py
 :lines: 67-68

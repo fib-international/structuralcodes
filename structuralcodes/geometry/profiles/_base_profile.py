@@ -9,7 +9,7 @@ from shapely import (
 from shapely.affinity import rotate, translate
 from shapely.ops import split
 
-from structuralcodes.core._marin_integration import marin_integration
+from ...core._marin_integration import marin_integration
 
 
 class BaseProfile:
@@ -122,10 +122,12 @@ class BaseProfile:
         )
         max_idx = np.argmax(eigres[0])
         min_idx = 0 if max_idx == 1 else 1
-        self._Icsi = eigres[0][max_idx]
-        self._Ieta = eigres[0][min_idx]
-        self._theta = np.arccos(
-            np.dot(np.array([1, 0]), eigres[1][:, max_idx])
+        # The principal values are cast to real type to ensure no imaginary
+        # part is present
+        self._Icsi = np.real(eigres[0][max_idx])
+        self._Ieta = np.real(eigres[0][min_idx])
+        self._theta = np.real(
+            np.arccos(np.dot(np.array([1, 0]), eigres[1][:, max_idx]))
         )
 
     @property

@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 import pytest
-from shapely import LineString, MultiLineString, MultiPolygon, Polygon
+from shapely import LineString, MultiLineString, MultiPolygon, Point, Polygon
 from shapely.affinity import translate
 from shapely.testing import assert_geometries_equal
 
@@ -12,6 +12,7 @@ from structuralcodes.geometry import (
     CompoundGeometry,
     Geometry,
     PointGeometry,
+    RectangularGeometry,
     SurfaceGeometry,
     add_reinforcement,
     add_reinforcement_line,
@@ -27,7 +28,9 @@ from structuralcodes.materials.constitutive_laws import (
     ElasticPlastic,
     ParabolaRectangle,
 )
-from structuralcodes.materials.reinforcement import ReinforcementMC2010
+from structuralcodes.materials.reinforcement import (
+    ReinforcementMC2010,
+)
 
 
 # Test create line
@@ -65,7 +68,7 @@ def test_create_line_point_angle(
 # Test PointGeometry
 def test_point_geometry():
     """Test creating a PointGeometry object."""
-    Geometry.section_counter = 0
+    Geometry._geometry_counter = 0
     # Create a consitutive law to use
     constitutive_law_steel = ElasticPlastic(210000, 450)
     steel = ReinforcementMC2010(
@@ -354,6 +357,42 @@ def test_compound_geometry():
         '="7.2" opacity="0.6" d="M -500.0,200.0 L 500.0,200.0 L 500.0,300.0 L '
         '-500.0,300.0 L -500.0,200.0 z" /></g></g></svg>'
     )
+
+
+def test_compound_geometry_lazy_geom():
+    """The svg ``geom`` MultiPolygon is built lazily and cached.
+
+    ``geom`` is only needed for the SVG representation, so it is computed on
+    first access rather than in ``__init__``. It must still contain one polygon
+    per surface geometry plus a buffered circle per point geometry, and a
+    transformed copy must recompute its own ``geom``.
+    """
+    C25 = ConcreteMC2010(25)
+    steel = ReinforcementMC2010(fyk=450, Es=210000, ftk=450, epsuk=0.03)
+
+    poly = Polygon(((0, 0), (200, 0), (200, 400), (0, 400)))
+    geo = SurfaceGeometry(poly, C25)
+    geo = add_reinforcement_line(geo, (40, 40), (160, 40), 20, steel, n=4)
+    assert len(geo.geometries) == 1
+    assert len(geo.point_geometries) == 4
+
+    # geom is not built until first access
+    assert geo._geom is None
+
+    # one polygon per surface geometry + one buffered circle per point geometry
+    n_expected = len(geo.geometries) + len(geo.point_geometries)
+    assert isinstance(geo.geom, MultiPolygon)
+    assert len(geo.geom.geoms) == n_expected
+
+    # the result is cached: repeated access returns the same object
+    assert geo._geom is not None
+    assert geo.geom is geo.geom
+
+    # a transformed copy starts unbuilt and recomputes its own geom
+    geo_r = geo.rotate(np.pi / 2)
+    assert geo_r._geom is None
+    assert isinstance(geo_r.geom, MultiPolygon)
+    assert len(geo_r.geom.geoms) == n_expected
 
 
 def test_add_geometries():
@@ -699,3 +738,225 @@ def test_surface_geometry_name_group_label():
     # Assert
     assert geometry.name == name
     assert geometry.group_label == group_label
+
+
+def test_mirror_geometry():
+    """Test mirror transformation of geometries."""
+    width = 100
+    height = 300
+    concrete = ElasticMaterial(E=30_000, density=2400)
+    steel = ElasticMaterial(E=200_000, density=7850)
+
+    geo = RectangularGeometry(width, height, concrete, True)
+    geo = add_reinforcement(geo, (-height / 2 + 40, 0), 16, steel)
+
+    # Apply the mirror about a 45° axis
+    geo_m = geo.mirror(LineString([(0, 0), (1, 1)]))
+
+    # Compare bounds of the two geometries
+    bbox = geo.calculate_extents()
+    bbox_m = geo_m.calculate_extents()
+
+    assert math.isclose(bbox[0], bbox_m[2], rel_tol=1e-5)
+    assert math.isclose(bbox[1], bbox_m[3], rel_tol=1e-5)
+    assert math.isclose(bbox[2], bbox_m[0], rel_tol=1e-5)
+    assert math.isclose(bbox[3], bbox_m[1], rel_tol=1e-5)
+
+    assert math.isclose(
+        geo.point_geometries[0].x,
+        geo_m.point_geometries[0].y,
+        abs_tol=1e-5,
+    )
+
+    assert math.isclose(
+        geo.point_geometries[0].y,
+        geo_m.point_geometries[0].x,
+        abs_tol=1e-5,
+    )
+
+
+def test_random_points_within():
+    """Test random_points_within method generates points inside geometry."""
+    # Create a simple rectangular geometry
+    width = 100
+    height = 50
+    concrete = ElasticMaterial(E=30_000, density=2400)
+
+    geo = RectangularGeometry(width, height, concrete, True)
+
+    # Test with different numbers of points
+    for num_points in [10, 50, 100]:
+        xs, ys = geo.random_points_within(num_points)
+
+        # Check that we get arrays
+        assert isinstance(xs, np.ndarray)
+        assert isinstance(ys, np.ndarray)
+
+        # Check that arrays have the same length
+        assert len(xs) == len(ys)
+
+        # Check that we got roughly the expected number of points
+        # (allow some variation)
+        assert len(xs) > 0
+        # Allow some overshoot due to triangulation
+        assert len(xs) <= num_points * 1.5
+
+        # Check that all points are within the geometry bounds
+        min_x, max_x, min_y, max_y = geo.calculate_extents()
+
+        assert np.all(xs >= min_x)
+        assert np.all(xs <= max_x)
+        assert np.all(ys >= min_y)
+        assert np.all(ys <= max_y)
+
+        # Check that points are actually inside the polygon using shapely
+        for x, y in zip(xs, ys):
+            point = Point(x, y)
+            assert geo.polygon.contains(point) or geo.polygon.touches(point)
+
+
+def test_random_points_within_complex_geometry():
+    """Test random_points_within with a geometry containing holes."""
+    concrete = ElasticMaterial(E=30_000, density=2400)
+
+    # Create outer rectangle
+    outer_vertices = [(-50, -25), (50, -25), (50, 25), (-50, 25)]
+    outer_polygon = Polygon(outer_vertices)
+
+    # Create inner hole (smaller rectangle)
+    hole_vertices = [(-20, -10), (20, -10), (20, 10), (-20, 10)]
+    hole_polygon = Polygon(hole_vertices)
+
+    # Create polygon with hole
+    polygon_with_hole = Polygon(
+        outer_polygon.exterior, [hole_polygon.exterior]
+    )
+
+    geo = SurfaceGeometry(polygon_with_hole, concrete, True)
+
+    # Generate random points
+    num_points = 100
+    xs, ys = geo.random_points_within(num_points)
+
+    # Check basic properties
+    assert isinstance(xs, np.ndarray)
+    assert isinstance(ys, np.ndarray)
+    assert len(xs) == len(ys)
+    assert len(xs) > 0
+
+    # Check that all points are within the outer boundary but not in the hole
+    for x, y in zip(xs, ys):
+        point = Point(x, y)
+        # Point should be in the geometry (which excludes the hole)
+        assert geo.polygon.contains(point) or geo.polygon.touches(point)
+        # Point should not be inside the hole
+        assert not hole_polygon.contains(point)
+
+
+def test_random_points_within_reproducibility():
+    """Test that random_points_within can be made reproducible with seed."""
+    width = 100
+    height = 50
+    concrete = ElasticMaterial(E=30_000, density=2400)
+
+    geo = RectangularGeometry(width, height, concrete, True)
+
+    # Set seed for reproducibility
+    xs1, ys1 = geo.random_points_within(50, seed=42)
+
+    # Reset seed to same value
+    xs2, ys2 = geo.random_points_within(50, seed=42)
+
+    # Results should be identical
+    np.testing.assert_array_equal(xs1, xs2)
+    np.testing.assert_array_equal(ys1, ys2)
+
+
+def test_get_point_geometries():
+    """Test get_point_geometries method with filtering."""
+    # Create materials
+    concrete = ConcreteMC2010(45)
+    reinforcement = ReinforcementMC2010(450, 200000, 450, 0.075)
+    prestress_reinf = ReinforcementMC2010(
+        fyk=1620, Es=200000, ftk=1620, epsuk=0.02, initial_strain=0.0054
+    )
+
+    # Create the polygon
+    poly = Polygon(
+        [
+            (250, 0),
+            (250, 140),
+            (70, 200),
+            (70, 920),
+            (250, 980),
+            (250, 1120),
+            (-250, 1120),
+            (-250, 980),
+            (-70, 920),
+            (-70, 200),
+            (-250, 140),
+            (-250, 0),
+        ]
+    )
+
+    # Create surface geometry
+    geo = SurfaceGeometry(poly=poly, material=concrete)
+
+    # Add reinforcement lines
+    position = [40, 110, 1010, 1080]
+    number = [4, 2, 2, 4]
+    for y, n in zip(position, number):
+        geo = add_reinforcement_line(
+            geo=geo,
+            coords_i=(-210, y),
+            coords_j=(210, y),
+            diameter=10,
+            n=n,
+            material=reinforcement,
+            group_label='reinforcement',
+        )
+
+    # Add prestress reinforcement
+    area = 840
+    d = (area * 4 / np.pi) ** 0.5
+    geo = add_reinforcement_line(
+        geo=geo,
+        coords_i=(0, 70),
+        coords_j=(0, 210),
+        diameter=d,
+        n=2,
+        material=prestress_reinf,
+        group_label='prestress_reinforcement',
+    )
+
+    # Test without group_label filter - should return all points
+    all_coords, _ = geo.get_point_geometries()
+    total_reinforcement_points = sum(number)  # 12 regular reinforcement
+    total_prestress_points = 2  # 2 prestress reinforcement
+    expected_total = total_reinforcement_points + total_prestress_points
+    assert all_coords.shape[0] == expected_total
+    assert all_coords.shape[1] == 2  # x, y coordinates
+
+    # Test with "reinforcement" filter
+    reinforcement_coords, _ = geo.get_point_geometries(
+        group_label='reinforcement'
+    )
+    assert reinforcement_coords.shape[0] == total_reinforcement_points
+    assert reinforcement_coords.shape[1] == 2
+
+    # Test with "prestress_reinforcement" filter
+    prestress_coords, _ = geo.get_point_geometries(
+        group_label='prestress_reinforcement'
+    )
+    assert prestress_coords.shape[0] == total_prestress_points
+    assert prestress_coords.shape[1] == 2
+
+    # Test with wrong filter - should return empty array
+    wrong_coords, _ = geo.get_point_geometries(group_label='prestress')
+    assert wrong_coords is None
+
+    # Verify that the sum of filtered results equals total
+    assert (
+        reinforcement_coords.shape[0] + prestress_coords.shape[0]
+        == all_coords.shape[0]
+    )

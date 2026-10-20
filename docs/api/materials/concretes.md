@@ -16,6 +16,7 @@
    .. automethod:: __init__
 
    .. automethod:: fcd
+   .. automethod:: fctd
    .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: fctm
@@ -24,6 +25,7 @@
    .. autoproperty:: Ecm
    .. autoproperty:: gamma_c
    .. autoproperty:: alpha_cc
+   .. autoproperty:: alpha_ct
    .. autoproperty:: eps_c1
    .. autoproperty:: eps_cu1
    .. autoproperty:: k_sargin
@@ -46,6 +48,7 @@
    .. automethod:: __init__
    
    .. automethod:: fcd
+   .. automethod:: fctd
    .. autoproperty:: fck
    .. autoproperty:: fcm
    .. autoproperty:: Eci
@@ -55,6 +58,7 @@
    .. autoproperty:: Gf
    .. autoproperty:: gamma_c
    .. autoproperty:: alpha_cc
+   .. autoproperty:: alpha_ct
    .. autoproperty:: eps_c1
    .. autoproperty:: eps_cu1
    .. autoproperty:: k_sargin

@@ -4,16 +4,27 @@ import typing as t
 
 from ...core.base import ConstitutiveLaw, Material
 from ._bilinearcompression import BilinearCompression
+from ._concrete_smeared_cracking import (
+    ConcreteSmearedCracking,
+    ConstantPoissonReduction,
+    GeneralVecchioCollins,
+    NoTension,
+    calculate_principal_strains,
+    establish_strain_transformation_matrix,
+)
 from ._elastic import Elastic
+from ._elastic_2d import Elastic2D
 from ._elasticplastic import ElasticPlastic
 from ._initial_strain import InitialStrain
 from ._parabolarectangle import ParabolaRectangle
+from ._parallel import Parallel
 from ._popovics import Popovics
 from ._sargin import Sargin
 from ._userdefined import UserDefined
 
 __all__ = [
     'Elastic',
+    'Elastic2D',
     'ElasticPlastic',
     'ParabolaRectangle',
     'BilinearCompression',
@@ -21,12 +32,20 @@ __all__ = [
     'Sargin',
     'UserDefined',
     'InitialStrain',
+    'Parallel',
     'get_constitutive_laws_list',
     'create_constitutive_law',
+    'ConcreteSmearedCracking',
+    'NoTension',
+    'ConstantPoissonReduction',
+    'GeneralVecchioCollins',
+    'calculate_principal_strains',
+    'establish_strain_transformation_matrix',
 ]
 
 CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'elastic': Elastic,
+    'elastic2d': Elastic2D,
     'elasticplastic': ElasticPlastic,
     'elasticperfectlyplastic': ElasticPlastic,
     'bilinearcompression': BilinearCompression,

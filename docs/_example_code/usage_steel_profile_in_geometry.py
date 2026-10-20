@@ -3,7 +3,7 @@
 from structuralcodes.geometry import SurfaceGeometry
 from structuralcodes.geometry.profiles import IPE
 from structuralcodes.materials.basic import ElasticPlasticMaterial
-from structuralcodes.sections import GenericSection
+from structuralcodes.sections import BeamSection
 
 # Create a profile
 ipe100 = IPE('IPE100')
@@ -13,7 +13,7 @@ steel = ElasticPlasticMaterial(E=210000, fy=275 / 1.05, density=7850)
 
 # Create a geometry and a section
 geom = SurfaceGeometry(poly=ipe100.polygon, material=steel)
-section = GenericSection(geometry=geom)
+section = BeamSection(geometry=geom)
 
 # Use the section calculator to calculate the bending strength
 bending_strength = section.section_calculator.calculate_bending_strength()

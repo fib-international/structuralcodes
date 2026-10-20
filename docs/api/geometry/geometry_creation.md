@@ -15,14 +15,17 @@
     .. autoproperty:: x
     .. autoproperty:: y
     .. autoproperty:: point
+    .. autoproperty:: group_label
 
     .. automethod:: translate
     .. automethod:: rotate
+    .. automethod:: mirror
+
     .. automethod:: from_geometry
 
 ```
 
-## SurfaceGeometry
+## Surface geometry
 
 ```{eval-rst}
 .. autoclass:: structuralcodes.geometry.SurfaceGeometry
@@ -32,12 +35,15 @@
     .. autoproperty:: area
     .. autoproperty:: centroid
     .. autoproperty:: density
+    .. autoproperty:: group_label
+
+    .. automethod:: translate
+    .. automethod:: rotate
+    .. automethod:: mirror
 
     .. automethod:: calculate_extents
     .. automethod:: split
     .. automethod:: split_two_lines
-    .. automethod:: translate
-    .. automethod:: rotate
 
     .. automethod:: from_geometry
 
@@ -53,9 +59,15 @@
     .. autoproperty:: reinforced_concrete
     .. autoproperty:: area
 
-    .. automethod:: calculate_extents
     .. automethod:: translate
     .. automethod:: rotate
+    .. automethod:: mirror
+
+    .. automethod:: calculate_extents
+    
+    .. automethod:: name_filter
+    .. automethod:: group_filter
+
     .. automethod:: from_geometry
 
 
@@ -85,6 +97,7 @@ In this section the classes and methods for creating special and common geometri
 
     .. autoproperty:: height
     .. autoproperty:: width
+    .. autoproperty:: group_label
 
 ```
 
@@ -95,6 +108,7 @@ In this section the classes and methods for creating special and common geometri
 
     .. autoproperty:: radius
     .. autoproperty:: diameter
+    .. autoproperty:: group_label
 
 ```
 
@@ -123,6 +137,5 @@ In this section the classes and methods for creating special and common geometri
     .. automethod:: __init__
 
     .. autoproperty:: name
-    .. autoproperty:: group_label
 
 ```
