@@ -8,4 +8,5 @@ Material properties for reinforcement steel <material_reinforcement>
 Crack width calculation <cracks>
 Deflection calculation <deflections>
 Creep and shrinkage <creep_shrinkage>
+Strut-and-tie models and stress fields <strut_and_tie>
 :::
