@@ -1263,7 +1263,7 @@ def bw_nom(
     if sum_phi_duct > bw / 8:
         raise ValueError(
             'Sum of duct diameters exceeds bw/8.'
-            + f'Got sum {sum_phi_duct}, limit {bw/8}'
+            + f'Got sum {sum_phi_duct}, limit {bw / 8}'
         )
 
     return bw - k_duct * sum_phi_duct
