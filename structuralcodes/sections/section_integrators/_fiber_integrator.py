@@ -5,7 +5,7 @@ from __future__ import annotations  # To have clean hints of ArrayLike in docs
 import typing as t
 
 import numpy as np
-import triangle
+from meshpy.triangle import MeshInfo, build
 from numpy.typing import ArrayLike, NDArray
 from shapely import Polygon
 
@@ -19,7 +19,7 @@ class FiberIntegrator(SectionIntegrator):
     """Section integrator based on the Marin algorithm."""
 
     def prepare_triangulation(self, geo: SurfaceGeometry) -> t.Dict:
-        """Prepare data for triangulating it with triangle.
+        """Prepare data for triangulating it with meshpy.triangle.
 
         Arguments:
             geo (SurfaceGeometry): The geometry to triangulate.
@@ -57,8 +57,7 @@ class FiberIntegrator(SectionIntegrator):
         # Return the dictionary with data for triangulate
         tri['vertices'] = vertices
         tri['segments'] = segments
-        if len(holes) > 0:
-            tri['holes'] = holes
+        tri['holes'] = holes if len(holes) > 0 else []
         return tri
 
     def triangulate(
@@ -82,45 +81,57 @@ class FiberIntegrator(SectionIntegrator):
 
         # For the surface geometries
         for g in geo.geometries:
-            # prepare data structure for triangle module
+            # prepare data structure for meshpy module
             tri = self.prepare_triangulation(g)
+            triangulation_input = MeshInfo()
+            triangulation_input.set_points(tri['vertices'])
+            triangulation_input.set_facets(tri['segments'])
+            triangulation_input.set_holes(tri['holes'])
             # define the maximum area of the triangles
             max_area = g.area * mesh_size
             # triangulate the geometry getting back the mesh
-            mesh = triangle.triangulate(tri, f'pq{30:.1f}Aa{max_area}o1')
+            mesh = build(
+                triangulation_input,
+                quality_meshing=True,
+                min_angle=30,
+                attributes=True,
+                max_volume=max_area,
+            )
+            elements = np.asarray(mesh.elements)
+            vertices = np.asarray(mesh.points)
             constitutive_law = g.material.constitutive_law
             # Get x and y coordinates (centroid) and area for each fiber
             x = []
             y = []
             area = []
-            for tr in mesh['triangles']:
+            for tr in elements:
                 # get centroid of triangle
                 xc = (
-                    mesh['vertices'][tr[0]][0]
-                    + mesh['vertices'][tr[1]][0]
-                    + mesh['vertices'][tr[2]][0]
+                    vertices[tr[0]][0]
+                    + vertices[tr[1]][0]
+                    + vertices[tr[2]][0]
                 )
                 xc /= 3.0
                 x.append(xc)
                 yc = (
-                    mesh['vertices'][tr[0]][1]
-                    + mesh['vertices'][tr[1]][1]
-                    + mesh['vertices'][tr[2]][1]
+                    vertices[tr[0]][1]
+                    + vertices[tr[1]][1]
+                    + vertices[tr[2]][1]
                 )
                 yc /= 3.0
                 y.append(yc)
                 # compute area
                 a = (
-                    mesh['vertices'][tr[0]][0] * mesh['vertices'][tr[1]][1]
-                    - mesh['vertices'][tr[0]][1] * mesh['vertices'][tr[1]][0]
+                    vertices[tr[0]][0] * vertices[tr[1]][1]
+                    - vertices[tr[0]][1] * vertices[tr[1]][0]
                 )
                 a += (
-                    mesh['vertices'][tr[1]][0] * mesh['vertices'][tr[2]][1]
-                    - mesh['vertices'][tr[1]][1] * mesh['vertices'][tr[2]][0]
+                    vertices[tr[1]][0] * vertices[tr[2]][1]
+                    - vertices[tr[1]][1] * vertices[tr[2]][0]
                 )
                 a += (
-                    mesh['vertices'][tr[2]][0] * mesh['vertices'][tr[0]][1]
-                    - mesh['vertices'][tr[2]][1] * mesh['vertices'][tr[0]][0]
+                    vertices[tr[2]][0] * vertices[tr[0]][1]
+                    - vertices[tr[2]][1] * vertices[tr[0]][0]
                 )
                 a = abs(a) * 0.5
                 area.append(a)

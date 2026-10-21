@@ -5,7 +5,7 @@ sphinx-design==0.6.1
 furo==2024.8.6
 myst-parser==4.0.0
 
+meshpy>=2026.1
 numpy>=1.20.0
 scipy>=1.6.0
-shapely>=2.0.0
-triangle>=20230923
+shapely>=2.0.2
