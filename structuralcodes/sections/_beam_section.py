@@ -331,7 +331,10 @@ class BeamSectionCalculator(SectionCalculator):
         # Check if the section is a reinforced concrete section:
         # If it is, we need to obtain the "yield" strain of concrete
         # (-0.002 for default parabola-rectangle concrete)
-        is_rc_section = self.section.geometry.reinforced_concrete
+        is_rc_section = self.section.geometry.is_rc_section
+        # Check if the section is concrete only (without reinforcements).
+        # If it is concrete only, we need to consider the cracking strain for tension.
+        is_concrete_only = self.section.geometry.is_concrete_section_only
 
         # Pre-process all data to avoid expensive calls in the double loop
         # below
@@ -348,13 +351,6 @@ class BeamSectionCalculator(SectionCalculator):
                     'y_p': None,
                     'y_n': None,
                 },
-            )
-
-            # Find ultimate strain given the 'yielding' arg to the function
-            geom_strain_data[g]['eps_p'] = (
-                g.material.constitutive_law.get_ultimate_strain(
-                    yielding=yielding
-                )[1]
             )
 
             # Find bounding coordinate
@@ -381,6 +377,19 @@ class BeamSectionCalculator(SectionCalculator):
                 else False
             )
 
+            # For a concrete-only section, the positive pivot (tension) of the
+            # concrete takes the cracking strain (via yielding).
+            use_yielding_tension = (
+                True if (is_concrete_geom and is_concrete_only) else yielding
+            )
+
+            # Find ultimate strain given the 'yielding' arg to the function
+            geom_strain_data[g]['eps_p'] = (
+                g.material.constitutive_law.get_ultimate_strain(
+                    yielding=use_yielding_tension
+                )[1]
+            )
+
             geom_strain_data[g]['eps_n'] = (
                 g.material.constitutive_law.get_ultimate_strain(
                     yielding=use_yielding
@@ -398,9 +407,7 @@ class BeamSectionCalculator(SectionCalculator):
                 if y_p >= y_n:
                     continue
                 eps_p_bracket = eps_p if np.isfinite(eps_p) else LARGE_STRAIN
-                eps_n_bracket = (
-                    eps_n if np.isfinite(eps_n) else -LARGE_STRAIN
-                )
+                eps_n_bracket = eps_n if np.isfinite(eps_n) else -LARGE_STRAIN
                 chi = -(eps_p_bracket - eps_n_bracket) / (y_p - y_n)
 
                 if chi < chi_min:
