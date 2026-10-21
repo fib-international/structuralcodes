@@ -7,7 +7,7 @@ import warnings
 from math import atan2
 
 import numpy as np
-import triangle
+from meshpy.triangle import MeshInfo, build
 from numpy.typing import ArrayLike
 from shapely import affinity
 from shapely.geometry import (
@@ -446,28 +446,33 @@ class SurfaceGeometry(_GroupMixin, Geometry):
             # Return the dictionary with data for triangulate
             tri['vertices'] = vertices
             tri['segments'] = segments
-            if len(holes) > 0:
-                tri['holes'] = holes
+            tri['holes'] = holes if len(holes) > 0 else []
             return tri
 
+        # Prepare the data structure for meshpy
         tri = _prepare_triangulation_data(self.polygon)
-        triangles = triangle.triangulate(tri, 'p')
+        triangulation_input = MeshInfo()
+        triangulation_input.set_points(tri['vertices'])
+        triangulation_input.set_facets(tri['segments'])
+        triangulation_input.set_holes(tri['holes'])
+
+        # Triangulate the geometry getting back the mesh
+        mesh = build(triangulation_input, quality_meshing=False)
+        elements = np.asarray(mesh.elements)
+        vertices = np.asarray(mesh.points)
 
         xs = np.array([])
         ys = np.array([])
         # Manage reproducibility of random points:
         # seeds must be random in the triangles loop
-        n_tr = len(triangles['triangles'])
+        n_tr = len(elements)
         rng = np.random.default_rng(seed)
         seeds = rng.integers(1, 300, n_tr)
-        for tr, s in zip(triangles['triangles'], seeds):
+        for tr, s in zip(elements, seeds):
             # Get vertices for the triangle
-            Ax = triangles['vertices'][tr[0]][0]
-            Ay = triangles['vertices'][tr[0]][1]
-            Bx = triangles['vertices'][tr[1]][0]
-            By = triangles['vertices'][tr[1]][1]
-            Cx = triangles['vertices'][tr[2]][0]
-            Cy = triangles['vertices'][tr[2]][1]
+            Ax, Ay = vertices[tr[0]]
+            Bx, By = vertices[tr[1]]
+            Cx, Cy = vertices[tr[2]]
             # area of the triangle
             a = Ax * By - Ay * Bx
             a += Bx * Cy - By * Cx
