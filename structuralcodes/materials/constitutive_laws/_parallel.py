@@ -94,7 +94,7 @@ class Parallel(ConstitutiveLaw):
         # Compute combined intervals
 
         # Collect all possible breakpoints in a set to avoid duplicates
-        def _collect_breakpoints(laws_marin):
+        def _collect_breakpoints(laws_marin) -> t.List[float]:
             breakpoints = set()
 
             for ranges, _ in laws_marin:
@@ -107,6 +107,14 @@ class Parallel(ConstitutiveLaw):
             return sorted(breakpoints)  # Sort them
 
         breakpoints = _collect_breakpoints(laws_marin)
+
+        # If a law covers the entire domain (ranges=None), we bound the breakpoints
+        # by ±inf so as not to lose its contribution outside the finite intervals.
+        if breakpoints and any(ranges is None for ranges, _ in laws_marin):
+            if breakpoints[0] > -np.inf:
+                breakpoints.insert(0, -np.inf)
+            if breakpoints[-1] < np.inf:
+                breakpoints.append(np.inf)
 
         # Compute refined ranges
         refined_ranges = [
