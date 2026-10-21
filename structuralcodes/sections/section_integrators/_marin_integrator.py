@@ -152,11 +152,10 @@ class MarinIntegrator(SectionIntegrator):
                         y0, y1 = y1, y0
                     bbox = g.polygon.bounds
                     # Sets the cutting lines one unit outside the box.
-                    # A parallel law can result in a deformation bound
-                    # of +/-inf which yields an infinite cutting position
-                    # that GEOS rejects.
+                    # A parallel law can result in a deformation bound of +/-inf.
+                    # which yields an infinite cutting position that GEOS rejects.
                     y0 = min(max(y0, bbox[1] - 1.0), bbox[3] + 1.0)
-                    y1 = min(max(y1, bbox[1] - 1.0), bbox[3] + 1.0)
+                    y1 = min(max(y1, bbox[1] - 1.0), bbox[3] + 1.0)                    
                     line0 = create_line_point_angle((0, y0), 0, bbox)
                     line1 = create_line_point_angle((0, y1), 0, bbox)
                     lines = MultiLineString((line0, line1))

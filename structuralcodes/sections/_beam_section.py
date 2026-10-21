@@ -333,8 +333,7 @@ class BeamSectionCalculator(SectionCalculator):
         # (-0.002 for default parabola-rectangle concrete)
         is_rc_section = self.section.geometry.is_rc_section
         # Check if the section is concrete only (without reinforcements).
-        # If it is concrete only, we need to consider the cracking strain
-        # for tension.
+        # If it is concrete only, we need to consider the cracking strain for tension.
         is_concrete_only = self.section.geometry.is_concrete_section_only
 
         # Pre-process all data to avoid expensive calls in the double loop

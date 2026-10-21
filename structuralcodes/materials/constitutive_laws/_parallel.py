@@ -108,9 +108,8 @@ class Parallel(ConstitutiveLaw):
 
         breakpoints = _collect_breakpoints(laws_marin)
 
-        # If a law covers the entire domain (ranges=None),
-        # we bound the breakpoints by ±inf so as not to
-        # lose its contribution outside the finite intervals.
+        # If a law covers the entire domain (ranges=None), we bound the breakpoints
+        # by ±inf so as not to lose its contribution outside the finite intervals.
         if breakpoints and any(ranges is None for ranges, _ in laws_marin):
             if breakpoints[0] > -np.inf:
                 breakpoints.insert(0, -np.inf)
