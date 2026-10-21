@@ -125,19 +125,13 @@ class ElasticFragileTension(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             strain[0] = self.preprocess_strains_with_limits(strain[0])
-            if strain[0] <= 0:
-                # We are in the non-resisting (compression) branch
-                strains = None
-                coeff.append((0.0,))
-            elif strain[0] <= self._eps_ct_u:
-                # We are in the elastic branch
-                strains = None
+            strains = None
+            if 0 < strain[0] <= self._eps_ct_u:
+                # Elastic branch
                 a0 = self._Ec * strain[0]
-                a1 = self._Ec * strain[1]
-                coeff.append((a0, a1))
+                coeff.append((a0,))
             else:
-                # Cracked: no stress carried
-                strains = None
+                # Compressed or cracked: no stress
                 coeff.append((0.0,))
         else:
             strains.append((0, self._eps_ct_u))
@@ -165,28 +159,22 @@ class ElasticFragileTension(ConstitutiveLaw):
         if strain[1] == 0:
             # Uniform strain equal to strain[0]
             strain[0] = self.preprocess_strains_with_limits(strain[0])
-            if strain[0] <= 0:
-                # We are in the non-resisting (compression) branch
-                strains = None
-                coeff.append((0.0,))
-            elif strain[0] <= self._eps_ct_u:
-                # We are in the elastic branch
-                strains = None
+            strains = None
+            if 0 < strain[0] <= self._eps_ct_u:
+                # Elastic branch
                 coeff.append((self._Ec,))
             else:
-                # Cracked: no stiffness
-                strains = None
+                # Compressed or cracked: no stiffness
                 coeff.append((0.0,))
         else:
             strains.append((0, self._eps_ct_u))
             coeff.append((self._Ec,))
         return strains, coeff
 
-    def get_ultimate_strain(self, **kwargs) -> t.Tuple[float, float]:
-        """Return the ultimate strain (negative and positive).
-
-        The law is fragile: cracking is both the end of the elastic branch.
-        In compression it resists nothing, and reports zero
-        """
-        del kwargs
-        return (-np.inf, self._eps_ct_u)
+    def get_ultimate_strain(
+        self, yielding: bool = False
+    ) -> t.Tuple[float, float]:
+        """Return the ultimate strain (negative and positive)."""
+        if yielding:
+            return (-np.inf, self._eps_ct_u)
+        return (-np.inf, np.inf)
