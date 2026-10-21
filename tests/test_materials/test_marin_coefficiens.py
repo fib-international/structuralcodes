@@ -786,13 +786,18 @@ def test_parallel_marin_elastic_elasticplastic():
 
     strains, coeffs = lawP.__marin__([0, 1e-5])
 
-    # We should have 3 ranges
-    assert len(strains) == 3
-    assert len(coeffs) == 3
+    # We should have 5 ranges : ranges of elastic-plastic law,
+    # plus one for each side where only the elastic law is valid over the whole axis.
+    assert len(strains) == 5
+    assert len(coeffs) == 5
 
     # Check the central range
-    assert math.isclose(strains[1][0], -1.4)
-    assert math.isclose(strains[1][1], 1.4)
+    assert math.isclose(strains[2][0], -1.4)
+    assert math.isclose(strains[2][1], 1.4)
 
-    assert math.isclose(coeffs[1][0], coeffs_1[0][0] + coeffs_2[1][0])
-    assert math.isclose(coeffs[1][1], coeffs_1[0][1] + coeffs_2[1][1])
+    assert math.isclose(coeffs[2][0], coeffs_1[0][0] + coeffs_2[1][0])
+    assert math.isclose(coeffs[2][1], coeffs_1[0][1] + coeffs_2[1][1])
+
+    # Check the outer ranges where only the elastic law is valid
+    assert strains[0] == (-np.inf, -3.0)
+    assert strains[4] == (3.0, np.inf)
