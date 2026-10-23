@@ -787,7 +787,8 @@ def test_parallel_marin_elastic_elasticplastic():
     strains, coeffs = lawP.__marin__([0, 1e-5])
 
     # We should have 5 ranges : ranges of elastic-plastic law,
-    # plus one for each side where only the elastic law is valid over the whole axis.
+    # plus one for each side where only
+    # the elastic law is valid over the whole axis.
     assert len(strains) == 5
     assert len(coeffs) == 5
 
