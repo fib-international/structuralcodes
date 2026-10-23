@@ -178,3 +178,19 @@ class ElasticFragileTension(ConstitutiveLaw):
         if yielding:
             return (-np.inf, self._eps_ct_u)
         return (-np.inf, np.inf)
+
+    def preprocess_strains_with_limits(
+        self, eps: t.Union[float, ArrayLike]
+    ) -> t.Union[float, ArrayLike]:
+        """Preprocess strains, also setting those that exceed the cracking
+        strain by a rounding error to exactly the cracking strain.
+        """
+        eps = super().preprocess_strains_with_limits(eps)
+        if np.isscalar(eps):
+            if np.isclose(eps, self._eps_ct_u, rtol=1e-9, atol=0.0):
+                return self._eps_ct_u
+            return eps
+        eps[np.isclose(eps, self._eps_ct_u, rtol=1e-9, atol=0.0)] = (
+            self._eps_ct_u
+        )
+        return eps
