@@ -125,8 +125,8 @@ class ConstitutiveLaw(abc.ABC):
 
         eps = np.concatenate((eps_neg, eps_pos))
         sig = self.get_stress(eps)
-        from structuralcodes.materials.constitutive_laws import (
-            UserDefined,  # noqa: PLC0415
+        from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
+            UserDefined,
         )
 
         return UserDefined(eps, sig)
