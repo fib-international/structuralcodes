@@ -82,6 +82,15 @@ class InitialStrain(ConstitutiveLaw):
             return self._wrapped_law.get_tangent(0) * 1e-6
         return self._wrapped_law.get_tangent(eps + self._initial_strain)
 
+    def get_initial_modulus(self) -> float:
+        """Return the stiffness of the unloaded wrapped law.
+        The initial strain is not applied.
+        This is the stiffness without its initial state.
+        """
+        if not self._strain_compatibility:
+            return self._wrapped_law.get_initial_modulus() * 1e-6
+        return self._wrapped_law.get_initial_modulus()
+
     def __marin__(
         self, strain: t.Tuple[float, float]
     ) -> t.Tuple[t.List[t.Tuple], t.List[t.Tuple]]:
