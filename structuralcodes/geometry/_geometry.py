@@ -886,7 +886,11 @@ class CompoundGeometry(Geometry):
     @property
     def is_concrete_section_only(self) -> bool:
         """Return True if the section is concrete without reinforcements."""
-        return self.reinforced_concrete and len(self.point_geometries) == 0
+        return (
+            self.reinforced_concrete
+            and len(self.point_geometries) == 0
+            and all(geo.concrete for geo in self.geometries)
+        )
 
     @property
     def area(self) -> float:
