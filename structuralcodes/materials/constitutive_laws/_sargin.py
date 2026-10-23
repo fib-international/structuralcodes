@@ -110,5 +110,5 @@ class Sargin(ConstitutiveLaw):
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         if yielding:
-            return (self._eps_c1, 100)
-        return (self._eps_cu1, 100)
+            return (self._eps_c1, np.inf)
+        return (self._eps_cu1, np.inf)

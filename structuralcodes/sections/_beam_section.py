@@ -24,6 +24,9 @@ from ..core.base import Section, SectionCalculator
 from ..core.errors import InformationWarning, NoConvergenceWarning
 from .section_integrators import SectionIntegrator, integrator_factory
 
+# Large strain used to replace an infinite ultimate strain before calculations.
+LARGE_STRAIN = 1.0
+
 
 class BeamSection(Section):
     """This is the implementation of the beam section.
@@ -159,16 +162,16 @@ class BeamSectionCalculator(SectionCalculator):
         # Computation of surface area, reinforcement area, EA (axial rigidity)
         # and mass: Morten -> problem with units! how do we deal with it?
         for geo in self.section.geometry.geometries:
-            gp.ea += geo.area * geo.material.constitutive_law.get_tangent(
-                eps=0
+            gp.ea += (
+                geo.area * geo.material.constitutive_law.get_initial_modulus()
             )
             if geo.density is not None:
                 # this assumes area in mm2 and density in kg/m3
                 gp.mass += geo.area * geo.density * 1e-9
 
         for geo in self.section.geometry.point_geometries:
-            gp.ea += geo.area * geo.material.constitutive_law.get_tangent(
-                eps=0
+            gp.ea += (
+                geo.area * geo.material.constitutive_law.get_initial_modulus()
             )
             gp.area_reinforcement += geo.area
             if geo.density is not None:
@@ -301,6 +304,50 @@ class BeamSectionCalculator(SectionCalculator):
 
         return gp
 
+    def _ultimate_strains(
+        self, geom: CompoundGeometry, yielding: bool = False
+    ) -> t.List[t.Tuple]:
+        """Return the ultimate strains of each geometry.
+
+        Arguments:
+            geom (CompoundGeometry): The compound geometry.
+            yielding (bool): consider yielding instead of ultimate strain,
+                default = False.
+
+        Returns:
+            List(Tuple): (geometry, negative strain, positive strain) for
+            each geometry.
+        """
+        is_rc_section = self.section.geometry.is_rc_section
+        is_concrete_only = self.section.geometry.is_concrete_section_only
+        strains = []
+        for g in geom.geometries + geom.point_geometries:
+            is_concrete_geom = isinstance(g, SurfaceGeometry) and g.concrete
+            # If the geometry is not concrete, don't get the yield strain
+            # If it is not a reinforced concrete section, return
+            # the yield strain if asked.
+            use_yielding = (
+                yielding
+                if (
+                    (is_rc_section and is_concrete_geom) or (not is_rc_section)
+                )
+                else False
+            )
+            # For a concrete-only section, the positive pivot (tension) of the
+            # concrete takes the cracking strain (via yielding).
+            use_yielding_tension = (
+                True if (is_concrete_geom and is_concrete_only) else yielding
+            )
+            law = g.material.constitutive_law
+            strains.append(
+                (
+                    g,
+                    law.get_ultimate_strain(yielding=use_yielding)[0],
+                    law.get_ultimate_strain(yielding=use_yielding_tension)[1],
+                )
+            )
+        return strains
+
     def get_balanced_failure_strain(
         self, geom: CompoundGeometry, yielding: bool = False
     ) -> t.Tuple[float, float, float]:
@@ -321,65 +368,24 @@ class BeamSectionCalculator(SectionCalculator):
             axial strain, curvature y*, curvature z* (assumed zero since in the
             rotated frame y*z* it is a case of uniaxial bending).
         """
-        chi_min = 1e10
-        # Check if the section is a reinforced concrete section:
-        # If it is, we need to obtain the "yield" strain of concrete
-        # (-0.002 for default parabola-rectangle concrete)
-        is_rc_section = self.section.geometry.reinforced_concrete
-
+        chi_min = np.inf
+        y_p_min = None
         # Pre-process all data to avoid expensive calls in the double loop
         # below
         geom_strain_data = {}
-        all_geometries = geom.geometries + geom.point_geometries
-
-        for g in all_geometries:
-            # Initialize empty dict
-            geom_strain_data.setdefault(
-                g,
-                {
-                    'eps_p': None,
-                    'eps_n': None,
-                    'y_p': None,
-                    'y_n': None,
-                },
-            )
-
-            # Find ultimate strain given the 'yielding' arg to the function
-            geom_strain_data[g]['eps_p'] = (
-                g.material.constitutive_law.get_ultimate_strain(
-                    yielding=yielding
-                )[1]
-            )
-
-            # Find bounding coordinate
+        for g, eps_n, eps_p in self._ultimate_strains(geom, yielding):
+            # Bounding coordinates: tension at the bottom, compression at
+            # the top
             if isinstance(g, SurfaceGeometry):
-                geom_strain_data[g]['y_p'] = g.polygon.bounds[1]
+                y_p, y_n = g.polygon.bounds[1], g.polygon.bounds[3]
             elif isinstance(g, PointGeometry):
-                geom_strain_data[g]['y_p'] = g._point.coords[0][1]
-
-            if isinstance(g, SurfaceGeometry):
-                geom_strain_data[g]['y_n'] = g.polygon.bounds[3]
-            elif isinstance(g, PointGeometry):
-                geom_strain_data[g]['y_n'] = g._point.coords[0][1]
-
-            # If the geometry is not concrete, don't get the yield strain
-            # If it is not a reinforced concrete section, return
-            # the yield strain if asked.
-            is_concrete_geom = isinstance(g, SurfaceGeometry) and g.concrete
-
-            use_yielding = (
-                yielding
-                if (
-                    (is_rc_section and is_concrete_geom) or (not is_rc_section)
-                )
-                else False
-            )
-
-            geom_strain_data[g]['eps_n'] = (
-                g.material.constitutive_law.get_ultimate_strain(
-                    yielding=use_yielding
-                )[0]
-            )
+                y_p = y_n = g._point.coords[0][1]
+            geom_strain_data[g] = {
+                'eps_p': eps_p,
+                'eps_n': eps_n,
+                'y_p': y_p,
+                'y_n': y_n,
+            }
         for g, this_geom_strain_data in geom_strain_data.items():
             # This is left on purpose: even if tempted we should not do
             # this check:
@@ -391,11 +397,13 @@ class BeamSectionCalculator(SectionCalculator):
                 y_n = other_geom_strain_data['y_n']
                 if y_p >= y_n:
                     continue
-                chi = -(eps_p - eps_n) / (y_p - y_n)
+                eps_p_bracket = eps_p if np.isfinite(eps_p) else LARGE_STRAIN
+                eps_n_bracket = eps_n if np.isfinite(eps_n) else -LARGE_STRAIN
+                chi = -(eps_p_bracket - eps_n_bracket) / (y_p - y_n)
 
                 if chi < chi_min:
                     chi_min = chi
-                    eps_0 = eps_n + chi_min * y_n
+                    eps_0 = eps_n_bracket + chi_min * y_n
                     y_n_min = y_n
                     y_p_min = y_p
 
@@ -795,12 +803,11 @@ class BeamSectionCalculator(SectionCalculator):
         Returns:
             Tuple(float, float): Minimum and Maximum axial load.
         """
-        # Find balanced failure to get strain limits
-        y_n, y_p, strain = self.get_balanced_failure_strain(
-            geom=self.section.geometry, yielding=False
-        )
-        eps_p = strain[0] + strain[1] * y_p
-        eps_n = strain[0] + strain[1] * y_n
+        strains = self._ultimate_strains(self.section.geometry)
+        finite_negative = [e for _, e, _ in strains if np.isfinite(e)]
+        finite_positive = [e for _, _, e in strains if np.isfinite(e)]
+        eps_n = max(finite_negative) if finite_negative else -LARGE_STRAIN
+        eps_p = min(finite_positive) if finite_positive else LARGE_STRAIN
 
         n_min, _, _, integration_data = (
             self.integrator.integrate_strain_response_on_geometry(

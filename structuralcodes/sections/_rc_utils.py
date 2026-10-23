@@ -69,7 +69,7 @@ def calculate_elastic_cracked_properties(
 
     processed_geometries = []
     for geo in rotated_geometry.geometries:
-        E = geo.material.constitutive_law.get_tangent(eps=0)
+        E = geo.material.constitutive_law.get_initial_modulus()
         density = geo.material.density
         if geo.concrete:
             # It is concrete we only give compression behavior
@@ -89,7 +89,7 @@ def calculate_elastic_cracked_properties(
         )
 
     for pg in rotated_geometry.point_geometries:
-        Es = pg.material.constitutive_law.get_tangent(eps=0)
+        Es = pg.material.constitutive_law.get_initial_modulus()
         density = pg.material.density
         elastic_steel = ElasticMaterial(
             E=Es, density=density, name='elastic steel'

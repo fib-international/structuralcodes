@@ -94,7 +94,7 @@ class Parallel(ConstitutiveLaw):
         # Compute combined intervals
 
         # Collect all possible breakpoints in a set to avoid duplicates
-        def _collect_breakpoints(laws_marin):
+        def _collect_breakpoints(laws_marin) -> t.List[float]:
             breakpoints = set()
 
             for ranges, _ in laws_marin:
@@ -107,6 +107,15 @@ class Parallel(ConstitutiveLaw):
             return sorted(breakpoints)  # Sort them
 
         breakpoints = _collect_breakpoints(laws_marin)
+
+        # If a law covers the entire domain (ranges=None),
+        # we bound the breakpoints by ±inf so as not to lose its
+        # contribution outside the finite intervals.
+        if breakpoints and any(ranges is None for ranges, _ in laws_marin):
+            if breakpoints[0] > -np.inf:
+                breakpoints.insert(0, -np.inf)
+            if breakpoints[-1] < np.inf:
+                breakpoints.append(np.inf)
 
         # Compute refined ranges
         refined_ranges = [
@@ -194,7 +203,7 @@ class Parallel(ConstitutiveLaw):
         # Apply interval merging with piecewise polynomial combination
         laws_marin = []
         for law in self.wrapped_laws:
-            laws_marin.append(law.__marin__(strain))
+            laws_marin.append(law.__marin__(strain=strain))
 
         return self._split_marin(laws_marin)
 
@@ -215,7 +224,7 @@ class Parallel(ConstitutiveLaw):
         # Apply interval merging with piecewise polynomial combination
         laws_marin = []
         for law in self.wrapped_laws:
-            laws_marin.append(law.__marin_tangent__(strain))
+            laws_marin.append(law.__marin_tangent__(strain=strain))
 
         return self._split_marin(laws_marin)
 
@@ -223,9 +232,18 @@ class Parallel(ConstitutiveLaw):
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
-        ult_strain = [np.inf, -np.inf]
-        for law in self._wrapped_laws:
-            eps_u = law.get_ultimate_strain(yielding=yielding)
-            ult_strain[0] = min(ult_strain[0], eps_u[0])
-            ult_strain[1] = max(ult_strain[1], eps_u[1])
-        return tuple(ult_strain)
+        neg = [
+            law.get_ultimate_strain(yielding=yielding)[0]
+            for law in self._wrapped_laws
+        ]
+        pos = [
+            law.get_ultimate_strain(yielding=yielding)[1]
+            for law in self._wrapped_laws
+        ]
+
+        finite_neg = [v for v in neg if np.isfinite(v)]
+        finite_pos = [v for v in pos if np.isfinite(v)]
+
+        eps_n = min(finite_neg) if finite_neg else -np.inf
+        eps_p = max(finite_pos) if finite_pos else np.inf
+        return (eps_n, eps_p)
