@@ -8,6 +8,9 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
+# Strain step used to get the stiffness next to zero strain
+ZERO_STRAIN_STEP = 1e-9
+
 
 class ConstitutiveLaw(abc.ABC):
     """Abstract base class for constitutive laws."""
@@ -152,6 +155,20 @@ class ConstitutiveLaw(abc.ABC):
         """
         piecewise_law = self._discretize_law()
         return piecewise_law.__marin_tangent__(**kwargs)
+
+    def get_initial_modulus(self) -> float:
+        """Return the stiffness of the unloaded law, around zero strain.
+
+        A law with no stiffness exactly at zero strain gets the stiffness
+        of the side of zero where it has one.
+        """
+        E = self.get_tangent(eps=0)
+        if E == 0:
+            E = max(
+                self.get_tangent(eps=-ZERO_STRAIN_STEP),
+                self.get_tangent(eps=ZERO_STRAIN_STEP),
+            )
+        return E
 
     def get_secant(
         self, eps: t.Union[float, ArrayLike]
