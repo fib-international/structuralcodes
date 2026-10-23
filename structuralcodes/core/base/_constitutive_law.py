@@ -68,19 +68,19 @@ class ConstitutiveLaw(abc.ABC):
         near to ultimate strain limits to exactly ultimate strain limit.
         """
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
-        eps_min, eps_max = self.get_ultimate_strain()
-
-        if np.isscalar(eps):
-            if np.isclose(eps, eps_max, atol=1e-6):
-                return eps_max
-            if np.isclose(eps, eps_min, atol=1e-6):
-                return eps_min
-            return eps
-        idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
-        eps[idxs] = eps_max
-        idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
-        eps[idxs] = eps_min
-
+        limits = (
+            *self.get_ultimate_strain(),
+            *self.get_ultimate_strain(yielding=True),
+        )
+        for limit in limits:
+            if not np.isfinite(limit):
+                continue
+            if np.isscalar(eps):
+                if np.isclose(eps, limit, rtol=1e-6, atol=1e-6):
+                    return limit
+            else:
+                near = np.isclose(eps, limit, rtol=1e-6, atol=1e-6)
+                eps[near] = limit
         return eps
 
     def _discretize_law(self) -> ConstitutiveLaw:
@@ -125,8 +125,8 @@ class ConstitutiveLaw(abc.ABC):
 
         eps = np.concatenate((eps_neg, eps_pos))
         sig = self.get_stress(eps)
-        from structuralcodes.materials.constitutive_laws import (  # noqa: PLC0415
-            UserDefined,
+        from structuralcodes.materials.constitutive_laws import (
+            UserDefined,  # noqa: PLC0415
         )
 
         return UserDefined(eps, sig)
