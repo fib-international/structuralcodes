@@ -880,7 +880,7 @@ class CompoundGeometry(Geometry):
 
     @property
     def is_rc_section(self) -> bool:
-        """Return True if la section est en beton arme (beton + armatures)."""
+        """Return True if the section is reinforced concrete."""
         return self.reinforced_concrete and len(self.point_geometries) > 0
 
     @property
