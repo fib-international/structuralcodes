@@ -76,10 +76,10 @@ class ConstitutiveLaw(abc.ABC):
             if not np.isfinite(limit):
                 continue
             if np.isscalar(eps):
-                if np.isclose(eps, limit, rtol=1e-6, atol=1e-6):
+                if np.isclose(eps, limit, rtol=1e-6, atol=0.0):
                     return limit
             else:
-                near = np.isclose(eps, limit, rtol=1e-6, atol=1e-6)
+                near = np.isclose(eps, limit, rtol=1e-6, atol=0.0)
                 eps[near] = limit
         return eps
 
