@@ -77,6 +77,11 @@ class Elastic2D:
             ) from e
 
     def get_secant(self, *args, **kwargs) -> np.ndarray:
-        """Return the 2D secant stiffness matrix."""
+        """Return the 2D secant constitutive matrix."""
+        del args, kwargs
+        return self.stiffness_matrix
+
+    def get_tangent(self, *args, **kwargs) -> np.ndarray:
+        """Return the 2D tangent constitutive matrix."""
         del args, kwargs
         return self.stiffness_matrix
