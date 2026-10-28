@@ -8,6 +8,9 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
+# Strain step used to get the stiffness next to zero strain
+ZERO_STRAIN_STEP = 1e-9
+
 
 class ConstitutiveLaw(abc.ABC):
     """Abstract base class for constitutive laws."""
@@ -68,19 +71,19 @@ class ConstitutiveLaw(abc.ABC):
         near to ultimate strain limits to exactly ultimate strain limit.
         """
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
-        eps_min, eps_max = self.get_ultimate_strain()
-
-        if np.isscalar(eps):
-            if np.isclose(eps, eps_max, atol=1e-6):
-                return eps_max
-            if np.isclose(eps, eps_min, atol=1e-6):
-                return eps_min
-            return eps
-        idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
-        eps[idxs] = eps_max
-        idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
-        eps[idxs] = eps_min
-
+        limits = (
+            *self.get_ultimate_strain(),
+            *self.get_ultimate_strain(yielding=True),
+        )
+        for limit in limits:
+            if not np.isfinite(limit):
+                continue
+            if np.isscalar(eps):
+                if np.isclose(eps, limit, rtol=1e-6, atol=0.0):
+                    return limit
+            else:
+                near = np.isclose(eps, limit, rtol=1e-6, atol=0.0)
+                eps[near] = limit
         return eps
 
     def _discretize_law(self) -> ConstitutiveLaw:
@@ -98,6 +101,7 @@ class ConstitutiveLaw(abc.ABC):
             return None
 
         eps_min, eps_max = self.get_ultimate_strain()
+        eps_min = max(eps_min, -1)
         eps_max = min(eps_max, 1)
         # Analise positive branch
         eps = np.linspace(0, eps_max, 10000)
@@ -151,6 +155,20 @@ class ConstitutiveLaw(abc.ABC):
         """
         piecewise_law = self._discretize_law()
         return piecewise_law.__marin_tangent__(**kwargs)
+
+    def get_initial_modulus(self) -> float:
+        """Return the stiffness of the unloaded law, around zero strain.
+
+        A law with no stiffness exactly at zero strain gets the stiffness
+        of the side of zero where it has one.
+        """
+        E = self.get_tangent(eps=0)
+        if E == 0:
+            E = max(
+                self.get_tangent(eps=-ZERO_STRAIN_STEP),
+                self.get_tangent(eps=ZERO_STRAIN_STEP),
+            )
+        return E
 
     def get_secant(
         self, eps: t.Union[float, ArrayLike]

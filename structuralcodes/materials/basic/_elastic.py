@@ -75,7 +75,7 @@ class ElasticMaterial(Material):
             name += '_elastic'
 
         return cls(
-            E=other_material.constitutive_law.get_tangent(eps=0),
+            E=other_material.constitutive_law.get_initial_modulus(),
             density=other_material.density,
             name=name,
         )
