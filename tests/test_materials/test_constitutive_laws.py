@@ -364,6 +364,32 @@ def test_concrete_smeared_cracking_secant_tangent():
     assert np.allclose(tangent, secant)
 
 
+def test_concrete_smeared_cracking_secant_tangent_rectangle_domain():
+    """Test the secant and tangent constitutive matrices in the rectangle
+    domain.
+    """
+    # Arrange
+    fc = 45
+    eps_0 = -0.002
+    uniaxial_compression = ParabolaRectangle(fc=fc, eps_0=eps_0)
+    strength_reduction = GeneralVecchioCollins(c_1=0.8, c_2=100)
+    poisson_reduction = ConstantPoissonReduction(initial_nu=0.2)
+    concrete_smeared_cracking = ConcreteSmearedCracking(
+        uniaxial_law=uniaxial_compression,
+        strength_reduction_lateral_cracking=strength_reduction,
+        poisson_reduction=poisson_reduction,
+    )
+
+    # Act
+    tangent = concrete_smeared_cracking.get_tangent([eps_0, 0, 0])
+    secant = concrete_smeared_cracking.get_secant([eps_0, 0, 0])
+
+    # Assert
+    assert math.isclose(secant[0, 0], abs(fc / eps_0))
+    assert math.isclose(tangent[0, 0], 0.0, abs_tol=1e-10)
+    assert np.linalg.norm(secant) > np.linalg.norm(tangent)
+
+
 @pytest.mark.parametrize('nu', (0.0, 0.2))
 @pytest.mark.parametrize(
     'strain',
