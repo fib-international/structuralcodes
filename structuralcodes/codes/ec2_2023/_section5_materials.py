@@ -832,7 +832,7 @@ def alpha_c_th() -> float:
         float: The linear coefficient of thermal expansion in 1/Cº for
         concrete.
     """
-    return 10 * 10e-6
+    return 10 * 1e-6
 
 
 def Es() -> float:
@@ -857,7 +857,7 @@ def alpha_s_th() -> float:
         float: The linear coefficient of thermal expansion in 1/Cº for weldable
         reinforcement steel.
     """
-    return 10 * 10e-6
+    return 10 * 1e-6
 
 
 def weight_s() -> float:
