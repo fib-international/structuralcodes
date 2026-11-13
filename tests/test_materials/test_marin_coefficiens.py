@@ -8,6 +8,7 @@ import pytest
 from structuralcodes.materials.constitutive_laws import (
     BilinearCompression,
     Elastic,
+    ElasticFragileTension,
     ElasticPlastic,
     InitialStrain,
     ParabolaRectangle,
@@ -680,6 +681,133 @@ def test_marin_userdefined_axial_bending_strain(eps_0, eps_min, x, y, h):
         assert len(coeff) == len(expect)
         for i in range(len(coeff)):
             assert math.isclose(coeff[i], expect[i])
+
+
+@pytest.mark.parametrize(
+    'eps_0',
+    [-1e-3, -1e-5, 0, 1e-6, 2e-5, 5e-5, 7.5e-5, 7.6e-5, 1e-4, 1e-3, 1e-2],
+)
+@pytest.mark.parametrize(
+    'fct, Ec',
+    [(2.7, 36000), (1.6, 27000), (5.0, 44000)],
+)
+def test_marin_elasticfragiletension_uniform_strain(eps_0, fct, Ec):
+    """Test the marin coefficients for elastic-fragile tension material in
+    uniform strain.
+    """
+    law = ElasticFragileTension(fct=fct, Ec=Ec)
+    strain = (eps_0, 0)
+
+    strains, coeffs = law.__marin__(strain=strain)
+    strains_t, coeffs_t = law.__marin_tangent__(strain=strain)
+
+    # The whole geometry is in one branch
+    assert strains is None
+    assert strains_t is None
+    assert len(coeffs) == 1
+    assert len(coeffs_t) == 1
+    assert len(coeffs[0]) == 1
+    assert len(coeffs_t[0]) == 1
+
+    assert math.isclose(coeffs[0][0], law.get_stress(eps_0))
+    assert math.isclose(coeffs_t[0][0], law.get_tangent(eps_0))
+
+    if 0 < eps_0 <= fct / Ec:
+        assert math.isclose(coeffs[0][0], Ec * eps_0)
+        assert math.isclose(coeffs_t[0][0], Ec)
+    else:
+        assert math.isclose(coeffs[0][0], 0)
+        assert math.isclose(coeffs_t[0][0], 0)
+
+
+@pytest.mark.parametrize('eps_0', [-1e-3, -2e-5, 0, 2e-5, 7.5e-5, 1e-3])
+@pytest.mark.parametrize('chi', [-1e-5, -1e-7, 1e-7, 1e-5])
+@pytest.mark.parametrize(
+    'fct, Ec',
+    [(2.7, 36000), (1.6, 27000), (5.0, 44000)],
+)
+def test_marin_elasticfragiletension_axial_bending_strain(eps_0, chi, fct, Ec):
+    """Test the marin coefficients for elastic-fragile tension material in
+    axial strain and bending.
+    """
+    law = ElasticFragileTension(fct=fct, Ec=Ec)
+    strain = (eps_0, chi)
+
+    strains, coeffs = law.__marin__(strain=strain)
+    strains_t, coeffs_t = law.__marin_tangent__(strain=strain)
+
+    # Only the elastic branch is returned
+    assert len(strains) == 1
+    assert len(coeffs) == 1
+    assert len(strains_t) == 1
+    assert len(coeffs_t) == 1
+
+    for strain_range in (strains[0], strains_t[0]):
+        assert math.isclose(strain_range[0], 0)
+        assert math.isclose(strain_range[1], fct / Ec)
+
+    assert len(coeffs[0]) == 2
+    assert math.isclose(coeffs[0][0], Ec * eps_0)
+    assert math.isclose(coeffs[0][1], Ec * chi)
+
+    assert len(coeffs_t[0]) == 1
+    assert math.isclose(coeffs_t[0][0], Ec)
+
+    # The polynomial should give the stress in the elastic branch
+    for eps in np.linspace(fct / Ec / 10, fct / Ec, 5):
+        y = (eps - eps_0) / chi
+        assert math.isclose(
+            coeffs[0][0] + coeffs[0][1] * y, law.get_stress(eps)
+        )
+
+
+@pytest.mark.parametrize('weights', [None, [1.0, 0.5]])
+def test_parallel_marin_parabolarectangle_elasticfragiletension(weights):
+    """Test marin coefficients for a Parallel law combining a parabola
+    rectangle law in compression and an elastic-fragile law in tension.
+    """
+    fct = 2.7
+    Ec = 36000
+    compression = ParabolaRectangle(fc=45)
+    tension = ElasticFragileTension(fct=fct, Ec=Ec)
+    law = Parallel([compression, tension], weights=weights)
+    w = 1.0 if weights is None else weights[1]
+
+    strain = [1e-5, 1e-5]
+    strains_c, coeffs_c = compression.__marin__(strain)
+    strains, coeffs = law.__marin__(strain)
+
+    # We should have the two ranges in compression and the range in tension
+    assert len(strains) == 3
+    assert len(coeffs) == 3
+    assert strains[:2] == sorted(strains_c)
+    assert math.isclose(strains[2][0], 0)
+    assert math.isclose(strains[2][1], fct / Ec)
+
+    # In compression the coefficients are those of the parabola rectangle
+    for strain_range, coeff in zip(strains[:2], coeffs[:2]):
+        expected = coeffs_c[strains_c.index(strain_range)]
+        assert len(coeff) == len(expected)
+        for value, expected_value in zip(coeff, expected):
+            assert math.isclose(value, expected_value)
+
+    # In tension the coefficients are those of the elastic-fragile law
+    assert len(coeffs[2]) == 2
+    assert math.isclose(coeffs[2][0], w * Ec * strain[0])
+    assert math.isclose(coeffs[2][1], w * Ec * strain[1])
+
+    # Tangent
+    strains_t, coeffs_t = law.__marin_tangent__(strain)
+    assert len(strains_t) == 3
+    assert math.isclose(strains_t[2][0], 0)
+    assert math.isclose(strains_t[2][1], fct / Ec)
+    assert len(coeffs_t[2]) == 1
+    assert math.isclose(coeffs_t[2][0], w * Ec)
+
+    # Uniform strain in the elastic branch in tension
+    strains, coeffs = law.__marin__([5e-5, 0])
+    assert strains is None
+    assert math.isclose(coeffs[0][0], w * Ec * 5e-5)
 
 
 def test_parallel_marin_elastic():
