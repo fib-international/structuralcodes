@@ -28,6 +28,7 @@ from structuralcodes.materials.basic import (
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
     Elastic,
+    ElasticFragileTension,
     ElasticPlastic,
     InitialStrain,
     ParabolaRectangle,
@@ -2270,3 +2271,184 @@ def test_section_with_web_reinforcement():
 
     # Assert
     assert np.allclose(strain_plane_bending_strength, strain_plane_iterative)
+
+
+def _rc_section_with_tension_law(
+    width, height, diameter, n_bars, tension, integrator
+):
+    """Create a rectangular RC section with or without tensile strength."""
+    law = ParabolaRectangle(fc=30)
+    if tension:
+        law = Parallel([law, ElasticFragileTension(fct=2.9, Ec=33000)])
+    concrete = ConcreteMC2010(fck=30, constitutive_law=law)
+    steel = ReinforcementMC2010(
+        fyk=500, Es=200000, ftk=540, epsuk=0.05, gamma_s=1.15
+    )
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+    geometry = add_reinforcement_line(
+        geometry,
+        (-width / 2 + 50, -height / 2 + 50),
+        (width / 2 - 50, -height / 2 + 50),
+        diameter,
+        steel,
+        n=n_bars,
+    )
+    geometry = add_reinforcement_line(
+        geometry,
+        (-width / 2 + 50, height / 2 - 50),
+        (width / 2 - 50, height / 2 - 50),
+        diameter,
+        steel,
+        n=2,
+    )
+    return BeamSection(geometry=geometry, integrator=integrator)
+
+
+@pytest.mark.parametrize('integrator', ['marin', 'fiber'])
+@pytest.mark.parametrize(
+    'width, height, diameter, n_bars, n',
+    [
+        (300, 500, 16, 3, 0),
+        (300, 500, 25, 5, 0),
+        (400, 400, 20, 3, -1500e3),
+        (1000, 200, 12, 7, 0),
+    ],
+)
+def test_bending_strength_elasticfragiletension(
+    width, height, diameter, n_bars, n, integrator
+):
+    """Test that the tensile strength of concrete does not change the
+    ultimate limits of a reinforced concrete section.
+    """
+    with_tension = _rc_section_with_tension_law(
+        width, height, diameter, n_bars, True, integrator
+    ).section_calculator
+    no_tension = _rc_section_with_tension_law(
+        width, height, diameter, n_bars, False, integrator
+    ).section_calculator
+
+    # The axial load limits are not affected
+    assert math.isclose(with_tension.n_min, no_tension.n_min)
+    assert math.isclose(with_tension.n_max, no_tension.n_max)
+
+    # The bending strength is found for the same failure, and the small part
+    # of concrete that is not cracked has a small contribution
+    res_tension = with_tension.calculate_bending_strength(n=n)
+    res_no_tension = no_tension.calculate_bending_strength(n=n)
+
+    assert math.isclose(res_tension.n, n, abs_tol=1e-6 * abs(no_tension.n_min))
+    assert math.isclose(res_tension.m_y, res_no_tension.m_y, rel_tol=5e-3)
+    assert math.isclose(res_tension.chi_y, res_no_tension.chi_y, rel_tol=5e-2)
+
+
+@pytest.mark.parametrize(
+    'eps_a, chi_y, integrator',
+    [
+        (0.0, -1e-7, 'marin'),
+        (0.0, -3e-7, 'marin'),
+        (2e-5, -3e-7, 'marin'),
+        (0.0, -2e-6, 'marin'),
+        (-1e-4, -4e-6, 'marin'),
+        (5e-5, 2e-6, 'marin'),
+        (5e-5, 0.0, 'marin'),
+        (1e-4, 0.0, 'marin'),
+        (0.0, -1e-7, 'fiber'),
+        (0.0, -3e-7, 'fiber'),
+        (2e-5, -3e-7, 'fiber'),
+        (5e-5, 0.0, 'fiber'),
+        (1e-4, 0.0, 'fiber'),
+    ],
+)
+def test_integrate_strain_profile_elasticfragiletension(
+    eps_a, chi_y, integrator
+):
+    """Test the integration of an elastic-fragile tension law against a fine
+    numerical integration of the stresses.
+    """
+    width, height = 300, 500
+    fct, Ec = 2.9, 33000
+    law = ElasticFragileTension(fct=fct, Ec=Ec)
+    geometry = RectangularGeometry(
+        width=width,
+        height=height,
+        material=GenericMaterial(density=2500, constitutive_law=law),
+    )
+    section = BeamSection(
+        geometry=geometry, integrator=integrator, mesh_size=0.001
+    )
+
+    res = section.section_calculator.integrate_strain_profile(
+        (eps_a, chi_y, 0)
+    )
+
+    # Midpoint rule on thin layers
+    num = 200000
+    z = (np.arange(num) + 0.5) * height / num - height / 2
+    sig = law.get_stress(eps_a + chi_y * z)
+    n_expected = np.sum(sig) * width * height / num
+    m_expected = np.sum(sig * z) * width * height / num
+
+    rel_tol = 1e-4 if integrator == 'marin' else 2e-2
+    abs_tol = fct * width * height * 1e-6
+    assert math.isclose(res.n, n_expected, rel_tol=rel_tol, abs_tol=abs_tol)
+    assert math.isclose(
+        res.m_y, m_expected, rel_tol=rel_tol, abs_tol=abs_tol * height
+    )
+
+
+@pytest.mark.parametrize('integrator', ['marin', 'fiber'])
+def test_moment_curvature_elasticfragiletension(integrator):
+    """Test the moment-curvature relation of a reinforced concrete section
+    with tensile strength of concrete: the section is stiffer before cracking
+    and reaches the same strength.
+    """
+    with_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, True, integrator
+    ).section_calculator
+    no_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, False, integrator
+    ).section_calculator
+
+    # Curvatures before cracking, after cracking and near failure
+    chi = -np.array([1e-7, 2e-7, 3e-7, 7e-7, 2e-6, 4e-6, 1e-5, 3e-5, 6e-5])
+    res_tension = with_tension.calculate_moment_curvature(chi=chi)
+    res_no_tension = no_tension.calculate_moment_curvature(chi=chi)
+    m_tension = np.abs(res_tension.m_y)
+    m_no_tension = np.abs(res_no_tension.m_y)
+
+    assert len(m_tension) == len(chi)
+
+    # Before cracking the response is the one of the uncracked section
+    gross = _rc_section_with_tension_law(
+        300, 500, 16, 3, True, integrator
+    ).gross_properties
+    for i in range(3):
+        assert m_tension[i] > 2 * m_no_tension[i]
+        assert math.isclose(
+            m_tension[i], gross.e_iyy * abs(chi[i]), rel_tol=0.1
+        )
+
+    # The moment at cracking is larger than the moment right after cracking
+    assert m_tension[2] > m_tension[3]
+
+    # After cracking the response tends to the one without tensile strength
+    assert math.isclose(m_tension[-1], m_no_tension[-1], rel_tol=5e-3)
+    assert np.all(m_tension[3:] >= m_no_tension[3:] * (1 - 1e-3))
+
+
+def test_gross_properties_elasticfragiletension():
+    """Test that adding the concrete tensile constitutive law does not change
+    the section’s gross properties calculated at zero strain.
+    """
+    with_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, True, 'marin'
+    ).gross_properties
+    no_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, False, 'marin'
+    ).gross_properties
+
+    assert math.isclose(with_tension.ea, no_tension.ea)
+    assert math.isclose(with_tension.e_iyy, no_tension.e_iyy)
+    assert math.isclose(with_tension.e_izz, no_tension.e_izz)
