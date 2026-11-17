@@ -28,6 +28,7 @@ from structuralcodes.materials.basic import (
 from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
     Elastic,
+    ElasticFragileTension,
     ElasticPlastic,
     InitialStrain,
     ParabolaRectangle,
@@ -62,8 +63,9 @@ def test_rectangular_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
+    counter = BeamSection._section_counter
     sec = BeamSection(geo)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, 200 * 400)
 
@@ -170,8 +172,9 @@ def test_rectangular_section_tangent_stiffness(b, h, E, integrator):
     assert geo.polygon.centroid.coords[0][1] == 0
 
     # Create the section with fiber integrator
+    counter = BeamSection._section_counter
     sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, b * h)
 
@@ -435,8 +438,9 @@ def test_rectangular_section_tangent_stiffness_translated(b, h, E, integrator):
     assert geo.polygon.centroid.coords[0][1] == h / 2
 
     # Create the section with fiber integrator
+    counter = BeamSection._section_counter
     sec = BeamSection(geo, integrator=integrator, mesh_size=0.0001)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, b * h)
 
@@ -681,8 +685,9 @@ def test_holed_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
+    counter = BeamSection._section_counter
     sec = BeamSection(geo)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, 260000)
 
@@ -727,8 +732,9 @@ def test_u_section():
     assert geo.geometries[0].centroid[1] == 0
 
     # Create the section (default Marin integrator)
+    counter = BeamSection._section_counter
     sec = BeamSection(geo)
-    assert sec.name == 'BeamSection'
+    assert sec.name == f'BeamSection_{counter}'
 
     assert math.isclose(sec.gross_properties.area, 230000)
 
@@ -1127,7 +1133,7 @@ def test_strain_plane_calculation_rectangular_rc_high_load(
         NoConvergenceWarning, match='Maximum number of iterations reached'
     ):
         section.section_calculator.calculate_strain_profile(
-            n, my, mz, tol=1e-7
+            n, my, mz, tol=1e-7, max_iter=10
         )
 
 
@@ -1275,16 +1281,16 @@ def test_moment_curvature_large_circular_section():
             -2.0319887339322965e-07,
             -2.307987124494053e-07,
             -2.5839855150558097e-07,
-            -8.015207515413767e-07,
-            -1.3446429515771726e-06,
-            -1.8877651516129684e-06,
-            -2.4308873516487644e-06,
-            -2.97400955168456e-06,
-            -3.517131751720356e-06,
-            -4.060253951756152e-06,
-            -4.603376151791947e-06,
-            -5.146498351827743e-06,
-            -5.689620551863539e-06,
+            -8.051129175942805e-07,
+            -1.3518272836829801e-06,
+            -1.8985416497716797e-06,
+            -2.4452560158603796e-06,
+            -2.991970381949079e-06,
+            -3.5386847480377788e-06,
+            -4.085399114126478e-06,
+            -4.6321134802151776e-06,
+            -5.178827846303877e-06,
+            -5.725542212392577e-06,
         ]
     )
 
@@ -1300,16 +1306,16 @@ def test_moment_curvature_large_circular_section():
             -1.06641639e11,
             -1.20528802e11,
             -1.34385677e11,
-            -1.83835739e11,
-            -1.91419082e11,
-            -1.95481133e11,
-            -1.98304138e11,
-            -2.00740666e11,
-            -2.02971492e11,
-            -2.04990133e11,
-            -2.06880606e11,
-            -2.08682290e11,
-            -2.10425206e11,
+            -1.83767156e11,
+            -1.91178122e11,
+            -1.95069846e11,
+            -1.97732022e11,
+            -2.00008766e11,
+            -2.02080156e11,
+            -2.03933914e11,
+            -2.05666626e11,
+            -2.07302091e11,
+            -2.08884969e11,
         ]
     )
 
@@ -2019,3 +2025,430 @@ def test_perimeter_multipolygon():
         gp = section.gross_properties
 
     assert math.isclose(gp.perimeter, 0)
+
+
+def test_wide_section():
+    """Test calculating the moment-curvature relation for a wide section.
+
+    Regression test for #362. Based on the geometry from the quickstart example
+    with an increased width.
+    """
+    # Create a concrete and a reinforcement
+    fck = 45
+    fyk = 500
+    ftk = 550
+    Es = 200000
+    epsuk = 0.07
+
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement = ReinforcementEC2_2004(fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk)
+
+    # Create a rectangular geometry
+    width = 1000
+    height = 500
+
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    # Add reinforcement
+    diameter_reinf = 25
+    cover = 50
+
+    geometry = add_reinforcement(
+        geometry,
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+    )  # The add_reinforcement function returns a CompoundGeometry
+    geometry = add_reinforcement(
+        geometry,
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        diameter_reinf,
+        reinforcement,
+    )
+
+    # Create section
+    section = BeamSection(geometry)
+
+    # Calculate the moment-curvature response
+    moment_curvature = section.section_calculator.calculate_moment_curvature()
+
+    assert moment_curvature is not None
+
+
+def test_marin_integrator_two_reinforcement_materials():
+    """Test using Marin integrator on a geometry with two different
+    reinforcement materials present.
+
+    Regression test for #368. Based on geometry from quickstart example.
+    """
+    # Create a concrete and a reinforcement
+    fck = 45
+    fyk = 500
+    ftk = 550
+    Es = 200000
+    epsuk = 0.07
+
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement_1 = ReinforcementEC2_2004(
+        fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk
+    )
+    reinforcement_2 = ReinforcementEC2_2004(
+        fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk
+    )
+
+    # Create a rectangular geometry
+    width = 250
+    height = 500
+
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    # Add reinforcement
+    diameter_reinf = 25
+    cover = 50
+    n_bars_top = 2
+    n_bars_bot = 4
+
+    coords_bottom_reinf = (
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            -height / 2 + cover + diameter_reinf / 2,
+        ),
+    )
+    coords_top_reinf = (
+        (
+            -width / 2 + cover + diameter_reinf / 2,
+            height / 2 - cover - diameter_reinf / 2,
+        ),
+        (
+            width / 2 - cover - diameter_reinf / 2,
+            height / 2 - cover - diameter_reinf / 2,
+        ),
+    )
+
+    geometry_one_material = add_reinforcement_line(
+        geometry,
+        *coords_bottom_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_bot,
+    )
+    geometry_one_material = add_reinforcement_line(
+        geometry_one_material,
+        *coords_top_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_top,
+    )
+    geometry_two_materials = add_reinforcement_line(
+        geometry,
+        *coords_bottom_reinf,
+        diameter_reinf,
+        reinforcement_1,
+        n_bars_bot,
+    )
+    geometry_two_materials = add_reinforcement_line(
+        geometry_two_materials,
+        *coords_top_reinf,
+        diameter_reinf,
+        reinforcement_2,
+        n_bars_top,
+    )
+
+    # Create section, make sure that the Marin integrator is used
+    section_one_material = BeamSection(
+        geometry_one_material, integrator='marin'
+    )
+    section_two_materials = BeamSection(
+        geometry_two_materials, integrator='marin'
+    )
+
+    # Trigger formulation of integration data by integrating a dummy strain
+    # profile
+    bending_strength_one_material = (
+        section_one_material.section_calculator.calculate_bending_strength()
+    ).m_y
+    bending_strength_two_materials = (
+        section_two_materials.section_calculator.calculate_bending_strength()
+    ).m_y
+
+    assert math.isclose(
+        bending_strength_one_material, bending_strength_two_materials
+    )
+
+
+def test_section_with_web_reinforcement():
+    """Test a section with web reinforcement.
+
+    Calculating the strain plane of this section with the convergence criterion
+    and tolerance of v0.7.1 does not give equilibrium.
+    """
+    # Set parameters
+    fck = 45
+    fyk = 500
+    ftk = fyk * 1.08
+    Es = 200000
+    epsuk = 0.07
+
+    gamma_c = 1.5
+    alpha_cc = 0.85
+    gamma_s = 1.15
+
+    # Geometri
+    width = 400
+    height = 1200
+
+    # Armering - lengde
+    cover = 50
+
+    phi_s = 16
+    # s_l = 100
+    n_s = 11
+
+    # Create materials
+    concrete = ConcreteEC2_2004(
+        fck=fck, alpha_cc=alpha_cc, gamma_c=gamma_c, constitutive_law='sargin'
+    )
+    reinforcement = ReinforcementEC2_2004(
+        fyk=fyk, Es=Es, ftk=ftk, epsuk=epsuk, gamma_s=gamma_s
+    )
+
+    # Create geometry
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+
+    z_bar = -height / 2 + cover + phi_s / 2
+    x_bar = -width / 2 + cover + phi_s / 2
+    for x in (x_bar, -x_bar):
+        geometry = add_reinforcement_line(
+            geometry,
+            (x, z_bar),
+            (x, -z_bar),
+            diameter=phi_s,
+            material=reinforcement,
+            n=n_s,
+        )
+
+    geometry
+
+    # Create section
+    section = BeamSection(geometry=geometry, integrator='fiber')
+
+    # Calculate the bending strength
+    bending_strength = section.section_calculator.calculate_bending_strength(
+        theta=np.pi
+    )
+    strain_plane_bending_strength = np.array(
+        [
+            bending_strength.eps_a,
+            bending_strength.chi_y,
+            bending_strength.chi_z,
+        ]
+    )
+
+    # Calculate the strain plane corresponding to the bending strength
+    strain_plane_iterative = np.array(
+        section.section_calculator.calculate_strain_profile(
+            n=bending_strength.n,
+            my=bending_strength.m_y,
+            mz=bending_strength.m_z,
+        ).to_list()
+    )
+
+    # Assert
+    assert np.allclose(strain_plane_bending_strength, strain_plane_iterative)
+
+
+def _rc_section_with_tension_law(
+    width, height, diameter, n_bars, tension, integrator
+):
+    """Create a rectangular RC section with or without tensile strength."""
+    law = ParabolaRectangle(fc=30)
+    if tension:
+        law = Parallel([law, ElasticFragileTension(fct=2.9, Ec=33000)])
+    concrete = ConcreteMC2010(fck=30, constitutive_law=law)
+    steel = ReinforcementMC2010(
+        fyk=500, Es=200000, ftk=540, epsuk=0.05, gamma_s=1.15
+    )
+    geometry = RectangularGeometry(
+        width=width, height=height, material=concrete
+    )
+    geometry = add_reinforcement_line(
+        geometry,
+        (-width / 2 + 50, -height / 2 + 50),
+        (width / 2 - 50, -height / 2 + 50),
+        diameter,
+        steel,
+        n=n_bars,
+    )
+    geometry = add_reinforcement_line(
+        geometry,
+        (-width / 2 + 50, height / 2 - 50),
+        (width / 2 - 50, height / 2 - 50),
+        diameter,
+        steel,
+        n=2,
+    )
+    return BeamSection(geometry=geometry, integrator=integrator)
+
+
+@pytest.mark.parametrize('integrator', ['marin', 'fiber'])
+@pytest.mark.parametrize(
+    'width, height, diameter, n_bars, n',
+    [
+        (300, 500, 16, 3, 0),
+        (300, 500, 25, 5, 0),
+        (400, 400, 20, 3, -1500e3),
+        (1000, 200, 12, 7, 0),
+    ],
+)
+def test_bending_strength_elasticfragiletension(
+    width, height, diameter, n_bars, n, integrator
+):
+    """Test that the tensile strength of concrete does not change the
+    ultimate limits of a reinforced concrete section.
+    """
+    with_tension = _rc_section_with_tension_law(
+        width, height, diameter, n_bars, True, integrator
+    ).section_calculator
+    no_tension = _rc_section_with_tension_law(
+        width, height, diameter, n_bars, False, integrator
+    ).section_calculator
+
+    # The axial load limits are not affected
+    assert math.isclose(with_tension.n_min, no_tension.n_min)
+    assert math.isclose(with_tension.n_max, no_tension.n_max)
+
+    # The bending strength is found for the same failure, and the small part
+    # of concrete that is not cracked has a small contribution
+    res_tension = with_tension.calculate_bending_strength(n=n)
+    res_no_tension = no_tension.calculate_bending_strength(n=n)
+
+    assert math.isclose(res_tension.n, n, abs_tol=1e-6 * abs(no_tension.n_min))
+    assert math.isclose(res_tension.m_y, res_no_tension.m_y, rel_tol=5e-3)
+    assert math.isclose(res_tension.chi_y, res_no_tension.chi_y, rel_tol=5e-2)
+
+
+@pytest.mark.parametrize(
+    'eps_a, chi_y, integrator',
+    [
+        (0.0, -1e-7, 'marin'),
+        (0.0, -3e-7, 'marin'),
+        (2e-5, -3e-7, 'marin'),
+        (0.0, -2e-6, 'marin'),
+        (-1e-4, -4e-6, 'marin'),
+        (5e-5, 2e-6, 'marin'),
+        (5e-5, 0.0, 'marin'),
+        (1e-4, 0.0, 'marin'),
+        (0.0, -1e-7, 'fiber'),
+        (0.0, -3e-7, 'fiber'),
+        (2e-5, -3e-7, 'fiber'),
+        (5e-5, 0.0, 'fiber'),
+        (1e-4, 0.0, 'fiber'),
+    ],
+)
+def test_integrate_strain_profile_elasticfragiletension(
+    eps_a, chi_y, integrator
+):
+    """Test the integration of an elastic-fragile tension law against a fine
+    numerical integration of the stresses.
+    """
+    width, height = 300, 500
+    fct, Ec = 2.9, 33000
+    law = ElasticFragileTension(fct=fct, Ec=Ec)
+    geometry = RectangularGeometry(
+        width=width,
+        height=height,
+        material=GenericMaterial(density=2500, constitutive_law=law),
+    )
+    section = BeamSection(
+        geometry=geometry, integrator=integrator, mesh_size=0.001
+    )
+
+    res = section.section_calculator.integrate_strain_profile(
+        (eps_a, chi_y, 0)
+    )
+
+    # Midpoint rule on thin layers
+    num = 200000
+    z = (np.arange(num) + 0.5) * height / num - height / 2
+    sig = law.get_stress(eps_a + chi_y * z)
+    n_expected = np.sum(sig) * width * height / num
+    m_expected = np.sum(sig * z) * width * height / num
+
+    rel_tol = 1e-4 if integrator == 'marin' else 2e-2
+    abs_tol = fct * width * height * 1e-6
+    assert math.isclose(res.n, n_expected, rel_tol=rel_tol, abs_tol=abs_tol)
+    assert math.isclose(
+        res.m_y, m_expected, rel_tol=rel_tol, abs_tol=abs_tol * height
+    )
+
+
+@pytest.mark.parametrize('integrator', ['marin', 'fiber'])
+def test_moment_curvature_elasticfragiletension(integrator):
+    """Test the moment-curvature relation of a reinforced concrete section
+    with tensile strength of concrete: the section is stiffer before cracking
+    and reaches the same strength.
+    """
+    with_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, True, integrator
+    ).section_calculator
+    no_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, False, integrator
+    ).section_calculator
+
+    # Curvatures before cracking, after cracking and near failure
+    chi = -np.array([1e-7, 2e-7, 3e-7, 7e-7, 2e-6, 4e-6, 1e-5, 3e-5, 6e-5])
+    res_tension = with_tension.calculate_moment_curvature(chi=chi)
+    res_no_tension = no_tension.calculate_moment_curvature(chi=chi)
+    m_tension = np.abs(res_tension.m_y)
+    m_no_tension = np.abs(res_no_tension.m_y)
+
+    assert len(m_tension) == len(chi)
+
+    # Before cracking the response is the one of the uncracked section
+    gross = _rc_section_with_tension_law(
+        300, 500, 16, 3, True, integrator
+    ).gross_properties
+    for i in range(3):
+        assert m_tension[i] > 2 * m_no_tension[i]
+        assert math.isclose(
+            m_tension[i], gross.e_iyy * abs(chi[i]), rel_tol=0.1
+        )
+
+    # The moment at cracking is larger than the moment right after cracking
+    assert m_tension[2] > m_tension[3]
+
+    # After cracking the response tends to the one without tensile strength
+    assert math.isclose(m_tension[-1], m_no_tension[-1], rel_tol=5e-3)
+    assert np.all(m_tension[3:] >= m_no_tension[3:] * (1 - 1e-3))
+
+
+def test_gross_properties_elasticfragiletension():
+    """Test that adding the concrete tensile constitutive law does not change
+    the section’s gross properties calculated at zero strain.
+    """
+    with_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, True, 'marin'
+    ).gross_properties
+    no_tension = _rc_section_with_tension_law(
+        300, 500, 16, 3, False, 'marin'
+    ).gross_properties
+
+    assert math.isclose(with_tension.ea, no_tension.ea)
+    assert math.isclose(with_tension.e_iyy, no_tension.e_iyy)
+    assert math.isclose(with_tension.e_izz, no_tension.e_izz)

@@ -34,8 +34,7 @@ class BilinearCompression(ConstitutiveLaw):
             eps_cu (float): Ultimate strain (pure number).
             name (str): A descriptive name for the constitutive law.
         """
-        name = name if name is not None else 'BilinearCompressionLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='BilinearCompressionLaw')
         self._fc = -abs(fc)
         self._eps_c = -abs(eps_c)
         self._eps_cu = -abs(eps_cu)

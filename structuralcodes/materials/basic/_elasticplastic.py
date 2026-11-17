@@ -48,7 +48,8 @@ class ElasticPlasticMaterial(Material):
             initial_strain=initial_strain,
             initial_stress=initial_stress,
             strain_compatibility=strain_compatibility,
-            name=name if name else 'ElasticPlasticMaterial',
+            name=name,
+            base_name='ElasticPlasticMaterial',
         )
         self._E = E
         self._fy = fy

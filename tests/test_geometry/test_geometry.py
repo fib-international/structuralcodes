@@ -68,7 +68,7 @@ def test_create_line_point_angle(
 # Test PointGeometry
 def test_point_geometry():
     """Test creating a PointGeometry object."""
-    Geometry.section_counter = 0
+    Geometry._geometry_counter = 0
     # Create a consitutive law to use
     constitutive_law_steel = ElasticPlastic(210000, 450)
     steel = ReinforcementMC2010(
