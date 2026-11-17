@@ -25,6 +25,7 @@ class ConcreteSmearedCracking(ConstitutiveLaw2D):
     concrete.
     """
 
+    __materials__: t.Tuple[str] = ('concrete',)
     _initial_modulus_compression: t.Optional[float] = None
     _initial_modulus_tension: t.Optional[float] = None
     _uniaxial_law: ConstitutiveLaw1D

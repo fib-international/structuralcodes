@@ -12,7 +12,6 @@ class Elastic2D(ConstitutiveLaw2D):
     __materials__: t.Tuple[str] = (
         'concrete',
         'steel',
-        'rebars',
     )
 
     def __init__(
