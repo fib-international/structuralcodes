@@ -307,10 +307,13 @@ def a_cs(M_Ed: float, V_Ed: float, d: float) -> float:
         float: The effective shear span in mm.
 
     Raises:
-        ValueError: If any of the input values are negative.
+        ValueError: If d is not larger than zero.
+        ValueError: If V_Ed is zero.
     """
     if d <= 0:
-        raise ValueError('All input values must be positive.' + f'Got d={d}')
+        raise ValueError(f'd must be larger than zero, got d={d}')
+    if math.isclose(V_Ed, 0.0):
+        raise ValueError(f'V_Ed must different from zero, got V_Ed={V_Ed}')
 
     return max(abs(M_Ed * 1000 / V_Ed), d)
 

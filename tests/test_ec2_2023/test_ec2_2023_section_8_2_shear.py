@@ -363,10 +363,12 @@ def test_calculate_a_cs(M_Ed, V_Ed, d, expected):
     [
         (1000, 100, -500),  # Negative d
         (1000, 100, 0),  # Zero d
+        (1000, 0, 100),  # Zero V_Ed
+        (1000, 0, 0),  # Zero V_Ed and d
     ],
 )
-def test_a_cs_value_error_d(M_Ed, V_Ed, d):
-    """Test a_cs raises ValueError for non-positive d."""
+def test_a_cs_value_error(M_Ed, V_Ed, d):
+    """Test a_cs raises ValueError for non-positive input."""
     with pytest.raises(ValueError):
         _section_8_2_shear.a_cs(M_Ed, V_Ed, d)
 
