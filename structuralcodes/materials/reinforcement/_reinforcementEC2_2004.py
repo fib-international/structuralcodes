@@ -143,7 +143,7 @@ class ReinforcementEC2_2004(Reinforcement):  # noqa: N801
         """Returns kwargs for ElasticPlastic constitutive law with strain
         hardening.
         """
-        Eh = (self.ftd() - self.fyd()) / (self.epsud() - self.epsyd)
+        Eh = (self.ftd() - self.fyd()) / (self.epsuk - self.epsyd)
         return {
             'E': self.Es,
             'fy': self.fyd(),
