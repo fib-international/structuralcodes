@@ -1,5 +1,7 @@
 """A concrete implementation of a shell geometry."""
 
+from __future__ import annotations  # To have clean hints of ArrayLike in docs
+
 import typing as t
 
 import numpy as np

@@ -11,7 +11,15 @@ from numpy.typing import ArrayLike
 def calculate_principal_strains(
     strain: ArrayLike,
 ) -> t.Tuple[ArrayLike, float]:
-    """Calculate the principal strains in 2D."""
+    """Calculate the principal strains in 2D.
+
+    Arguments:
+        strain (ArrayLike): The strains epsilon_x, epsilon_y, gamma_xy.
+
+    Returns:
+        tuple(ArrayLike, float): The principal strains and the principal strain
+        direction in radians.
+    """
     eps = np.atleast_1d(strain)
     # Use arctan2 to obtain the angle in the correct quadrant
     phi = 0.5 * np.arctan2(eps[2], eps[0] - eps[1])
@@ -28,7 +36,14 @@ def calculate_principal_strains(
 
 
 def establish_strain_transformation_matrix(phi: float) -> ArrayLike:
-    """Establish the strain transformation matrix for a given angle."""
+    """Establish the strain transformation matrix for a given angle.
+
+    Arguments:
+        phi (float): The angle to transform to in radians.
+
+    Returns:
+        ndarray: The strain transformation matrix.
+    """
     c = np.cos(phi)
     s = np.sin(phi)
     return np.array(

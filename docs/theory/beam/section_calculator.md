@@ -336,7 +336,7 @@ For this reason the computation of MM interaction domain for a given value of ax
 Using this method it is possible to loop from minimum to maximum axial load that the section is able to carry and construct a nice structured version of the failure domain. Of course this operation is pretty slow compared to the direct computation of [NMM domain](theory-nmm-domain).
 
 ::::{dropdown-syntax}
-:::{literalinclude} ../_example_code/usage_compute_3d_domain_from_mm.py
+:::{literalinclude} ../../_example_code/usage_compute_3d_domain_from_mm.py
 :lines: 3-
 :caption: Create many slices of MM interaction domains to have a full NMM domain.
 :::
