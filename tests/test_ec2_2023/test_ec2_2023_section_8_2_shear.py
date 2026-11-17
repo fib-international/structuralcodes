@@ -5,6 +5,7 @@ import math
 import pytest
 
 from structuralcodes.codes.ec2_2023 import _section_8_2_shear
+from structuralcodes.core.errors import StructuralCodesWarning
 
 
 @pytest.mark.parametrize(
@@ -703,9 +704,10 @@ def test_cot_theta_min():
         == 3.0
     )
 
-    # Compression case with significant stress but x >= 0.25d (tension formula)
+    # Compression case with significant stress, but x >= 0.25d
     # sigma_c = 3.0 MPa, x = 120 >= 100, so: 2.5 - 0.1*(-300)/100 = 2.8
-    assert _section_8_2_shear.cot_theta_min(NEd, 100, 120, 400, Ac) == 2.8
+    with pytest.warns(StructuralCodesWarning):
+        assert _section_8_2_shear.cot_theta_min(NEd, 100, 120, 400, Ac) == 3.0
 
     # Compression case with low stress and x < 0.25d (uses interpolation)
     NEd_low = -100  # -100 kN (1 MPa stress: 100 * 1000 / 100000 = 1.0 MPa)
@@ -748,9 +750,8 @@ def test_cot_theta_min():
         (-400, 200, 80, 500, 100000, 3.0),  # 4 MPa stress, x < 0.25d
         (-500, 100, 90, 400, 100000, 3.0),  # 5 MPa stress, x < 0.25d
         # Compression cases with significant stress but x >= 0.25d
-        # (tension formula)
-        (-300, 100, 120, 400, 100000, 2.8),  # 3 MPa, x >= 0.25d
-        (-400, 200, 150, 500, 100000, 2.7),  # 4 MPa, x >= 0.25d
+        (-300, 100, 120, 400, 100000, 3.0),  # 3 MPa, x >= 0.25d
+        (-400, 200, 150, 500, 100000, 3.0),  # 4 MPa, x >= 0.25d
         # Compression cases with low stress and x < 0.25d (uses interpolation)
         (-100, 100, 50, 400, 100000, 2.5 + 1.0 / 6.0),  # 1 MPa stress
         (-200, 200, 80, 500, 100000, 2.5 + 2.0 / 6.0),  # 2 MPa stress
@@ -758,7 +759,11 @@ def test_cot_theta_min():
 )
 def test_cot_theta_min_comprehensive(NEd, VEd, x, d, Ac, expected):
     """Test cot_theta_min with comprehensive scenarios."""
-    result = _section_8_2_shear.cot_theta_min(NEd, VEd, x, d, Ac)
+    if NEd < 0 and x > 0.25 * d:
+        with pytest.warns(StructuralCodesWarning):
+            result = _section_8_2_shear.cot_theta_min(NEd, VEd, x, d, Ac)
+    else:
+        result = _section_8_2_shear.cot_theta_min(NEd, VEd, x, d, Ac)
     assert result == pytest.approx(expected, rel=1e-9)
 
 
@@ -776,20 +781,21 @@ def test_cot_theta_min_edge_cases():
         NEd_below, 100, 50, 400, Ac
     ) == pytest.approx(2.5 + 2.99 / 6.0, rel=1e-9)
 
-    # Test exactly at x = 0.25d boundary (x = 100, not < 100, so tension)
+    # Test exactly at x = 0.25d boundary, so it should not warn
     x_exact = 100  # 0.25 * 400
     # sigma_c = 3.0 MPa, x = 100 (not < 100), so: 2.5 - 0.1*(-300)/100 = 2.8
     assert (
         _section_8_2_shear.cot_theta_min(NEd_exact, 100, x_exact, 400, Ac)
-        == 2.8
+        == 3.0
     )
 
-    # Test just above x = 0.25d boundary (tension formula)
+    # Test just above x = 0.25d boundary, so it should warn
     x_above = 101  # Just above 0.25 * 400
-    assert (
-        _section_8_2_shear.cot_theta_min(NEd_exact, 100, x_above, 400, Ac)
-        == 2.8
-    )
+    with pytest.warns(StructuralCodesWarning):
+        assert (
+            _section_8_2_shear.cot_theta_min(NEd_exact, 100, x_above, 400, Ac)
+            == 3.0
+        )
 
     # Test minimum tension value (1.0)
     NEd_high_tension = 1500  # High tension force

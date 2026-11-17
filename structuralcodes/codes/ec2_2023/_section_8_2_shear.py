@@ -1,7 +1,10 @@
 """Functions from Section 8.2 of EN 1992-1-1:2023."""
 
 import math
+import warnings
 from typing import Iterable, Literal
+
+from ...core.errors import StructuralCodesWarning
 
 
 def tau_Ed(VEd: float, bw: float, d: float) -> float:
@@ -674,15 +677,20 @@ def cot_theta_min(
     elif NEd < 0:
         # Compression case
         sigma_c = abs(NEd) * 1000 / Ac  # Convert to MPa
-        if sigma_c >= 0.0 and x < 0.25 * d:
-            # Significant compressive stress and x < 0.25d
-            # Interpolate: 2.5 at 0 MPa, 3.0 at 3 MPa and above
-            # Formula: 2.5 + (3.0-2.5) * sigma_c / (3.0-0.0)
-            cot_theta_min = 3.0 if sigma_c >= 3.0 else 2.5 + sigma_c / 6.0
-        else:
-            # Use tension formula for other compression cases
-            cot_theta_min = 2.5 - 0.1 * NEd / abs(VEd)
-            cot_theta_min = max(cot_theta_min, 1.0)
+        if sigma_c >= 0.0 and x > 0.25 * d:
+            warnings.warn(
+                'A very high compressive force is provided (x > 0.25 * d), '
+                'make sure to check if a portion of the compressive force '
+                'needs to be carried in the shear zone. If a portion of the '
+                'compressive force should be carried in the shear zone, it '
+                'should be checked according to EC2 (2023), 8.2.3(11).',
+                StructuralCodesWarning,
+            )
+
+        # Significant compressive stress and x < 0.25d
+        # Interpolate: 2.5 at 0 MPa, 3.0 at 3 MPa and above
+        # Formula: 2.5 + (3.0-2.5) * sigma_c / (3.0-0.0)
+        cot_theta_min = 3.0 if sigma_c >= 3.0 else 2.5 + sigma_c / 6.0
     else:
         # NEd == 0 (no axial force)
         cot_theta_min = 2.5
