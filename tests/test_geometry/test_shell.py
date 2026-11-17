@@ -9,9 +9,7 @@ from structuralcodes.geometry import (
     ShellReinforcement,
 )
 from structuralcodes.materials.basic import GenericMaterial
-from structuralcodes.materials.constitutive_laws import (
-    Elastic2D,
-)
+from structuralcodes.materials.constitutive_laws import Elastic, Elastic2D
 from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
 
 
@@ -48,7 +46,7 @@ def test_shell_reinforcement():
     cc_bars = 500
     d = 16
     material = GenericMaterial(
-        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.3)
+        density=7850, constitutive_law=Elastic(E=200000)
     )
     phi = np.pi / 4
     shell_reinforcement = ShellReinforcement(
