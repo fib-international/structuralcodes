@@ -461,7 +461,7 @@ def k1(
             + f'b_w={b_w}, z={z}, d={d}'
         )
 
-    k1 = 0.5 / a_cs_0 / (e_p + d / 3) * (A_c / (b_w * z))
+    k1 = 0.5 / a_cs_0 * (e_p + d / 3) * (A_c / (b_w * z))
     return min(k1, A_c * 0.18 / (b_w * z))
 
 
