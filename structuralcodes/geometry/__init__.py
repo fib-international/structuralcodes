@@ -1,6 +1,7 @@
 """Main entry point for geometry."""
 
 from . import profiles
+from ._anular import AnularGeometry
 from ._circular import CircularGeometry
 from ._geometry import (
     CompoundGeometry,
@@ -27,6 +28,7 @@ __all__ = [
     'add_reinforcement',
     'add_reinforcement_line',
     'CircularGeometry',
+    'AnularGeometry',
     'add_reinforcement_circle',
     'RectangularGeometry',
     'ShellGeometry',
