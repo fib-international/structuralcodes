@@ -16,7 +16,7 @@ from ._geometry import SurfaceGeometry
 
 
 class AnularGeometry(SurfaceGeometry):
-    """This is a wrapper class for defining a `SurfaceGeometry` of circular
+    """This is a wrapper class for defining a `SurfaceGeometry` of anular
     shape with a homogeneous material.
     """
 
