@@ -21,11 +21,15 @@ class Parallel(ConstitutiveLaw):
 
     _wrapped_law: ConstitutiveLaw = None
 
+    _ultimate_strain_n: float = None
+    _ultimate_strain_p: float = None
+
     def __init__(
         self,
         constitutive_laws: t.List[ConstitutiveLaw],
         weights: t.Optional[t.List[float]] = None,
         name: t.Optional[str] = None,
+        eps_u: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
     ) -> None:
         """Initialize a Parallel Constitutive Law.
 
@@ -36,8 +40,15 @@ class Parallel(ConstitutiveLaw):
         Arguments:
             constitutive_laws (List[ConstitutiveLaw]): List of wrapped
                 constitutive laws that are working in parallel.
-            weights (List[float], optional): List of weights for each
+
+        Keyword Arguments:
+            weights (List[float]): List of weights for each
                 constitutive law. If None (Default), all weights are set to 1.
+            name (str): A descriptive name for the constitutive law.
+            eps_u (float or (float, float)): Ultimate strain.
+                If a single value is provided the same is adopted for both
+                negative and positive strains. If a tuple is provided, it
+                should be given as (negative, positive). Default value = None.
         """
         super().__init__(name=name, base_name='ParallelLaw')
         for idx, law in enumerate(constitutive_laws):
@@ -57,6 +68,10 @@ class Parallel(ConstitutiveLaw):
                     'constitutive_laws'
                 )
             self._weights = np.array(weights)
+
+        # Set ultimate strains if needed
+        if eps_u is not None:
+            self._set_ultimate_strain(eps_u=eps_u)
 
     @property
     def weights(self) -> np.ndarray:
@@ -223,9 +238,53 @@ class Parallel(ConstitutiveLaw):
         self, yielding: bool = False
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
+        # If we have overriden the values, return them directly
+        if self._ultimate_strain_n and self._ultimate_strain_p:
+            return (self._ultimate_strain_n, self._ultimate_strain_p)
+        # Otherwise, compute the ultimate strain based on the wrapped laws
         ult_strain = [np.inf, -np.inf]
         for law in self._wrapped_laws:
             eps_u = law.get_ultimate_strain(yielding=yielding)
             ult_strain[0] = min(ult_strain[0], eps_u[0])
             ult_strain[1] = max(ult_strain[1], eps_u[1])
         return tuple(ult_strain)
+
+    def _set_ultimate_strain(
+        self, eps_u=t.Union[float, t.Tuple[float, float]]
+    ) -> None:
+        """Set ultimate strains for Parallel Material if needed.
+        This overrides the ultimate strains of the wrapped constitutive laws.
+
+        Arguments:
+            eps_u (float or (float, float)): Defining ultimate strain. If a
+                single value is provided the same is adopted for both negative
+                and positive strains. If a tuple is provided, it should be
+                given as (negative, positive).
+        """
+        if isinstance(eps_u, float):
+            self._ultimate_strain_p = abs(eps_u)
+            self._ultimate_strain_n = -abs(eps_u)
+        elif isinstance(eps_u, tuple):
+            if len(eps_u) < 2:
+                raise ValueError(
+                    'Two values need to be provided when setting the tuple'
+                )
+            eps_u_n = eps_u[0]
+            eps_u_p = eps_u[1]
+            if eps_u_p < eps_u_n:
+                eps_u_p, eps_u_n = eps_u_n, eps_u_p
+            if eps_u_p < 0:
+                raise ValueError(
+                    'Positive ultimate strain should be non-negative'
+                )
+            if eps_u_n > 0:
+                raise ValueError(
+                    'Negative utimate strain should be non-positive'
+                )
+            self._ultimate_strain_p = eps_u_p
+            self._ultimate_strain_n = eps_u_n
+        else:
+            raise ValueError(
+                'set_ultimate_strain requires a single value or a tuple \
+                with  two values'
+            )
