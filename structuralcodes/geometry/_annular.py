@@ -44,7 +44,7 @@ class AnnularGeometry(SurfaceGeometry):
                 circle as a shapely `Polygon` (default = 20). Note that the
                 number of points is rounded to the nearest multiple of 4.
             concrete (bool): Flag to indicate if the geometry is concrete.
-            origin (Optional(ArrayLike)): The center point of the circle.
+            origin (Optional(ArrayLike)): The center point of the annulus.
                 (0.0, 0.0) is used as default.
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects.
