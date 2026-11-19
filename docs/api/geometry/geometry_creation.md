@@ -112,6 +112,21 @@ In this section the classes and methods for creating special and common geometri
 
 ```
 
+```{eval-rst}
+.. autoclass:: structuralcodes.geometry.AnnularGeometry
+
+    .. automethod:: __init__
+
+    .. autoproperty:: outer_radius
+    .. autoproperty:: outer_diameter
+    .. autoproperty:: inner_radius
+    .. autoproperty:: inner_diameter
+    .. autoproperty:: thickness
+    .. autoproperty:: name
+    .. autoproperty:: group_label
+
+```
+
 ## Functions for adding reinforcement
 
 ```{eval-rst}
