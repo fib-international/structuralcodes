@@ -113,7 +113,7 @@ In this section the classes and methods for creating special and common geometri
 ```
 
 ```{eval-rst}
-.. autoclass:: structuralcodes.geometry.AnularGeometry
+.. autoclass:: structuralcodes.geometry.AnnularGeometry
 
     .. automethod:: __init__
 
