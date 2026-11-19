@@ -1,6 +1,6 @@
-"""Classes for circular geometries.
+"""Classes for annular geometries.
 
-The class `CircularGeometry` represents a circular SurfaceGeometry with
+The class `AnnularGeometry` represents a annular SurfaceGeometry with
 homogenous material.
 This class is simply a wrapper of `SurfaceGeometry` class and permits an easy
 input by the user.
