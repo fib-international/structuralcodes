@@ -23,12 +23,14 @@ from structuralcodes.materials.basic import (
     ElasticPlasticMaterial,
     GenericMaterial,
 )
-from structuralcodes.materials.concrete import ConcreteMC2010
+from structuralcodes.materials.concrete import ConcreteEC2_2004, ConcreteMC2010
 from structuralcodes.materials.constitutive_laws import (
+    Elastic2D,
     ElasticPlastic,
     ParabolaRectangle,
 )
 from structuralcodes.materials.reinforcement import (
+    ReinforcementEC2_2004,
     ReinforcementMC2010,
 )
 
@@ -960,3 +962,36 @@ def test_get_point_geometries():
         reinforcement_coords.shape[0] + prestress_coords.shape[0]
         == all_coords.shape[0]
     )
+
+
+def test_invalid_constitutive_law_for_point():
+    """Test providing a material with a 2D constitutive law."""
+    # Create material
+    fyk = 500
+    Es = 200e3
+    ftk = fyk
+    epsuk = 6e-2
+    material = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=ftk,
+        epsuk=epsuk,
+        constitutive_law=Elastic2D(E=Es, nu=0.3),
+    )
+
+    # Create a point geometry
+    with pytest.raises(TypeError):
+        PointGeometry((0, 0), 25, material)
+
+
+def test_invalid_constitutive_law_for_surface():
+    """Test providing a material with a 2D constitutive law."""
+    # Create material
+    material = ConcreteEC2_2004(fck=45, constitutive_law=Elastic2D(30000, 0.2))
+
+    # Create surface geometry
+    with pytest.raises(TypeError):
+        SurfaceGeometry(
+            Polygon((-200, -200), (200, -200), (200, 200), (200, -200)),
+            material,
+        )

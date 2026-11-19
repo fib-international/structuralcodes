@@ -7,10 +7,10 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ...core.base import ConstitutiveLaw
+from ...core.base import ConstitutiveLaw1D
 
 
-class Sargin(ConstitutiveLaw):
+class Sargin(ConstitutiveLaw1D):
     """Class for Sargin constitutive law.
 
     The stresses and strains are assumed negative in compression and positive
