@@ -1,4 +1,4 @@
-"""Tests for the Geometry."""
+"""Tests for the Annular Geometry."""
 
 import math
 
@@ -16,8 +16,8 @@ from structuralcodes.materials.reinforcement import ReinforcementMC2010
     'outer_diameter, inner_diameter',
     [(100, 80), (200, 160), (300, 250), (400, 300), (500, 320)],
 )
-def test_create_circular_geometry(outer_diameter, inner_diameter):
-    """Test creating a CircularGeometry."""
+def test_create_annular_geometry(outer_diameter, inner_diameter):
+    """Test creating a AnnularGeometry."""
     mat = ElasticMaterial(E=300000, density=2450)
     annular = AnnularGeometry(outer_diameter, inner_diameter, mat)
 
@@ -47,7 +47,7 @@ def test_create_circular_geometry(outer_diameter, inner_diameter):
         (100, 100),  # Wrong: outer == inner
     ],
 )
-def test_create_circular_geometry_exception(outer_diameter, inner_diameter):
+def test_create_annular_geometry_exception(outer_diameter, inner_diameter):
     """Test raising exception when inputing wrong value."""
     mat = ElasticMaterial(E=300000, density=2450)
     with pytest.raises(ValueError):
@@ -59,8 +59,8 @@ def test_create_circular_geometry_exception(outer_diameter, inner_diameter):
     'origin',
     [(0, 0), (30, 600), (1.0,), None],
 )
-def test_circle_with_origin(origin):
-    """Test creating a annulus with an origin."""
+def test_annulus_with_origin(origin):
+    """Test creating an annulus with an origin."""
     # Arrange
     mat = ElasticMaterial(E=300000, density=2450)
     outer_diameter = 100
@@ -113,7 +113,7 @@ def test_reinforced_annular_geometry(outer_diameter, inner_diameter, cover, n):
     concrete = ConcreteMC2010(40)
     steel = ReinforcementMC2010(450, 200000, 450, 0.065)
 
-    # create the circular geometry
+    # create the annular geometry
     annular = AnnularGeometry(outer_diameter, inner_diameter, concrete)
 
     assert annular.concrete
