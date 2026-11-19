@@ -48,7 +48,11 @@ class Parallel(ConstitutiveLaw):
             eps_u (float or (float, float)): Ultimate strain.
                 If a single value is provided the same is adopted for both
                 negative and positive strains. If a tuple is provided, it
-                should be given as (negative, positive). Default value = None.
+                should be given as (negative, positive). When provided value to
+                eps_u, it will override the ultimate strains from the wrapped
+                constitutive_laws. When `None`, the ultimate strains will be
+                those coming from the wrapped constitutive laws.
+                Default value = None.
         """
         super().__init__(name=name, base_name='ParallelLaw')
         for idx, law in enumerate(constitutive_laws):
@@ -260,6 +264,12 @@ class Parallel(ConstitutiveLaw):
                 single value is provided the same is adopted for both negative
                 and positive strains. If a tuple is provided, it should be
                 given as (negative, positive).
+            eps_u (float or (float, float)): Ultimate strain.
+                If a single value is provided the same is adopted for both
+                negative and positive strains. If a tuple is provided, it
+                should be given as (negative, positive). The passed values will
+                override the ultimate strains from the wrapped
+                constitutive_laws.
         """
         if isinstance(eps_u, float):
             self._ultimate_strain_p = abs(eps_u)
