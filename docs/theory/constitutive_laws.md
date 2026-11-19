@@ -35,7 +35,7 @@ The laws below implement the common uniaxial interface, which can also be used t
 (theory-constitutive-elastic)=
 ## Linear elastic
 
-The `Elastic` law has a constant elastic modulus $E$ in tension and compression.
+The {class}`Elastic <structuralcodes.materials.constitutive_laws.Elastic>` law has a constant elastic modulus $E$ in tension and compression.
 
 :::{math}
 :label: eq:constitutive-elastic
@@ -74,7 +74,7 @@ Linear elastic response in compression and tension with $E=200\,\mathrm{GPa}$.
 (theory-constitutive-elastic-plastic)=
 ## Elastic-plastic
 
-The `ElasticPlastic` law is symmetric in tension and compression. The initial slope is the elastic modulus $E$. Yielding starts at the strain magnitude $\varepsilon_y=f_y/E$, where $f_y$ is the yield strength. The post-yield slope is the hardening modulus $E_h$. In the stress function below, $\varepsilon_u$ is the specified ultimate strain magnitude, or $\infty$ if `eps_su` is omitted.
+The {class}`ElasticPlastic <structuralcodes.materials.constitutive_laws.ElasticPlastic>` law is symmetric in tension and compression. The initial slope is the elastic modulus $E$. Yielding starts at the strain magnitude $\varepsilon_y=f_y/E$, where $f_y$ is the yield strength. The post-yield slope is the hardening modulus $E_h$. In the stress function below, $\varepsilon_u$ is the specified ultimate strain magnitude, or $\infty$ if `eps_su` is omitted.
 
 :::{math}
 :label: eq:constitutive-elastic-plastic
@@ -115,7 +115,7 @@ Elastic-plastic response with $E=200\,\mathrm{GPa}$, $f_y=450\,\mathrm{MPa}$, an
 (theory-constitutive-bilinear-compression)=
 ## Bilinear compression
 
-The `BilinearCompression` law is elastic-perfectly plastic in compression. With the signed compressive strength $f_c<0$, the strain at the start of the plateau $\varepsilon_c<0$, and the ultimate strain $\varepsilon_{cu}\le\varepsilon_c$, the elastic modulus is $E_c=f_c/\varepsilon_c$.
+The {class}`BilinearCompression <structuralcodes.materials.constitutive_laws.BilinearCompression>` law is elastic-perfectly plastic in compression. With the signed compressive strength $f_c<0$, the strain at the start of the plateau $\varepsilon_c<0$, and the ultimate strain $\varepsilon_{cu}\le\varepsilon_c$, the elastic modulus is $E_c=f_c/\varepsilon_c$.
 
 :::{math}
 :label: eq:constitutive-bilinear-compression
@@ -154,7 +154,7 @@ Bilinear compression with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_c=-0.0018$, and 
 (theory-constitutive-parabola-rectangle)=
 ## Parabola-rectangle
 
-The `ParabolaRectangle` law uses a power function from zero strain to the peak strain $\varepsilon_0<0$, followed by a plateau at the signed compressive strength $f_c<0$ down to the ultimate strain $\varepsilon_u\le\varepsilon_0$. The exponent $n$ defaults to $2$, which gives a parabola.
+The {class}`ParabolaRectangle <structuralcodes.materials.constitutive_laws.ParabolaRectangle>` law uses a power function from zero strain to the peak strain $\varepsilon_0<0$, followed by a plateau at the signed compressive strength $f_c<0$ down to the ultimate strain $\varepsilon_u\le\varepsilon_0$. The exponent $n$ defaults to $2$, which gives a parabola.
 
 :::{math}
 :label: eq:constitutive-parabola-rectangle
@@ -203,7 +203,7 @@ Parabola-rectangle response with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_0=-0.002$
 (theory-constitutive-sargin)=
 ## Sargin
 
-The `Sargin` law uses a rational function for the ascending and descending branches of the concrete compression curve.[^sargin-1971] Let $f_c<0$ be the signed compressive strength, $\varepsilon_{c1}<0$ the strain at peak stress, $\varepsilon_{cu1}\le\varepsilon_{c1}$ the ultimate strain, and $k$ the parameter controlling the shape of the curve. With $\eta=\varepsilon/\varepsilon_{c1}$, the stress and tangent below apply over $\varepsilon_{cu1} \le \varepsilon \le 0$.
+The {class}`Sargin <structuralcodes.materials.constitutive_laws.Sargin>` law uses a rational function for the ascending and descending branches of the concrete compression curve.[^sargin-1971] Let $f_c<0$ be the signed compressive strength, $\varepsilon_{c1}<0$ the strain at peak stress, $\varepsilon_{cu1}\le\varepsilon_{c1}$ the ultimate strain, and $k$ the parameter controlling the shape of the curve. With $\eta=\varepsilon/\varepsilon_{c1}$, the stress and tangent below apply over $\varepsilon_{cu1} \le \varepsilon \le 0$.
 
 :::{math}
 :label: eq:constitutive-sargin
@@ -245,7 +245,7 @@ Sargin compression curve with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_{c1}=-0.0023
 (theory-constitutive-popovics)=
 ## Popovics
 
-The `Popovics` law describes the concrete compression curve in terms of the signed compressive strength $f_c<0$, the peak strain $\varepsilon_c<0$, and the initial modulus $E_c$.[^popovics-1973] The secant modulus at the peak, $E_{\mathrm{p}}=f_c/\varepsilon_c$, defines the shape parameter $n$.
+The {class}`Popovics <structuralcodes.materials.constitutive_laws.Popovics>` law describes the concrete compression curve in terms of the signed compressive strength $f_c<0$, the peak strain $\varepsilon_c<0$, and the initial modulus $E_c$.[^popovics-1973] The secant modulus at the peak, $E_{\mathrm{p}}=f_c/\varepsilon_c$, defines the shape parameter $n$.
 
 :::{math}
 :label: eq:constitutive-popovics-parameters
@@ -296,7 +296,7 @@ Popovics compression curve with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_c=-0.002$,
 (theory-constitutive-user-defined)=
 ## User defined
 
-The `UserDefined` law interpolates a series of stress–strain points $(\varepsilon_i,\sigma_i)$ ordered by increasing strain. For a curve supplied from the origin into tension, the implementation reflects those points through the origin to construct the compression branch.
+The {class}`UserDefined <structuralcodes.materials.constitutive_laws.UserDefined>` law interpolates a series of stress–strain points $(\varepsilon_i,\sigma_i)$ ordered by increasing strain. For a curve supplied from the origin into tension, the implementation reflects those points through the origin to construct the compression branch.
 
 :::{math}
 :label: eq:constitutive-user-defined
@@ -347,7 +347,7 @@ Hardening in compression and tension with strain–stress points $(-0.004,-36)$,
 (theory-constitutive-initial-strain)=
 ## Initial strain
 
-The `InitialStrain` law wraps an existing law and assigns an initial strain $\varepsilon_{\mathrm{init}}$. When strain compatibility is enforced, the wrapped law is evaluated at the sum of the imposed strain and the initial strain.
+The {class}`InitialStrain <structuralcodes.materials.constitutive_laws.InitialStrain>` law wraps an existing law and assigns an initial strain $\varepsilon_{\mathrm{init}}$. When strain compatibility is enforced, the wrapped law is evaluated at the sum of the imposed strain and the initial strain.
 
 :::{math}
 :label: eq:constitutive-initial-strain
@@ -388,7 +388,7 @@ Linear elastic law with $E=200\,\mathrm{GPa}$ and initial strain $\varepsilon_{\
 (theory-constitutive-elastic-fragile-tension)=
 ## Elastic-fragile tension
 
-The `ElasticFragileTension` law represents the tensile response of concrete up to cracking. The tensile strength $f_{ct}$ and the elastic modulus $E_c$ define the cracking strain $\varepsilon_{ct}=f_{ct}/E_c$.
+The {class}`ElasticFragileTension <structuralcodes.materials.constitutive_laws.ElasticFragileTension>` law represents the tensile response of concrete up to cracking. The tensile strength $f_{ct}$ and the elastic modulus $E_c$ define the cracking strain $\varepsilon_{ct}=f_{ct}/E_c$.
 
 :::{math}
 :label: eq:constitutive-elastic-fragile-tension
@@ -435,6 +435,8 @@ Elastic response in tension with $E_c=30\,\mathrm{GPa}$ and $f_{ct}=3\,\mathrm{M
 (theory-constitutive-parallel)=
 ## Parallel
 
+### General concepts
+
 Two springs attached to the same rigid bar undergo the same displacement $u$. Each spring develops a force proportional to its own stiffness, and the applied force $F$ is the sum of the two spring forces.
 
 (figure-theory-law-parallel-springs)=
@@ -465,7 +467,7 @@ F = F_1 + F_2 = K_1 u + K_2 u = (K_1+K_2)u,
 \qquad K_{\mathrm{eq}} = K_1+K_2.
 :::
 
-The `Parallel` law applies the same principle to uniaxial constitutive laws. It evaluates each component at the same strain $\varepsilon$ and adds the stress and tangent contributions with weights $w_i$.
+The {class}`Parallel <structuralcodes.materials.constitutive_laws.Parallel>` law applies the same principle to uniaxial constitutive laws. It evaluates each component at the same strain $\varepsilon$ and adds the stress and tangent contributions with weights $w_i$.
 
 :::{math}
 :label: eq:constitutive-parallel
@@ -516,6 +518,32 @@ Two elastic-plastic materials in parallel with weights $(w_1,w_2)=(0.50,0.50)$ a
 ::::
 :::::
 
+### Separate tension and compression branches
+
+A specific application of parallel material is to combine a compression law for concrete (e.g. [ParabolaRectangle](theory-constitutive-parabola-rectangle)) with a tensile law for concrete (e.g. [ElasticFragileTension](theory-constitutive-elastic-fragile-tension)). With unit weights, each component supplies the stress on its own side of the origin, giving a single curve with distinct tension and compression branches.
+
+(figure-theory-law-parallel)=
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_law_parallel_light.png
+:align: center
+:alt: Parabola-rectangle compression and elastic-fragile tension acting in parallel. The inset enlarges the tensile branch.
+:class: only-light
+:::
+
+:::{image} Figure_law_parallel_dark.png
+:align: center
+:alt: Parabola-rectangle compression and elastic-fragile tension acting in parallel. The inset enlarges the tensile branch.
+:class: only-dark
+:::
+
+Parabola-rectangle compression with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_0=-0.002$, $\varepsilon_u=-0.0035$, and $n=2$, combined with elastic-fragile tension with $E_c=30\,\mathrm{GPa}$ and $f_{ct}=3\,\mathrm{MPa}$. Both weights are $1$. The inset enlarges the tensile branch.
+
+::::
+:::::
+
 ### Longitudinal stiffness of a fiber-reinforced polymer
 
 Consider continuous, aligned fibers bonded to a polymer matrix and loaded along the fiber direction. In the equal-strain model, each phase is represented by a [linear elastic law](theory-constitutive-elastic). For fibers and matrix extending over the same length, their volume fractions equal their area fractions. Using these fractions as weights gives the longitudinal rule of mixtures.[^parallel-rule-of-mixtures]
@@ -558,32 +586,6 @@ For illustrative moduli $E_f=230\,\mathrm{GPa}$ and $E_m=3\,\mathrm{GPa}$, the s
 :::
 
 Longitudinal stress–strain curves for the fiber with $E_f=230\,\mathrm{GPa}$, the matrix with $E_m=3\,\mathrm{GPa}$, and the two composites. Weights $(w_f,w_m)=(0.40,0.60)$ and $(0.50,0.50)$ give $E_L=93.8\,\mathrm{GPa}$ and $116.5\,\mathrm{GPa}$, respectively.
-
-::::
-:::::
-
-### Separate tension and compression branches
-
-A specific application of parallel material is to combine a concrete compression law with [elastic-fragile tension](theory-constitutive-elastic-fragile-tension). With unit weights, each component supplies the stress on its own side of the origin, giving a single curve with distinct tension and compression branches.
-
-(figure-theory-law-parallel)=
-:::::{grid}
-::::{grid-item}
-:class: caption-text, sd-text-center
-
-:::{image} Figure_law_parallel_light.png
-:align: center
-:alt: Parabola-rectangle compression and elastic-fragile tension acting in parallel. The inset enlarges the tensile branch.
-:class: only-light
-:::
-
-:::{image} Figure_law_parallel_dark.png
-:align: center
-:alt: Parabola-rectangle compression and elastic-fragile tension acting in parallel. The inset enlarges the tensile branch.
-:class: only-dark
-:::
-
-Parabola-rectangle compression with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_0=-0.002$, $\varepsilon_u=-0.0035$, and $n=2$, combined with elastic-fragile tension with $E_c=30\,\mathrm{GPa}$ and $f_{ct}=3\,\mathrm{MPa}$. Both weights are $1$. The inset enlarges the tensile branch.
 
 ::::
 :::::
