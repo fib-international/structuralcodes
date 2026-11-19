@@ -1067,6 +1067,74 @@ def test_parallel_get_ultimate_strain(E1, fy1, eps_su1, E2, fy2, eps_su2):
     assert math.isclose(ult_strain[1], expected_ult_strain)
 
 
+@pytest.mark.parametrize(
+    'E1, fy1, eps_su1, E2, fy2, eps_su2, eps_u_n, eps_u_p',
+    [
+        (200000, 450, 0.06, 150000, 800, 0.01, -0.001, 0.0015),
+        (10000, 10, 0.01, 20000, 20, 0.03, -0.005, 0.008),
+        (10000, 10, 0.01, 20000, 20, 0.03, 0.008, -0.005),  # Switch them
+        (10000, 10, 0.01, 20000, 20, 0.03, 0.008, None),  # Provide just one
+        (10000, 10, 0.01, 20000, 20, 0.03, -0.005, None),  # Provide just one
+    ],
+)
+def test_parallel_set_ultimate_strain(
+    E1, fy1, eps_su1, E2, fy2, eps_su2, eps_u_n, eps_u_p
+):
+    """Test set ultimate strain for parallel constitutive law."""
+    mat1 = ElasticPlastic(E=E1, fy=fy1, Eh=0, eps_su=eps_su1)
+    mat2 = ElasticPlastic(E=E2, fy=fy2, Eh=0, eps_su=eps_su2)
+
+    matP = Parallel([mat1, mat2])
+    assert matP._ultimate_strain_n is None
+    assert matP._ultimate_strain_p is None
+
+    if eps_u_p is None:
+        matP = Parallel([mat1, mat2], eps_u=eps_u_n)
+    else:
+        matP = Parallel([mat1, mat2], eps_u=(eps_u_n, eps_u_p))
+    assert matP._ultimate_strain_n is not None
+    assert matP._ultimate_strain_p is not None
+
+    ult_strain = matP.get_ultimate_strain()
+
+    if eps_u_p is None:
+        assert math.isclose(ult_strain[0], -abs(eps_u_n))
+        assert math.isclose(ult_strain[1], abs(eps_u_n))
+    elif eps_u_p < eps_u_n:
+        assert math.isclose(ult_strain[0], eps_u_p)
+        assert math.isclose(ult_strain[1], eps_u_n)
+    else:
+        assert math.isclose(ult_strain[0], eps_u_n)
+        assert math.isclose(ult_strain[1], eps_u_p)
+
+
+@pytest.mark.parametrize(
+    'eps_u_n, eps_u_p',
+    [
+        (-0.005, -0.005),  # Wrong because eps_u_p is negative
+        (0.005, 0.005),  # Wrong because eps_u_n is postive
+    ],
+)
+def test_parallel_set_ultimate_strain_wrong(eps_u_n, eps_u_p):
+    """Test set ultimate strain for parallel constitutive law."""
+    mat1 = Elastic(200000)
+    mat2 = Elastic(100000)
+
+    # If we pass wrong values for eps_u
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=(eps_u_n, eps_u_p))
+
+    # Wrong: three values passed in a list
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=[eps_u_n, eps_u_p, eps_u_p])
+    # Wrong: three values passed in a tuple
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=(eps_u_n, eps_u_p, eps_u_p))
+    # Wrong: tuple with one value
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=(eps_u_n,))
+
+
 def test_name_bilinear_compression():
     """Test the name property of a bilinear compression law."""
     # Create a law with a given name
