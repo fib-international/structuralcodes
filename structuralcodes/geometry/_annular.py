@@ -15,8 +15,8 @@ from ._circular import _create_circle
 from ._geometry import SurfaceGeometry
 
 
-class AnularGeometry(SurfaceGeometry):
-    """This is a wrapper class for defining a `SurfaceGeometry` of anular
+class AnnularGeometry(SurfaceGeometry):
+    """This is a wrapper class for defining a `SurfaceGeometry` of annular
     shape with a homogeneous material.
     """
 
@@ -34,7 +34,7 @@ class AnularGeometry(SurfaceGeometry):
         name: t.Optional[str] = None,
         group_label: t.Optional[str] = None,
     ) -> None:
-        """Initialize a CircularGeometry.
+        """Initialize a AnnularGeometry.
 
         Arguments:
             outer_diameter (float): The external diameter of the geometry.
@@ -50,7 +50,7 @@ class AnularGeometry(SurfaceGeometry):
             group_label (Optional(str)): A label for grouping several objects.
 
         Note:
-            The AnularGeometry is simply a wrapper for a SurfaceGeometry
+            The AnnularGeometry is simply a wrapper for a SurfaceGeometry
             object.
         """
         # Check that size is strictly positive
@@ -88,25 +88,25 @@ class AnularGeometry(SurfaceGeometry):
 
     @property
     def outer_radius(self):
-        """Returns the outer radius of the anular geometry."""
+        """Returns the outer radius of the annular geometry."""
         return self._outer_radius
 
     @property
     def outer_diameter(self):
-        """Return outer diameter of the anular geometry."""
+        """Return outer diameter of the annular geometry."""
         return 2 * self._outer_radius
 
     @property
     def inner_radius(self):
-        """Returns the inner radius of the anular geometry."""
+        """Returns the inner radius of the annular geometry."""
         return self._inner_radius
 
     @property
     def inner_diameter(self):
-        """Return inner diameter of the anular geometry."""
+        """Return inner diameter of the annular geometry."""
         return 2 * self._inner_radius
 
     @property
     def thickness(self):
-        """Return the thickness of the anular geometry."""
+        """Return the thickness of the annular geometry."""
         return self._outer_radius - self._inner_radius
