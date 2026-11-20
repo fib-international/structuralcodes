@@ -790,10 +790,16 @@ class BeamSectionCalculator(SectionCalculator):
         return eps_0_c, curv, 0
 
     def calculate_limit_axial_load(self):
-        """Compute maximum and minimum axial load.
+        """Compute axial force limits for uniform section strain.
+
+        The method takes the compressive and tensile strain limits from the
+        balanced failure profile. It applies each strain uniformly across the
+        section with both curvatures set to zero and integrates the resulting
+        stresses to obtain the axial force. Materials can develop different
+        stresses under the same strain.
 
         Returns:
-            Tuple(float, float): Minimum and Maximum axial load.
+            tuple[float, float]: Axial force limits ``(n_min, n_max)``.
         """
         # Find balanced failure to get strain limits
         y_n, y_p, strain = self.get_balanced_failure_strain(
