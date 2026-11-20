@@ -481,7 +481,30 @@ E_{\mathrm{t}}(\varepsilon) = \sum_{i=1}^{N} w_i E_{\mathrm{t},i}(\varepsilon).
 
 The weights default to $1$, which gives a direct sum of the component stresses and tangents. The implementation uses supplied weights as given. For a composite of perfectly bonded components with cross-sectional areas $A_i$, the total axial force is $\sum_i A_i \sigma_i$. To express that force as stress referred to an area $A_{\mathrm{ref}}$, set $w_i=A_i/A_{\mathrm{ref}}$. The weights sum to $1$ when the reference area is the sum of the component areas.
 
-The combined law reports the smallest lower ultimate strain and the largest upper ultimate strain among its components.
+(attention-ultimate-strain-parallel)=
+::::::{Attention}
+Note that in the current implementation the ultimate strains of the parallel material are defined as the smallest lower ultimate strain and the largest upper ultimate strain among its components.
+
+(figure-theory-law-parallel-ultimate-strain)=
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_law_parallel_ultimate_strain_light.png
+:align: center
+:alt: Two tensile elastic-plastic curves and their equally weighted parallel curve, which drops at the first material's ultimate strain and reaches zero beyond the second.
+:class: only-light
+:::
+
+:::{image} Figure_law_parallel_ultimate_strain_dark.png
+:align: center
+:alt: Two tensile elastic-plastic curves and their equally weighted parallel curve, which drops at the first material's ultimate strain and reaches zero beyond the second.
+:class: only-dark
+:::
+
+The individual material curves are shown up to their respective ultimate strain.
+
+::::::
 
 ### Two elastic-plastic materials
 
@@ -543,6 +566,21 @@ Parabola-rectangle compression with $f_c=-30\,\mathrm{MPa}$, $\varepsilon_0=-0.0
 
 ::::
 :::::
+
+:::{note}
+As noted [here](attention-ultimate-strain-parallel), the ultimate strain for a parallel material is defined as the highest ultimate strain of the individual wrapped materials. For this reason, if assessing a plain concrete section, the {class}`Parallel <structuralcodes.materials.constitutive_laws.Parallel>` constitutive law should be defined providing as positive ultimate strain the value of $\varepsilon_{ct}$ as shown in the following code snippet:
+
+```python
+compr_law = ParabolaRectangle(-fc)  # concrete in compression
+tens_law = ElasticFragileTension(ft, E_pr)  # concrete in tension
+const_law = Parallel(
+    [compr_law, tens_law],
+    eps_u=(compr_law.get_ultimate_strain()[0], tens_law.get_ultimate_strain()[1]),
+)
+print(f"Ultimate strain: {const_law.get_ultimate_strain()}")
+```
+
+:::
 
 ### Longitudinal stiffness of a fiber-reinforced polymer
 
