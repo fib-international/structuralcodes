@@ -289,6 +289,49 @@ Animation of ultimate strain profiles for uniaxial bending and corresponding int
 
 4. **Rotate back to original $yz$ coordinate system**: the pair of values $(N, M_y^*)$ is rotated back obtaining the triplet $(N, M_y, M_z)$
 
+::::{note}
+**Axial force limits and load eccentricity**
+
+{func}`calculate_limit_axial_load <structuralcodes.sections.BeamSectionCalculator.calculate_limit_axial_load>`
+computes $N_{\min}$ and $N_{\max}$ by integrating the stresses for two uniform
+strain states with zero curvature about both section axes. Rotating or
+translating the reference system leaves these strains and the resulting axial
+forces unchanged. The moments are evaluated about the chosen load origin and
+therefore change when the origin is translated.
+
+The figure compares the same reinforced concrete section with the origin at
+the centroid and with the origin 500 mm below it. An axial force acting through
+the offset origin follows $M_y=0$ in the offset reference system. In the
+centred reference system, the same force follows $M_y=Ne$, where
+$e=-500\,\mathrm{mm}$ is the signed distance along $z$ from the centroid to the
+line of action. The green dots mark the intersections with the interaction
+boundaries. Each vertically aligned pair gives the same axial capacity in
+both reference systems, labelled $N_{\mathrm{min}}(e)$ and
+$N_{\mathrm{max}}(e)$. Both capacities lie between the uniform-strain
+limits $N_{\min}$ and $N_{\max}$.
+
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} Figure_axial_load_limits_light.png
+:align: center
+:class: only-light
+:alt: Centred and offset N–M domains with common axial limits and labelled axial capacities.
+:::
+
+:::{image} Figure_axial_load_limits_dark.png
+:align: center
+:class: only-dark
+:alt: Centred and offset N–M domains with common axial limits and labelled axial capacities.
+:::
+
+Centred and offset N–M domains with common axial limits and labelled axial capacities.
+
+::::
+:::::
+
+
 (theory-nmm-domain)=
 ## Compute NMM interaction domain
 
