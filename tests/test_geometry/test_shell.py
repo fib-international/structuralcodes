@@ -9,9 +9,8 @@ from structuralcodes.geometry import (
     ShellReinforcement,
 )
 from structuralcodes.materials.basic import GenericMaterial
-from structuralcodes.materials.constitutive_laws import (
-    Elastic2D,
-)
+from structuralcodes.materials.concrete import ConcreteEC2_2004
+from structuralcodes.materials.constitutive_laws import Elastic, Elastic2D
 from structuralcodes.materials.reinforcement import ReinforcementEC2_2004
 
 
@@ -48,7 +47,7 @@ def test_shell_reinforcement():
     cc_bars = 500
     d = 16
     material = GenericMaterial(
-        density=7850, constitutive_law=Elastic2D(E=200000, nu=0.3)
+        density=7850, constitutive_law=Elastic(E=200000)
     )
     phi = np.pi / 4
     shell_reinforcement = ShellReinforcement(
@@ -180,3 +179,40 @@ def test_repr_svg():
     # Get the SVG representation
     svg = shell._repr_svg_()
     assert '<svg' in svg
+
+
+def test_invalid_constitutive_law_for_shell_reinforcement():
+    """Test providing a material with a 2D constitutive law."""
+    # Create material
+    fyk = 500
+    Es = 200e3
+    ftk = fyk
+    epsuk = 6e-2
+    material = ReinforcementEC2_2004(
+        fyk=500,
+        Es=200000,
+        ftk=ftk,
+        epsuk=epsuk,
+        constitutive_law=Elastic2D(E=Es, nu=0.3),
+    )
+
+    # Create shell reinforcement
+    with pytest.raises(TypeError):
+        ShellReinforcement(
+            z=0,
+            n_bars=1,
+            cc_bars=200,
+            diameter_bar=25,
+            material=material,
+            phi=0,
+        )
+
+
+def test_invalid_constitutive_law_for_shell_geometry():
+    """Test providing a material with a 1D constitutive law."""
+    # Create material
+    material = ConcreteEC2_2004(fck=45, constitutive_law='parabolarectangle')
+
+    # Create shell geometry
+    with pytest.raises(TypeError):
+        ShellGeometry(thickness=450, material=material)

@@ -23,7 +23,7 @@ from shapely.ops import split
 from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import Concrete
 
-from ..core.base import Geometry, Material, _GroupMixin
+from ..core.base import ConstitutiveLaw1D, Geometry, Material, _GroupMixin
 
 
 def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
@@ -109,6 +109,11 @@ class PointGeometry(_GroupMixin, Geometry):
             raise TypeError(
                 f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(material)}'
+            )
+        if not isinstance(material.constitutive_law, ConstitutiveLaw1D):
+            raise TypeError(
+                'The constitutive law of the material should be a valid '
+                f'ConstitutiveLaw1D object. {repr(material.constitutive_law)}'
             )
         self._material = material
         self._point = point
@@ -356,6 +361,11 @@ class SurfaceGeometry(_GroupMixin, Geometry):
             raise TypeError(
                 f'mat should be a valid structuralcodes.base.Material object. \
                 {repr(material)}'
+            )
+        if not isinstance(material.constitutive_law, ConstitutiveLaw1D):
+            raise TypeError(
+                'The constitutive law of the material should be a valid '
+                f'ConstitutiveLaw1D object. {repr(material.constitutive_law)}'
             )
         self._polygon = poly
         self._material = material

@@ -7,10 +7,10 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ...core.base import ConstitutiveLaw
+from ...core.base import ConstitutiveLaw1D
 
 
-class ElasticPlastic(ConstitutiveLaw):
+class ElasticPlastic(ConstitutiveLaw1D):
     """Class for elastic-plastic Constitutive Law."""
 
     __materials__: t.Tuple[str] = (

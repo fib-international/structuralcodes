@@ -7,10 +7,10 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ...core.base import ConstitutiveLaw
+from ...core.base import ConstitutiveLaw1D
 
 
-class ElasticFragileTension(ConstitutiveLaw):
+class ElasticFragileTension(ConstitutiveLaw1D):
     """Class for an elastic-fragile constitutive law for concrete in tension
     (only tension behavior).
 

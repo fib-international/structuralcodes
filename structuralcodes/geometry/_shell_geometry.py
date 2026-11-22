@@ -5,7 +5,12 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ..core.base import Material, _GroupMixin
+from ..core.base import (
+    ConstitutiveLaw1D,
+    ConstitutiveLaw2D,
+    Material,
+    _GroupMixin,
+)
 from ._geometry import Geometry
 
 
@@ -43,6 +48,11 @@ class ShellReinforcement(_GroupMixin, Geometry):
             raise TypeError(
                 'Material should be a valid structuralcodes.base.Material'
                 f' object. {repr(material)}'
+            )
+        if not isinstance(material.constitutive_law, ConstitutiveLaw1D):
+            raise TypeError(
+                'The constitutive law of the material should be a valid '
+                f'ConstitutiveLaw1D object. {repr(material.constitutive_law)}'
             )
         self._z = z
         self._n_bars = n_bars
@@ -170,6 +180,11 @@ class ShellGeometry(_GroupMixin, Geometry):
             raise TypeError(
                 'Material should be a valid structuralcodes.base.Material'
                 f' object. {repr(material)}'
+            )
+        if not isinstance(material.constitutive_law, ConstitutiveLaw2D):
+            raise TypeError(
+                'The constitutive law of the material should be a valid '
+                f'ConstitutiveLaw2D object. {repr(material.constitutive_law)}'
             )
 
         self._thickness = thickness

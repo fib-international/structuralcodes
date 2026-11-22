@@ -7,10 +7,10 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ...core.base import ConstitutiveLaw
+from ...core.base import ConstitutiveLaw1D
 
 
-class Parallel(ConstitutiveLaw):
+class Parallel(ConstitutiveLaw1D):
     """Class for a Parallel Constitutive Law."""
 
     __materials__: t.Tuple[str] = (
@@ -19,14 +19,14 @@ class Parallel(ConstitutiveLaw):
         'concrete',
     )
 
-    _wrapped_law: ConstitutiveLaw = None
+    _wrapped_law: ConstitutiveLaw1D = None
 
     _ultimate_strain_n: float = None
     _ultimate_strain_p: float = None
 
     def __init__(
         self,
-        constitutive_laws: t.List[ConstitutiveLaw],
+        constitutive_laws: t.List[ConstitutiveLaw1D],
         weights: t.Optional[t.List[float]] = None,
         name: t.Optional[str] = None,
         eps_u: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
@@ -38,7 +38,7 @@ class Parallel(ConstitutiveLaw):
         The strains are equal while stresses and stiffnesses are additive.
 
         Arguments:
-            constitutive_laws (List[ConstitutiveLaw]): List of wrapped
+            constitutive_laws (List[ConstitutiveLaw1D]): List of wrapped
                 constitutive laws that are working in parallel.
 
         Keyword Arguments:
@@ -56,10 +56,10 @@ class Parallel(ConstitutiveLaw):
         """
         super().__init__(name=name, base_name='ParallelLaw')
         for idx, law in enumerate(constitutive_laws):
-            if not isinstance(law, ConstitutiveLaw):
+            if not isinstance(law, ConstitutiveLaw1D):
                 raise TypeError(
                     f'Element at index {idx} is of type {type(law)}, expected',
-                    ' ConstitutiveLaw',
+                    ' ConstitutiveLaw1D',
                 )
         self._wrapped_laws = constitutive_laws
 
@@ -83,7 +83,7 @@ class Parallel(ConstitutiveLaw):
         return self._weights
 
     @property
-    def wrapped_laws(self) -> t.List[ConstitutiveLaw]:
+    def wrapped_laws(self) -> t.List[ConstitutiveLaw1D]:
         """Return the wrapped constitutive laws."""
         return self._wrapped_laws
 

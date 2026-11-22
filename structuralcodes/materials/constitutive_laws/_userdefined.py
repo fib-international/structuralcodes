@@ -7,10 +7,10 @@ import typing as t
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ...core.base import ConstitutiveLaw
+from ...core.base import ConstitutiveLaw1D
 
 
-class UserDefined(ConstitutiveLaw):
+class UserDefined(ConstitutiveLaw1D):
     """Class for a user defined constitutive law.
 
     The curve is defined with positive and optionally negative values. After
