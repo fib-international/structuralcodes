@@ -1963,6 +1963,83 @@ def test_section_moment_curvature_warning(b, h, n_bars, diameter, fck, fyk):
     )
 
 
+@pytest.mark.filterwarnings('ignore:Fictitious warning:RuntimeWarning')
+@pytest.mark.parametrize(
+    'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
+)
+def test_section_moment_curvature_warning_after_other_warnings(
+    b, h, n_bars, diameter, fck, fyk, monkeypatch
+):
+    """Test that the moment-curvature stops at the first step without
+    convergence also when other warnings are recorded before.
+
+    A constitutive law may raise a RuntimeWarning during the integration
+    (as Popovics did for tensile strains before #393). If only the first
+    recorded warning is checked, the NoConvergenceWarning is ignored and
+    the analysis continues returning strain profiles that are not in
+    equilibrium.
+    """
+    # Create materials to use
+    concrete = ConcreteMC2010(fck)
+    steel = ReinforcementMC2010(fyk=fyk, Es=210000, ftk=fyk, epsuk=0.0675)
+
+    # Create the section
+    geo = RectangularGeometry(width=b, height=h, material=concrete)
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, -h / 2 + 40),
+        coords_j=(b / 2 - 40, -h / 2 + 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    geo = add_reinforcement_line(
+        geo,
+        coords_i=(-b / 2 + 40, h / 2 - 40),
+        coords_j=(b / 2 - 40, h / 2 - 40),
+        diameter=diameter,
+        material=steel,
+        n=n_bars,
+    )
+    section = BeamSection(geo)
+    n_u = section.section_calculator.calculate_limit_axial_load()[0]
+    res_good = section.section_calculator.calculate_moment_curvature(
+        n=n_u * 0.5
+    )
+    chi = res_good.chi_y.copy()
+
+    # Every integration raises a fictitious RuntimeWarning, as done for
+    # instance by the Popovics law for tensile strains
+    integrator = section.section_calculator.integrator
+    integrate = integrator.integrate_strain_response_on_geometry
+
+    def integrate_with_warning(*args, **kwargs):
+        warnings.warn('Fictitious warning of a law', RuntimeWarning)
+        return integrate(*args, **kwargs)
+
+    monkeypatch.setattr(
+        integrator,
+        'integrate_strain_response_on_geometry',
+        integrate_with_warning,
+    )
+
+    # Lack of convergence forced with max_iter=1 (see
+    # test_section_moment_curvature_warning)
+    with pytest.warns(NoConvergenceWarning):
+        res = section.section_calculator.calculate_moment_curvature(
+            n=n_u * 0.5, max_iter=1, chi=chi
+        )
+
+    # The analysis must be stopped at the first step without convergence
+    assert len(res.chi_y) < len(res_good.chi_y)
+    assert np.allclose(
+        res.chi_y,
+        res_good.chi_y[: len(res.chi_y)],
+        rtol=1e-5,
+        atol=1e-8,
+    )
+
+
 @pytest.mark.parametrize(
     'b, h, n_bars, diameter, fck, fyk', [(200, 400, 4, 16, 30, 500)]
 )
