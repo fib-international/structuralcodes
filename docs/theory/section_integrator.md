@@ -6,6 +6,7 @@ In StructuralCodes we have currently two distinct integrators: *fiber integrator
 
 ## General concept
 Section integrators compute properties such as stiffness, stress distribution, or strain compatibility over a section. They operate on the geometry and material definitions to derive these results.
+The stresses or the modulus are obtained starting from strain by defining the [constitutive laws](theory-constitutive-laws).
 
 (theory-fiber-integrator)=
 ## Fiber integrator

@@ -461,7 +461,7 @@ def test_weight_c_raises_errors(concrete_type):
 def test_alpha_c_th():
     """Test alpha_c_th function."""
     assert math.isclose(
-        _section5_materials.alpha_c_th(), 10 * 10e-6, rel_tol=10e-5
+        _section5_materials.alpha_c_th(), 10 * 1e-6, rel_tol=10e-5
     )
 
 
@@ -473,7 +473,7 @@ def test_Es():
 def test_alpha_s_th():
     """Test alpha_s_th function."""
     assert math.isclose(
-        _section5_materials.alpha_s_th(), 10 * 10e-6, rel_tol=10e-5
+        _section5_materials.alpha_s_th(), 10 * 1e-6, rel_tol=10e-5
     )
 
 

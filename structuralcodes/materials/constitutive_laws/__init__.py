@@ -14,6 +14,7 @@ from ._concrete_smeared_cracking import (
 )
 from ._elastic import Elastic
 from ._elastic_2d import Elastic2D
+from ._elasticfragiletension import ElasticFragileTension
 from ._elasticplastic import ElasticPlastic
 from ._initial_strain import InitialStrain
 from ._parabolarectangle import ParabolaRectangle
@@ -27,6 +28,7 @@ __all__ = [
     'Elastic',
     'Elastic2D',
     'ElasticPlastic',
+    'ElasticFragileTension',
     'ParabolaRectangle',
     'BilinearCompression',
     'Popovics',
@@ -55,6 +57,7 @@ CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'popovics': Popovics,
     'sargin': Sargin,
     'initialstrain': InitialStrain,
+    'elasticfragiletension': ElasticFragileTension,
     'whitneyblock': WhitneyBlock,
 }
 

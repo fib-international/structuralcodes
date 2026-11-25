@@ -12,6 +12,7 @@ from structuralcodes.materials.constitutive_laws import (
     ConstantPoissonReduction,
     Elastic,
     Elastic2D,
+    ElasticFragileTension,
     ElasticPlastic,
     GeneralVecchioCollins,
     InitialStrain,
@@ -1032,7 +1033,7 @@ def test_parallel_constitutive_law_weights(E1, E2, w1, w2, eps):
         assert np.allclose(expected_stress, matP.get_stress(eps))
 
 
-def test_paralell_constitutive_law_wrong_args():
+def test_parallel_constitutive_law_wrong_args():
     """Test parallel law with wrong arguments."""
     mat1 = Elastic(200000)
     mat2 = Elastic(100000)
@@ -1064,6 +1065,74 @@ def test_parallel_get_ultimate_strain(E1, fy1, eps_su1, E2, fy2, eps_su2):
     expected_ult_strain = max(eps_su1, eps_su2)
 
     assert math.isclose(ult_strain[1], expected_ult_strain)
+
+
+@pytest.mark.parametrize(
+    'E1, fy1, eps_su1, E2, fy2, eps_su2, eps_u_n, eps_u_p',
+    [
+        (200000, 450, 0.06, 150000, 800, 0.01, -0.001, 0.0015),
+        (10000, 10, 0.01, 20000, 20, 0.03, -0.005, 0.008),
+        (10000, 10, 0.01, 20000, 20, 0.03, 0.008, -0.005),  # Switch them
+        (10000, 10, 0.01, 20000, 20, 0.03, 0.008, None),  # Provide just one
+        (10000, 10, 0.01, 20000, 20, 0.03, -0.005, None),  # Provide just one
+    ],
+)
+def test_parallel_set_ultimate_strain(
+    E1, fy1, eps_su1, E2, fy2, eps_su2, eps_u_n, eps_u_p
+):
+    """Test set ultimate strain for parallel constitutive law."""
+    mat1 = ElasticPlastic(E=E1, fy=fy1, Eh=0, eps_su=eps_su1)
+    mat2 = ElasticPlastic(E=E2, fy=fy2, Eh=0, eps_su=eps_su2)
+
+    matP = Parallel([mat1, mat2])
+    assert matP._ultimate_strain_n is None
+    assert matP._ultimate_strain_p is None
+
+    if eps_u_p is None:
+        matP = Parallel([mat1, mat2], eps_u=eps_u_n)
+    else:
+        matP = Parallel([mat1, mat2], eps_u=(eps_u_n, eps_u_p))
+    assert matP._ultimate_strain_n is not None
+    assert matP._ultimate_strain_p is not None
+
+    ult_strain = matP.get_ultimate_strain()
+
+    if eps_u_p is None:
+        assert math.isclose(ult_strain[0], -abs(eps_u_n))
+        assert math.isclose(ult_strain[1], abs(eps_u_n))
+    elif eps_u_p < eps_u_n:
+        assert math.isclose(ult_strain[0], eps_u_p)
+        assert math.isclose(ult_strain[1], eps_u_n)
+    else:
+        assert math.isclose(ult_strain[0], eps_u_n)
+        assert math.isclose(ult_strain[1], eps_u_p)
+
+
+@pytest.mark.parametrize(
+    'eps_u_n, eps_u_p',
+    [
+        (-0.005, -0.005),  # Wrong because eps_u_p is negative
+        (0.005, 0.005),  # Wrong because eps_u_n is postive
+    ],
+)
+def test_parallel_set_ultimate_strain_wrong(eps_u_n, eps_u_p):
+    """Test set ultimate strain for parallel constitutive law."""
+    mat1 = Elastic(200000)
+    mat2 = Elastic(100000)
+
+    # If we pass wrong values for eps_u
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=(eps_u_n, eps_u_p))
+
+    # Wrong: three values passed in a list
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=[eps_u_n, eps_u_p, eps_u_p])
+    # Wrong: three values passed in a tuple
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=(eps_u_n, eps_u_p, eps_u_p))
+    # Wrong: tuple with one value
+    with pytest.raises(ValueError):
+        Parallel([mat1, mat2], eps_u=(eps_u_n,))
 
 
 def test_name_bilinear_compression():
@@ -1151,6 +1220,21 @@ def test_name_elastic():
     law = Elastic(E=30000)
 
     assert law.name == f'ElasticLaw_{counter}'
+
+
+def test_name_elasticfragiletension():
+    """Test the name property of an elastic-fragile tension law."""
+    # Create a law with a given name
+    given_name = 'A law'
+    law = ElasticFragileTension(fct=2.9, Ec=33000, name=given_name)
+
+    assert law.name == given_name
+
+    # Create a law with a default name
+    counter = ElasticFragileTension._constitutive_law_counter
+    law = ElasticFragileTension(fct=2.9, Ec=33000)
+
+    assert law.name == f'ElasticFragileTensionLaw_{counter}'
 
 
 def test_name_elasticplastic():
@@ -1241,3 +1325,188 @@ def test_name_userdefined():
     )
 
     assert law.name == f'UserDefinedLaw_{counter}'
+
+
+@pytest.mark.parametrize(
+    'fct, Ec',
+    [
+        (1.6, 27000),
+        (2.2, 30000),
+        (2.9, 33000),
+        (3.5, 35000),
+        (4.1, 37000),
+        (5.0, 44000),
+    ],
+)
+def test_elasticfragiletension(fct, Ec):
+    """Test ElasticFragileTension material."""
+    law = ElasticFragileTension(fct=fct, Ec=Ec)
+    eps_ct = fct / Ec
+
+    assert math.isclose(law.fct, fct)
+    assert math.isclose(law.Ec, Ec)
+    assert math.isclose(law.eps_ct, eps_ct)
+
+    # No stress and no stiffness in compression and at zero strain
+    eps = np.linspace(-3.5e-3, 0, 20)
+    assert_allclose(law.get_stress(eps), np.zeros_like(eps))
+    assert_allclose(law.get_tangent(eps), np.zeros_like(eps))
+
+    # Linear elastic until the tensile strength is reached
+    eps = np.linspace(eps_ct / 20, eps_ct, 20)
+    assert_allclose(law.get_stress(eps), Ec * eps)
+    assert_allclose(law.get_tangent(eps), Ec * np.ones_like(eps))
+    assert math.isclose(law.get_stress(eps_ct), fct)
+
+    # No stress and no stiffness after the tensile strength is reached
+    eps = np.linspace(eps_ct * 1.001, 0.01, 20)
+    assert_allclose(law.get_stress(eps), np.zeros_like(eps))
+    assert_allclose(law.get_tangent(eps), np.zeros_like(eps))
+
+    # Scalar and array inputs should give the same values
+    eps = np.array([-1e-3, 0, eps_ct / 2, eps_ct, eps_ct * 1.001, 1e-3])
+    for eps_i, sig_i, tan_i in zip(
+        eps, law.get_stress(eps), law.get_tangent(eps)
+    ):
+        assert math.isclose(law.get_stress(float(eps_i)), sig_i)
+        assert math.isclose(law.get_tangent(float(eps_i)), tan_i)
+
+    # Test getting ultimate strain
+    for yielding in (False, True):
+        eps_min, eps_max = law.get_ultimate_strain(yielding=yielding)
+        assert math.isclose(eps_min, 0)
+        assert math.isclose(eps_max, eps_ct)
+
+
+@pytest.mark.parametrize('fct, Ec', [(0, 33000), (2.9, 0)])
+def test_elasticfragiletension_wrong_args(fct, Ec):
+    """Test that zero strength or zero modulus raises an error."""
+    with pytest.raises(ValueError):
+        ElasticFragileTension(fct=fct, Ec=Ec)
+
+
+@pytest.mark.parametrize(
+    'compression',
+    [
+        ParabolaRectangle(fc=45),
+        BilinearCompression(fc=45, eps_c=1.75e-3, eps_cu=3.5e-3),
+        Sargin(fc=45),
+    ],
+)
+def test_parallel_compression_elasticfragiletension(compression):
+    """Test the combination of a law for concrete in compression and the
+    elastic-fragile tension law in a Parallel law.
+    """
+    fct = 2.7
+    Ec = 36000
+    tension = ElasticFragileTension(fct=fct, Ec=Ec)
+    law = Parallel(constitutive_laws=[compression, tension])
+
+    # The ultimate strains are those of the law in compression
+    for yielding in (False, True):
+        assert law.get_ultimate_strain(
+            yielding=yielding
+        ) == compression.get_ultimate_strain(yielding=yielding)
+
+    # The tangent at zero strain is the one of the law in compression
+    assert math.isclose(law.get_tangent(0.0), compression.get_tangent(0.0))
+
+    # In compression the stress is the one of the law in compression
+    eps = np.linspace(compression.get_ultimate_strain()[0], 0, 20)
+    assert_allclose(law.get_stress(eps), compression.get_stress(eps))
+    assert_allclose(law.get_tangent(eps), compression.get_tangent(eps))
+
+    # In tension the stress is the one of the law in tension
+    eps = np.linspace(fct / Ec / 20, 2 * fct / Ec, 20)
+    assert_allclose(law.get_stress(eps), tension.get_stress(eps))
+    assert_allclose(law.get_tangent(eps), tension.get_tangent(eps))
+    assert math.isclose(law.get_stress(fct / Ec), fct)
+
+
+def _snap_with_isclose(law, eps):
+    """Reference snapping using the original ``np.isclose`` formulation.
+
+    Documents the tolerance that ``preprocess_strains_with_limits`` must
+    reproduce: ``np.isclose`` with ``atol=1e-6`` and the default
+    ``rtol=1e-5``.
+    """
+    eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
+    eps_min, eps_max = law.get_ultimate_strain()
+    if np.isscalar(eps):
+        if np.isclose(eps, eps_max, atol=1e-6):
+            return eps_max
+        if np.isclose(eps, eps_min, atol=1e-6):
+            return eps_min
+        return eps
+    idxs = np.isclose(eps, np.zeros_like(eps) + eps_max, atol=1e-6)
+    eps[idxs] = eps_max
+    idxs = np.isclose(eps, np.zeros_like(eps) + eps_min, atol=1e-6)
+    eps[idxs] = eps_min
+    return eps
+
+
+_PREPROCESS_LAWS = [
+    Elastic(E=30000),
+    ElasticPlastic(E=200000, fy=500, eps_su=0.07),
+    ParabolaRectangle(fc=35),
+    ParabolaRectangle(fc=35, n=2.3),
+    BilinearCompression(fc=35, eps_c=-0.002, eps_cu=-0.0035),
+    Sargin(fc=38),
+    Popovics(fc=35),
+    UserDefined(x=[-0.0035, -0.002, 0.0, 0.001], y=[0.0, -35.0, 0.0, 3.0]),
+    InitialStrain(
+        constitutive_law=ElasticPlastic(E=200000, fy=500, eps_su=0.07),
+        initial_strain=1e-3,
+    ),
+    Parallel(
+        [
+            ElasticPlastic(E=200000, fy=450, eps_su=0.06),
+            ElasticPlastic(E=150000, fy=800, eps_su=0.01),
+        ]
+    ),
+]
+
+
+@pytest.mark.parametrize('law', _PREPROCESS_LAWS)
+def test_preprocess_strains_matches_isclose_tolerance(law):
+    """preprocess_strains_with_limits reproduces the np.isclose tolerance.
+
+    The optimized scalar-threshold implementation must give results that are
+    bit-identical to the documented ``np.isclose(atol=1e-6)`` behaviour for
+    every constitutive law.
+    """
+    eps_min, eps_max = law.get_ultimate_strain()
+    rng = np.random.default_rng(0)
+    eps = np.concatenate(
+        [
+            rng.uniform(eps_min, eps_max, 5000),
+            np.linspace(eps_min - 3e-6, eps_min + 3e-6, 2000),
+            np.linspace(eps_max - 3e-6, eps_max + 3e-6, 2000),
+            np.array([eps_min, eps_max, 0.0]),
+        ]
+    )
+    expected = _snap_with_isclose(law, eps.copy())
+    result = law.preprocess_strains_with_limits(eps.copy())
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize('law', _PREPROCESS_LAWS)
+def test_preprocess_strains_snaps_within_band(law):
+    """Strains within the tolerance band snap to the exact limit and
+    strains outside it are returned unchanged.
+    """
+    eps_min, eps_max = law.get_ultimate_strain()
+    tol_max = 1e-6 + 1e-5 * abs(eps_max)
+    tol_min = 1e-6 + 1e-5 * abs(eps_min)
+
+    # Just inside the band -> snapped to the exact limit.
+    assert law.preprocess_strains_with_limits(eps_max - 0.4 * tol_max) == (
+        eps_max
+    )
+    assert law.preprocess_strains_with_limits(eps_min + 0.4 * tol_min) == (
+        eps_min
+    )
+
+    # Clearly outside the band -> returned unchanged.
+    inside = eps_max - 10 * tol_max
+    assert law.preprocess_strains_with_limits(inside) == inside
