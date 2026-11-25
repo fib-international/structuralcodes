@@ -73,7 +73,12 @@ def calculate_elastic_cracked_properties(
         density = geo.material.density
         if geo.concrete:
             # It is concrete we only give compression behavior
-            elastic_law = UserDefined([-100, 0], [-100 * E, 0])
+            # The concrete has no tensile strength, but the end of the
+            # curve at zero strain is not a failure: set the ultimate
+            # strains explicitly
+            elastic_law = UserDefined(
+                [-100, 0], [-100 * E, 0], eps_u=(-100, 100)
+            )
             elastic_law = GenericMaterial(
                 density=density,
                 constitutive_law=elastic_law,

@@ -1,6 +1,7 @@
 """Tests for the Beam Section."""
 
 import math
+import warnings
 
 import numpy as np
 import pytest
@@ -1940,11 +1941,15 @@ def test_section_moment_curvature_warning(b, h, n_bars, diameter, fck, fyk):
     )
     chi = res_good.chi_y.copy()
 
-    # Compute moment curvature without reaching equilibrium
-    # This is fictitiously tested forcing a low max_iter
+    # Compute moment curvature without reaching equilibrium.
+    # The section itself always admits equilibrium: the lack of convergence
+    # is forced artificially, only to trigger the warning and test that
+    # the analysis is stopped at the last converged step. max_iter=1
+    # is used because no root-finding method (bisection, Brent, ...) can
+    # converge in a single iteration starting from a generic bracket.
     with pytest.warns(NoConvergenceWarning):
         res = section.section_calculator.calculate_moment_curvature(
-            n=n_u * 0.5, max_iter=8, chi=chi
+            n=n_u * 0.5, max_iter=1, chi=chi
         )
 
     # Check that the curvature arrays are the same up to the last
@@ -2452,3 +2457,179 @@ def test_gross_properties_elasticfragiletension():
     assert math.isclose(with_tension.ea, no_tension.ea)
     assert math.isclose(with_tension.e_iyy, no_tension.e_iyy)
     assert math.isclose(with_tension.e_izz, no_tension.e_izz)
+
+
+# (fck, bottom bars (n, diameter), top bars (n, diameter) or None)
+RC_SECTIONS_LAST_POINT = {
+    # reinforcement ruptures before the concrete crushes
+    'single_rupture': (45, (2, 16), None),
+    'double_rupture': (45, (2, 16), (2, 12)),
+    # concrete crushes before the reinforcement ruptures
+    'single_crushing': (30, (3, 20), None),
+    'double_crushing': (30, (3, 20), (2, 16)),
+}
+
+
+def _rc_rectangular_section(fck, bottom, top, integrator):
+    """RC section 250 x 500 (parabola-rectangle law for concrete) with
+    bars at 58 mm from the bottom and, if given, from the top edge.
+    """
+    concrete = ConcreteEC2_2004(fck=fck)
+    reinforcement = ReinforcementEC2_2004(
+        fyk=500, Es=200000, ftk=550, epsuk=0.04
+    )
+    geo = RectangularGeometry(width=250, height=500, material=concrete)
+    for bars, y in ((bottom, -192), (top, 192)):
+        if bars is None:
+            continue
+        n_bars, diameter = bars
+        geo = add_reinforcement_line(
+            geo, (-67, y), (67, y), diameter, reinforcement, n=n_bars
+        )
+    return BeamSection(geo, integrator=integrator)
+
+
+@pytest.mark.parametrize('integrator', ['fiber', 'marin'])
+@pytest.mark.parametrize('section_type', list(RC_SECTIONS_LAST_POINT))
+@pytest.mark.parametrize('theta', [0, np.pi])
+@pytest.mark.parametrize(
+    'n_ref, factor',
+    [
+        ('n_min', 0.0),
+        ('n_min', 0.2),
+        ('n_min', 0.5),
+        ('n_min', 0.8),
+        ('n_max', 0.2),
+    ],
+)
+def test_moment_curvature_last_point_equals_bending_strength(
+    integrator, section_type, theta, n_ref, factor
+):
+    """The last point of the moment-curvature computed automatically is the
+    ultimate curvature: it must coincide with the bending strength, and all
+    the points must be in equilibrium with the axial load. Sections with
+    single and double reinforcement, where the failure is due to the rupture
+    of the reinforcement or to the crushing of concrete.
+    """
+    section = _rc_rectangular_section(
+        *RC_SECTIONS_LAST_POINT[section_type], integrator
+    )
+    calculator = section.section_calculator
+    n = factor * getattr(calculator, n_ref)
+
+    res = calculator.calculate_moment_curvature(theta=theta, n=n)
+    bending = calculator.calculate_bending_strength(theta=theta, n=n)
+
+    assert len(res.chi_y) == 20
+    for eps_a, chi_y, chi_z in zip(res.eps_a, res.chi_y, res.chi_z):
+        n_int = calculator.integrator.integrate_strain_response_on_geometry(
+            section.geometry, [eps_a, chi_y, chi_z]
+        )[0]
+        assert math.isclose(n_int, n, rel_tol=1e-6, abs_tol=1.0)
+    assert math.isclose(res.chi_y[-1], bending.chi_y, rel_tol=1e-6)
+    assert math.isclose(res.m_y[-1], bending.m_y, rel_tol=1e-5)
+    assert math.isclose(res.eps_a[-1], bending.eps_a, rel_tol=1e-5)
+
+
+# Synthetic dN(eps_0) functions for the solver with fixed curvature: the
+# admissible range and the integrator are mocked, so that the bracket search
+# and Brent's method work directly on analytic functions.
+_SYNTHETIC_RANGE = (-0.01, 0.03)
+
+
+def _synthetic_calculator(monkeypatch, dn_func):
+    concrete = ConcreteEC2_2004(fck=30)
+    geo = RectangularGeometry(width=100, height=100, material=concrete)
+    section = BeamSection(geo)
+    calculator = section.section_calculator
+    monkeypatch.setattr(
+        calculator,
+        '_eps0_admissible_bounds',
+        lambda *_: _SYNTHETIC_RANGE,
+    )
+
+    def integrate(_geo, strain, *_args, **_kwargs):
+        return (dn_func(strain[0]), 0.0, 0.0, None)
+
+    monkeypatch.setattr(
+        calculator.integrator,
+        'integrate_strain_response_on_geometry',
+        integrate,
+    )
+    return section, calculator
+
+
+@pytest.mark.parametrize(
+    'dn_func, eps_0_start, expected',
+    [
+        # monotone function, one zero
+        (lambda e: 1e6 * (e - 0.012), 0.0, 0.012),
+        # two zeros on the same side: the closest one is found
+        (lambda e: 1e9 * (e - 0.015) * (e - 0.017), 0.0, 0.015),
+        # three zeros, start between the first two: the closest one
+        (
+            lambda e: -1e12 * (e + 0.005) * (e - 0.004) * (e - 0.02),
+            0.002,
+            0.004,
+        ),
+        # zero exactly on the upper bound (last step of a moment-curvature)
+        (lambda e: 1e6 * (e - 0.03), 0.0, 0.03),
+        # jump (e.g. cracking) with two zeros: the one before the jump
+        (lambda e: 1e6 * (e - 0.008) - (5e3 if e > 0.01 else 0), 0.0, 0.008),
+    ],
+)
+def test_fixed_curvature_synthetic_closest_zero(
+    monkeypatch, dn_func, eps_0_start, expected
+):
+    """The solver with fixed curvature finds the zero of dN closest to the
+    starting point, also with several zeros, and the zero on the bound.
+    """
+    section, calc = _synthetic_calculator(monkeypatch, dn_func)
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', NoConvergenceWarning)
+        eps_0 = calc.find_equilibrium_fixed_curvature(
+            section.geometry, 0.0, -1e-5, eps_0_start
+        )[0]
+    assert math.isclose(eps_0, expected, abs_tol=1e-9)
+    assert abs(dn_func(eps_0)) <= 1e-2
+
+
+@pytest.mark.parametrize(
+    'dn_func',
+    [
+        # no zero in the admissible range
+        lambda e: 1e6 * (e - 0.05),
+        # dN jumps across zero without a zero
+        lambda e: -1e3 if e < 0.01 else 1e3,
+    ],
+)
+def test_fixed_curvature_synthetic_no_equilibrium(monkeypatch, dn_func):
+    """Without a zero of dN in the admissible range a NoConvergenceWarning
+    is raised.
+    """
+    section, calc = _synthetic_calculator(monkeypatch, dn_func)
+    with pytest.warns(NoConvergenceWarning):
+        calc.find_equilibrium_fixed_curvature(
+            section.geometry, 0.0, -1e-5, 0.0
+        )
+
+
+@pytest.mark.parametrize('eps_0_a', [-0.02, 0.04])
+def test_find_bracket_start_outside_range(eps_0_a):
+    """The bracket search raises an error if the starting point is outside
+    the admissible range.
+    """
+    concrete = ConcreteEC2_2004(fck=30)
+    geo = RectangularGeometry(width=100, height=100, material=concrete)
+    calc = BeamSection(geo).section_calculator
+    eps_0_min, eps_0_max = _SYNTHETIC_RANGE
+    with pytest.raises(ValueError, match='outside the admissible range'):
+        calc._find_bracket(
+            lambda e: e,
+            eps_0_a,
+            eps_0_a,
+            eps_0_min,
+            eps_0_max,
+            eps_0_min,
+            eps_0_max,
+        )

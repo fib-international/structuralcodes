@@ -9,6 +9,7 @@ import warnings
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.linalg import lu_factor, lu_solve
+from scipy.optimize import brentq
 from shapely import MultiPolygon
 from shapely.ops import unary_union
 
@@ -510,202 +511,125 @@ class BeamSectionCalculator(SectionCalculator):
         # Return the strain distribution
         return [eps_0, chi_c, 0]
 
-    def _quick_exponential_find(
-        self,
-        geom,
-        n,
-        curv,
-        max_iter,
-        max_restart_attempts,
-        eps_0_a,
-        dn_a,
-        sign,
-    ):
-        restarts = 0
-        found = False
-        it = 0
-        delta = 1e-3
-        # Use a growth factor for an exponential finding
-        r = 2.0
-        diverging = False
-        diverging_steps = 0
-        while not found and it < max_iter and restarts < max_restart_attempts:
-            # If there has been at least 20% of maximum restart attempts,
-            # slow down the exponent growth to linear. This is helpful to
-            # solve cases where the solution is close to the limit axial
-            # load
-            exponent = (
-                it if restarts <= int(0.2 * max_restart_attempts) else 1.0
-            )
-            eps_0_b = eps_0_a + sign * delta * r ** (exponent)
-            (
-                n_int,
-                _,
-                _,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geom,
-                [eps_0_b, curv, 0],
-                integration_data=self.integration_data,
-            )
-            dn_b = n_int - n
-            if dn_a * dn_b < 0:
-                found = True
-            elif abs(dn_b) > abs(dn_a):
-                # we are driving away from the solution, probably due
-                # to failure of a material
-                diverging = True
-                if diverging:
-                    # Count for how many steps we are diverging
-                    diverging_steps += 1
-                # If we are consistently diverging for more than 5 steps,
-                # Restart the process with a smaller delta
-                if diverging_steps > 5:
-                    delta /= 2
-                    it = 0
-                    restarts += 1
-                    diverging = False
-                    diverging_steps = 0
-            it += 1
-        return eps_0_b, dn_b, it, found
+    def _eps0_admissible_bounds(
+        self, geom: CompoundGeometry, curv: float
+    ) -> t.Tuple[float, float]:
+        r"""Return the admissible range of eps_0 for a fixed curvature.
 
-    def _slow_linear_find(
-        self,
-        geom,
-        n,
-        curv,
-        max_iter,
-        eps_0_a,
-        dn_a,
-        sign,
-    ):
-        found = False
-        it = 0
-        delta = abs(eps_0_a) / (max_iter * 10)
-        while True:
-            eps_0_b = eps_0_a + sign * delta * (it + 1)
-            (
-                n_int,
-                _,
-                _,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geom, [eps_0_b, curv, 0], tri=self.integration_data
-            )
-            dn_b = n_int - n
-            if dn_a * dn_b < 0:
-                found = True
-                break
-            it += 1
-            if it >= max_iter * 10:
-                break
-        return eps_0_b, dn_b, it, found
+        For a fixed curvature the strain is linear over the section,
+        $\varepsilon = \varepsilon_0 + \chi y$. Each geometry must remain
+        within its ultimate strains, and since the strain is linear it is
+        sufficient to check the extreme coordinates of each geometry. The
+        intersection of all the admissible intervals gives the range
+        [eps_0_min, eps_0_max] where no material has failed.
 
-    def _brute_force_find_minimum(
-        self,
-        geom,
-        n,
-        curv,
-        eps_0_a,
-        dn_a,
-        sign,
-    ):
-        found = False
-        suffix = ''
-        eps_0_a_attempt = eps_0_a
-        eps_0_b_attempt = eps_0_a + abs(eps_0_a) * sign
-        for i in range(10):
-            eps_0_attempts = np.linspace(eps_0_a_attempt, eps_0_b_attempt, 100)
-            dn_attempts = np.zeros_like(eps_0_attempts)
-            for j in range(len(eps_0_attempts)):
-                (
-                    n_int,
-                    _,
-                    _,
-                    _,
-                ) = self.integrator.integrate_strain_response_on_geometry(
-                    geom,
-                    [eps_0_attempts[j], curv, 0],
-                    tri=self.integration_data,
-                )
-                dn_attempts[j] = n_int - n
-            if dn_a > 0:
-                idx_min = np.argmin(dn_attempts)
+        Arguments:
+            geom (CompoundGeometry): The (rotated) geometry.
+            curv (float): The value of curvature.
+
+        Returns:
+            Tuple(float, float): The minimum and maximum admissible eps_0. If
+            eps_0_min > eps_0_max no admissible strain profile exists for the
+            given curvature (i.e. the curvature exceeds the ultimate one).
+        """
+        eps_0_min = -np.inf
+        eps_0_max = np.inf
+        for g in geom.geometries + geom.point_geometries:
+            eps_n, eps_p = g.material.constitutive_law.get_ultimate_strain()
+            if isinstance(g, SurfaceGeometry):
+                ys = (g.polygon.bounds[1], g.polygon.bounds[3])
             else:
-                idx_min = np.argmax(dn_attempts)
-            eps_0_b = eps_0_attempts[idx_min]
-            dn_b = dn_attempts[idx_min]
-            eps_0_a_attempt = eps_0_attempts[max(idx_min - 2, 0)]
-            eps_0_b_attempt = eps_0_attempts[
-                min(idx_min + 2, len(eps_0_attempts))
-            ]
-            # Check if it is on the opposite side
-            if dn_a * dn_b < 0:
-                found = True
-                break
+                ys = (g.y,)
+            for y in ys:
+                eps_0_min = max(eps_0_min, eps_n - curv * y)
+                eps_0_max = min(eps_0_max, eps_p - curv * y)
+        return eps_0_min, eps_0_max
 
-        if not found:
-            # It is impossibile to find a solution for the given case
-            # The best solution we have is dn_b
-            suffix = (
-                '(No solution can be found because it seems dN never '
-                ' becomes of opposite sign).'
-                '\n\tThe best that we have found is with an unbalance of'
-                f' {dn_b:.3e} for eps_0_b = {eps_0_b:e}.'
-            )
-        return eps_0_b, dn_b, found, suffix
-
-    def _prefind_range_curvature_equilibrium(
+    def _find_bracket(
         self,
-        geom: CompoundGeometry,
-        n: float,
-        curv: float,
+        dn_func: t.Callable[[float], float],
         eps_0_a: float,
         dn_a: float,
-        max_iter: int = 20,
-        max_restart_attemps: int = 20,
-    ):
-        """Perfind range where the curvature equilibrium is located.
+        eps_0_min: float,
+        eps_0_max: float,
+        dn_min: float,
+        dn_max: float,
+        delta: float = 1e-4,
+        num_scan: int = 100,
+    ) -> t.Optional[t.Tuple[float, float, float, float]]:
+        """Find the bracket containing the zero of dN closest to eps_0_a.
 
-        This algorithms quickly finds a position of NA that guaranteed the
-        existence of at least one zero in the function dn vs. curv in order to
-        apply the bisection algorithm.
+        The admissible range is explored from eps_0_a in both directions,
+        alternating sides, with steps that start from delta and grow
+        exponentially up to a maximum step max((eps_0_max - eps_0_min) /
+        num_scan, delta), then linearly. The first change of sign found gives
+        the bracket. In this way:
+
+        - the zero closest to eps_0_a is found, on whichever side it is (up
+          to the current step), since both sides advance by the same steps;
+          the sign of dN at the bounds would only tell whether the number of
+          zeros on that side is odd or even, not where the first one is;
+        - dN is checked only at the ends of each step, so two zeros (or a
+          zero and a jump) in the same step are jumped over; since no step
+          is longer than the maximum step, this cannot happen for two zeros
+          farther apart than the maximum step;
+        - the search is cheap when delta is a good estimate of the move of
+          the solution (e.g. from the two previous steps of a
+          moment-curvature analysis), and the doubling of the step recovers
+          quickly when it is not.
+
+        The starting point eps_0_a is not clipped here: it must be already
+        inside the admissible range (find_equilibrium_fixed_curvature clips
+        the solution of the previous step before calling this method).
+
+        Returns:
+            Optional[Tuple[float, float, float, float]]: eps_0_l, dn_l,
+            eps_0_r, dn_r, or None if no change of sign is found.
+
+        Raises:
+            ValueError: If eps_0_a is outside the admissible range.
         """
-        sign = -1 if dn_a > 0 else 1
-
-        eps_0_b, dn_b, it, found = self._quick_exponential_find(
-            geom, n, curv, max_iter, max_restart_attemps, eps_0_a, dn_a, sign
-        )
-
-        # As a further attempt, try going with small increments/decrements up
-        # to when it changes sign
-
-        if it >= max_iter and not found:
-            eps_0_b, dn_b, it, found = self._slow_linear_find(
-                geom, n, curv, max_iter, eps_0_a, dn_a, sign
+        # This should not be needed, here just for extra-safety:
+        if not eps_0_min <= eps_0_a <= eps_0_max:
+            raise ValueError(
+                f'The starting point eps_0_a = {eps_0_a:.6e} is outside the '
+                f'admissible range [{eps_0_min:.6e}, {eps_0_max:.6e}].'
             )
-
-        # As a final attempt, try to compute for a range a certain size
-        # respect eps_0_a and compute dn for each one of them, find the
-        # minimum hoping it is on the opposite side of dn_a.
-
-        if it >= max_iter and not found:
-            eps_0_b, dn_b, found, suffix = self._brute_force_find_minimum(
-                geom, n, curv, eps_0_a, dn_a, sign
-            )
-
-        if it >= max_iter and not found:
-            msg = (
-                'BeamSectionCalculator::'
-                '_prefind_range_curvature_equilibrium\n\t'
-                'Maximum number of iterations reached.'
-                f' Last iteration reached a unbalance of {dn_b:.3e} {suffix}'
-            )
-            warnings.warn(
-                message=msg,
-                category=NoConvergenceWarning,
-            )
-        return (eps_0_b, dn_b)
+        # The maximum step is not lower than the estimate delta: when the
+        # solution moves by more than range / num_scan in one step, a lower
+        # cap would cut the steps after the first one, and the search would
+        # continue linearly
+        max_step = max((eps_0_max - eps_0_min) / num_scan, delta)
+        step = delta
+        # The dictionaries are keyed by the side of the search: +1 towards
+        # eps_0_max, -1 towards eps_0_min
+        # Last point (eps_0, dN) visited on each side, starting from eps_0_a
+        prev = {1: (eps_0_a, dn_a), -1: (eps_0_a, dn_a)}
+        # Bound of the admissible range (eps_0, dN) on each side: fixed during
+        # the search
+        admissible_bound = {1: (eps_0_max, dn_max), -1: (eps_0_min, dn_min)}
+        # True while the side has not reached its bound yet (False from the
+        # start if eps_0_a is already on that side of the admissible range).
+        # It specifies whether the search is still active on that side, not
+        # whether the bracket has been found.
+        active = {1: eps_0_max > eps_0_a, -1: eps_0_min < eps_0_a}
+        # The search continues while at least one side is still active
+        while any(active.values()):
+            for side in (1, -1):
+                if not active[side]:
+                    continue
+                eps_p, dn_p = prev[side]
+                eps_b = eps_p + side * step
+                if side * (eps_b - admissible_bound[side][0]) >= 0:
+                    eps_b, dn_b = admissible_bound[side]
+                    active[side] = False
+                else:
+                    dn_b = dn_func(eps_b)
+                if dn_p * dn_b <= 0:
+                    return (eps_p, dn_p, eps_b, dn_b)
+                prev[side] = (eps_b, dn_b)
+            step = min(2 * step, max_step)
+        return None
 
     def find_equilibrium_fixed_curvature(
         self,
@@ -715,79 +639,146 @@ class BeamSectionCalculator(SectionCalculator):
         eps_0: float,
         max_iter: int = 100,
         tol: float = 1e-2,
+        eps_0_step: t.Optional[float] = None,
     ) -> t.Tuple[float, float, float]:
         r"""Find strain profile with equilibrium with fixed curvature.
 
         Given curvature and external axial force, find the strain profile that
         makes internal and external axial force in equilibrium.
 
+        The search of eps_0 is restricted to the admissible range where no
+        material exceeds its ultimate strain:
+
+        1. dN is computed at eps_0 (clipped to the admissible range) and at
+           the two bounds. If dN is (almost) zero at a bound, that bound is
+           the solution (e.g. last step of a moment-curvature analysis).
+        2. The bracket containing the zero closest to eps_0 is searched in
+           both directions, with steps starting from eps_0_step (if given)
+           that grow exponentially up to a maximum value.
+        3. The zero is found within the bracket with Brent's method.
+
         Arguments:
             geom (CompounGeometry): The geometry.
             n (float): The external axial load.
             curv (float): The value of curvature.
-            eps_0 (float): A first attempt for neutral axis position.
+            eps_0 (float): A first attempt for eps_0, the axial strain at the
+                reference point (e.g. the solution of the previous step of a
+                moment-curvature analysis). It is clipped to the admissible
+                range.
             max_iter (int): the maximum number of iterations in the iterative
                 process (default = 100).
-            tol (float): the tolerance for convergence test in terms of
-                $\deltaN_a - \deltaN_b$. (default = 1e-2)
+            tol (float): the tolerance on the unbalance of axial force
+                $|\Delta N|$ for accepting a solution (default = 1e-2).
+                Brent's method iterates on eps_0 down to machine precision,
+                so tol does not stop the iterations: it is used to accept
+                a solution (also at eps_0, at the bounds of the admissible
+                range and at the ends of the bracket) and to detect jumps
+                of $\Delta N$ across zero.
+            eps_0_step (Optional[float]): An estimate of the move of eps_0
+                from the given first attempt to the solution, used as first
+                step of the bracket search. Only its absolute value is used,
+                since the search explores both directions; values lower than
+                1e-7 are raised to 1e-7 (default = None, i.e. 1e-4).
+                calculate_moment_curvature extrapolates it from the two
+                previous steps.
 
         Returns:
             Tuple(float, float, float): The axial strain and the two
             curvatures.
         """
-        # Useful for Moment Curvature Analysis
-        # Start from previous position of N.A.
-        eps_0_a = eps_0
-        # find internal axial force by integration
-        (
-            n_int,
-            _,
-            _,
-            integration_data,
-        ) = self.integrator.integrate_strain_response_on_geometry(
-            geom, [eps_0, curv, 0], integration_data=self.integration_data
-        )
-        if self.integration_data is None and integration_data is not None:
-            self.integration_data = integration_data
-        dn_a = n_int - n
-        # It may occur that dn_a is already almost zero (in eqiulibrium)
-        if abs(dn_a) <= 1e-2:
-            # return the equilibrium position
-            return [eps_0_a, curv, 0]
-        eps_0_b, dn_b = self._prefind_range_curvature_equilibrium(
-            geom, n, curv, eps_0_a, dn_a
-        )
-        # Found a range within there is the solution, apply bisection
-        it = 0
-        while (abs(dn_a - dn_b) > tol) and (it < max_iter):
-            eps_0_c = (eps_0_a + eps_0_b) / 2
-            (
-                n_int,
-                _,
-                _,
-                _,
-            ) = self.integrator.integrate_strain_response_on_geometry(
-                geom,
-                [eps_0_c, curv, 0],
-                integration_data=self.integration_data,
+        # Cache of computed values: Brent's method evaluates again the ends
+        # of the bracket, which are already known
+        cache = {}
+
+        def _dn(eps):
+            if eps in cache:
+                return cache[eps]
+            n_int, _, _, integration_data = (
+                self.integrator.integrate_strain_response_on_geometry(
+                    geom,
+                    [eps, curv, 0],
+                    integration_data=self.integration_data,
+                )
             )
-            dn_c = n_int - n
-            if dn_a * dn_c < 0:
-                dn_b = dn_c
-                eps_0_b = eps_0_c
-            else:
-                dn_a = dn_c
-                eps_0_a = eps_0_c
-            it += 1
-        if it >= max_iter:
+            if self.integration_data is None and integration_data is not None:
+                self.integration_data = integration_data
+            cache[eps] = n_int - n
+            return cache[eps]
+
+        eps_0_min, eps_0_max = self._eps0_admissible_bounds(geom, curv)
+        if eps_0_min > eps_0_max:
+            msg = (
+                'BeamSectionCalculator::find_equilibrium_fixed_curvature\n\t'
+                f'The curvature {curv:.6e} exceeds the ultimate curvature: no '
+                'strain profile exists where all materials are within their '
+                'ultimate strains.'
+            )
+            warnings.warn(message=msg, category=NoConvergenceWarning)
+            return [eps_0, curv, 0]
+
+        # Start from previous position of N.A., clipped to admissible range
+        eps_0_a = min(max(eps_0, eps_0_min), eps_0_max)
+        dn_a = _dn(eps_0_a)
+        # It may occur that dn_a is already almost zero (in eqiulibrium)
+        if abs(dn_a) <= tol:
+            return [eps_0_a, curv, 0]
+
+        # Unbalance at the bounds of the admissible range
+        dn_min = _dn(eps_0_min)
+        dn_max = _dn(eps_0_max)
+        # The solution may lie exactly on a bound (e.g. the last step of a
+        # moment-curvature analysis, where one material is exactly at its
+        # ultimate strain)
+        for eps_bound, dn_bound in ((eps_0_max, dn_max), (eps_0_min, dn_min)):
+            if abs(dn_bound) <= tol:
+                return [eps_bound, curv, 0]
+
+        delta = max(abs(eps_0_step), 1e-7) if eps_0_step else 1e-4
+        bracket = self._find_bracket(
+            _dn, eps_0_a, dn_a, eps_0_min, eps_0_max, dn_min, dn_max, delta
+        )
+        if bracket is None:
+            msg = (
+                'BeamSectionCalculator::find_equilibrium_fixed_curvature\n\t'
+                f'No equilibrium can be found for curvature {curv:.6e}: '
+                'the unbalance does not change sign in the admissible range '
+                f'eps_0 = [{eps_0_min:.6e}, {eps_0_max:.6e}] '
+                f'(dN = [{dn_min:.3e}, {dn_max:.3e}]).'
+            )
+            warnings.warn(message=msg, category=NoConvergenceWarning)
+            return [eps_0_a, curv, 0]
+        eps_l, dn_l, eps_r, dn_r = bracket
+        for eps_c, dn_c in ((eps_l, dn_l), (eps_r, dn_r)):
+            if abs(dn_c) <= tol:
+                return [eps_c, curv, 0]
+
+        # Find the zero inside the bracket with Brent's method
+        eps_0_c, info = brentq(
+            _dn,
+            min(eps_l, eps_r),
+            max(eps_l, eps_r),
+            xtol=1e-14,
+            rtol=4 * np.finfo(float).eps,
+            maxiter=max_iter,
+            full_output=True,
+            disp=False,
+        )
+        dn_c = _dn(eps_0_c)
+        if not info.converged:
             msg = 'BeamSectionCalculator::find_equilibrium_fixed_curvature'
             msg += '\n\tMaximum number of iterations reached. '
             msg += f' Last iteration reached a unbalance of {dn_c:.3e}'
-            warnings.warn(
-                message=msg,
-                category=NoConvergenceWarning,
+            warnings.warn(message=msg, category=NoConvergenceWarning)
+        elif abs(dn_c) > tol:
+            # The bracket collapsed on a point where dN jumps across zero
+            msg = (
+                'BeamSectionCalculator::find_equilibrium_fixed_curvature\n\t'
+                f'No equilibrium can be found for curvature {curv:.6e}: '
+                f'dN jumps across zero at eps_0 = {eps_0_c:.6e} '
+                f'(unbalance {dn_c:.3e}).'
             )
-        return eps_0_c, curv, 0
+            warnings.warn(message=msg, category=NoConvergenceWarning)
+        return [eps_0_c, curv, 0]
 
     def calculate_limit_axial_load(self):
         """Compute maximum and minimum axial load.
@@ -1138,8 +1129,14 @@ class BeamSectionCalculator(SectionCalculator):
                 calculations.
             max_iter (int): the maximum number of iterations in the iterative
                 process (default = 100).
-            tol (float): the tolerance for convergence test in terms of
-                $\deltaN_a - \deltaN_b$ (default = 1e-2).
+            tol (float): the tolerance on the unbalance of axial force
+                (default = 1e-2). It is used as $|\Delta N_a - \Delta N_b|$
+                in the bisection for the yield and ultimate curvatures, and
+                as $|\Delta N|$ for accepting the equilibrium at each step
+                (see find_equilibrium_fixed_curvature). NOTE: in future PR,
+                this will be uniformly used as $|\Delta_N/|$ for all the steps,
+                and the bisection will be done on $|\Delta_N|$ instead of
+                $|\Delta N_a - \Delta N_b|$.
 
         Returns:
             MomentCurvatureResults: The calculation results.
@@ -1183,6 +1180,16 @@ class BeamSectionCalculator(SectionCalculator):
             # value of curvature
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter('always', NoConvergenceWarning)
+                # Estimate the change of eps_0 from the previous two steps
+                # (scaled with the curvature increment): used as first step
+                # of the bracket search
+                eps_0_step = None
+                if i >= 2 and chi[i - 1] != chi[i - 2]:
+                    eps_0_step = (
+                        (eps_a[i - 1] - eps_a[i - 2])
+                        * (curv - chi[i - 1])
+                        / (chi[i - 1] - chi[i - 2])
+                    )
                 strain = self.find_equilibrium_fixed_curvature(
                     rotated_geom,
                     n,
@@ -1190,6 +1197,7 @@ class BeamSectionCalculator(SectionCalculator):
                     strain[0],
                     max_iter=max_iter,
                     tol=tol,
+                    eps_0_step=eps_0_step,
                 )
                 (
                     _,
