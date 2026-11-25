@@ -55,6 +55,7 @@ from ._strength_reduction import (
     phi_torsion,
     section_classification,
 )
+from ._two_way_shear import alpha_s, vc_two_way
 from ._units import (
     FT_TO_MM,
     IN_TO_MM,
@@ -116,6 +117,8 @@ __all__ = [
     'max_bar_spacing_flexure',
     'max_bar_spacing_shrinkage',
     'shear_critical_section_offset',
+    'alpha_s',
+    'vc_two_way',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',

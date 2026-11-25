@@ -8,5 +8,6 @@ Material properties for reinforcement steel <material_reinforcement>
 Strength reduction factors <strength_reduction>
 Flexural strength <flexure>
 One-way shear strength <shear>
+Two-way shear strength <two_way_shear>
 One-way slab design rules <one_way_slab>
 :::
