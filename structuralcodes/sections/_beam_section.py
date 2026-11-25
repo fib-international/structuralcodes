@@ -962,6 +962,14 @@ class BeamSectionCalculator(SectionCalculator):
 
         Returns:
             UltimateBendingMomentResults: The results from the calculation.
+
+        Note:
+            If the equilibrium cannot be found, a NoConvergenceWarning is
+            raised (by default an error). If it is not an error for the
+            warnings filters of the user (e.g. it is ignored), the result of
+            the last iteration is returned: it may not be in equilibrium, and
+            its axial force n is the one of the returned strain profile, not
+            the given one.
         """
         # Check if the section can carry the axial load
         self.check_axial_load(n=n)
@@ -1030,17 +1038,22 @@ class BeamSectionCalculator(SectionCalculator):
                 rotated_geom, n, max_iter=max_iter, tol=tol
             )
             chi_ultimate = strain[1]
-        if w:
-            # I should expect only one warning of this category
-            warn = w[0]
-            if issubclass(warn.category, NoConvergenceWarning):
-                new_msg = (
-                    f'\nBeamSectionCalculator::calculate_moment_curvature'
-                    f'\n\tNo convergence during computation of ultimate'
-                    f' curvature. Please check results properly.\n'
-                    f'{warn.message}'
-                )
-                warnings.warn(new_msg, NoConvergenceWarning)
+        # Other warnings (e.g. a RuntimeWarning raised by a constitutive
+        # law) may be recorded before the NoConvergenceWarning: look for
+        # it among all the recorded warnings. The other recorded warnings
+        # are discarded.
+        warn = next(
+            (x for x in w if issubclass(x.category, NoConvergenceWarning)),
+            None,
+        )
+        if warn is not None:
+            new_msg = (
+                f'\nBeamSectionCalculator::calculate_moment_curvature'
+                f'\n\tNo convergence during computation of ultimate'
+                f' curvature. Please check results properly.\n'
+                f'{warn.message}'
+            )
+            warnings.warn(new_msg, NoConvergenceWarning)
         # Find the yielding curvature
         # This could not converge, let0's catch the warning to customize
         # the message
@@ -1050,17 +1063,22 @@ class BeamSectionCalculator(SectionCalculator):
                 rotated_geom, n, yielding=True, max_iter=max_iter, tol=tol
             )
             chi_yield = strain[1]
-        if w:
-            # I should expect only one warning of this category
-            warn = w[0]
-            if issubclass(warn.category, NoConvergenceWarning):
-                new_msg = (
-                    f'\nBeamSectionCalculator::calculate_moment_curvature'
-                    f'\n\tNo convergence during computation of yielding'
-                    f' curvature. Please check results properly.\n'
-                    f'{warn.message}'
-                )
-                warnings.warn(new_msg, NoConvergenceWarning)
+        # Other warnings (e.g. a RuntimeWarning raised by a constitutive
+        # law) may be recorded before the NoConvergenceWarning: look for
+        # it among all the recorded warnings. The other recorded warnings
+        # are discarded.
+        warn = next(
+            (x for x in w if issubclass(x.category, NoConvergenceWarning)),
+            None,
+        )
+        if warn is not None:
+            new_msg = (
+                f'\nBeamSectionCalculator::calculate_moment_curvature'
+                f'\n\tNo convergence during computation of yielding'
+                f' curvature. Please check results properly.\n'
+                f'{warn.message}'
+            )
+            warnings.warn(new_msg, NoConvergenceWarning)
 
         if chi_ultimate * chi_yield < 0:
             # They cannot have opposite signs!
@@ -1140,6 +1158,21 @@ class BeamSectionCalculator(SectionCalculator):
 
         Returns:
             MomentCurvatureResults: The calculation results.
+
+        Note:
+            If the equilibrium cannot be found at a step, a
+            NoConvergenceWarning is raised and the analysis is stopped at
+            that step. By default the warnings of StructuralCodes are errors,
+            so an exception is raised. If the NoConvergenceWarning is not an
+            error for the warnings filters of the user (e.g. it is ignored),
+            the results contain only the previous steps, all in equilibrium.
+            A lack of convergence in the computation of the yield or
+            ultimate curvature (when chi is None) raises a
+            NoConvergenceWarning too, but it does not stop the analysis.
+
+            The warnings of other categories raised during the computation
+            of the steps and of the yield and ultimate curvatures (e.g. by a
+            constitutive law) are not shown.
         """
         # Check if the section can carry the axial load
         self.check_axial_load(n=n)
@@ -1223,23 +1256,28 @@ class BeamSectionCalculator(SectionCalculator):
                 chi_mat = T @ np.array([[curv], [0]])
                 chi_y[i] = chi_mat[0, 0]
                 chi_z[i] = chi_mat[1, 0]
-            if w:
-                # I should expect only one warning of this category
-                warn = w[0]
-                if issubclass(warn.category, NoConvergenceWarning):
-                    new_msg = (
-                        f'\nBeamSectionCalculator::calculate_moment_curvature\n'
-                        f'\tNo convergence during computation of step {i}.'
-                        f' The computation is stopped at the current step\n'
-                        f'{warn.message}'
-                    )
-                    warnings.warn(new_msg, NoConvergenceWarning)
-                    chi_y = chi_y[:i]
-                    chi_z = chi_z[:i]
-                    eps_a = eps_a[:i]
-                    my = my[:i]
-                    mz = mz[:i]
-                    break
+            # Other warnings (e.g. a RuntimeWarning raised by a constitutive
+            # law) may be recorded before the NoConvergenceWarning: look for
+            # it among all the recorded warnings. The other recorded warnings
+            # are discarded.
+            warn = next(
+                (x for x in w if issubclass(x.category, NoConvergenceWarning)),
+                None,
+            )
+            if warn is not None:
+                new_msg = (
+                    f'\nBeamSectionCalculator::calculate_moment_curvature\n'
+                    f'\tNo convergence during computation of step {i}.'
+                    f' The computation is stopped at the current step\n'
+                    f'{warn.message}'
+                )
+                warnings.warn(new_msg, NoConvergenceWarning)
+                chi_y = chi_y[:i]
+                chi_z = chi_z[:i]
+                eps_a = eps_a[:i]
+                my = my[:i]
+                mz = mz[:i]
+                break
 
         if self.integration_data is not None:
             # Rotate back also triangulated data!
@@ -1741,6 +1779,15 @@ class BeamSectionCalculator(SectionCalculator):
 
         Return:
             MMInteractionDomain: The calculation results.
+
+        Note:
+            If the bending strength cannot be found for an angle, a
+            NoConvergenceWarning is raised (by default an error). If it is
+            not an error for the warnings filters of the user (e.g. it is
+            ignored), the computation continues with the other angles, and
+            the point of that angle may not be in equilibrium (see
+            calculate_bending_strength). The warnings of other categories
+            raised during the computation are not shown.
         """
         # Prepare the results
         res = s_res.MMInteractionDomainResult()
@@ -1759,17 +1806,22 @@ class BeamSectionCalculator(SectionCalculator):
                 res_bend_strength = self.calculate_bending_strength(
                     theta=th, n=n, max_iter=max_iter, tol=tol
                 )
-            if w:
-                # I should expect only one warning of this category
-                warn = w[0]
-                if issubclass(warn.category, NoConvergenceWarning):
-                    new_msg = (
-                        '\nBeamSectionCalculator::'
-                        'calculate_mm_interaction_domain\n'
-                        f'\tNo convergence during computation with theta {th}.'
-                        f'\n{warn.message}'
-                    )
-                    warnings.warn(new_msg, NoConvergenceWarning)
+            # Other warnings (e.g. a RuntimeWarning raised by a constitutive
+            # law) may be recorded before the NoConvergenceWarning: look for
+            # it among all the recorded warnings. The other recorded warnings
+            # are discarded.
+            warn = next(
+                (x for x in w if issubclass(x.category, NoConvergenceWarning)),
+                None,
+            )
+            if warn is not None:
+                new_msg = (
+                    '\nBeamSectionCalculator::'
+                    'calculate_mm_interaction_domain\n'
+                    f'\tNo convergence during computation with theta {th}.'
+                    f'\n{warn.message}'
+                )
+                warnings.warn(new_msg, NoConvergenceWarning)
             # Save forces
             res.forces[i, 0] = n
             res.forces[i, 1] = res_bend_strength.m_y
