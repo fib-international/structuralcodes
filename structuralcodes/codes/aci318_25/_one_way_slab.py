@@ -84,36 +84,22 @@ def min_thickness(
 # ---------------------------------------------------------------------------
 
 
-def As_shrinkage_temperature(
-    fy: float,
-    b: float,
-    h: float,
-) -> float:
+def As_shrinkage_temperature(b: float, h: float) -> float:
     """Minimum shrinkage and temperature reinforcement area for a slab.
 
-    ACI 318-25, Sec. 24.4.3.2.  The minimum steel ratio depends on *fy*
-    in psi:
-
-    - *fy* <= 50 000 psi : rho_min = 0.0020
-    - *fy* <= 60 000 psi : rho_min = 0.0018
-    - *fy*  > 60 000 psi : rho_min = max(0.0014, 0.0018 × 60 000 / fy_psi)
+    ACI 318-25, Sec. 24.4.3.2: the ratio of deformed shrinkage and
+    temperature reinforcement area to gross concrete area is at least
+    0.0018. ACI 318-19, Sec. 24.4.3.2, is the same. The ratio does not
+    depend on the grade of reinforcement.
 
     Args:
-        fy (float): Specified yield strength of reinforcement in MPa.
         b (float): Width of slab strip in mm.
         h (float): Overall slab thickness in mm.
 
     Returns:
-        float: Minimum shrinkage and temperature steel area in mm².
+        float: Minimum shrinkage and temperature reinforcement area in mm2.
     """
-    fy_psi = fy * 145.038  # 1 MPa = 145.038 psi
-    if fy_psi <= 50000.0:
-        ratio = 0.0020
-    elif fy_psi <= 60000.0:
-        ratio = 0.0018
-    else:
-        ratio = max(0.0014, 0.0018 * 60000.0 / fy_psi)
-    return ratio * b * h
+    return 0.0018 * b * h
 
 
 # ---------------------------------------------------------------------------

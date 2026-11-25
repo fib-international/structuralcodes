@@ -70,19 +70,12 @@ class TestMinThickness:
 
 
 class TestAsShrinkageTemperature:
-    """Tests for As_shrinkage_temperature (Sec. 24.4.3.2)."""
+    """Tests for As_shrinkage_temperature (ACI 318-25 Sec. 24.4.3.2)."""
 
-    def test_gr60_ratio(self):
-        """420 MPa (~60 916 psi, just above 60 000 psi threshold).
-
-        Falls in the >60 000 psi branch:
-        ratio = max(0.0014, 0.0018 * 60 000 / fy_psi).
-        """
-        fy_psi = FY_GR60 * 145.038
-        ratio = max(0.0014, 0.0018 * 60000.0 / fy_psi)
-        expected = ratio * B * H
-        result = ows.As_shrinkage_temperature(FY_GR60, B, H)
-        assert math.isclose(result, expected, rel_tol=1e-9)
+    def test_12_in_strip_of_10_in_slab(self):
+        """Hand calculation: 0.0018 x 12 in x 10 in = 0.216 in2."""
+        result = ows.As_shrinkage_temperature(12 * 25.4, 10 * 25.4)
+        assert math.isclose(result / 25.4**2, 0.216, rel_tol=1e-9)
 
 
 # ---------------------------------------------------------------------------

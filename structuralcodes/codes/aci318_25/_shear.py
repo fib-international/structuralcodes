@@ -1,6 +1,74 @@
-"""One-way shear strength functions according to ACI 318-25, Ch. 22.5."""
+"""One-way shear strength functions according to ACI 318-25, Ch. 22.5.
+
+Units: every function takes and returns SI units (MPa, mm, mm2, N), as the
+rest of the library does. The expressions of ACI 318-25 are written in
+inch-pound units, with empirical coefficients on sqrt(f'c) in psi. Each
+function applies the Code expression in that form and converts with exact
+factors, so that every coefficient below is the one printed in the Code.
+
+Edition: the expressions were read in ACI 318-25 and compared with
+ACI 318-19. Differences are recorded in the docstring of the function they
+affect.
+"""
 
 import math
+import typing as t
+
+# Exact conversion factors
+_MPA_PER_PSI = 0.006894757293168361
+_MM_PER_IN = 25.4
+
+# Sec. 22.5.3.1: limit on sqrt(f'c) for one-way shear, in psi
+_SQRT_FC_LIMIT_PSI = 100.0
+
+
+def _sqrt_fc(fc: float, limit_psi: t.Optional[float] = None) -> float:
+    """Return sqrt(f'c), evaluated in psi and expressed in MPa.
+
+    Args:
+        fc (float): Specified compressive strength of concrete in MPa.
+        limit_psi (Optional[float]): Upper limit on sqrt(f'c) in psi. No
+            limit is applied if None.
+
+    Returns:
+        float: sqrt(f'c in psi), converted from psi to MPa.
+
+    Raises:
+        ValueError: If fc is not positive.
+    """
+    if fc <= 0.0:
+        raise ValueError(f'fc must be positive, got {fc}')
+    root_psi = math.sqrt(fc / _MPA_PER_PSI)
+    if limit_psi is not None:
+        root_psi = min(root_psi, limit_psi)
+    return root_psi * _MPA_PER_PSI
+
+
+def _axial_stress(Nu: float, Ag: float, fc: float) -> float:
+    """Return the term Nu / (6 Ag) of Table 22.5.5.1 in MPa.
+
+    The term is limited to 0.05 f'c by Sec. 22.5.5.1.2.
+
+    Args:
+        Nu (float): Factored axial force in N, positive in compression.
+        Ag (float): Gross area of the section in mm2. Required if Nu is not
+            zero.
+        fc (float): Specified compressive strength of concrete in MPa.
+
+    Returns:
+        float: The axial term in MPa.
+
+    Raises:
+        ValueError: If Nu is not zero and Ag is not positive.
+    """
+    if Nu == 0.0:
+        return 0.0
+    if Ag <= 0.0:
+        raise ValueError(
+            f'Ag must be positive when Nu is not zero, got Ag = {Ag}'
+        )
+    return min(Nu / (6.0 * Ag), 0.05 * fc)
+
 
 # ---------------------------------------------------------------------------
 # Size-effect factor
@@ -8,18 +76,32 @@ import math
 
 
 def lambda_s(d: float) -> float:
-    """Size-effect modification factor for shear.
+    """Size effect modification factor for shear.
 
-    ACI 318-25, Eq. 22.5.5.1.3.  Converts *d* from mm to inches and applies:
-    ``lambda_s = min(2 / (1 + d_in / 10), 1.0)``.
+    ACI 318-25, Eq. (22.5.5.1.3), as printed, with d in inches:
+    ``lambda_s = 2 / (1 + d / 10) <= 1``.
+
+    Note:
+        ACI 318-19 prints the same equation under a square root,
+        ``sqrt(2 / (1 + d / 10)) <= 1``. The copy of ACI 318-25 read for
+        this function prints it without the square root and without a
+        change bar. The form without the square root gives the smaller
+        factor for d greater than 10 in. Whether the difference is intended
+        has not been established and should be checked against the ACI
+        errata before this function is relied on.
 
     Args:
         d (float): Effective depth of the member in mm.
 
     Returns:
-        float: Size-effect factor lambda_s (dimensionless, <= 1.0).
+        float: Size effect factor lambda_s, not greater than 1.0.
+
+    Raises:
+        ValueError: If d is not positive.
     """
-    d_in = d / 25.4
+    if d <= 0.0:
+        raise ValueError(f'd must be positive, got {d}')
+    d_in = d / _MM_PER_IN
     return min(2.0 / (1.0 + d_in / 10.0), 1.0)
 
 
@@ -36,79 +118,76 @@ def Vc_detailed(
     Nu: float = 0.0,
     Ag: float = 0.0,
     lambda_concrete: float = 1.0,
-    Av_provided: float = 0.0,
-    Av_min: float = 0.0,
+    has_min_shear_reinforcement: bool = False,
+    apply_lower_bound: bool = True,
 ) -> float:
-    """Nominal concrete shear strength — detailed method.
+    """Nominal one-way shear strength provided by concrete.
 
-    ACI 318-25, Table 22.5.5.1.  The formula depends on whether minimum
-    transverse reinforcement is provided:
+    ACI 318-25, Table 22.5.5.1, with f'c in psi and lengths in inches:
 
-    - **With** minimum reinforcement (``Av_provided >= Av_min``):
-      ``Vc = (8*lambda*(rho_w)^(1/3)*sqrt_fc + axial_term) * bw * d``
-    - **Without** minimum reinforcement (``Av_provided < Av_min``):
-      ``Vc = (8*lambda_s(d)*lambda*(rho_w)^(1/3)*sqrt_fc``
-      ``+ axial_term) * bw * d``
+    - Eq. (b), for Av >= Av,min:
+      ``Vc = [8 lambda rho_w^(1/3) sqrt(f'c) + Nu / (6 Ag)] bw d``
+    - Eq. (c), for Av < Av,min:
+      ``Vc = [8 lambda_s lambda rho_w^(1/3) sqrt(f'c) + Nu / (6 Ag)] bw d``
 
-    Limits applied (Sec. 22.5.5.1.1):
+    Limits applied:
 
-    - Cap: ``Vc <= 5 * lambda * sqrt_fc * bw * d``
-    - Floor: ``Vc >= lambda * sqrt_fc * bw * d`` (only when ``Nu >= 0``)
-    - ``Vc >= 0`` always
+    - Sec. 22.5.3.1: sqrt(f'c) is not taken greater than 100 psi. The
+      relaxation of Sec. 22.5.3.2 is not implemented.
+    - Sec. 22.5.5.1.2: Nu / (6 Ag) is not taken greater than 0.05 f'c.
+    - Sec. 22.5.5.1.1: Vc is not taken greater than
+      ``5 lambda sqrt(f'c) bw d``, and need not be taken less than
+      ``lambda sqrt(f'c) bw d`` unless the element is in net axial tension
+      or Sec. 18.6.5.2 or 18.7.6.2.1 applies.
+    - Table 22.5.5.1, Note 2: Vc is not taken less than zero.
 
-    The axial term is ``min(Nu/(6*Ag), 0.05*fc)`` when ``Ag > 0``, else 0.
-    *Nu* is positive for compression, negative for tension (Sec. 22.5.3.2).
+    Note:
+        The lower bound of Sec. 22.5.5.1.1 is not in ACI 318-19. Set
+        ``apply_lower_bound=False`` to obtain the ACI 318-19 result, or
+        where Sec. 18.6.5.2 or 18.7.6.2.1 applies.
 
     Args:
         fc (float): Specified compressive strength of concrete in MPa.
         bw (float): Web width in mm.
         d (float): Effective depth in mm.
-        rho_w (float): Longitudinal reinforcement ratio ``As / (bw * d)``
-            (dimensionless).
-        Nu (float): Factored axial force in N; positive = compression,
-            negative = tension. Defaults to 0.
-        Ag (float): Gross cross-sectional area in mm². Required when *Nu* != 0.
-            Defaults to 0.
-        lambda_concrete (float): Concrete lightweight modification factor
-            (dimensionless). Defaults to 1.0 (normal-weight).
-        Av_provided (float): Provided transverse reinforcement area per unit
-            length (mm²/mm), or just area (mm²) matched against *Av_min* on
-            the same basis. Defaults to 0.
-        Av_min (float): Minimum required transverse reinforcement area on the
-            same basis as *Av_provided*. Defaults to 0.
+        rho_w (float): Longitudinal reinforcement ratio As / (bw d).
+        Nu (float): Factored axial force in N, positive in compression and
+            negative in tension. Defaults to 0.
+        Ag (float): Gross area of the section in mm2. Required if Nu is not
+            zero.
+        lambda_concrete (float): Lightweight concrete factor lambda.
+            Defaults to 1.0.
+        has_min_shear_reinforcement (bool): True if Av >= Av,min, which
+            selects Eq. (b). Defaults to False, which selects Eq. (c).
+        apply_lower_bound (bool): Apply the lower bound of Sec. 22.5.5.1.1.
+            The bound is never applied when Nu is negative.
 
     Returns:
-        float: Nominal concrete shear strength *Vc* in N.
+        float: Nominal concrete shear strength Vc in N.
+
+    Raises:
+        ValueError: If fc, bw, d or rho_w is not positive, or if Nu is not
+            zero and Ag is not positive.
     """
-    # Sec. 22.5.3.1 — limit on sqrt(fc)
-    sqrt_fc = min(math.sqrt(fc), 8.3)
+    if bw <= 0.0 or d <= 0.0:
+        raise ValueError(f'bw and d must be positive, got {bw}, {d}')
+    if rho_w <= 0.0:
+        raise ValueError(f'rho_w must be positive, got {rho_w}')
 
-    # Axial-load term (Sec. 22.5.3.2)
-    axial_term = min(Nu / (6.0 * Ag), 0.05 * fc) if Ag > 0.0 else 0.0
+    sqrt_fc = _sqrt_fc(fc, _SQRT_FC_LIMIT_PSI)
+    axial = _axial_stress(Nu, Ag, fc)
+    size = 1.0 if has_min_shear_reinforcement else lambda_s(d)
 
-    # Reinforcement-ratio term
-    rho_term = rho_w ** (1.0 / 3.0)
+    stress = (
+        8.0 * size * lambda_concrete * rho_w ** (1.0 / 3.0) * sqrt_fc + axial
+    )
+    Vc = stress * bw * d
 
-    if Av_provided >= Av_min:
-        # Minimum reinforcement provided — no size-effect penalty
-        base = 8.0 * lambda_concrete * rho_term * sqrt_fc + axial_term
-    else:
-        # Below minimum — apply size-effect factor
-        ls = lambda_s(d)
-        base = 8.0 * ls * lambda_concrete * rho_term * sqrt_fc + axial_term
+    # Sec. 22.5.5.1.1
+    Vc = min(Vc, 5.0 * lambda_concrete * sqrt_fc * bw * d)
+    if apply_lower_bound and Nu >= 0.0:
+        Vc = max(Vc, lambda_concrete * sqrt_fc * bw * d)
 
-    Vc = base * bw * d
-
-    # Upper cap (Sec. 22.5.5.1.1)
-    Vc_max = 5.0 * lambda_concrete * sqrt_fc * bw * d
-    Vc = min(Vc, Vc_max)
-
-    # Lower floor — only apply when there is no net tension (Nu >= 0)
-    if Nu >= 0.0:
-        Vc_floor = lambda_concrete * sqrt_fc * bw * d
-        Vc = max(Vc, Vc_floor)
-
-    # Absolute minimum
     return max(Vc, 0.0)
 
 
@@ -120,29 +199,43 @@ def Vc_simplified(
     Ag: float = 0.0,
     lambda_concrete: float = 1.0,
 ) -> float:
-    """Nominal concrete shear strength — simplified method.
+    """Nominal one-way shear strength provided by concrete, Eq. (a).
 
-    ACI 318-25, Table 22.5.5.1(a).  Valid only when ``Av >= Av_min``:
-    ``Vc = (2 * lambda * sqrt(fc) + axial_term) * bw * d``.
+    ACI 318-25, Table 22.5.5.1 Eq. (a), with f'c in psi and lengths in
+    inches. Permitted only where Av >= Av,min:
+    ``Vc = [2 lambda sqrt(f'c) + Nu / (6 Ag)] bw d``.
+
+    The limits of Sec. 22.5.3.1, 22.5.5.1.1 (upper limit), 22.5.5.1.2 and
+    Table 22.5.5.1 Note 2 are applied as in :func:`Vc_detailed`. The same
+    expression and limits are in ACI 318-19.
 
     Args:
         fc (float): Specified compressive strength of concrete in MPa.
         bw (float): Web width in mm.
         d (float): Effective depth in mm.
-        Nu (float): Factored axial force in N; positive = compression,
-            negative = tension. Defaults to 0.
-        Ag (float): Gross cross-sectional area in mm². Defaults to 0.
-        lambda_concrete (float): Concrete lightweight modification factor
-            (dimensionless). Defaults to 1.0.
+        Nu (float): Factored axial force in N, positive in compression and
+            negative in tension. Defaults to 0.
+        Ag (float): Gross area of the section in mm2. Required if Nu is not
+            zero.
+        lambda_concrete (float): Lightweight concrete factor lambda.
+            Defaults to 1.0.
 
     Returns:
-        float: Nominal concrete shear strength *Vc* in N.
+        float: Nominal concrete shear strength Vc in N.
+
+    Raises:
+        ValueError: If fc, bw or d is not positive, or if Nu is not zero
+            and Ag is not positive.
     """
-    sqrt_fc = math.sqrt(fc)
+    if bw <= 0.0 or d <= 0.0:
+        raise ValueError(f'bw and d must be positive, got {bw}, {d}')
 
-    axial_term = min(Nu / (6.0 * Ag), 0.05 * fc) if Ag > 0.0 else 0.0
+    sqrt_fc = _sqrt_fc(fc, _SQRT_FC_LIMIT_PSI)
+    axial = _axial_stress(Nu, Ag, fc)
 
-    return (2.0 * lambda_concrete * sqrt_fc + axial_term) * bw * d
+    Vc = (2.0 * lambda_concrete * sqrt_fc + axial) * bw * d
+    Vc = min(Vc, 5.0 * lambda_concrete * sqrt_fc * bw * d)
+    return max(Vc, 0.0)
 
 
 # ---------------------------------------------------------------------------
@@ -153,34 +246,34 @@ def Vc_simplified(
 def Vs(Av: float, fyt: float, d: float, s: float) -> float:
     """Nominal shear strength provided by transverse reinforcement.
 
-    ACI 318-25, Eq. 22.5.8.5.3:
-    ``Vs = Av * fyt * d / s``.
+    ACI 318-19, Eq. (22.5.8.5.3), for shear reinforcement perpendicular to
+    the axis of the member: ``Vs = Av fyt d / s``. The expression is
+    dimensionally consistent and needs no unit conversion.
 
     Args:
-        Av (float): Area of shear reinforcement within spacing *s* in mm².
+        Av (float): Area of shear reinforcement within spacing s in mm2.
         fyt (float): Specified yield strength of transverse reinforcement in
             MPa.
         d (float): Effective depth in mm.
-        s (float): Center-to-center spacing of transverse reinforcement in mm.
+        s (float): Center-to-center spacing of transverse reinforcement in
+            mm.
 
     Returns:
-        float: Steel shear contribution *Vs* in N.
+        float: Nominal shear strength Vs in N.
     """
     return Av * fyt * d / s
 
 
 def Vn(Vc: float, Vs: float) -> float:  # noqa: N803
-    """Nominal shear strength of a section.
-
-    ACI 318-25, Sec. 22.5.1.1:
-    ``Vn = Vc + Vs``.
+    """Nominal one-way shear strength of a section, Vn = Vc + Vs.
 
     Args:
-        Vc (float): Nominal concrete shear strength in N.
-        Vs (float): Nominal steel shear strength in N.
+        Vc (float): Nominal shear strength provided by concrete in N.
+        Vs (float): Nominal shear strength provided by shear reinforcement
+            in N.
 
     Returns:
-        float: Total nominal shear strength *Vn* in N.
+        float: Nominal shear strength Vn in N.
     """
     return Vc + Vs
 
@@ -198,25 +291,25 @@ def check_cross_section(
     bw: float,
     d: float,
 ) -> bool:
-    """Check that the cross-section is large enough.
+    """Check the limit on cross-sectional dimensions.
 
-    ACI 318-25, Eq. 22.5.1.2.  The factored shear must not exceed:
-    ``Vu <= phi * (Vc + 8 * sqrt(fc) * bw * d)``.
+    ACI 318-25, Eq. (22.5.1.2), with f'c in psi and lengths in inches:
+    ``Vu <= phi (Vc + 8 sqrt(f'c) bw d)``. The same expression is in
+    ACI 318-19. The limit of Sec. 22.5.3.1 on sqrt(f'c) is written for the
+    calculation of Vc and is not applied to this expression.
 
     Args:
         Vu (float): Factored shear force in N.
-        phi (float): Strength reduction factor for shear (dimensionless).
-        Vc (float): Nominal concrete shear strength in N.
+        phi (float): Strength reduction factor for shear.
+        Vc (float): Nominal shear strength provided by concrete in N.
         fc (float): Specified compressive strength of concrete in MPa.
         bw (float): Web width in mm.
         d (float): Effective depth in mm.
 
     Returns:
-        bool: ``True`` if the cross-section size is adequate; ``False``
-        otherwise.
+        bool: True if the cross-section satisfies Eq. (22.5.1.2).
     """
-    limit = phi * (Vc + 8.0 * math.sqrt(fc) * bw * d)
-    return Vu <= limit
+    return Vu <= phi * (Vc + 8.0 * _sqrt_fc(fc) * bw * d)
 
 
 # ---------------------------------------------------------------------------
@@ -225,10 +318,12 @@ def check_cross_section(
 
 
 def Av_min_per_s(fc: float, bw: float, fyt: float) -> float:
-    """Minimum area of shear reinforcement per unit length.
+    """Minimum area of shear reinforcement per unit length of a beam.
 
-    ACI 318-25, Sec. 9.6.3.4:
-    ``Av/s = max(0.062 * sqrt(fc), 0.35) * bw / fyt``.
+    ACI 318-25, Table 9.6.3.4 (a) and (b), nonprestressed beams, with
+    stresses in psi: ``Av,min / s`` is the greater of
+    ``0.75 sqrt(f'c) bw / fyt`` and ``50 bw / fyt``. The same table is in
+    ACI 318-19.
 
     Args:
         fc (float): Specified compressive strength of concrete in MPa.
@@ -237,24 +332,25 @@ def Av_min_per_s(fc: float, bw: float, fyt: float) -> float:
             MPa.
 
     Returns:
-        float: Minimum ``Av/s`` in mm²/mm.
+        float: Minimum Av / s in mm2/mm.
     """
-    return max(0.062 * math.sqrt(fc), 0.35) * bw / fyt
+    stress = max(0.75 * _sqrt_fc(fc), 50.0 * _MPA_PER_PSI)
+    return stress * bw / fyt
 
 
 def shear_reinforcement_required(Vu: float, phi_Vc: float) -> bool:
-    """Determine whether shear reinforcement is required.
+    """Determine whether Vu exceeds the design strength of the concrete.
 
-    ACI 318-25, Sec. 9.6.3.1.  Reinforcement is required when:
-    ``Vu > phi * Vc``.
+    Returns True when ``Vu > phi Vc``. This is a comparison only. The Code
+    thresholds at which minimum shear reinforcement is required in beams
+    and slabs are separate provisions and are not evaluated here.
 
     Args:
         Vu (float): Factored shear force in N.
-        phi_Vc (float): Design concrete shear strength ``phi * Vc`` in N.
+        phi_Vc (float): Design shear strength of the concrete, phi Vc, in N.
 
     Returns:
-        bool: ``True`` if shear reinforcement is required; ``False``
-        otherwise.
+        bool: True if Vu exceeds phi Vc.
     """
     return Vu > phi_Vc
 
@@ -270,22 +366,25 @@ def max_stirrup_spacing(
     fc: float,
     bw: float,
 ) -> float:
-    """Maximum permitted stirrup spacing.
+    """Maximum spacing of legs of shear reinforcement along a beam.
 
-    ACI 318-25, Sec. 9.7.6.2.2.  When ``Vs <= 4*sqrt(fc)*bw*d`` the maximum
-    spacing is ``min(d/2, 600 mm)``; when *Vs* exceeds that threshold the
-    limit is halved to ``min(d/4, 300 mm)``.
+    ACI 318-25, Table 9.7.6.2.2, nonprestressed beam, along the length,
+    with f'c in psi and lengths in inches. Where the required
+    ``Vs <= 4 sqrt(f'c) bw d`` the maximum spacing is the lesser of d/2
+    and 24 in. Above that it is the lesser of d/4 and 12 in. The same
+    table is in ACI 318-19.
 
     Args:
         d (float): Effective depth in mm.
-        Vs (float): Nominal steel shear contribution in N.
+        Vs (float): Required nominal shear strength of the shear
+            reinforcement in N.
         fc (float): Specified compressive strength of concrete in MPa.
         bw (float): Web width in mm.
 
     Returns:
-        float: Maximum stirrup spacing in mm.
+        float: Maximum spacing in mm.
     """
-    threshold = 4.0 * math.sqrt(fc) * bw * d
+    threshold = 4.0 * _sqrt_fc(fc) * bw * d
     if Vs <= threshold:
-        return min(d / 2.0, 600.0)
-    return min(d / 4.0, 300.0)
+        return min(d / 2.0, 24.0 * _MM_PER_IN)
+    return min(d / 4.0, 12.0 * _MM_PER_IN)

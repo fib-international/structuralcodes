@@ -202,36 +202,22 @@ def Mn_doubly_reinforced(
 # ---------------------------------------------------------------------------
 
 
-def As_min_slab(
-    fy: float,
-    b: float,
-    h: float,
-) -> float:
-    """Minimum flexural reinforcement area for a slab.
+def As_min_slab(b: float, h: float) -> float:
+    """Minimum flexural reinforcement area for a nonprestressed one-way slab.
 
-    ACI 318-25, Sec. 7.6.1.1, referring to Sec. 24.4.3.2.
-    The minimum steel ratio depends on *fy* in psi:
-
-    - *fy* <= 50 000 psi : rho_min = 0.0020
-    - *fy* <= 60 000 psi : rho_min = 0.0018
-    - *fy*  > 60 000 psi : rho_min = max(0.0014, 0.0018 * 60 000 / fy_psi)
+    ACI 318-25, Sec. 7.6.1.1: ``As,min = 0.0018 Ag``. The ratio does not
+    depend on the grade of reinforcement. ACI 318-19 gives the same ratio in
+    Sec. 24.4.3.2. The reduced ratios for yield strengths above 60,000 psi
+    belong to editions before 2019.
 
     Args:
-        fy (float): Specified yield strength of reinforcement in MPa.
         b (float): Width of slab strip in mm.
         h (float): Overall slab thickness in mm.
 
     Returns:
-        float: Minimum steel area *As_min* in mm².
+        float: Minimum reinforcement area As,min in mm2.
     """
-    fy_psi = fy * 145.038  # 1 MPa = 145.038 psi
-    if fy_psi <= 50000.0:
-        ratio = 0.0020
-    elif fy_psi <= 60000.0:
-        ratio = 0.0018
-    else:
-        ratio = max(0.0014, 0.0018 * 60000.0 / fy_psi)
-    return ratio * b * h
+    return 0.0018 * b * h
 
 
 def As_min_beam(

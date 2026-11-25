@@ -151,44 +151,12 @@ class TestMnDoublyReinforced:
 
 
 class TestAsMinSlab:
-    """Tests for As_min_slab (Sec. 7.6.1.1 -> 24.4.3.2)."""
+    """Tests for As_min_slab (ACI 318-25 Sec. 7.6.1.1)."""
 
-    def test_grade60_ratio_0018(self):
-        """Grade 60 (fy=420 MPa ~ 60 900 psi) -> ratio = 0.0018."""
-        # 420 MPa * 145.038 psi/MPa = 60 916 psi > 60 000 ->
-        # 0.0018 * 60000/60916; use exactly 413.7 MPa = 60 000 psi boundary;
-        # 420 MPa sits > 60 000 psi, so use 413 MPa for grade-60 test.
-        fy_60ksi = 413.685  # MPa corresponding to exactly 60 000 psi
-        result = fl.As_min_slab(fy_60ksi, B, H)
-        expected = 0.0018 * B * H
-        assert math.isclose(result, expected, rel_tol=1e-6)
-
-    def test_grade40_ratio_0020(self):
-        """Grade 40 (fy ~ 276 MPa, 40 000 psi) -> ratio = 0.0020."""
-        fy_40ksi = 275.79  # MPa  (40 000 psi)
-        result = fl.As_min_slab(fy_40ksi, B, H)
-        expected = 0.0020 * B * H
-        assert math.isclose(result, expected, rel_tol=1e-6)
-
-    def test_grade80_lower_ratio(self):
-        """Grade 80 -> ratio = max(0.0014, 0.0018*60000/fy_psi)."""
-        fy_80ksi = 551.58  # MPa (80 000 psi)
-        fy_psi = fy_80ksi * 145.038
-        expected_ratio = max(0.0014, 0.0018 * 60000.0 / fy_psi)
-        result = fl.As_min_slab(fy_80ksi, B, H)
-        assert math.isclose(result, expected_ratio * B * H, rel_tol=1e-6)
-
-    def test_grade80_ratio_below_0018(self):
-        """Grade 80 ratio must be less than 0.0018."""
-        fy_80ksi = 551.58
-        ratio = fl.As_min_slab(fy_80ksi, B, H) / (B * H)
-        assert ratio < 0.0018
-
-    def test_minimum_floor(self):
-        """Very high fy should not produce ratio below 0.0014."""
-        fy_very_high = 700.0  # MPa
-        ratio = fl.As_min_slab(fy_very_high, B, H) / (B * H)
-        assert ratio >= 0.0014
+    def test_12_in_strip_of_10_in_slab(self):
+        """Hand calculation: 0.0018 x 12 in x 10 in = 0.216 in2."""
+        result = fl.As_min_slab(12 * 25.4, 10 * 25.4)
+        assert math.isclose(result / 25.4**2, 0.216, rel_tol=1e-9)
 
 
 class TestAsMinBeam:

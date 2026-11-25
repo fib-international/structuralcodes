@@ -1,314 +1,229 @@
-"""Tests for ACI 318-25 one-way shear strength functions (Ch. 22.5)."""
+"""Tests for ACI 318-25 one-way shear strength functions (Ch. 22.5).
 
-import math
+Every expected value is a hand calculation in inch-pound units, the units
+in which the Code expressions are written, converted to SI with exact
+factors. The reference section is bw = 12 in, d = 20 in, f'c = 4000 psi,
+sqrt(f'c) = 63.246 psi, bw * d = 240 in2.
+"""
+
+import pytest
 
 from structuralcodes.codes.aci318_25 import _shear as sh
 
-# ---------------------------------------------------------------------------
-# Shared test constants
-# ---------------------------------------------------------------------------
-FC = 27.58  # MPa  (4 000 psi)
-BW = 305.0  # mm   (12 in)
-D = 227.0  # mm   (~8.94 in)
-RHO_W = 0.009  # longitudinal reinforcement ratio
+# Exact conversion factors
+IN = 25.4  # mm per in
+PSI = 0.006894757293168361  # MPa per psi
+KIP = 4448.2216152605  # N per kip
+
+FC = 4000.0 * PSI  # MPa
+BW = 12.0 * IN  # mm
+D = 20.0 * IN  # mm
+AG = 12.0 * 24.0 * IN**2  # mm2, 12 in x 24 in gross section
 
 
-# ---------------------------------------------------------------------------
-# lambda_s — size-effect factor
-# ---------------------------------------------------------------------------
+def kip(force_newton: float) -> float:
+    """Convert N to kip."""
+    return force_newton / KIP
 
 
 class TestLambdaS:
-    """Tests for lambda_s (Eq. 22.5.5.1.3)."""
+    """Eq. (22.5.5.1.3) as printed in ACI 318-25: 2 / (1 + d/10) <= 1."""
 
-    def test_shallow_depth_capped_at_one(self):
-        """d=227 mm is shallow enough that lambda_s should be capped at 1.0."""
-        result = sh.lambda_s(D)
-        # d_in = 227/25.4 = 8.937 in -> 2/(1+8.937/10) = 1.056 -> capped 1.0
-        assert math.isclose(result, 1.0, rel_tol=1e-9)
+    def test_d_20_in(self):
+        """2 / (1 + 20/10) = 0.6667."""
+        assert sh.lambda_s(D) == pytest.approx(2.0 / 3.0, rel=1e-9)
 
-    def test_deep_member(self):
-        """d=900 mm should give a size-effect factor less than 1.0."""
-        d_deep = 900.0
-        d_in = d_deep / 25.4
-        expected = min(2.0 / (1.0 + d_in / 10.0), 1.0)
-        result = sh.lambda_s(d_deep)
-        assert math.isclose(result, expected, rel_tol=1e-9)
-        assert result < 1.0
+    def test_d_10_in_is_unity(self):
+        """2 / (1 + 10/10) = 1.0."""
+        assert sh.lambda_s(10.0 * IN) == pytest.approx(1.0, rel=1e-9)
 
-    def test_never_exceeds_one(self):
-        """lambda_s must never exceed 1.0 for any positive depth."""
-        for d_test in [50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0]:
-            assert sh.lambda_s(d_test) <= 1.0
+    def test_shallow_member_capped_at_one(self):
+        """D = 5 in gives 1.333, capped at 1.0."""
+        assert sh.lambda_s(5.0 * IN) == 1.0
 
-
-# ---------------------------------------------------------------------------
-# Vc_detailed — detailed shear strength
-# ---------------------------------------------------------------------------
-
-
-class TestVcDetailed:
-    """Tests for Vc_detailed (Table 22.5.5.1)."""
-
-    def test_without_min_reinforcement_uses_size_effect(self):
-        """Without minimum reinforcement, lambda_s should reduce Vc."""
-        sqrt_fc = min(math.sqrt(FC), 8.3)
-        ls = sh.lambda_s(D)
-        expected_base = 8.0 * ls * 1.0 * RHO_W ** (1.0 / 3.0) * sqrt_fc
-        expected_Vc_raw = expected_base * BW * D
-        # floor: lambda * sqrt_fc * bw * d
-        Vc_floor = 1.0 * sqrt_fc * BW * D
-        expected_Vc = max(expected_Vc_raw, Vc_floor)
-        result = sh.Vc_detailed(FC, BW, D, RHO_W, Av_provided=0, Av_min=100)
-        assert math.isclose(result, expected_Vc, rel_tol=1e-9)
-
-    def test_with_min_reinforcement_no_size_effect(self):
-        """With minimum reinforcement provided, lambda_s is not applied."""
-        sqrt_fc = min(math.sqrt(FC), 8.3)
-        expected_base = 8.0 * 1.0 * RHO_W ** (1.0 / 3.0) * sqrt_fc
-        expected_Vc_raw = expected_base * BW * D
-        Vc_floor = 1.0 * sqrt_fc * BW * D
-        expected_Vc = max(expected_Vc_raw, Vc_floor)
-        result = sh.Vc_detailed(FC, BW, D, RHO_W, Av_provided=200, Av_min=100)
-        assert math.isclose(result, expected_Vc, rel_tol=1e-9)
-
-    def test_with_min_reinforcement_exceeds_without(self):
-        """Providing minimum reinforcement gives Vc >= version without."""
-        Vc_no_rein = sh.Vc_detailed(
-            FC, BW, D, RHO_W, Av_provided=0, Av_min=100
-        )
-        Vc_with_rein = sh.Vc_detailed(
-            FC, BW, D, RHO_W, Av_provided=200, Av_min=100
-        )
-        assert Vc_with_rein >= Vc_no_rein
-
-    def test_vc_not_negative_with_large_tension(self):
-        """Large tensile force (negative Nu) must not produce negative Vc."""
-        Nu_tension = -1e8  # 100 MN tension — extreme case
-        Ag = BW * 300.0
-        result = sh.Vc_detailed(FC, BW, D, RHO_W, Nu=Nu_tension, Ag=Ag)
-        assert result >= 0.0
-
-    def test_upper_cap_applied(self):
-        """Vc must not exceed 5*lambda*sqrt(fc)*bw*d."""
-        sqrt_fc = min(math.sqrt(FC), 8.3)
-        cap = 5.0 * 1.0 * sqrt_fc * BW * D
-        result = sh.Vc_detailed(
-            FC, BW, D, rho_w=1.0
-        )  # extreme rho_w to try to exceed cap
-        assert result <= cap + 1e-6
-
-    def test_compressive_axial_increases_vc(self):
-        """Compressive axial load (positive Nu) should increase Vc."""
-        Vc_no_axial = sh.Vc_detailed(FC, BW, D, RHO_W)
-        Nu_comp = 500e3  # 500 kN compression
-        Ag = BW * 300.0
-        Vc_with_axial = sh.Vc_detailed(FC, BW, D, RHO_W, Nu=Nu_comp, Ag=Ag)
-        assert Vc_with_axial >= Vc_no_axial
-
-
-# ---------------------------------------------------------------------------
-# Vc_simplified — simplified shear strength
-# ---------------------------------------------------------------------------
+    def test_non_positive_depth_raises(self):
+        """A depth of zero is not a section."""
+        with pytest.raises(ValueError):
+            sh.lambda_s(0.0)
 
 
 class TestVcSimplified:
-    """Tests for Vc_simplified (Table 22.5.5.1(a))."""
+    """Table 22.5.5.1 Eq. (a): [2 lambda sqrt(f'c) + Nu/6Ag] bw d."""
 
-    def test_no_axial_formula(self):
-        """With no axial load: Vc = 2*lambda*sqrt(fc)*bw*d."""
-        expected = 2.0 * 1.0 * math.sqrt(FC) * BW * D
-        result = sh.Vc_simplified(FC, BW, D)
-        assert math.isclose(result, expected, rel_tol=1e-9)
+    def test_no_axial(self):
+        """2 x 63.246 x 240 = 30,358 lbf = 30.358 kip."""
+        assert kip(sh.Vc_simplified(FC, BW, D)) == pytest.approx(
+            30.358, rel=1e-4
+        )
 
-    def test_lightweight_concrete_reduces_vc(self):
-        """A lightweight factor < 1.0 should reduce Vc."""
-        Vc_nw = sh.Vc_simplified(FC, BW, D)
-        Vc_lw = sh.Vc_simplified(FC, BW, D, lambda_concrete=0.75)
-        assert Vc_lw < Vc_nw
+    def test_compression(self):
+        """Nu = 100 kip on 288 in2: Nu/6Ag = 57.87 psi; Vc = 44.247 kip."""
+        Vc = sh.Vc_simplified(FC, BW, D, Nu=100.0 * KIP, Ag=AG)
+        assert kip(Vc) == pytest.approx(44.247, rel=1e-4)
 
-    def test_compressive_axial_increases_vc(self):
-        """Positive Nu should increase Vc via the axial term."""
-        Vc_no_axial = sh.Vc_simplified(FC, BW, D)
-        Ag = BW * 300.0
-        Vc_with_axial = sh.Vc_simplified(FC, BW, D, Nu=500e3, Ag=Ag)
-        assert Vc_with_axial > Vc_no_axial
+    def test_tension_not_below_zero(self):
+        """Nu = -300 kip: 126.5 - 173.6 psi is negative, so Vc = 0."""
+        Vc = sh.Vc_simplified(FC, BW, D, Nu=-300.0 * KIP, Ag=AG)
+        assert Vc == 0.0
 
-    def test_positive(self):
-        """Vc_simplified must be positive for ordinary inputs."""
-        assert sh.Vc_simplified(FC, BW, D) > 0.0
+    def test_sqrt_fc_limited_to_100_psi(self):
+        """22.5.3.1: f'c = 12,000 psi; 2 x 100 x 240 = 48.0 kip."""
+        Vc = sh.Vc_simplified(12000.0 * PSI, BW, D)
+        assert kip(Vc) == pytest.approx(48.0, rel=1e-4)
+
+    def test_lightweight(self):
+        """Lambda = 0.75: 0.75 x 30.358 = 22.768 kip."""
+        Vc = sh.Vc_simplified(FC, BW, D, lambda_concrete=0.75)
+        assert kip(Vc) == pytest.approx(22.768, rel=1e-4)
+
+    def test_axial_without_area_raises(self):
+        """Nu without Ag cannot be evaluated."""
+        with pytest.raises(ValueError):
+            sh.Vc_simplified(FC, BW, D, Nu=100.0 * KIP)
 
 
-# ---------------------------------------------------------------------------
-# Vs — steel shear contribution
-# ---------------------------------------------------------------------------
+class TestVcDetailed:
+    """Table 22.5.5.1 Eq. (b) and (c), with 22.5.5.1.1 and 22.5.5.1.2."""
+
+    def test_eq_b_with_minimum_shear_reinforcement(self):
+        """8 x 0.01^(1/3) x 63.246 x 240 = 26.162 kip."""
+        Vc = sh.Vc_detailed(
+            FC, BW, D, rho_w=0.01, has_min_shear_reinforcement=True
+        )
+        assert kip(Vc) == pytest.approx(26.162, rel=1e-4)
+
+    def test_eq_c_is_the_default(self):
+        """Lambda_s = 0.6667: 0.6667 x 26.162 = 17.441 kip."""
+        Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.01)
+        assert kip(Vc) == pytest.approx(17.441, rel=1e-4)
+
+    def test_lower_bound_governs_lightly_reinforced(self):
+        """rho_w = 0.002: Eq. (c) gives 10.200 kip.
+
+        22.5.5.1.1 lower bound: 63.246 x 240 = 15.179 kip.
+        """
+        Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.002)
+        assert kip(Vc) == pytest.approx(15.179, rel=1e-4)
+
+    def test_lower_bound_switched_off(self):
+        """22.5.5.1.1(b): the bound does not apply, Eq. (c) stands."""
+        Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.002, apply_lower_bound=False)
+        assert kip(Vc) == pytest.approx(10.200, rel=1e-4)
+
+    def test_lower_bound_not_applied_in_net_tension(self):
+        """22.5.5.1.1(a): Nu = -10 kip, Nu/6Ag = -5.79 psi.
+
+        (8 x 0.6667 x 0.002^(1/3) x 63.246 - 5.787) x 240 = 8.811 kip.
+        """
+        Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.002, Nu=-10.0 * KIP, Ag=AG)
+        assert kip(Vc) == pytest.approx(8.811, rel=1e-4)
+
+    def test_upper_limit(self):
+        """rho_w = 0.02 and Nu = 400 kip, with minimum shear reinforcement.
+
+        Nu/6Ag = 231.5 psi, limited to 0.05 f'c = 200 psi (22.5.5.1.2).
+        Eq. (b) gives 80.96 kip, limited to 5 x 63.246 x 240 = 75.895 kip
+        (22.5.5.1.1).
+        """
+        Vc = sh.Vc_detailed(
+            FC,
+            BW,
+            D,
+            rho_w=0.02,
+            Nu=400.0 * KIP,
+            Ag=AG,
+            has_min_shear_reinforcement=True,
+        )
+        assert kip(Vc) == pytest.approx(75.895, rel=1e-4)
+
+    def test_large_tension_gives_zero(self):
+        """Table 22.5.5.1 note 2: Vc is not taken below zero."""
+        Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.01, Nu=-500.0 * KIP, Ag=AG)
+        assert Vc == 0.0
+
+    def test_invalid_reinforcement_ratio_raises(self):
+        """A reinforcement ratio must be positive."""
+        with pytest.raises(ValueError):
+            sh.Vc_detailed(FC, BW, D, rho_w=0.0)
 
 
 class TestVs:
-    """Tests for Vs (Eq. 22.5.8.5.3)."""
+    """Eq. (22.5.8.5.3): Vs = Av fyt d / s."""
 
-    def test_formula(self):
-        """Verify Vs = Av*fyt*d/s for Av=142, fyt=420, d=227, s=150."""
-        Av, fyt, d, s = 142.0, 420.0, 227.0, 150.0
-        expected = Av * fyt * d / s
-        result = sh.Vs(Av, fyt, d, s)
-        assert math.isclose(result, expected, rel_tol=1e-9)
-
-    def test_positive(self):
-        """Vs must be positive for positive inputs."""
-        assert sh.Vs(142.0, 420.0, 227.0, 150.0) > 0.0
-
-    def test_decreases_with_larger_spacing(self):
-        """Doubling the stirrup spacing should halve Vs."""
-        Vs_150 = sh.Vs(142.0, 420.0, D, 150.0)
-        Vs_300 = sh.Vs(142.0, 420.0, D, 300.0)
-        assert math.isclose(Vs_300, Vs_150 / 2.0, rel_tol=1e-9)
-
-
-# ---------------------------------------------------------------------------
-# Vn — total nominal shear strength
-# ---------------------------------------------------------------------------
+    def test_two_leg_no_3_at_8_in(self):
+        """0.22 in2 x 60 ksi x 20 in / 8 in = 33.0 kip."""
+        Av = 0.22 * IN**2
+        fyt = 60000.0 * PSI
+        Vs = sh.Vs(Av, fyt, D, 8.0 * IN)
+        assert kip(Vs) == pytest.approx(33.0, rel=1e-6)
 
 
 class TestVn:
-    """Tests for Vn."""
+    """Vn = Vc + Vs."""
 
-    def test_simple_sum(self):
-        """Vn = Vc + Vs."""
-        Vc, Vs_val = 150000.0, 90000.0
-        assert math.isclose(sh.Vn(Vc, Vs_val), 240000.0, rel_tol=1e-9)
-
-    def test_zero_vs(self):
-        """With no shear steel, Vn == Vc."""
-        Vc = 120000.0
-        assert math.isclose(sh.Vn(Vc, 0.0), Vc, rel_tol=1e-9)
-
-
-# ---------------------------------------------------------------------------
-# check_cross_section
-# ---------------------------------------------------------------------------
+    def test_sum(self):
+        """Vn is the sum of the two parts."""
+        assert sh.Vn(100e3, 50e3) == 150e3
 
 
 class TestCheckCrossSection:
-    """Tests for check_cross_section (Eq. 22.5.1.2)."""
+    """Eq. (22.5.1.2): Vu <= phi (Vc + 8 sqrt(f'c) bw d)."""
 
-    def test_passes_when_vu_below_limit(self):
-        """A Vu well below the limit should return True."""
-        phi = 0.75
-        Vc = sh.Vc_simplified(FC, BW, D)
-        limit = phi * (Vc + 8.0 * math.sqrt(FC) * BW * D)
-        Vu = 0.8 * limit
-        assert sh.check_cross_section(Vu, phi, Vc, FC, BW, D) is True
-
-    def test_fails_when_vu_above_limit(self):
-        """A Vu above the limit should return False."""
-        phi = 0.75
-        Vc = sh.Vc_simplified(FC, BW, D)
-        limit = phi * (Vc + 8.0 * math.sqrt(FC) * BW * D)
-        Vu = 1.2 * limit
-        assert sh.check_cross_section(Vu, phi, Vc, FC, BW, D) is False
-
-    def test_at_limit_returns_true(self):
-        """Vu exactly at the limit should return True (<=)."""
-        phi = 0.75
-        Vc = sh.Vc_simplified(FC, BW, D)
-        limit = phi * (Vc + 8.0 * math.sqrt(FC) * BW * D)
-        assert sh.check_cross_section(limit, phi, Vc, FC, BW, D) is True
-
-
-# ---------------------------------------------------------------------------
-# Av_min_per_s
-# ---------------------------------------------------------------------------
+    def test_limit(self):
+        """Vc = 30.358 kip; 0.75 x (30.358 + 121.431) = 113.842 kip."""
+        Vc = 30.358 * KIP
+        assert sh.check_cross_section(113.0 * KIP, 0.75, Vc, FC, BW, D)
+        assert not sh.check_cross_section(114.5 * KIP, 0.75, Vc, FC, BW, D)
 
 
 class TestAvMinPerS:
-    """Tests for Av_min_per_s (Sec. 9.6.3.4)."""
+    """Table 9.6.3.4 (a) and (b): the greater of 0.75 sqrt(f'c) and 50."""
 
-    def test_formula(self):
-        """Verify Av/s = max(0.062*sqrt(fc), 0.35) * bw / fyt."""
-        fyt = 420.0
-        expected = max(0.062 * math.sqrt(FC), 0.35) * BW / fyt
-        result = sh.Av_min_per_s(FC, BW, fyt)
-        assert math.isclose(result, expected, rel_tol=1e-9)
+    def test_50_psi_governs(self):
+        """With f'c = 4000 psi, 50 x 12 / 60,000 = 0.0100 in2/in."""
+        result = sh.Av_min_per_s(FC, BW, 60000.0 * PSI)
+        assert result / IN == pytest.approx(0.0100, rel=1e-6)
 
-    def test_positive(self):
-        """Minimum Av/s must be positive."""
-        assert sh.Av_min_per_s(FC, BW, 420.0) > 0.0
-
-    def test_lower_fyt_gives_more_steel(self):
-        """Lower fyt should require more area per unit length."""
-        Avs_420 = sh.Av_min_per_s(FC, BW, 420.0)
-        Avs_280 = sh.Av_min_per_s(FC, BW, 280.0)
-        assert Avs_280 > Avs_420
-
-
-# ---------------------------------------------------------------------------
-# shear_reinforcement_required
-# ---------------------------------------------------------------------------
+    def test_sqrt_fc_governs(self):
+        """With f'c = 6000 psi: 58.09 x 12 / 60,000 = 0.011619 in2/in."""
+        result = sh.Av_min_per_s(6000.0 * PSI, BW, 60000.0 * PSI)
+        assert result / IN == pytest.approx(0.011619, rel=1e-4)
 
 
 class TestShearReinforcementRequired:
-    """Tests for shear_reinforcement_required."""
+    """Comparison of Vu with phi Vc."""
 
-    def test_required_when_vu_exceeds_phi_vc(self):
-        """Vu > phi*Vc → reinforcement required."""
-        phi_Vc = 0.75 * sh.Vc_simplified(FC, BW, D)
-        Vu = phi_Vc + 1000.0  # slightly above
-        assert sh.shear_reinforcement_required(Vu, phi_Vc) is True
+    def test_required(self):
+        """Vu above phi Vc."""
+        assert sh.shear_reinforcement_required(100e3, 90e3)
 
-    def test_not_required_when_vu_below_phi_vc(self):
-        """Vu < phi*Vc → no reinforcement required."""
-        phi_Vc = 0.75 * sh.Vc_simplified(FC, BW, D)
-        Vu = phi_Vc - 1000.0  # slightly below
-        assert sh.shear_reinforcement_required(Vu, phi_Vc) is False
-
-    def test_equal_boundary_not_required(self):
-        """Vu == phi*Vc is not strictly greater, so not required."""
-        phi_Vc = 50000.0
-        assert sh.shear_reinforcement_required(phi_Vc, phi_Vc) is False
-
-
-# ---------------------------------------------------------------------------
-# max_stirrup_spacing
-# ---------------------------------------------------------------------------
+    def test_not_required(self):
+        """Vu at or below phi Vc."""
+        assert not sh.shear_reinforcement_required(90e3, 90e3)
 
 
 class TestMaxStirrupSpacing:
-    """Tests for max_stirrup_spacing (Sec. 9.7.6.2.2)."""
+    """Table 9.7.6.2.2, nonprestressed beam, along the length.
 
-    def test_low_vs_limit_d_over_2(self):
-        """For a deep member with low Vs, spacing is limited to d/2."""
-        # Use a large d so that d/2 > 600 is not applicable, and d/2 < 600.
-        # D = 227 mm → d/2 = 113.5 < 600 so limit is d/2 = 113.5
-        Vs_low = 1.0  # essentially zero
-        result = sh.max_stirrup_spacing(D, Vs_low, FC, BW)
-        assert math.isclose(result, D / 2.0, rel_tol=1e-9)
+    The threshold is 4 x 63.246 x 240 = 60.716 kip.
+    """
 
-    def test_low_vs_limit_capped_600(self):
-        """For a very deep member, the 600 mm cap governs over d/2."""
-        d_large = 1500.0  # d/2 = 750 > 600 → should be capped at 600
-        Vs_low = 1.0
-        result = sh.max_stirrup_spacing(d_large, Vs_low, FC, BW)
-        assert math.isclose(result, 600.0, rel_tol=1e-9)
+    def test_low_shear_d_over_2(self):
+        """Vs = 50 kip, d = 20 in: lesser of d/2 = 10 in and 24 in."""
+        s = sh.max_stirrup_spacing(D, 50.0 * KIP, FC, BW)
+        assert s / IN == pytest.approx(10.0, rel=1e-9)
 
-    def test_high_vs_limit_d_over_4(self):
-        """For high Vs, spacing is limited to d/4 (when d/4 < 300)."""
-        # D = 227 mm → d/4 = 56.75 < 300 so limit is d/4
-        threshold = 4.0 * math.sqrt(FC) * BW * D
-        Vs_high = threshold + 1.0  # just above threshold
-        result = sh.max_stirrup_spacing(D, Vs_high, FC, BW)
-        assert math.isclose(result, D / 4.0, rel_tol=1e-9)
+    def test_high_shear_d_over_4(self):
+        """Vs = 70 kip, d = 20 in: lesser of d/4 = 5 in and 12 in."""
+        s = sh.max_stirrup_spacing(D, 70.0 * KIP, FC, BW)
+        assert s / IN == pytest.approx(5.0, rel=1e-9)
 
-    def test_high_vs_limit_capped_300(self):
-        """For a very deep member with high Vs, the 300 mm cap governs."""
-        d_large = 1500.0  # d/4 = 375 > 300 → cap at 300
-        threshold = 4.0 * math.sqrt(FC) * BW * d_large
-        Vs_high = threshold + 1.0
-        result = sh.max_stirrup_spacing(d_large, Vs_high, FC, BW)
-        assert math.isclose(result, 300.0, rel_tol=1e-9)
+    def test_deep_member_24_in(self):
+        """D = 60 in, low shear: d/2 = 30 in, limited to 24 in."""
+        s = sh.max_stirrup_spacing(60.0 * IN, 50.0 * KIP, FC, BW)
+        assert s / IN == pytest.approx(24.0, rel=1e-9)
 
-    def test_at_threshold_uses_lower_limit(self):
-        """Vs at threshold uses the less-restrictive limit (d/2, 600)."""
-        threshold = 4.0 * math.sqrt(FC) * BW * D
-        result = sh.max_stirrup_spacing(D, threshold, FC, BW)
-        assert math.isclose(result, D / 2.0, rel_tol=1e-9)
+    def test_deep_member_12_in(self):
+        """D = 60 in, threshold 182.1 kip, Vs = 200 kip: 12 in."""
+        s = sh.max_stirrup_spacing(60.0 * IN, 200.0 * KIP, FC, BW)
+        assert s / IN == pytest.approx(12.0, rel=1e-9)

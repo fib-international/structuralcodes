@@ -55,7 +55,7 @@ class TestPathAClosedForm:
         Mu = 40e6  # N-mm
         phi = 0.9
         As = aci318_25.As_required(Mu, phi, FY, FC, B, d)
-        As_min = aci318_25.As_min_slab(FY, B, h)
+        As_min = aci318_25.As_min_slab(B, h)
         As_design = max(As, As_min)
 
         a = aci318_25.stress_block_depth_sr(As_design, FY, FC, B)
