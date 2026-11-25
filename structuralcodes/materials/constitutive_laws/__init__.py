@@ -22,6 +22,7 @@ from ._parallel import Parallel
 from ._popovics import Popovics
 from ._sargin import Sargin
 from ._userdefined import UserDefined
+from ._whitneyblock import WhitneyBlock
 
 __all__ = [
     'Elastic',
@@ -35,6 +36,7 @@ __all__ = [
     'UserDefined',
     'InitialStrain',
     'Parallel',
+    'WhitneyBlock',
     'get_constitutive_laws_list',
     'create_constitutive_law',
     'ConcreteSmearedCracking',
@@ -56,6 +58,7 @@ CONSTITUTIVE_LAWS: t.Dict[str, ConstitutiveLaw] = {
     'sargin': Sargin,
     'initialstrain': InitialStrain,
     'elasticfragiletension': ElasticFragileTension,
+    'whitneyblock': WhitneyBlock,
 }
 
 
