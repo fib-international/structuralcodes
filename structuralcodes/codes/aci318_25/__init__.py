@@ -25,6 +25,13 @@ from ._flexure import (
     stress_block_depth_dr,
     stress_block_depth_sr,
 )
+from ._moment_transfer import (
+    Jc,
+    critical_section_centroid,
+    gamma_f,
+    gamma_v,
+    vu_max,
+)
 from ._one_way_slab import (
     As_shrinkage_temperature,
     max_bar_spacing_flexure,
@@ -121,6 +128,11 @@ __all__ = [
     'alpha_s',
     'vc_two_way',
     'critical_section_rectangular',
+    'Jc',
+    'critical_section_centroid',
+    'gamma_f',
+    'gamma_v',
+    'vu_max',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',
