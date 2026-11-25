@@ -43,8 +43,7 @@ class InitialStrain(ConstitutiveLaw):
                 is helpful for instance for modelling unbonded tendons.
                 Default value True.
         """
-        name = name if name is not None else 'InitialStrainLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='InitialStrainLaw')
         if not isinstance(constitutive_law, ConstitutiveLaw):
             raise TypeError(
                 f'Expected a ConstitutiveLaw instance, '

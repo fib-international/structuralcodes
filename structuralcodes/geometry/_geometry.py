@@ -7,7 +7,7 @@ import warnings
 from math import atan2
 
 import numpy as np
-import triangle
+from meshpy.triangle import MeshInfo, build
 from numpy.typing import ArrayLike
 from shapely import affinity
 from shapely.geometry import (
@@ -23,7 +23,7 @@ from shapely.ops import split
 from structuralcodes.materials.basic import ElasticMaterial
 from structuralcodes.materials.concrete import Concrete
 
-from ..core.base import Geometry, Material
+from ..core.base import Geometry, Material, _GroupMixin
 
 
 def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
@@ -59,7 +59,7 @@ def _mirror_about_axis_matrix(axis: LineString) -> np.ndarray:
     return T_inv @ R_inv @ M @ R @ T
 
 
-class PointGeometry(Geometry):
+class PointGeometry(_GroupMixin, Geometry):
     """Class for a point geometry with material.
 
     Basically it is a wrapper for shapely Point including the material (and
@@ -88,7 +88,8 @@ class PointGeometry(Geometry):
             group_label (Optional(str)): A label for grouping several objects
                 (default is None).
         """
-        super().__init__(name, group_label)
+        super().__init__(name)
+        self._group_label = group_label
         # I check if point is a shapely Point or an ArrayLike object
         if not isinstance(point, Point):
             # It is an ArrayLike object -> create the Point given the
@@ -316,7 +317,7 @@ def create_line_point_angle(
     return LineString([(x1, y1), (x2, y2)])
 
 
-class SurfaceGeometry(Geometry):
+class SurfaceGeometry(_GroupMixin, Geometry):
     """Class for a surface geometry with material.
 
     Basically it is a wrapper for shapely polygon including the material (and
@@ -343,7 +344,8 @@ class SurfaceGeometry(Geometry):
             name (Optional(str)): The name to be given to the object.
             group_label (Optional(str)): A label for grouping several objects.
         """
-        super().__init__(name=name, group_label=group_label)
+        super().__init__(name=name)
+        self._group_label = group_label
         # Check if inputs are of the correct type, otherwise return error
         if not isinstance(poly, Polygon):
             raise TypeError(
@@ -444,28 +446,33 @@ class SurfaceGeometry(Geometry):
             # Return the dictionary with data for triangulate
             tri['vertices'] = vertices
             tri['segments'] = segments
-            if len(holes) > 0:
-                tri['holes'] = holes
+            tri['holes'] = holes if len(holes) > 0 else []
             return tri
 
+        # Prepare the data structure for meshpy
         tri = _prepare_triangulation_data(self.polygon)
-        triangles = triangle.triangulate(tri, 'p')
+        triangulation_input = MeshInfo()
+        triangulation_input.set_points(tri['vertices'])
+        triangulation_input.set_facets(tri['segments'])
+        triangulation_input.set_holes(tri['holes'])
+
+        # Triangulate the geometry getting back the mesh
+        mesh = build(triangulation_input, quality_meshing=False)
+        elements = np.asarray(mesh.elements)
+        vertices = np.asarray(mesh.points)
 
         xs = np.array([])
         ys = np.array([])
         # Manage reproducibility of random points:
         # seeds must be random in the triangles loop
-        n_tr = len(triangles['triangles'])
+        n_tr = len(elements)
         rng = np.random.default_rng(seed)
         seeds = rng.integers(1, 300, n_tr)
-        for tr, s in zip(triangles['triangles'], seeds):
+        for tr, s in zip(elements, seeds):
             # Get vertices for the triangle
-            Ax = triangles['vertices'][tr[0]][0]
-            Ay = triangles['vertices'][tr[0]][1]
-            Bx = triangles['vertices'][tr[1]][0]
-            By = triangles['vertices'][tr[1]][1]
-            Cx = triangles['vertices'][tr[2]][0]
-            Cy = triangles['vertices'][tr[2]][1]
+            Ax, Ay = vertices[tr[0]]
+            Bx, By = vertices[tr[1]]
+            Cx, Cy = vertices[tr[2]]
             # area of the triangle
             a = Ax * By - Ay * Bx
             a += Bx * Cy - By * Cx
@@ -824,27 +831,42 @@ class CompoundGeometry(Geometry):
                 geometries, materials
             )
             self.point_geometries = []
-            # useful for representation in svg
-            geoms_representation = [g.polygon for g in self.geometries]
-            self.geom = MultiPolygon(geoms_representation)
+            # self.geom (svg representation) is built lazily, see the geom
+            # property.
+            self._geom = None
             return
         if isinstance(geometries, list):
             self.geometries, self.point_geometries = _process_geometries_list(
                 geometries
             )
-            # useful for representation in svg
-            geoms_representation = [g.polygon for g in self.geometries]
-            geoms_representation += [
-                pg.point.buffer(pg.diameter / 2)
-                for pg in self.point_geometries
-            ]
-            self.geom = MultiPolygon(geoms_representation)
+            # self.geom (svg representation) is built lazily, see the geom
+            # property.
+            self._geom = None
         self._reinforced_concrete = None
 
     # we can add here static methods like
     # from_dxf
     # from_ascii
     # ...
+
+    @property
+    def geom(self) -> MultiPolygon:
+        """MultiPolygon used for the SVG representation, built lazily.
+
+        Point geometries are represented as buffered circles. This is only
+        needed for display, so it is computed on first access rather than in
+        __init__ -- building it eagerly buffers every point geometry on every
+        construction (including every rotate()), which dominated the section
+        calculations.
+        """
+        if self._geom is None:
+            geoms_representation = [g.polygon for g in self.geometries]
+            geoms_representation += [
+                pg.point.buffer(pg.diameter / 2)
+                for pg in self.point_geometries
+            ]
+            self._geom = MultiPolygon(geoms_representation)
+        return self._geom
 
     def _repr_svg_(self) -> str:
         """Returns the svg representation."""

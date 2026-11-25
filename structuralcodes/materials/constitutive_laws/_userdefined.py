@@ -46,8 +46,7 @@ class UserDefined(ConstitutiveLaw):
                 after ultimate strain, 1: stress is mantained constant, 2:
                 last tangent is used, 3: last secant is used.
         """
-        name = name if name is not None else 'UserDefinedLaw'
-        super().__init__(name=name)
+        super().__init__(name=name, base_name='UserDefinedLaw')
         x = np.atleast_1d(np.asarray(x))
         y = np.atleast_1d(np.asarray(y))
         if len(x) != len(y):

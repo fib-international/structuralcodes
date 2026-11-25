@@ -251,6 +251,23 @@ def fcd(fck: float, alpha_cc: float, gamma_c: float) -> float:
     return abs(alpha_cc) * abs(fck) / abs(gamma_c)
 
 
+def fctd(fctk_5: float, alpha_ct: float, gamma_c: float) -> float:
+    """The design tensile strength of concrete.
+
+    EN 1992-1-1:2004, Eq. (3.16).
+
+    Args:
+        fctk_5 (float): The characteristic tensile strength in MPa.
+        alpha_ct (float): A factor for considering long-term effects on the
+            strength, and effects that arise from the way the load is applied.
+        gamma_c (float): The partial factor of concrete.
+
+    Returns:
+        float: The design tensile strength of concrete in MPa
+    """
+    return abs(alpha_ct) * abs(fctk_5) / abs(gamma_c)
+
+
 def beta_cc(t: ArrayLike, s: float) -> ArrayLike:
     """The time development function for compressive strength of concrete.
 

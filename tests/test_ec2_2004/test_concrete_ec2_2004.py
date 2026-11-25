@@ -215,6 +215,36 @@ def test_fcd(fck, alpha_cc, fcd):
     )
 
 
+@pytest.mark.parametrize(
+    'fck, fctk_5, alpha_ct, fctd',
+    [
+        (35, 2.2, 0.85, 1.2467),
+        (45, 2.7, 0.85, 1.53),
+        (70, 3.2, 0.85, 1.8133),
+        (90, 3.5, 0.85, 1.9833),
+        (35, 2.2, None, 1.4667),
+        (45, 2.7, None, 1.8),
+        (70, 3.2, None, 2.1333),
+        (90, 3.5, None, 2.3333),
+    ],
+)
+def test_fctd(fck, fctk_5, alpha_ct, fctd):
+    """Test the fctd method on the concrete class."""
+    # Arrange
+    concrete = ConcreteEC2_2004(
+        fck=fck,
+        alpha_ct=alpha_ct,
+        fctk_5=fctk_5,
+    )
+
+    # Act and assert
+    assert math.isclose(
+        concrete.fctd(),
+        fctd,
+        rel_tol=1e-4,
+    )
+
+
 @fck_parametrized
 def test_eps_c1_getter(fck):
     """Test eps_c1 getter."""

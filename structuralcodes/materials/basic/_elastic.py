@@ -49,7 +49,8 @@ class ElasticMaterial(Material):
             initial_strain=initial_strain,
             initial_stress=initial_stress,
             strain_compatibility=strain_compatibility,
-            name=name if name else 'ElasticMaterial',
+            name=name,
+            base_name='ElasticMaterial',
         )
         self._E = E
         self._ultimate_strain = ultimate_strain
