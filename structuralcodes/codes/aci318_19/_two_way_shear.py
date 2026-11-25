@@ -63,9 +63,9 @@ def vc_two_way(
     is the size effect factor of Eq. (22.5.5.1.3).
 
     Note:
-        Table 22.6.5.2 and Sec. 22.6.5.3 are the same in ACI 318-25. The two
-        editions print Eq. (22.5.5.1.3) for lambda_s differently, so the
-        result differs for d greater than 10 in.
+        Table 22.6.5.2 and Sec. 22.6.5.3 are the same in ACI 318-25. See
+        ``structuralcodes.codes.aci318_25.lambda_s`` for a difference in
+        how the two editions print Eq. (22.5.5.1.3).
 
     Args:
         fc (float): Specified compressive strength of concrete in MPa.

@@ -45,24 +45,24 @@ class TestVcTwoWay:
         """Interior 24 in square column, d = 20 in, bo = 4 x 44 = 176 in.
 
         (a) 4; (b) 2 + 4/1 = 6; (c) 2 + 40 x 20 / 176 = 6.55.
-        lambda_s = 2 / (1 + 20/10) = 0.6667.
-        vc = 4 x 0.6667 x 63.246 = 168.65 psi.
+        lambda_s = sqrt(2 / (1 + 20/10)) = 0.8165.
+        vc = 4 x 0.8165 x 63.246 = 206.56 psi.
         """
         vc = tws.vc_two_way(
             FC, d=20.0 * IN, bo=176.0 * IN, beta=1.0, alpha_s=40.0
         )
-        assert psi(vc) == pytest.approx(168.65, rel=1e-4)
+        assert psi(vc) == pytest.approx(206.56, rel=1e-4)
 
     def test_expression_b_governs(self):
         """Interior 12 in x 48 in column, d = 20 in, bo = 200 in.
 
         (a) 4; (b) 2 + 4/4 = 3; (c) 2 + 40 x 20 / 200 = 6.
-        vc = 3 x 0.6667 x 63.246 = 126.49 psi.
+        vc = 3 x 0.8165 x 63.246 = 154.92 psi.
         """
         vc = tws.vc_two_way(
             FC, d=20.0 * IN, bo=200.0 * IN, beta=4.0, alpha_s=40.0
         )
-        assert psi(vc) == pytest.approx(126.49, rel=1e-4)
+        assert psi(vc) == pytest.approx(154.92, rel=1e-4)
 
     def test_expression_c_governs(self):
         """Corner section, d = 8 in, bo = 100 in, alpha_s = 20.

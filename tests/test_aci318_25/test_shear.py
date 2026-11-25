@@ -27,18 +27,22 @@ def kip(force_newton: float) -> float:
 
 
 class TestLambdaS:
-    """Eq. (22.5.5.1.3) as printed in ACI 318-25: 2 / (1 + d/10) <= 1."""
+    """Eq. (22.5.5.1.3) in the ACI 318-19 form: sqrt(2 / (1 + d/10)) <= 1."""
 
     def test_d_20_in(self):
-        """2 / (1 + 20/10) = 0.6667."""
-        assert sh.lambda_s(D) == pytest.approx(2.0 / 3.0, rel=1e-9)
+        """Hand calculation: sqrt(2 / (1 + 20/10)) = 0.8165."""
+        assert sh.lambda_s(D) == pytest.approx(0.8165, rel=1e-4)
+
+    def test_d_40_in(self):
+        """Hand calculation: sqrt(2 / (1 + 40/10)) = 0.6325."""
+        assert sh.lambda_s(40.0 * IN) == pytest.approx(0.6325, rel=1e-4)
 
     def test_d_10_in_is_unity(self):
-        """2 / (1 + 10/10) = 1.0."""
+        """sqrt(2 / (1 + 10/10)) = 1.0."""
         assert sh.lambda_s(10.0 * IN) == pytest.approx(1.0, rel=1e-9)
 
     def test_shallow_member_capped_at_one(self):
-        """D = 5 in gives 1.333, capped at 1.0."""
+        """With d = 5 in the expression gives 1.155, limited to 1.0."""
         assert sh.lambda_s(5.0 * IN) == 1.0
 
     def test_non_positive_depth_raises(self):
@@ -93,12 +97,12 @@ class TestVcDetailed:
         assert kip(Vc) == pytest.approx(26.162, rel=1e-4)
 
     def test_eq_c_is_the_default(self):
-        """Lambda_s = 0.6667: 0.6667 x 26.162 = 17.441 kip."""
+        """Lambda_s = 0.8165: 0.8165 x 26.162 = 21.361 kip."""
         Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.01)
-        assert kip(Vc) == pytest.approx(17.441, rel=1e-4)
+        assert kip(Vc) == pytest.approx(21.361, rel=1e-4)
 
     def test_lower_bound_governs_lightly_reinforced(self):
-        """rho_w = 0.002: Eq. (c) gives 10.200 kip.
+        """rho_w = 0.002: Eq. (c) gives 12.492 kip.
 
         22.5.5.1.1 lower bound: 63.246 x 240 = 15.179 kip.
         """
@@ -108,15 +112,15 @@ class TestVcDetailed:
     def test_lower_bound_switched_off(self):
         """22.5.5.1.1(b): the bound does not apply, Eq. (c) stands."""
         Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.002, apply_lower_bound=False)
-        assert kip(Vc) == pytest.approx(10.200, rel=1e-4)
+        assert kip(Vc) == pytest.approx(12.492, rel=1e-4)
 
     def test_lower_bound_not_applied_in_net_tension(self):
         """22.5.5.1.1(a): Nu = -10 kip, Nu/6Ag = -5.79 psi.
 
-        (8 x 0.6667 x 0.002^(1/3) x 63.246 - 5.787) x 240 = 8.811 kip.
+        (8 x 0.8165 x 0.002^(1/3) x 63.246 - 5.787) x 240 = 11.103 kip.
         """
         Vc = sh.Vc_detailed(FC, BW, D, rho_w=0.002, Nu=-10.0 * KIP, Ag=AG)
-        assert kip(Vc) == pytest.approx(8.811, rel=1e-4)
+        assert kip(Vc) == pytest.approx(11.103, rel=1e-4)
 
     def test_upper_limit(self):
         """rho_w = 0.02 and Nu = 400 kip, with minimum shear reinforcement.

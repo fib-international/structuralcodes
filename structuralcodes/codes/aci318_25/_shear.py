@@ -8,7 +8,8 @@ factors, so that every coefficient below is the one printed in the Code.
 
 Edition: the expressions were read in ACI 318-25 and compared with
 ACI 318-19. Differences are recorded in the docstring of the function they
-affect.
+affect. The size effect factor lambda_s departs from ACI 318-25 as printed,
+see :func:`lambda_s`.
 """
 
 import math
@@ -78,17 +79,25 @@ def _axial_stress(Nu: float, Ag: float, fc: float) -> float:
 def lambda_s(d: float) -> float:
     """Size effect modification factor for shear.
 
-    ACI 318-25, Eq. (22.5.5.1.3), as printed, with d in inches:
-    ``lambda_s = 2 / (1 + d / 10) <= 1``.
+    Evaluated in the form of ACI 318-19, Eq. (22.5.5.1.3), with d in
+    inches: ``lambda_s = sqrt(2 / (1 + d / 10)) <= 1``.
 
     Note:
-        ACI 318-19 prints the same equation under a square root,
-        ``sqrt(2 / (1 + d / 10)) <= 1``. The copy of ACI 318-25 read for
-        this function prints it without the square root and without a
-        change bar. The form without the square root gives the smaller
-        factor for d greater than 10 in. Whether the difference is intended
-        has not been established and should be checked against the ACI
-        errata before this function is relied on.
+        ACI 318-25 prints Eq. (22.5.5.1.3) without the square root, as
+        ``2 / (1 + d / 10) <= 1``. This function does not follow the
+        equation as printed, for these reasons:
+
+        - ACI 318-19 prints the equation under a square root.
+        - The clause carries no change bar in ACI 318-25, and the
+          commentary R22.5.5.1.3 is the same in the two editions. It
+          describes the factor as consistent with fracture mechanics
+          theory, whose size effect law has the square root form.
+        - No erratum to ACI 318-25 on this equation had been published
+          when this function was written (checked November 2026).
+
+        The printed form would give a smaller factor for d greater than
+        10 in, for example 0.667 against 0.816 at d = 20 in. Review this
+        function if ACI confirms the printed form.
 
     Args:
         d (float): Effective depth of the member in mm.
@@ -102,7 +111,7 @@ def lambda_s(d: float) -> float:
     if d <= 0.0:
         raise ValueError(f'd must be positive, got {d}')
     d_in = d / _MM_PER_IN
-    return min(2.0 / (1.0 + d_in / 10.0), 1.0)
+    return min(math.sqrt(2.0 / (1.0 + d_in / 10.0)), 1.0)
 
 
 # ---------------------------------------------------------------------------

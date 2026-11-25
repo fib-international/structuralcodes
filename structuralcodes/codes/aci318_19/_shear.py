@@ -44,7 +44,8 @@ def lambda_s(d: float) -> float:
     ``lambda_s = sqrt(2 / (1 + d / 10)) <= 1``.
 
     Note:
-        ACI 318-25 prints this equation without the square root. See
+        ACI 318-25 prints this equation without the square root. The
+        ACI 318-25 function of this library uses the form given here. See
         ``structuralcodes.codes.aci318_25.lambda_s``.
 
     Args:
