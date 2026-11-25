@@ -107,7 +107,8 @@ class WhitneyBlock(ConstitutiveLaw):
         return np.zeros_like(eps, dtype=float)
 
     def get_ultimate_strain(
-        self, yielding: bool = False  # noqa: ARG002
+        self,
+        yielding: bool = False,  # noqa: ARG002
     ) -> t.Tuple[float, float]:
         """Return the ultimate strain (negative and positive)."""
         return (self._eps_cu, 0.0)
