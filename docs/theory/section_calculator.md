@@ -191,23 +191,84 @@ The algorithm works with the following steps:
 1. **Rotate the section**: the section is rotated by the given angle theta. In this new CRS *$y^*z^*$*, the problem becomes uniaxial bending about the *$y^*$* axis.
 2. **Axial load check**: verify if axial load is within the admissible range of axial loads (in tension and compression). This ensures the section can withstand the applied aixal load without failure.
 3. **If not provided, compute array of curvatures**: if curvatures are not provided, the array of curvatures is computed. First the yield and ultimate curvatures are computed and the array of curvatures is computed with some points before yielding, and other points from yielding to ultimate condition. Ultimate curvature represents the last value computed automatically. If the user wants to go beyond that point, he should provide a custom curvatures array. For more information, refert to the [api](#api-section-calculator).
-4. **For each curvature value compute moment**: for each value of the curvature, the algorithms finds the strain profile that is in equlibrium with external axial force and computes the corresponding value of moment. 
-To do so, the algorithm proceeds iterativelly, for a fixed value of curvature, solving the equation $\Delta N(\varepsilon_0)=0$ where $\Delta N(\varepsilon_0)=N_{ext}-N_{int}(\varepsilon_0)$ and $\varepsilon_0$ is the axial strain at coordinates $(0, 0)$ of the section. The iterative solution is performed with a bisection algorithm applied to the range $[\varepsilon_{0,A}, \varepsilon_{0,B}]$ where $\varepsilon_{0,A}$ is the axial strain from the last step and $\varepsilon_{0,B}$ is found by a quick [pre-computation algorithm](theory-pre-find-range) whose aim is finding the range where there is one solution. The bisection algorithm is then applied and the variable $\varepsilon_0$ is detemined within a fixed tolerance.
+4. **For each curvature value compute moment**: for each value of the curvature, the algorithm finds the strain profile that is in equilibrium with the external axial force and computes the corresponding value of moment.
+To do so, for a fixed value of curvature $\chi$ the strain is $\varepsilon(z^*) = \varepsilon_0 + \chi\, z^*$, where $\varepsilon_0$ is the axial strain at coordinates $(0, 0)$ of the section, and the equation $\Delta N(\varepsilon_0)=0$ is solved, where $\Delta N(\varepsilon_0)=N_{int}(\varepsilon_0)-N_{ext}$. The solution is searched only in the range of $\varepsilon_0$ where all materials are within their ultimate strains: first a bracket $[\varepsilon_{0,l}, \varepsilon_{0,r}]$ containing the zero closest to the solution of the previous step is found, then the zero is computed with Brent's method (see [below](theory-find-equilibrium-fixed-curvature)).
+If for a value of curvature no equilibrium can be found (e.g. the curvature is beyond the ultimate one or, for constitutive laws with softening and high compression, beyond a limit point), a `NoConvergenceWarning` is raised and the analysis is stopped at the last converged step.
 
 ::::::{note}
-(theory-pre-find-range)=
-### Find the range to which apply bisection
-Starting with $\varepsilon_{0,A}$ and the corresponding value of $\Delta N(\varepsilon_{0,A})$, the value $\varepsilon_{0,B}'$ is found using a fast pre-find algorithm. This algorithm uses the following exponential law for evaluating the tentative value of $\varepsilon_{0,B,i}$:
+(theory-find-equilibrium-fixed-curvature)=
+### Find the equilibrium for a fixed curvature
 
-$$\varepsilon_{0,B,i} = \varepsilon_{0,B,i-1} + \delta \cdot r^i$$
+**Admissible range of $\varepsilon_0$.** For a fixed curvature the strain is linear over the section, so for each geometry $g$ (surface or point) with ultimate strains $\varepsilon_{u,g}^-$ and $\varepsilon_{u,g}^+$ it is sufficient to check its extreme coordinates $z^*_{g,min}$ and $z^*_{g,max}$. The admissible range is the intersection of the ranges of all the geometries:
 
-where $\delta = 1e-3$ and $r = 2$. 
+$$\varepsilon_{0,min} = \max_{g} \max_{z^* \in \{z^*_{g,min},\, z^*_{g,max}\}} \left(\varepsilon_{u,g}^- - \chi\, z^*\right) \qquad \varepsilon_{0,max} = \min_{g} \min_{z^* \in \{z^*_{g,min},\, z^*_{g,max}\}} \left(\varepsilon_{u,g}^+ - \chi\, z^*\right)$$
 
-In this way, $\varepsilon_{0,B}$ increases in fast way within very few iterations (generally 2-3 iterations are enough).
+Outside this range at least one material has failed. Restricting the search to $[\varepsilon_{0,min}, \varepsilon_{0,max}]$ excludes, for instance, the spurious solutions found when the reinforcement is broken and the section is completely in tension ($\Delta N = 0$ with zero moment), and the discontinuities of $\Delta N(\varepsilon_0)$ due to the rupture of a material, which are located at the bounds of the range. If $\varepsilon_{0,min} > \varepsilon_{0,max}$ the curvature exceeds the ultimate one and no equilibrium exists.
 
-The value of $\Delta N(\varepsilon_{0,B,i})$ is computed and whenever $\Delta N(\varepsilon_{0,A}) \cdot \Delta N(\varepsilon_{0,B,i}) < 0$ the algorithm stops having found the range $[\varepsilon_{0,A}, \varepsilon_{0,B}]$ where the bisection algorithm is applied. The use of this algorithm permits to find a good range where bisection algorithm is applied in an efficient way without too many iterations.
+The figure [below](#theory-fig-admissible-range) shows the admissible range for a step of the plastic branch of the moment-curvature of a rectangular section ($N = 0$). For a fixed curvature all the strain profiles are parallel lines (b): moving the profile, i.e. changing $\varepsilon_0$, the first limit reached on the compressed side is the ultimate strain of concrete at the top edge ($\varepsilon_{0,min}$), and on the tension side the ultimate strain of the reinforcement ($\varepsilon_{0,max}$). Each extreme fibre allows an interval of $\varepsilon_0$ (c), and the admissible range is the intersection of these intervals.
 
-Graphically this can be seen in the figure [below](#theory-fig-dN_eps0), where the function $\Delta N(\varepsilon_0)$ is plotted indicating the value $\varepsilon_{0,A}$ from the previous step and the two iterations needed to find $\varepsilon_{0,B}'$. 
+(theory-fig-admissible-range)=
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureAdmissibleRange_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureAdmissibleRange_dark.png
+:align: center
+:class: only-dark
+:::
+
+Admissible range of $\varepsilon_0$ for a fixed curvature. (a) Section. (b) Strain profiles with the same curvature: the bands are the strains allowed in each extreme fibre (the concrete has no limit in tension), the shaded area contains all the admissible profiles. (c) Interval of $\varepsilon_0$ allowed by each fibre and their intersection, which contains the solution of the step.
+
+::::
+:::::
+
+**Starting point and bounds.** The solution of the previous step $\varepsilon_{0,A}$, clipped to the admissible range, is the starting point. $\Delta N$ is computed at $\varepsilon_{0,A}$ and at the two bounds: if one of these values is already in equilibrium (within the tolerance on $|\Delta N|$) it is the solution. This is the case of the last step of a moment-curvature computed automatically: at the ultimate curvature one material is exactly at its ultimate strain, so the solution lies on a bound of the admissible range.
+
+**Bracket search.** Starting from $\varepsilon_{0,A}$ the range is explored in both directions, alternating the sides, until a change of sign of $\Delta N$ is found. The steps start from $\delta$ and grow exponentially:
+
+$$\varepsilon_{0,i} = \varepsilon_{0,i-1} \pm \min\left(\delta \cdot 2^{i-1},\ \Delta_{max}\right) \qquad \Delta_{max} = \max\left(\frac{\varepsilon_{0,max}-\varepsilon_{0,min}}{100},\ \delta\right)$$
+
+where $\delta$ is the estimate of the change of $\varepsilon_0$ obtained from the two previous steps, scaled with the increment of curvature:
+
+$$\delta = \left| \left(\varepsilon_{0,j-1} - \varepsilon_{0,j-2}\right) \frac{\chi_j - \chi_{j-1}}{\chi_{j-1} - \chi_{j-2}} \right|$$
+
+($\delta = 10^{-4}$ for the first two steps). In this way:
+
+- the bracket is found with few evaluations, since the solution is generally close to the one of the previous step;
+- the zero closest to $\varepsilon_{0,A}$ is found, on whichever side it is. This can be relevant for constitutive laws with softening (e.g. Sargin and Popovics) and high compression, where $\Delta N(\varepsilon_0)$ could be not monotic having more than one zero in the admissible range: following the zero closest to the previous solution keeps the analysis on the same branch;
+
+If no change of sign is found in the whole admissible range, no equilibrium exists for the given curvature and a `NoConvergenceWarning` is raised.
+
+The figure [below](#theory-fig-find-bracket) shows the bracket search at the third step of the moment-curvature of a rectangular section 250 x 500 mm ($f_{ck} = 45$ MPa, two bars of diameter 16 mm at the bottom, $\varepsilon_{uk} = 4\%$) with $N = -1000$ kN. Here the estimate $\delta$ is much smaller than the actual move of the solution, so the evaluations alternate on the two sides of $\varepsilon_{0,A}$ (1, 2, 3, ...) with steps $\delta$, $2\delta$, $4\delta$, ... until the first change of sign is found, between the points 7 and 9 on the right side. Brent's method then finds the zero inside this bracket with a few evaluations.
+
+(theory-fig-find-bracket)=
+:::::{grid}
+::::{grid-item}
+:class: caption-text, sd-text-center
+
+:::{image} FigureFindBracket_light.png
+:align: center
+:class: only-light
+:::
+
+:::{image} FigureFindBracket_dark.png
+:align: center
+:class: only-dark
+:::
+
+Bracket search for a fixed curvature. Left: $\Delta N(\varepsilon_0)$ in the whole admissible range. Right: zoom on the search; the points are numbered in the order of evaluation (orange: increasing $\varepsilon_0$, green: decreasing $\varepsilon_0$) and the arrows show the step from the previous point on the same side.
+
+::::
+:::::
+
+**Brent's method.** Once the bracket is found, the zero is computed with Brent's method (`scipy.optimize.brentq`). At each iteration it keeps a bracket of the solution and tries a step with inverse quadratic interpolation (or with the secant method), falling back to a bisection step when the interpolation is not reliable. For the piecewise smooth function $\Delta N(\varepsilon_0)$ it converges in a few iterations, never losing the bracket. If the bracket collapses on a point where $\Delta N$ jumps across zero without an equilibrium (e.g. a brittle material that suddenly stops carrying stress), the residual $|\Delta N|$ remains larger than the tolerance and a `NoConvergenceWarning` is raised.
+
+Graphically this can be seen in the figure [below](#theory-fig-dN_eps0), where the function $\Delta N(\varepsilon_0)$ is plotted for a step of the plastic branch of a moment-curvature. In this case $\varepsilon_{0,A}$ is outside the admissible range (with the new curvature the concrete would exceed its ultimate strain) and the search starts from $\varepsilon_{0,min}$.
 
 (theory-fig-dN_eps0)=
 :::::{grid}
@@ -224,12 +285,10 @@ Graphically this can be seen in the figure [below](#theory-fig-dN_eps0), where t
 :class: only-dark
 :::
 
-The function $\Delta N(\varepsilon_0)$ during $i$-th step of moment-curvature computation: application of the pre-find algorithm to select the range where bisection is applied.
+The function $\Delta N(\varepsilon_0)$ during the $i$-th step of moment-curvature computation. Left: admissible range of $\varepsilon_0$ and values at the bounds. Right: the previous solution $\varepsilon_{0,A}$ is outside the admissible range, so the search starts from $\varepsilon_{0,min}$; the first point of the bracket search already gives a change of sign, and Brent's method finds the solution inside the bracket.
 
 ::::
 :::::
-
-Then, the usual bisection algorithm is adopted to find the value $\varepsilon_0$ for which $\Delta N(\varepsilon_0) = N_{ext} - N_{int}(\varepsilon_0)$ is sufficiently near to 0.
 
 ::::::
 
