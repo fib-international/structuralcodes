@@ -10,3 +10,9 @@
 ```{eval-rst}
 .. autofunction:: structuralcodes.codes.aci318_19.vc_two_way
 ```
+
+## Critical section
+
+```{eval-rst}
+.. autofunction:: structuralcodes.codes.aci318_19.critical_section_rectangular
+```

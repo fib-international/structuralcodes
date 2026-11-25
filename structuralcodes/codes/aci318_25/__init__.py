@@ -11,6 +11,7 @@ from ._concrete_material_properties import (
     fr,
     lambda_factor,
 )
+from ._critical_section import critical_section_rectangular
 from ._flexure import (
     As_max_check,
     As_min_beam,
@@ -119,6 +120,7 @@ __all__ = [
     'shear_critical_section_offset',
     'alpha_s',
     'vc_two_way',
+    'critical_section_rectangular',
     'PSI_TO_MPA',
     'KSI_TO_MPA',
     'MPA_TO_PSI',

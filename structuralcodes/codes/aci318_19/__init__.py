@@ -2,11 +2,13 @@
 
 import typing as t
 
+from ._critical_section import critical_section_rectangular
 from ._shear import lambda_s
 from ._two_way_shear import alpha_s, vc_two_way
 
 __all__ = [
     'alpha_s',
+    'critical_section_rectangular',
     'lambda_s',
     'vc_two_way',
 ]
