@@ -1,6 +1,7 @@
 """Tests for the constitutive_laws module."""
 
 import math
+import warnings
 
 import numpy as np
 import pytest
@@ -783,6 +784,47 @@ def test_popovics(fc, eps_c, eps_cu):
     eps_min, eps_max = law.get_ultimate_strain(yielding=True)
     assert math.isclose(eps_min, -eps_c)
     assert math.isclose(eps_max, 100)
+
+
+@pytest.mark.parametrize(
+    'fc, eps_c, eps_cu',
+    [
+        (30, 2.3e-3, 3.5e-3),
+        (70, 2.7e-3, 3.2e-3),
+    ],
+)
+def test_popovics_outside_compression_range(fc, eps_c, eps_cu):
+    """Test that Popovics returns zero stress and tangent outside the
+    compression range, without warnings.
+
+    For positive strains the expression of the law would give a negative
+    base raised to a non-integer power (NaN and RuntimeWarning): it must not
+    be evaluated outside the range eps_cu <= eps <= 0.
+    """
+    law = Popovics(fc=fc, eps_c=eps_c, eps_cu=eps_cu)
+    eps_outside = np.array([-2 * eps_cu, -1.01 * eps_cu, 1e-6, 1e-3, 0.01])
+
+    with warnings.catch_warnings():
+        # Any warning (e.g. RuntimeWarning from numpy) makes the test fail
+        warnings.simplefilter('error')
+        sig = law.get_stress(eps_outside)
+        tan = law.get_tangent(eps_outside)
+        sig_scalars = [law.get_stress(e) for e in eps_outside]
+        tan_scalars = [law.get_tangent(e) for e in eps_outside]
+        # Mixed array: values inside the range must be the same as for
+        # the scalars
+        eps_mixed = np.array([0.002, -0.5 * eps_c, -eps_c, 0.0, 0.004])
+        sig_mixed = law.get_stress(eps_mixed)
+        tan_mixed = law.get_tangent(eps_mixed)
+
+    assert_allclose(sig, 0.0)
+    assert_allclose(tan, 0.0)
+    assert_allclose(sig_scalars, 0.0)
+    assert_allclose(tan_scalars, 0.0)
+    assert_allclose(sig_mixed, [law.get_stress(e) for e in eps_mixed])
+    assert_allclose(tan_mixed, [law.get_tangent(e) for e in eps_mixed])
+    assert sig_mixed[1] < 0 and sig_mixed[2] < 0
+    assert sig_mixed[0] == 0 and sig_mixed[3] == 0 and sig_mixed[4] == 0
 
 
 @pytest.mark.parametrize(

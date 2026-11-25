@@ -79,20 +79,20 @@ class Popovics(ConstitutiveLaw):
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
-        # Compute stress
-        # Compression branch
-        eta = eps / self._eps_c
-
-        sig = self._fc * eta * self._n / (self._n - 1 + eta**self._n)
-
-        # Elsewhere stress is 0.0
+        # The law is defined only in compression, for eps_cu <= eps <= 0, and
+        # the stress is zero elsewhere. The expression is evaluated only in
+        # this range: for eps > 0 it would be eta < 0, and eta**n with a
+        # non-integer n is not defined (NaN and RuntimeWarning).
         if np.isscalar(eps):
             if eps < self._eps_cu or eps > 0:
                 return 0.0
-        else:
-            sig[eps < self._eps_cu] = 0.0
-            sig[eps > 0] = 0.0
+            eta = eps / self._eps_c
+            return self._fc * eta * self._n / (self._n - 1 + eta**self._n)
 
+        sig = np.zeros_like(eps, dtype=float)
+        in_range = (eps >= self._eps_cu) & (eps <= 0)
+        eta = eps[in_range] / self._eps_c
+        sig[in_range] = self._fc * eta * self._n / (self._n - 1 + eta**self._n)
         return sig
 
     def get_tangent(
@@ -102,25 +102,28 @@ class Popovics(ConstitutiveLaw):
         eps = eps if np.isscalar(eps) else np.atleast_1d(eps)
         # Preprocess eps array in order
         eps = self.preprocess_strains_with_limits(eps=eps)
-        # Compression branch
-        eta = eps / self._eps_c
 
-        tangent = (
-            (1 - eta**self._n)
-            / (self._n - 1 + eta**self._n) ** 2
-            * self._n
-            * (self._n - 1)
-            * self._fc
-            / self._eps_c
-        )
-        # Elsewhere tangent is zero
+        def _tangent(eta):
+            return (
+                (1 - eta**self._n)
+                / (self._n - 1 + eta**self._n) ** 2
+                * self._n
+                * (self._n - 1)
+                * self._fc
+                / self._eps_c
+            )
+
+        # The law is defined only in compression, for eps_cu <= eps <= 0, and
+        # the tangent is zero elsewhere. The expression is evaluated only in
+        # this range (see get_stress).
         if np.isscalar(eps):
             if eps < self._eps_cu or eps > 0:
                 return 0
-        else:
-            tangent[eps < self._eps_cu] = 0.0
-            tangent[eps > 0] = 0.0
+            return _tangent(eps / self._eps_c)
 
+        tangent = np.zeros_like(eps, dtype=float)
+        in_range = (eps >= self._eps_cu) & (eps <= 0)
+        tangent[in_range] = _tangent(eps[in_range] / self._eps_c)
         return tangent
 
     def get_ultimate_strain(
